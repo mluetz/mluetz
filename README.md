@@ -6,6 +6,10 @@ verknüpft und lassen sich nach Domäne (u. a. **OT**), Modul, Priorität, Stand
 
 > **Vertraulich** — nur für den internen ISMS- und Audit-Gebrauch der Reutter-Group.
 
+**Zwei Sprachfassungen:** `index.html` (Deutsch) und `index-en.html` (Englisch, vollständig
+übersetzte Oberfläche und Inhalte). Beide Seiten sind über den „EN"/„DE"-Umschalter oben rechts
+verknüpft. Im Zweifel gilt das deutsche Register.
+
 | | |
 |---|---|
 | Participant | Reutter Group GmbH |
@@ -53,19 +57,27 @@ Datenquelle ist die Excel-Datei; die `index.html` wird daraus generiert – **ni
 ```bash
 pip install openpyxl
 # Quelle in data/ aktualisieren, dann:
-python3 tools/generate.py
-# erzeugt neu:  index.html  und  data/findings.json
+python3 tools/generate.py      # erzeugt index.html und data/findings.json
+python3 tools/generate_en.py   # erzeugt index-en.html und data/findings_en.json
 ```
+
+Die englischen Freitexte liegen als Overlay in `data/translations_en.json` (Schlüssel = Excel-Zeile).
+Bei neuen oder geänderten Findings die betroffenen Einträge dort nachziehen — fehlt ein Eintrag,
+erscheint der deutsche Originaltext auf der englischen Seite.
 
 ## Struktur
 
 ```
-index.html                                  ← die auslieferbare Anwendung (generiert)
+index.html                                  ← deutsche Anwendung (generiert)
+index-en.html                               ← englische Anwendung (generiert)
 data/
   TISAX_Finding_Register_v3_M_N_O.xlsx       ← Quell-Register (Spalten M/N/O integriert)
   findings.json                              ← extrahierte, angereicherte Daten (generiert)
+  findings_en.json                           ← englische Daten (generiert)
+  translations_en.json                       ← Übersetzungs-Overlay der Freitexte (gepflegt)
 tools/
-  generate.py                                ← Extraktion + Tag-/Xref-Ableitung + HTML-Build
-  template.html                              ← HTML-/JS-Vorlage mit Platzhalter /*__DATA__*/
+  generate.py                                ← Extraktion + Tag-/Xref-Ableitung + HTML-Build (DE)
+  generate_en.py                             ← englischer Build (UI-Strings + Overlay + Enum-Mapping)
+  template.html                              ← gemeinsame HTML-/JS-Vorlage mit Platzhalter /*__DATA__*/
 .github/workflows/pages.yml                  ← Auto-Deploy nach GitHub Pages
 ```
