@@ -96,14 +96,31 @@ def derive_tags(rec):
 
 
 def parse_xrefs(rec):
-    """Findet 'Row NN / F-XXX'-Verweise in den Spalten N und M."""
-    txt = (rec["xref"] or "") + " " + (rec["umsetzung"] or "")
+    """Findet 'Row NN / F-XXX'-Verweise in den Spalten N und M.
+
+    Kategorisiert nach den Abschnitts-Überschriften der Spalte N:
+    'pre' = vorgelagert (Voraussetzung), 'post' = nachgelagert (liefert Input an),
+    'cross' = Querverweis bzw. unklassifiziert.
+    """
     out, seen = [], set()
-    for m in re.finditer(r"Row\s+(\d+)\s*/\s*(F-[\w]+)", txt):
-        key = (int(m.group(1)), m.group(2))
-        if key not in seen:
-            seen.add(key)
-            out.append({"row": int(m.group(1)), "fid": m.group(2)})
+
+    def scan(txt, kind):
+        for line in (txt or "").split("\n"):
+            low = line.lower()
+            if "vorgelagert" in low:
+                kind = "pre"
+            elif "nachgelagert" in low:
+                kind = "post"
+            elif "querverweis" in low:
+                kind = "cross"
+            for m in re.finditer(r"Row\s+(\d+)\s*/\s*(F-[\w]+)", line):
+                key = (int(m.group(1)), m.group(2))
+                if key not in seen:
+                    seen.add(key)
+                    out.append({"row": int(m.group(1)), "fid": m.group(2), "kind": kind})
+
+    scan(rec["xref"], "cross")
+    scan(rec["umsetzung"], "cross")
     return out
 
 

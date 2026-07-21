@@ -168,6 +168,28 @@ select:focus{outline:2px solid var(--accent);outline-offset:1px}
 .reifebars i{width:8px;height:12px;border-radius:2px;background:var(--surface-2);border:1px solid var(--border)}
 .reifebars i.ist{background:var(--hoch);border-color:var(--hoch)}
 .reifebars i.soll{background:var(--niedrig);border-color:var(--niedrig)}
+/* ---- Erledigt / done state ---- */
+.donebtn{flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border-strong);
+  background:var(--surface);color:var(--ink-3);font-size:13px;line-height:1;cursor:pointer;margin-top:1px;padding:0}
+.donebtn:hover{border-color:var(--niedrig);color:var(--niedrig)}
+.donebtn.on{background:var(--niedrig);border-color:var(--niedrig);color:#fff}
+.card.done{border-left-color:var(--niedrig)}
+.card.done .chead{opacity:.72}
+.card.done .qtitle{text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:var(--ink-3)}
+.b-done{color:var(--niedrig);border-color:color-mix(in srgb,var(--niedrig) 45%,transparent);
+  background:color-mix(in srgb,var(--niedrig) 12%,transparent)}
+.xref.donex{background:color-mix(in srgb,var(--niedrig) 12%,transparent);color:var(--niedrig);
+  border-color:color-mix(in srgb,var(--niedrig) 40%,transparent)}
+.xref.donex:hover{background:var(--niedrig);color:#fff}
+.xg{margin-top:7px}
+.xg .xgl{font-size:11px;color:var(--ink-3);font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+.actrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.done-cta{font-weight:600}
+.done-cta.on{color:var(--niedrig);border-color:var(--niedrig)}
+.presum{font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:16px;border:1px solid transparent}
+.presum.ok{color:var(--niedrig);background:color-mix(in srgb,var(--niedrig) 11%,transparent);border-color:color-mix(in srgb,var(--niedrig) 35%,transparent)}
+.presum.warn{color:var(--hoch);background:color-mix(in srgb,var(--hoch) 11%,transparent);border-color:color-mix(in srgb,var(--hoch) 35%,transparent)}
+.kpi.k-done::before{background:var(--niedrig)}
 .empty{text-align:center;padding:60px 20px;color:var(--ink-3)}
 footer{margin:40px 0 30px;padding-top:18px;border-top:1px solid var(--border);color:var(--ink-3);font-size:12px;line-height:1.7}
 footer b{color:var(--ink-2)}
@@ -219,6 +241,9 @@ footer b{color:var(--ink-2)}
       <select id="fSite"></select>
       <button class="btn" id="resetBtn">Zurücksetzen</button>
       <button class="btn primary" id="csvBtn">CSV Export</button>
+      <button class="btn" id="saveBtn" title="Erledigt-Stand als Datei sichern">Stand sichern</button>
+      <button class="btn" id="loadBtn" title="Erledigt-Stand aus Datei laden">Stand laden</button>
+      <input type="file" id="loadInput" accept="application/json,.json" hidden>
     </div>
     <div class="chips" id="tagChips"><span class="chips-label">Domäne</span></div>
   </div>
@@ -255,8 +280,45 @@ function siteTokens(s){
   return SITE_TOKENS.filter(t=>s.includes(t));
 }
 FINDINGS.forEach((f,i)=>{ f._i=i; f._sites=siteTokens(f.standort); });
+const ROWMAP={}; FINDINGS.forEach(f=>ROWMAP[f.excelRow]=f);
 
-const state={ q:"", modul:"", typ:"", prio:"", status:"", site:"", ot:false, tags:new Set(), view:"modul" };
+/* Erledigt-Stand: localStorage (DE- und EN-Seite teilen sich denselben Stand) */
+const LS_KEY="reutib-tisax-done-v1";
+let DONE={};
+try{ DONE=JSON.parse(localStorage.getItem(LS_KEY)||"{}")||{}; }catch(e){ DONE={}; }
+function saveDone(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(DONE)); }catch(e){} }
+function isDone(f){ return !!DONE[f.excelRow]; }
+
+/* Abhängigkeits-Graph: Voraussetzungen je Finding =
+   eigene 'pre'-Referenzen + Findings, die dieses Finding als 'nachgelagert' (post) führen */
+const PREREQ={};
+FINDINGS.forEach(f=>PREREQ[f.excelRow]=new Set());
+FINDINGS.forEach(f=>(f.xrefs||[]).forEach(x=>{
+  if(!ROWMAP[x.row]||x.row===f.excelRow) return;
+  if(x.kind==="pre") PREREQ[f.excelRow].add(x.row);
+  if(x.kind==="post") PREREQ[x.row].add(f.excelRow);
+}));
+
+const ST_DONE="✓ Erledigt", ST_NOTDONE="○ Nicht erledigt";
+const XKIND={pre:"Voraussetzung (vorgelagert)",post:"Liefert Input an (nachgelagert)",cross:"Querverweise"};
+const warnMsg=(n,ids)=>`Achtung: ${n} vorausgesetzte(s) Finding(s) noch nicht erledigt:\n· ${ids}\n\nTrotzdem als erledigt markieren?`;
+
+const state={ q:"", modul:"", typ:"", prio:"", status:"", site:"", ot:false, tags:new Set(), view:"modul", open:new Set() };
+
+function toggleDone(ev,row){
+  ev.stopPropagation();
+  if(!DONE[row]){
+    const openPre=[...(PREREQ[row]||[])].filter(r=>!DONE[r]);
+    if(openPre.length){
+      const ids=openPre.map(r=>`${ROWMAP[r].findingId} / Ctrl ${ROWMAP[r].kontrollNr||"—"}`).join("\n· ");
+      if(!confirm(warnMsg(openPre.length,ids))) return;
+    }
+    DONE[row]={t:new Date().toISOString().slice(0,10)};
+    state.open.delete(row);
+  } else { delete DONE[row]; }
+  saveDone(); kpis(); render();
+}
+window.toggleDone=toggleDone;
 
 /* ---------- facets ---------- */
 function distinct(key){ return [...new Set(FINDINGS.map(f=>f[key]).filter(Boolean))]; }
@@ -270,7 +332,7 @@ const modules=[...new Set(FINDINGS.map(f=>f.moduleName))].sort((a,b)=>{
 fillSelect(document.getElementById("fModul"),"Alle Module",modules);
 fillSelect(document.getElementById("fTyp"),"Alle Finding-Typen",["Major NC","Minor NC","Observation"]);
 fillSelect(document.getElementById("fPrio"),"Alle Prioritäten",["Kritisch","Hoch","Mittel","Niedrig"]);
-fillSelect(document.getElementById("fStatus"),"Alle Status",distinct("status").sort());
+fillSelect(document.getElementById("fStatus"),"Alle Status",distinct("status").sort().concat([ST_DONE,ST_NOTDONE]));
 fillSelect(document.getElementById("fSite"),"Alle Standorte",["DE","AT","SK","PL","IT","Alle"]);
 
 const allTags={};
@@ -290,7 +352,9 @@ function matches(f){
   if(state.modul && f.moduleName!==state.modul) return false;
   if(state.typ && f.typ!==state.typ) return false;
   if(state.prio && f.prioritaet!==state.prio) return false;
-  if(state.status && f.status!==state.status) return false;
+  if(state.status===ST_DONE){ if(!isDone(f)) return false; }
+  else if(state.status===ST_NOTDONE){ if(isDone(f)) return false; }
+  else if(state.status && f.status!==state.status) return false;
   if(state.ot && !(f.tags||[]).includes("OT")) return false;
   if(state.site){
     if(state.site==="Alle"){ if(!f._sites.includes("Alle")) return false; }
@@ -324,12 +388,26 @@ function field(label,val,muted){ if(!val||!String(val).trim())return "";
 
 function xrefChips(f){
   if(!f.xrefs||!f.xrefs.length) return "";
-  const chips=f.xrefs.map(x=>{
-    const tgt=FINDINGS.find(g=>g.excelRow===x.row);
-    if(tgt) return `<span class="xref" data-goto="${tgt.excelRow}">${esc(x.fid)} · Ctrl ${esc(tgt.kontrollNr||"—")}</span>`;
-    return `<span class="xref dead">${esc(x.fid)}</span>`;
-  }).join("");
-  return `<div class="field"><div class="fl">Cross-Referenzen (abhängige Findings)</div><div class="xrefs">${chips}</div></div>`;
+  const groups={pre:[],post:[],cross:[]};
+  f.xrefs.forEach(x=>{(groups[x.kind]||groups.cross).push(x);});
+  let h="";
+  for(const k of ["pre","post","cross"]){
+    if(!groups[k].length) continue;
+    const chips=groups[k].map(x=>{
+      const tgt=ROWMAP[x.row];
+      if(tgt) return `<span class="xref ${isDone(tgt)?"donex":""}" data-goto="${tgt.excelRow}">${isDone(tgt)?"✓ ":""}${esc(x.fid)} · Ctrl ${esc(tgt.kontrollNr||"—")}</span>`;
+      return `<span class="xref dead">${esc(x.fid)}</span>`;
+    }).join("");
+    h+=`<div class="xg"><div class="xgl">${esc(XKIND[k])}</div><div class="xrefs">${chips}</div></div>`;
+  }
+  return `<div class="field"><div class="fl">Cross-Referenzen (abhängige Findings)</div>${h}</div>`;
+}
+
+function preSummary(f){
+  const pres=[...(PREREQ[f.excelRow]||[])];
+  if(!pres.length) return "";
+  const d=pres.filter(r=>DONE[r]).length;
+  return `<span class="presum ${d===pres.length?"ok":"warn"}">Voraussetzungen erledigt: ${d}/${pres.length}</span>`;
 }
 
 function card(f){
@@ -338,8 +416,8 @@ function card(f){
   const tagBadges=(f.tags||[]).filter(t=>t!=="OT").slice(0,6).map(t=>`<span class="b b-tag">${esc(t)}</span>`).join("");
   const sites=(f._sites.length?f._sites:["—"]).map(s=>`<span class="b b-site">${esc(s)}</span>`).join("");
   const statusCl=/bearbeit/i.test(f.status)?"prog":"";
-  return `<div class="card sev-${sev.split(" ")[0]}" id="f-${f.excelRow}">
-    <div class="chead" onclick="toggle(this)">
+  return `<div class="card sev-${sev.split(" ")[0]} ${isDone(f)?"done":""} ${state.open.has(f.excelRow)?"open":""}" id="f-${f.excelRow}">
+    <div class="chead" onclick="toggle(this,${f.excelRow})">
       <span class="fid">${esc(f.findingId||"—")}</span>
       ${f.kontrollNr?`<span class="ctrl">${esc(f.kontrollNr)}</span>`:""}
       <div class="mid">
@@ -347,13 +425,14 @@ function card(f){
         <div class="badges">
           ${f.typ?`<span class="b b-typ ${sev.split(" ")[0]}">${esc(f.typ)}</span>`:""}
           ${f.prioritaet?`<span class="b b-prio ${esc(f.prioritaet)}">${esc(f.prioritaet)}</span>`:""}
-          ${f.status?`<span class="b b-status ${statusCl}">${esc(f.status)}</span>`:""}
+          ${isDone(f)?`<span class="b b-done">Erledigt${DONE[f.excelRow].t?" · "+esc(DONE[f.excelRow].t):""}</span>`:(f.status?`<span class="b b-status ${statusCl}">${esc(f.status)}</span>`:"")}
           ${isOt?`<span class="b b-ot">OT</span>`:""}
           ${sites}
           ${tagBadges}
           ${reifeBars(f.reifeIst,f.reifeSoll)}
         </div>
       </div>
+      <button class="donebtn ${isDone(f)?"on":""}" title="Erledigt umschalten" aria-label="Erledigt umschalten" onclick="toggleDone(event,${f.excelRow})">✓</button>
       <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
     </div>
     <div class="cbody">
@@ -376,6 +455,10 @@ function card(f){
         ${f.reifeIst!==""||f.reifeSoll!==""?`<span><b>Reifegrad:</b> IST ${esc(f.reifeIst||"–")} → SOLL ${esc(f.reifeSoll||"–")}</span>`:""}
         ${f.nachweis?`<span><b>Nachweis:</b> ${esc(f.nachweis)}</span>`:""}
         ${f.isbKommentar?`<span><b>ISB:</b> ${esc(f.isbKommentar)}</span>`:""}
+      </div>
+      <div class="actrow">
+        <button class="btn done-cta ${isDone(f)?"on":""}" onclick="toggleDone(event,${f.excelRow})">${isDone(f)?"✓ Erledigt — als offen markieren":"Als erledigt markieren"}</button>
+        ${preSummary(f)}
       </div>
     </div>
   </div>`;
@@ -416,13 +499,16 @@ function render(){
   res.innerHTML=html;
 }
 
-function toggle(el){ el.parentElement.classList.toggle("open"); }
+function toggle(el,row){
+  const c=el.parentElement; c.classList.toggle("open");
+  if(row!=null){ if(c.classList.contains("open")) state.open.add(row); else state.open.delete(row); }
+}
 window.toggle=toggle;
 
 document.addEventListener("click",e=>{
   const x=e.target.closest("[data-goto]"); if(!x) return;
-  const row=x.dataset.goto; const el=document.getElementById("f-"+row);
-  if(el){ el.classList.add("open"); el.scrollIntoView({behavior:"smooth",block:"center"});
+  const row=parseInt(x.dataset.goto,10); const el=document.getElementById("f-"+row);
+  if(el){ el.classList.add("open"); state.open.add(row); el.scrollIntoView({behavior:"smooth",block:"center"});
     el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
 });
 
@@ -434,7 +520,7 @@ function kpis(){
   const krit=FINDINGS.filter(f=>f.prioritaet==="Kritisch").length;
   const hoch=FINDINGS.filter(f=>f.prioritaet==="Hoch").length;
   const ot=FINDINGS.filter(f=>(f.tags||[]).includes("OT")).length;
-  const open=FINDINGS.filter(f=>/offen/i.test(f.status)).length;
+  const done=FINDINGS.filter(isDone).length, rest=t-done;
   const tile=(n,l,cls,frac,color)=>`<div class="kpi stripe ${cls||""}"><div class="n">${n}</div><div class="l">${l}</div>
     ${frac!=null?`<div class="bar"><span style="width:${Math.round(frac*100)}%;background:${color}"></span></div>`:""}</div>`;
   document.getElementById("kpis").innerHTML=
@@ -443,7 +529,7 @@ function kpis(){
     tile(major,"Major NC","k-krit",major/t,"var(--krit)")+
     tile(minor,"Minor NC",null,minor/t,"var(--mittel)")+
     tile(ot,"OT-relevant","k-ot",ot/t,"var(--accent)")+
-    tile(open,"Status: Offen","k-open",open/t,"var(--ink-3)");
+    tile(done,`Erledigt · ${rest} offen`,"k-done",done/t,"var(--niedrig)");
   document.getElementById("fcount").textContent=t;
 }
 
@@ -453,10 +539,12 @@ function csv(){
     ["frageDe","Kontrollfrage"],["typ","Typ"],["prioritaet","Prio"],["status","Status"],["standort","Standort"],
     ["verantwortlich","Verantwortlich"],["frist","Frist"],["beschreibung","Beschreibung"],["massnahme","Maßnahme"],
     ["umsetzung","Umsetzung(M)"],["xref","XRef(N)"],["scope","Scope(O)"]];
+  const DONE_CSV={col:"Erledigt",yes:"Ja",no:"Nein"};
   const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
   const rows=FINDINGS.filter(matches);
-  let out=cols.map(c=>q(c[1])).join(";")+"\r\n";
-  rows.forEach(f=>{ out+=cols.map(c=>q(c[0]==="tags"?(f.tags||[]).join(", "):f[c[0]])).join(";")+"\r\n"; });
+  let out=cols.map(c=>q(c[1])).join(";")+";"+q(DONE_CSV.col)+"\r\n";
+  rows.forEach(f=>{ out+=cols.map(c=>q(c[0]==="tags"?(f.tags||[]).join(", "):f[c[0]])).join(";")
+    +";"+q(DONE[f.excelRow]?DONE_CSV.yes+" "+(DONE[f.excelRow].t||""):DONE_CSV.no)+"\r\n"; });
   const blob=new Blob(["﻿"+out],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
   a.download="TISAX_Findings_gefiltert.csv"; a.click(); URL.revokeObjectURL(a.href);
@@ -478,6 +566,22 @@ document.getElementById("resetBtn").addEventListener("click",()=>{
   ["fModul","fTyp","fPrio","fStatus","fSite"].forEach(id=>document.getElementById(id).value="");
   syncOt(); render();});
 document.getElementById("csvBtn").addEventListener("click",csv);
+document.getElementById("saveBtn").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify({format:"reutib-tisax-done",exported:new Date().toISOString(),done:DONE},null,1)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="TISAX_Findings_Stand.json"; a.click(); URL.revokeObjectURL(a.href);});
+document.getElementById("loadBtn").addEventListener("click",()=>document.getElementById("loadInput").click());
+document.getElementById("loadInput").addEventListener("change",e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+      const obj=JSON.parse(rd.result);
+      const d=obj&&obj.done?obj.done:obj;
+      if(!d||typeof d!=="object"||Array.isArray(d)) throw new Error("bad");
+      DONE=d; saveDone(); kpis(); render();
+    }catch(err){ alert("Datei konnte nicht gelesen werden — bitte einen zuvor gesicherten Stand (JSON) wählen."); }
+    e.target.value=""; };
+  rd.readAsText(file);});
 document.querySelectorAll("#viewsel button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#viewsel button").forEach(x=>x.classList.remove("on"));
   b.classList.add("on"); state.view=b.dataset.v; render();}));

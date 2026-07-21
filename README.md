@@ -47,7 +47,14 @@ jedem Push auf den Standard-Branch automatisch.
   springen direkt zum verknüpften Finding.
 - **Detailtiefe:** je Finding Beschreibung, Gap, Maßnahme, Umsetzungsgegenstand (Spalte M),
   Remediation-Scope (Spalte O), Reifegrad IST→SOLL, Verantwortliche, Frist und Nachweis.
-- **CSV-Export** der aktuell gefilterten Findings.
+- **Erledigt-Button** je Finding (Haken im Kartenkopf oder Button im Detail) mit
+  Abhängigkeits-Logik: die Cross-Referenzen sind kategorisiert (Voraussetzung / nachgelagert /
+  Querverweis); beim Erledigen mit offenen Voraussetzungen erscheint eine Warnung, je Finding wird
+  der Stand der Voraussetzungen angezeigt („Voraussetzungen erledigt: n/m"). Der Bearbeitungsstand
+  wird im Browser gespeichert (DE- und EN-Seite teilen sich denselben Stand), fließt in KPI, Filter
+  („✓ Erledigt" / „○ Nicht erledigt") und CSV-Export ein und lässt sich über **„Stand sichern /
+  Stand laden"** als JSON-Datei übertragen (z. B. auf ein anderes Gerät oder an Kollegen).
+- **CSV-Export** der aktuell gefilterten Findings (inkl. Erledigt-Spalte).
 - Hell-/Dunkel-Theme, responsiv, druckfreundlich.
 
 ## Daten pflegen & neu erzeugen
