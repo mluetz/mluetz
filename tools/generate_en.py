@@ -31,7 +31,7 @@ MODULE = {"General / Katalog": "General / Catalogue"}
 
 # Free-text fields supplied by the translation overlay (keyed by excelRow).
 OVERLAY_FIELDS = ["kapitel", "beschreibung", "gap", "massnahme", "umsetzung",
-                  "xref", "scope", "verantwortlich", "isbKommentar", "isaModul"]
+                  "xref", "scope", "verantwortlich", "isbKommentar", "isaModul", "frageEn"]
 
 # Exact UI string replacements applied to the shared template. Every entry must
 # match exactly once — the build fails loudly if the template drifts.
@@ -43,8 +43,8 @@ UI = [
      'TISAX AL3 · VDA ISA 6.0.3 · Action &amp; Finding Register'),
     ('REUTIB — TISAX AL3 Finding-Register</h1>',
      'REUTIB — TISAX AL3 Finding Register</h1>'),
-    ('<p class="sub">Interaktive Datenbank der Stage-Review-Findings mit Cross-Referenzen zu den\n        Controls des VDA-ISA-Prüfkatalogs. Filterbar nach Domäne (u.&nbsp;a. <b>OT</b>), Modul, Priorität, Standort und Status.</p>',
-     '<p class="sub">Interactive database of the stage-review findings with cross-references to the\n        controls of the VDA ISA assessment catalogue. Filterable by domain (incl. <b>OT</b>), module, priority, site and status.</p>'),
+    ('<p class="sub">Interaktive Datenbank der Stage-Review-Findings mit Cross-Referenzen zu den Controls des\n        VDA-ISA-Prüfkatalogs. Filterbar nach Domäne (u.&nbsp;a. <b>OT</b>), Modul, Priorität, Standort und Status.</p>',
+     '<p class="sub">Interactive database of the stage-review findings with cross-references to the controls of the\n        VDA ISA assessment catalogue. Filterable by domain (incl. <b>OT</b>), module, priority, site and status.</p>'),
     ('<a class="theme-btn" id="langLink" href="index-en.html" title="Switch to English" style="text-decoration:none">EN</a>',
      '<a class="theme-btn" id="langLink" href="index.html" title="Zur deutschen Version" style="text-decoration:none">DE</a>'),
     ('aria-label="Theme wechseln"', 'aria-label="Toggle theme"'),
