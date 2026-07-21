@@ -1,0 +1,71 @@
+# TISAX AL3 Finding-Register — REUTIB (Reutter-Group)
+
+Interaktive HTML-Datenbank der Stage-Review-Findings aus dem TISAX-AL3-Projekt der
+Reutter-Group (REUTIB). Die Findings sind mit den **Controls des VDA-ISA-6.0.3-Prüfkatalogs**
+verknüpft und lassen sich nach Domäne (u. a. **OT**), Modul, Priorität, Standort und Status filtern.
+
+> **Vertraulich** — nur für den internen ISMS- und Audit-Gebrauch der Reutter-Group.
+
+| | |
+|---|---|
+| Participant | Reutter Group GmbH |
+| ENX Scope-ID | `S9WC6X` · Participant-ID `PMVKRX` |
+| Prüfkatalog | VDA ISA 6.0.3 |
+| Assessment | AL3 (Vor-Ort) · Labels: Vertraulichkeit + Verfügbarkeit *sehr hoch* |
+| Auditor | CIS GmbH, Wien |
+| Scope | DE / AT / SK / PL |
+| Datenstand | Stage Review 29.04.2026 — 62 Findings (inkl. Katalog-Observations) |
+
+## Aufrufen
+
+Die Anwendung ist eine **einzelne, in sich geschlossene `index.html`** (keine externen
+Abhängigkeiten, keine Server nötig, funktioniert offline).
+
+- **Lokal:** `index.html` herunterladen und im Browser öffnen.
+- **Über GitHub Pages (empfohlen zum Teilen):** siehe unten — nach Aktivierung erreichbar unter
+  `https://<user>.github.io/<repo>/`.
+
+### GitHub Pages aktivieren
+Repository → **Settings → Pages → Build and deployment → Source: „GitHub Actions"**.
+Der mitgelieferte Workflow (`.github/workflows/pages.yml`) veröffentlicht die Seite dann bei
+jedem Push auf den Standard-Branch automatisch.
+
+## Funktionen
+
+- **Volltextsuche** über alle Felder (Finding, Control-Nr., Maßnahme, Verantwortliche …).
+- **OT-Schnellfilter** – zeigt mit einem Klick nur OT-relevante Findings (Modul 5 „IT(OT) Security",
+  OT/PROD-Verantwortlichkeiten, IEC-62443-Bezug).
+- **Filter** nach ISA-Modul, Finding-Typ (Major/Minor NC, Observation), Priorität, Status und Standort.
+- **Domänen-Chips** (OT, BCM/Verfügbarkeit, IAM, HR, Supplier, Logging, Datenschutz, Compliance …).
+- **Drei Ansichten:** gruppiert nach ISA-Modul, nach Control (Prüfkatalog-Kreuzreferenz) oder als
+  Prioritätsliste.
+- **Cross-Referenzen:** die abhängigen Findings (Spalte N) sind als anklickbare Chips hinterlegt und
+  springen direkt zum verknüpften Finding.
+- **Detailtiefe:** je Finding Beschreibung, Gap, Maßnahme, Umsetzungsgegenstand (Spalte M),
+  Remediation-Scope (Spalte O), Reifegrad IST→SOLL, Verantwortliche, Frist und Nachweis.
+- **CSV-Export** der aktuell gefilterten Findings.
+- Hell-/Dunkel-Theme, responsiv, druckfreundlich.
+
+## Daten pflegen & neu erzeugen
+
+Datenquelle ist die Excel-Datei; die `index.html` wird daraus generiert – **nie direkt** im HTML editieren.
+
+```bash
+pip install openpyxl
+# Quelle in data/ aktualisieren, dann:
+python3 tools/generate.py
+# erzeugt neu:  index.html  und  data/findings.json
+```
+
+## Struktur
+
+```
+index.html                                  ← die auslieferbare Anwendung (generiert)
+data/
+  TISAX_Finding_Register_v3_M_N_O.xlsx       ← Quell-Register (Spalten M/N/O integriert)
+  findings.json                              ← extrahierte, angereicherte Daten (generiert)
+tools/
+  generate.py                                ← Extraktion + Tag-/Xref-Ableitung + HTML-Build
+  template.html                              ← HTML-/JS-Vorlage mit Platzhalter /*__DATA__*/
+.github/workflows/pages.yml                  ← Auto-Deploy nach GitHub Pages
+```
