@@ -138,7 +138,7 @@ details>.dbody{padding:4px 14px 12px}
 </head>
 <body>
 <header>
-  <div class="brand">Incident Response Management (IRM) <small id="brandSub"></small></div>
+  <div class="brand">Incident Response Management (IRM) · <span class="r">REUTTER</span> GROUP <span style="color:var(--grau)">Global</span> <small id="brandSub"></small></div>
   <div class="spacer"></div>
   <div class="rolebox noprint">
     <b id="roleLbl"></b>
@@ -185,7 +185,7 @@ const EN = {
  "Kritisch":"Critical","Hoch":"High","Mittel":"Medium","Niedrig":"Low",
  "Regelbetrieb":"Normal operations","Koordinierte Bearbeitung":"Coordinated handling","Übergabe an das BCM":"Hand-over to BCM",
  "öffentlich":"public","intern":"internal","vertraulich":"confidential","streng vertraulich":"strictly confidential",
- "Betreff anpassen":"Edit subject","Neuer Betreff:":"New subject:",
+ "Meldebezeichnung anpassen":"Edit report title","Neue Meldebezeichnung:":"New report title:",
  /* header/nav */
  "REUTIB · IRM-Tool V1.10 · nach GDL_010.001":"REUTIB · IRM tool V1.10 · per GDL_010.001",
  "Rolle (Simulation):":"Role (simulation):",
@@ -1041,7 +1041,7 @@ function approve(idx, state){
 }
 function editBetreff(){
   const t=T(); if(!t||!canEdit(t)) return;
-  const v=prompt(tr("Neuer Betreff:"), t.betreff);
+  const v=prompt(tr("Neue Meldebezeichnung:"), t.betreff);
   if(v===null) return;
   const nv=v.trim();
   if(!nv || nv===t.betreff) return;
@@ -1084,7 +1084,7 @@ function viewDetail(id){
   const openTasks=t.tasks.filter(x=>!x.done);
   return `
   <div class="flex noprint"><button class="sec" onclick="nav('tickets')">← ${tr("Zur Liste")}</button><div class="spacer"></div>
-    ${!ro?`<button class="sec" onclick="editBetreff()">✎ ${tr("Betreff anpassen")}</button>`:""}
+    ${!ro?`<button class="sec" onclick="editBetreff()">✎ ${tr("Meldebezeichnung anpassen")}</button>`:""}
     ${ro?`<span class="badge st">${de?"Nur-Lesen":"Read-only"} (${esc(roleLabel())})</span>`:""}
     ${t.status!=="Closed"&&!ro?`<button class="sec" onclick="requestHerab()" ${["P1","P2"].includes(cst.stufe)?"":"disabled"}>${tr("Herabstufung beantragen")}</button>`:""}
     ${S.role==="isb"&&t.eskOverride!=="E3"&&t.status!=="Closed"?`<button class="sec" onclick="setE3()">${tr("E3 / BCM-Übergabe")}</button>`:""}
