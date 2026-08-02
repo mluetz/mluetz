@@ -179,6 +179,10 @@ const EN = {
  "Zugriffstoken für den IRM-Server:":"Access token for the IRM server:",
  "Ihr Name für das Aktivitätsprotokoll:":"Your name for the activity log:",
  "Empfehlung Anhang C übernommen":"Annex C recommendation applied",
+ "Kritisch":"Critical","Hoch":"High","Mittel":"Medium","Niedrig":"Low",
+ "Regelbetrieb":"Normal operations","Koordinierte Bearbeitung":"Coordinated handling","Übergabe an das BCM":"Hand-over to BCM",
+ "öffentlich":"public","intern":"internal","vertraulich":"confidential","streng vertraulich":"strictly confidential",
+ "Betreff anpassen":"Edit subject","Neuer Betreff:":"New subject:",
  /* header/nav */
  "REUTIB · IRM-Tool V1.10 · nach GDL_010.001":"REUTIB · IRM tool V1.10 · per GDL_010.001",
  "Rolle (Simulation):":"Role (simulation):",
@@ -324,6 +328,15 @@ const SDIM = [
 function sdimHelp(i){ return (S.lang==="en"?SDIM_HELP_EN:SDIM_HELP_DE)[i]; }
 
 const PVALS = ["nicht geprüft","in Prüfung","ja","nein"];
+
+/* Kurzbeschreibungen: P1-P4 gemäß POL_010.001 Anhang A (Gesamtstufe),
+   E0-E3 gemäß Eskalationsmodell, C1-C4 übliches Schema (gegen POL_003.001 zu verifizieren). */
+const PDESC={P1:"Kritisch",P2:"Hoch",P3:"Mittel",P4:"Niedrig"};
+const EDESC={E0:"Regelbetrieb",E1:"Koordinierte Bearbeitung",E2:"Incident Response Team",E3:"Übergabe an das BCM"};
+const CDESC={C1:"öffentlich",C2:"intern",C3:"vertraulich",C4:"streng vertraulich"};
+function pLabel(v){ return PDESC[v]? v+" – "+tr(PDESC[v]) : tr(v); }
+function eLabel(v){ return EDESC[v]? v+" – "+tr(EDESC[v]) : v; }
+function cLabel(v){ return CDESC[v]? v+" – "+tr(CDESC[v]) : v; }
 
 /* Meldepflichten (Anhang A) */
 const PFL = [
@@ -941,7 +954,7 @@ function viewTickets(){
     <div style="flex:2;min-width:220px"><label>${tr("Suche")}</label><input type="text" value="${esc(F.q)}" oninput="F.q=this.value;render()" placeholder="${tr("ID, Betreff, Gefährdung …")}"></div>
     <div><label>${tr("Leitdomäne")}</label><select onchange="F.dom=this.value;render()"><option value="">${tr("alle")}</option>${DOMKEYS.map(d=>`<option ${F.dom===d?"selected":""} value="${d}">${d} – ${domName(d)}</option>`).join("")}</select></div>
     <div><label>${tr("Status")}</label><select onchange="F.st=this.value;render()"><option value="">${tr("alle")}</option>${STATUS.map(s=>`<option value="${s}" ${F.st===s?"selected":""}>${tr(s)}</option>`).join("")}</select></div>
-    <div><label>${tr("Gesamtstufe")}</label><select onchange="F.stufe=this.value;render()"><option value="">${tr("alle")}</option>${["P1","P2","P3","P4"].map(p=>`<option ${F.stufe===p?"selected":""}>${p}</option>`).join("")}</select></div>
+    <div><label>${tr("Gesamtstufe")}</label><select onchange="F.stufe=this.value;render()"><option value="">${tr("alle")}</option>${["P1","P2","P3","P4"].map(p=>`<option value="${p}" ${F.stufe===p?"selected":""}>${pLabel(p)}</option>`).join("")}</select></div>
     <div><label>${tr("Standort")}</label><select onchange="F.ort=this.value;render()"><option value="">${tr("alle")}</option>${STANDORTE.map(s=>`<option value="${s}" ${F.ort===s?"selected":""}>${siteLabel(s)}</option>`).join("")}</select></div>
     <div><button class="sec" onclick="exportCsv(S.tickets.filter(canSee))">${tr("CSV-Export")}</button></div>
     <div><button class="sec" onclick="seed()">${tr("Testdaten laden")}</button></div>
@@ -954,8 +967,8 @@ function viewTickets(){
      <td>${esc(t.betreff)}</td>
      <td>${t.leitdomaene?`<span class="badge dom" title="${esc(tr("Leitdomäne"))} ${t.leitdomaene} – ${esc(domName(t.leitdomaene))}">${t.leitdomaene}</span>`:"–"}${(t.nebendomaenen||[]).map(d=>` <span class="badge st" title="${esc(tr("Nebendomänen"))}: ${d} – ${esc(domName(d))}">${d}</span>`).join("")}</td>
      <td>${siteLabel(t.standort)}</td>
-     <td>${st?`<span class="badge ${st.toLowerCase()}">${st}</span>`:'<span class="badge pn">'+tr("offen")+'</span>'}${t.herab==="beantragt"?' <span class="badge st" title="'+tr("Herabstufung beantragt")+'">↓?</span>':""}</td>
-     <td><span class="badge ${effEsk(t).toLowerCase()}">${effEsk(t)}</span></td>
+     <td>${st?`<span class="badge ${st.toLowerCase()}" title="${esc(pLabel(st))}">${st}</span>`:'<span class="badge pn">'+tr("offen")+'</span>'}${t.herab==="beantragt"?' <span class="badge st" title="'+tr("Herabstufung beantragt")+'">↓?</span>':""}</td>
+     <td><span class="badge ${effEsk(t).toLowerCase()}" title="${esc(eLabel(effEsk(t)))}">${effEsk(t)}</span></td>
      <td><span class="badge st">${tr(t.status)}</span></td>
      <td class="small">${fmt(t.kenntnis)}</td>
      <td>${open.length?`${od.length?`<span class="amp r"></span>`:`<span class="amp g"></span>`}${open.length}${od.length?` <b class="small" style="color:var(--crit)">(${od.length} ${tr("überfällig")})</b>`:""}`:"–"}</td></tr>`;
@@ -1023,6 +1036,14 @@ function approve(idx, state){
   if(a.key==="herab" && state==="abgelehnt"){ t.herab="abgelehnt"; t.herabStufe=""; }
   save(t); render();
 }
+function editBetreff(){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const v=prompt(tr("Neuer Betreff:"), t.betreff);
+  if(v===null) return;
+  const nv=v.trim();
+  if(!nv || nv===t.betreff) return;
+  upd("betreff", nv, tr("Betreff"));
+}
 function requestHerab(){
   const t=T();
   const ziel=prompt(tr("Beantragte Zielstufe (P2, P3 oder P4):"),"P3");
@@ -1060,14 +1081,15 @@ function viewDetail(id){
   const openTasks=t.tasks.filter(x=>!x.done);
   return `
   <div class="flex noprint"><button class="sec" onclick="nav('tickets')">← ${tr("Zur Liste")}</button><div class="spacer"></div>
+    ${!ro?`<button class="sec" onclick="editBetreff()">✎ ${tr("Betreff anpassen")}</button>`:""}
     ${ro?`<span class="badge st">${de?"Nur-Lesen":"Read-only"} (${esc(roleLabel())})</span>`:""}
     ${t.status!=="Closed"&&!ro?`<button class="sec" onclick="requestHerab()" ${["P1","P2"].includes(cst.stufe)?"":"disabled"}>${tr("Herabstufung beantragen")}</button>`:""}
     ${S.role==="isb"&&t.eskOverride!=="E3"&&t.status!=="Closed"?`<button class="sec" onclick="setE3()">${tr("E3 / BCM-Übergabe")}</button>`:""}
   </div>
   <h1>${t.id} · ${esc(t.betreff)} ${isProtected(t)?'<span class="badge lock">🔒 '+tr("geschützter Bereich")+'</span>':""}${t.tisax?' <span class="badge st">'+tr("TISAX-relevant")+'</span>':""}</h1>
   <div class="flex">
-    ${st?`<span class="badge ${st.toLowerCase()}">${tr("Gesamtstufe")} ${st}</span>`:'<span class="badge pn">'+tr("noch nicht klassifiziert")+'</span>'}
-    <span class="badge ${effEsk(t).toLowerCase()}">${tr("Eskalation")} ${effEsk(t)}</span>
+    ${st?`<span class="badge ${st.toLowerCase()}">${tr("Gesamtstufe")} ${pLabel(st)}</span>`:'<span class="badge pn">'+tr("noch nicht klassifiziert")+'</span>'}
+    <span class="badge ${effEsk(t).toLowerCase()}" title="${esc(eLabel(effEsk(t)))}">${tr("Eskalation")} ${effEsk(t)}</span>
     <span class="badge st">${tr(t.status)}</span>
     ${t.leitdomaene?`<span class="badge dom">${tr("Leitdomäne")} ${t.leitdomaene} – ${domName(t.leitdomaene)}</span>`:""}
     ${t.herab==="beantragt"?`<span class="badge st">${tr("Herabstufung beantragt")} → ${t.herabStufe}</span>`:""}
@@ -1104,12 +1126,12 @@ function viewDetail(id){
    </div>
    <h3>${de?"Schadensdimensionen S1–S6":"Damage dimensions S1–S6"} <span class="muted small">${de?"(Hilfetexte per ⓘ: Kriterien gemäß POL_010.001 V3.00 Anhang B; bei unklarer Sachlage höhere Stufe)":"(help via ⓘ: criteria per POL_010.001 V3.00 Annex B; when in doubt choose the higher level)"}</span></h3>
    <div class="grid3">
-   ${SDIM.map(([k,l],i)=>`<div><label>${tr(l)} <span class="req">*</span> <span class="hint help" title="${esc(sdimHelp(i))}">ⓘ</span></label>${sel(k,t[k],["",...SVALS],ro)}</div>`).join("")}
+   ${SDIM.map(([k,l],i)=>`<div><label>${tr(l)} <span class="req">*</span> <span class="hint help" title="${esc(sdimHelp(i))}">ⓘ</span></label>${sel(k,t[k],["",...SVALS],ro,v=>v===""?tr("– wählen –"):v==="nicht betroffen"?tr(v):pLabel(v))}</div>`).join("")}
    </div>
    <div class="grid3">
-    <div><label>${tr("Gesamtstufe")} <span class="hint">${tr("(berechnet, schreibgeschützt)")}</span></label><input type="text" disabled value="${st||"–"}${t.herab==="genehmigt"?" "+tr("(Herabstufung genehmigt; berechnet ")+cst.stufe+")":""}"></div>
-    <div><label>${tr("Eskalationsstufe")} <span class="hint">${tr("(berechnet; E3 nur ISB)")}</span></label><input type="text" disabled value="${effEsk(t)}"></div>
-    <div><label>${tr("Informationsklassifizierung")} ${t.s3&&t.s3!=="nicht betroffen"?'<span class="req">*</span>':""}</label>${sel("infoklass",t.infoklass,["","C1","C2","C3","C4"],ro,v=>v||tr("– wählen –"))}</div>
+    <div><label>${tr("Gesamtstufe")} <span class="hint">${tr("(berechnet, schreibgeschützt)")}</span></label><input type="text" disabled value="${st?pLabel(st):"–"}${t.herab==="genehmigt"?" "+tr("(Herabstufung genehmigt; berechnet ")+pLabel(cst.stufe)+")":""}"></div>
+    <div><label>${tr("Eskalationsstufe")} <span class="hint">${tr("(berechnet; E3 nur ISB)")}</span></label><input type="text" disabled value="${eLabel(effEsk(t))}"></div>
+    <div><label>${tr("Informationsklassifizierung")} ${t.s3&&t.s3!=="nicht betroffen"?'<span class="req">*</span>':""}</label>${sel("infoklass",t.infoklass,["","C1","C2","C3","C4"],ro,v=>v===""?tr("– wählen –"):cLabel(v))}</div>
    </div>
    <div class="grid3">
     <div><label>${tr("Gefährdungsbezug")} <span class="req">*</span> <span class="hint help" title="${de?"Gefährdungskatalog gemäß POL_010.001 V3.00 Anhang C: BSI G 0.1–G 0.47 + REUTIB-Ergänzungen G-R 1.01–1.12. „noch nicht bestimmt“ blockiert den Abschluss.":"Threat catalogue per POL_010.001 V3.00 Annex C: BSI G 0.1–G 0.47 + REUTIB additions G-R 1.01–1.12. “Not yet determined” blocks closure."}">ⓘ</span></label>
@@ -1579,7 +1601,7 @@ function viewDoku(){
    <li><b>Server database (since V1.10):</b> multi-user operation via the bundled IRM server (Node.js, SQLite; <code>irm/server/</code>) — the tool connects automatically and synchronises all clients (indicator top right). Without a reachable server it runs in single-user fallback (localStorage). Tenant separation is deliberately not provided (Reutter Group only). The protected workspace E/I remains a UI simulation, not a hard server-side object separation.</li>
    <li><b>Calendars:</b> deadlines in calendar time (as the GDL requires for notification duties); site business-hour calendars for P3/P4 SLAs are not implemented.</li>
    <li><b>Notification/alerting:</b> simulated as banners/notes – e-mail, mobile, SMS only in the target platform.</li>
-   <li><b>Value lists adopted as binding:</b> domain names A–J per PROC_010.001 V2.10 (ch. 6.2/Annex A); threat catalogue incl. REUTIB additions G-R 1.01–1.12 per POL_010.001 V3.00 Annex C; S1–S6 assessment criteria as field help texts per POL_010.001 V3.00 Annex B (EN help texts are a working translation of the German policy).</li>
+   <li><b>Value lists adopted as binding:</b> domain names A–J per PROC_010.001 V2.10 (ch. 6.2/Annex A); threat catalogue incl. REUTIB additions G-R 1.01–1.12 per POL_010.001 V3.00 Annex C; S1–S6 assessment criteria as field help texts and severity short labels P1–P4 (Critical/High/Medium/Low) per POL_010.001 V3.00 Annex A/B (EN help texts are a working translation). The <b>short labels C1–C4</b> (public/internal/confidential/strictly confidential) follow the common scheme and must be verified against POL_003.001.</li>
    <li><b>Language of records:</b> log entries are stored in the language active when they were written; test data content is German.</li>
    <li><b>Attachments/file upload, directory service, CMDB, CAQ interface:</b> represented as text inputs.</li>
   </ul>
@@ -1617,7 +1639,7 @@ function viewDoku(){
    <li><b>Serverdatenbank (seit V1.10):</b> Mehrbenutzerbetrieb über den mitgelieferten IRM-Server (Node.js, SQLite; <code>irm/server/</code>) — das Tool verbindet sich automatisch und synchronisiert alle Clients (Anzeige oben rechts). Ohne erreichbaren Server läuft es im Einzelplatz-Fallback (localStorage). Eine Mandantentrennung ist bewusst nicht vorgesehen (Betrieb nur für die Reutter-Group). Der geschützte Bereich E/I bleibt eine UI-Simulation, keine harte serverseitige Objekttrennung.</li>
    <li><b>Kalender:</b> Fristen in Kalenderzeit (wie von der GDL für Meldefristen gefordert); Standort-Betriebszeitkalender für P3/P4-SLA sind nicht hinterlegt.</li>
    <li><b>Benachrichtigung/Alarmierung:</b> als Banner/Hinweise simuliert – E-Mail, mobil, SMS erst in der Zielplattform.</li>
-   <li><b>Wertelisten verbindlich übernommen:</b> Domänenbezeichnungen A–J gemäß PROC_010.001 V2.10 (Kap. 6.2/Anhang A); Gefährdungskatalog inkl. REUTIB-Ergänzungen G-R 1.01–1.12 gemäß POL_010.001 V3.00 Anhang C; S1–S6-Bewertungskriterien als Feld-Hilfetexte gemäß POL_010.001 V3.00 Anhang B.</li>
+   <li><b>Wertelisten verbindlich übernommen:</b> Domänenbezeichnungen A–J gemäß PROC_010.001 V2.10 (Kap. 6.2/Anhang A); Gefährdungskatalog inkl. REUTIB-Ergänzungen G-R 1.01–1.12 gemäß POL_010.001 V3.00 Anhang C; S1–S6-Bewertungskriterien als Feld-Hilfetexte und Stufen-Kurzbeschreibungen P1–P4 (Kritisch/Hoch/Mittel/Niedrig) gemäß POL_010.001 V3.00 Anhang A/B. Die <b>Kurzbezeichnungen C1–C4</b> (öffentlich/intern/vertraulich/streng vertraulich) folgen dem üblichen Schema und sind gegen POL_003.001 zu verifizieren.</li>
    <li><b>Sprache der Nachweise:</b> Protokolleinträge werden in der beim Schreiben aktiven Sprache gespeichert; Testdaten-Inhalte sind Deutsch.</li>
    <li><b>Anlagen/Dateiupload, Verzeichnisdienst, CMDB, CAQ-Schnittstelle:</b> als Texteingaben abgebildet.</li>
   </ul>
