@@ -126,6 +126,9 @@ details{border:1px solid var(--line);border-radius:8px;margin:10px 0;background:
 details>summary{cursor:pointer;font-weight:700;color:var(--anthrazit);padding:10px 14px;background:var(--hellgrau);border-radius:8px;list-style-position:inside}
 details[open]>summary{border-radius:8px 8px 0 0}
 details>.dbody{padding:4px 14px 12px}
+.tip{position:relative;cursor:help}
+.tip:hover::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 7px);background:#3E3E3E;color:#fff;padding:5px 10px;border-radius:5px;font-size:12.5px;font-weight:400;white-space:nowrap;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.35);pointer-events:none}
+.tip:hover::before{content:"";position:absolute;left:12px;bottom:calc(100% + 2px);border:5px solid transparent;border-top-color:#3E3E3E;z-index:50;pointer-events:none}
 .langbtn{border:1px solid var(--line);background:var(--bg);color:var(--grau);padding:5px 9px;font-weight:700}
 .langbtn.on{background:var(--gelb);color:#000;border-color:var(--gelb)}
 .logo{height:52px;display:block;background:#fff;border-radius:6px;padding:3px 8px;border:1px solid var(--line);margin-left:auto}
@@ -965,7 +968,7 @@ function viewTickets(){
     return `<tr class="click" onclick="openT('${t.id}')">
      <td><b>${t.id}</b>${isProtected(t)?' <span class="badge lock" title="'+tr("geschützter Bereich")+'">🔒</span>':""}${t.nearmiss?' <span class="badge st">'+tr("Near Miss")+'</span>':""}</td>
      <td>${esc(t.betreff)}</td>
-     <td>${t.leitdomaene?`<span class="badge dom" title="${esc(tr("Leitdomäne"))} ${t.leitdomaene} – ${esc(domName(t.leitdomaene))}">${t.leitdomaene}</span>`:"–"}${(t.nebendomaenen||[]).map(d=>` <span class="badge st" title="${esc(tr("Nebendomänen"))}: ${d} – ${esc(domName(d))}">${d}</span>`).join("")}</td>
+     <td>${t.leitdomaene?`<span class="badge dom tip" data-tip="${esc(tr("Leitdomäne"))} ${t.leitdomaene} – ${esc(domName(t.leitdomaene))}">${t.leitdomaene}</span>`:"–"}${(t.nebendomaenen||[]).map(d=>` <span class="badge st tip" data-tip="${esc(tr("Nebendomänen"))}: ${d} – ${esc(domName(d))}">${d}</span>`).join("")}</td>
      <td>${siteLabel(t.standort)}</td>
      <td>${st?`<span class="badge ${st.toLowerCase()}" title="${esc(pLabel(st))}">${st}</span>`:'<span class="badge pn">'+tr("offen")+'</span>'}${t.herab==="beantragt"?' <span class="badge st" title="'+tr("Herabstufung beantragt")+'">↓?</span>':""}</td>
      <td><span class="badge ${effEsk(t).toLowerCase()}" title="${esc(eLabel(effEsk(t)))}">${effEsk(t)}</span></td>
@@ -1121,7 +1124,7 @@ function viewDetail(id){
    <div class="grid3">
     <div><label>${tr("Leitdomäne")} <span class="req">*</span> <span class="hint help" title="${de?"Steuert Gruppe, Arbeitsbereich und Meldepflichten. E und I → geschützter Bereich.":"Controls group, workspace and reporting duties. E and I → protected workspace."}">ⓘ</span></label>
       <select ${ro?"disabled":""} onchange="upd('leitdomaene',this.value,'${tr("Leitdomäne")}')"><option value="">${tr("– wählen –")}</option>${DOMKEYS.map(d=>`<option value="${d}" ${t.leitdomaene===d?"selected":""}>${d} – ${domName(d)}${DOM[d].prot?" 🔒":""}</option>`).join("")}</select></div>
-    <div><label>${tr("Nebendomänen")}</label><div class="flex">${DOMKEYS.map(d=>`<label class="help" title="${d} – ${esc(domName(d))}${DOM[d].prot?" 🔒":""}" style="display:inline-flex;gap:3px;font-weight:400;margin:0;border-bottom:none;cursor:help"><input type="checkbox" style="width:auto" ${(t.nebendomaenen||[]).includes(d)?"checked":""} ${ro?"disabled":""} onchange="toggleNeben('${d}',this.checked)">${d}</label>`).join("")}</div></div>
+    <div><label>${tr("Nebendomänen")}</label><div class="flex">${DOMKEYS.map(d=>`<label class="tip" data-tip="${d} – ${esc(domName(d))}${DOM[d].prot?" 🔒":""}" title="${d} – ${esc(domName(d))}${DOM[d].prot?" 🔒":""}" style="display:inline-flex;gap:3px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${(t.nebendomaenen||[]).includes(d)?"checked":""} ${ro?"disabled":""} onchange="toggleNeben('${d}',this.checked)">${d}</label>`).join("")}</div></div>
     <div><label>Incident Owner</label><input type="text" ${ro?"disabled":""} value="${esc(t.owner)}" onchange="upd('owner',this.value)"></div>
    </div>
    <h3>${de?"Schadensdimensionen S1–S6":"Damage dimensions S1–S6"} <span class="muted small">${de?"(Hilfetexte per ⓘ: Kriterien gemäß POL_010.001 V3.00 Anhang B; bei unklarer Sachlage höhere Stufe)":"(help via ⓘ: criteria per POL_010.001 V3.00 Annex B; when in doubt choose the higher level)"}</span></h3>
