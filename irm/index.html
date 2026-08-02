@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23FED22C'/%3E%3Ctext x='8' y='12' font-size='10' text-anchor='middle' font-family='Arial' font-weight='bold'%3E!%3C/text%3E%3C/svg%3E">
-<title>REUTIB · Incident Response Management (IRM) V1.10</title>
+<title>REUTIB · Incident Response Management (IRM) V1.20</title>
 <style>
 :root{
   --rot:#E30513;      /* nur Logo/Wortmarke */
@@ -217,7 +217,7 @@ const EN = {
  "Frühwarnung fällig":"early warning due","Entscheidung spätestens":"decision at the latest",
  "Behörde / Portal":"Authority / portal","Meldesprache":"Reporting language",
  /* header/nav */
- "REUTIB · IRM-Tool V1.10 · nach GDL_010.001":"REUTIB · IRM tool V1.10 · per GDL_010.001",
+ "Reutter-Group · IRM-Tool V1.20":"Reutter-Group · IRM Tool V1.20",
  "Rolle (Simulation):":"Role (simulation):",
  "Stand sichern":"Save state","Stand laden":"Load state","Schließen":"Close",
  "Meldung (Portal)":"Report (portal)","Tickets":"Tickets","Fristenmonitor":"Deadline monitor","Berichte":"Reports","IRM-Guidance (DE/EN)":"IRM Guidance (DE/EN)","Implementierungsinformationen":"Implementation information",
@@ -679,7 +679,7 @@ function save(t){
 }
 
 /* ---------- Serveranbindung: zentrale Datenbank, Mehrbenutzerbetrieb (V1.10) ---------- */
-const APP_VERSION="1.10";
+const APP_VERSION="1.20";
 let API=null, REV=0, NET=null, SRVINFO=null;
 function authTok(){ return S.token||""; }
 async function api(p, opts={}, retried){
@@ -1075,7 +1075,7 @@ function render(){
   applyTheme();
   document.documentElement.lang = S.lang;
   updNetBadge();
-  $("brandSub").textContent = tr("REUTIB · IRM-Tool V1.10 · nach GDL_010.001");
+  $("brandSub").textContent = tr("Reutter-Group · IRM-Tool V1.20");
   $("roleLbl").textContent = tr("Rolle (Simulation):");
   $("btnExp").textContent = tr("Stand sichern");
   $("btnImp").textContent = tr("Stand laden");
@@ -1083,8 +1083,8 @@ function render(){
   $("btnEn").className = "langbtn mini"+(S.lang==="en"?" on":"");
   $("dlgClose").textContent = tr("Schließen");
   $("foot").innerHTML = (S.lang==="en"
-   ? "REUTIB · IRM tool V"+APP_VERSION+" · prototype per guideline GDL_010.001 “Implementation of Incident Response Management in Freshservice” V1.00 · normative basis POL_010.001 V3.00 / PROC_010.001 V2.10 · Confidential – internal use only. "
-   : "REUTIB · IRM-Tool V"+APP_VERSION+" · Prototyp zur Guideline GDL_010.001 „Implementierung des Incident Response Managements in Freshservice“ V1.00 · fachliche Grundlage POL_010.001 V3.00 / PROC_010.001 V2.10 · Vertraulich – nur für den internen Gebrauch. ")
+   ? "Reutter-Group IRM Tool V"+APP_VERSION+" – Incident Response Management tool per the REUTIB requirements for incident response management. The assessment basis includes, among others, the standards STD_010_001 (operational NIS-2 reporting process, portal access, deadline monitoring) and STD_010_002 (relevance assessment and NIS-2 reporting thresholds). Confidential – internal use only. "
+   : "Reutter-Group IRM-Tool V"+APP_VERSION+" – Incident Response Management Tool analog der REUTIB-Vorgaben für das Incident Response Mgmt. Fachliche Bewertungsgrundlage sind u. a. die Standards STD_010_001_Operativer-NIS-2-Meldeprozess-Portalzugang-Fristenueberwachung und STD_010_002_Relevanzbewertung-Meldeschwellen-NIS2. Vertraulich – nur für den internen Gebrauch. ")
    + (API
    ? (S.lang==="en" ? "Multi-user mode: central server database ("+(SRVINFO?SRVINFO.storage:"–")+")." : "Mehrbenutzerbetrieb: zentrale Serverdatenbank ("+(SRVINFO?SRVINFO.storage:"–")+").")
    : (S.lang==="en" ? "Single-user fallback: data stored locally in the browser (no server reachable)." : "Einzelplatz-Fallback: Datenhaltung lokal im Browser (kein Server erreichbar)."));
