@@ -26,6 +26,11 @@ sowie das Aktivitätsprotokoll je Ticket. Ein Testdatenbestand (ein fiktiver Fal
 Anhang C) lässt sich per Knopfdruck erzeugen. Details und bewusste Vereinfachungen: Tab
 **„Dokumentation"** in der Anwendung.
 
+**Zweisprachig DE/EN** (Umschalter oben rechts; interne Werte bleiben kanonisch, beide
+Sprachfassungen teilen denselben Datenbestand — der BSI-Gefährdungskatalog, alle Feldbezeichnungen,
+Wertelisten und Fehlermeldungen sind übersetzt) und mit **Hell-/Dunkelmodus** (folgt beim ersten
+Aufruf der Systemeinstellung, 🌓-Schalter in der Kopfzeile, Wahl wird gespeichert).
+
 Datenhaltung ausschließlich lokal im Browser (localStorage) + JSON-Export/-Import — keine
 Serverkomponente, kein Ersatz für das Ticketsystem. Aufruf lokal per Doppelklick oder über
 GitHub Pages unter `…/irm/`.

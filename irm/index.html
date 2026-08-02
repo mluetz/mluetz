@@ -15,134 +15,254 @@
   --warn:#b26a00;
   --crit:#8e0000;
   --line:#d7d7d7;
+  --bg:#fff;
+  --fg:#000;
+  --soft:#fafafa;
+  --head:#3E3E3E;
+  --headfg:#fff;
+}
+:root[data-theme=dark]{
+  --anthrazit:#c9c9c9;
+  --grau:#a5a3a4;
+  --hellgrau:#242424;
+  --ok:#6fbf73;
+  --warn:#e0a437;
+  --crit:#e57373;
+  --line:#3d3d3d;
+  --bg:#161616;
+  --fg:#ececec;
+  --soft:#1d1d1d;
+  --head:#2e2e2e;
+  --headfg:#ececec;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:"Roboto Condensed","Arial Narrow",Arial,sans-serif;color:#000;background:#fff;font-size:15px}
-header{background:#fff;border-bottom:3px solid var(--gelb);padding:10px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+body{margin:0;font-family:"Roboto Condensed","Arial Narrow",Arial,sans-serif;color:var(--fg);background:var(--bg);font-size:15px}
+header{background:var(--bg);border-bottom:3px solid var(--gelb);padding:10px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
 .brand{font-weight:700;font-size:20px;letter-spacing:.5px}
 .brand .r{color:var(--rot)}
 .brand small{display:block;font-weight:400;color:var(--grau);font-size:12px;letter-spacing:0}
 .spacer{flex:1}
 select,input,textarea,button{font-family:inherit;font-size:14px}
-select,input[type=text],input[type=datetime-local],input[type=date],textarea{border:1px solid var(--line);border-radius:4px;padding:6px 8px;background:#fff;width:100%}
+select,input[type=text],input[type=datetime-local],input[type=date],textarea{border:1px solid var(--line);border-radius:4px;padding:6px 8px;background:var(--bg);color:var(--fg);width:100%}
 textarea{min-height:64px;resize:vertical}
 label{display:block;font-weight:700;font-size:12.5px;color:var(--anthrazit);margin:10px 0 3px}
 label .req{color:var(--warn)}
 label .hint{font-weight:400;color:var(--grau)}
-button{cursor:pointer;border:1px solid var(--anthrazit);background:var(--anthrazit);color:#fff;border-radius:4px;padding:7px 14px;font-weight:700}
-button.sec{background:#fff;color:var(--anthrazit)}
+button{cursor:pointer;border:1px solid var(--anthrazit);background:var(--head);color:var(--headfg);border-radius:4px;padding:7px 14px;font-weight:700}
+button.sec{background:var(--bg);color:var(--anthrazit)}
 button.acc{background:var(--gelb);color:#000;border-color:var(--gelb)}
 button:disabled{opacity:.45;cursor:not-allowed}
+.mini{padding:4px 9px;font-size:13px}
 nav{background:var(--hellgrau);padding:0 18px;display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 nav button{background:none;border:none;color:var(--anthrazit);padding:11px 14px;border-radius:0;border-bottom:3px solid transparent;font-weight:700}
-nav button.active{border-bottom-color:var(--gelb);background:#fff}
+nav button.active{border-bottom-color:var(--gelb);background:var(--bg)}
 main{padding:18px;max-width:1400px;margin:0 auto}
 h1{font-size:21px;margin:.2em 0 .5em}
-h2{font-size:17px;margin:1.2em 0 .4em;color:#000}
+h2{font-size:17px;margin:1.2em 0 .4em}
 h3{font-size:14.5px;margin:1em 0 .3em;color:var(--anthrazit)}
 .rolebox{display:flex;align-items:center;gap:8px;background:var(--hellgrau);border-radius:6px;padding:5px 10px}
 .rolebox b{font-size:12.5px;color:var(--anthrazit)}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:14px 0}
-.card{border:1px solid var(--line);border-radius:8px;padding:16px;background:#fff}
+.card{border:1px solid var(--line);border-radius:8px;padding:16px;background:var(--bg)}
 .card.portal{cursor:pointer;border-top:4px solid var(--gelb)}
 .card.portal:hover{background:var(--hellgrau)}
-.card.portal h3{margin-top:0;font-size:16px;color:#000}
+.card.portal h3{margin-top:0;font-size:16px;color:var(--fg)}
 .card.danger{border-top-color:var(--anthrazit)}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
 .kpi{background:var(--hellgrau);border-radius:8px;padding:12px}
 .kpi .v{font-size:26px;font-weight:700}
 .kpi .l{font-size:12px;color:var(--grau);font-weight:700}
-table{border-collapse:collapse;width:100%;margin:8px 0;background:#fff}
-th{background:var(--anthrazit);color:#fff;text-align:left;font-size:12.5px;padding:7px 9px;position:sticky;top:0}
+table{border-collapse:collapse;width:100%;margin:8px 0;background:var(--bg)}
+th{background:var(--head);color:var(--headfg);text-align:left;font-size:12.5px;padding:7px 9px;position:sticky;top:0}
 td{border-bottom:1px solid var(--line);padding:7px 9px;font-size:13.5px;vertical-align:top}
 tr.click{cursor:pointer}
 tr.click:hover td{background:var(--hellgrau)}
-tr:nth-child(even) td{background:#fafafa}
+tr:nth-child(even) td{background:var(--soft)}
 .badge{display:inline-block;border-radius:10px;padding:1.5px 9px;font-size:12px;font-weight:700;white-space:nowrap}
-.p1{background:#000;color:#fff}
-.p2{background:var(--anthrazit);color:#fff}
-.p3{background:var(--grau);color:#fff}
-.p4{background:var(--hellgrau);color:#000;border:1px solid var(--line)}
-.pn{background:#fff;color:var(--grau);border:1px dashed var(--grau)}
-.e0{background:var(--hellgrau);color:#000}
+.p1{background:#000;color:#fff;border:1px solid #666}
+.p2{background:#3E3E3E;color:#fff}
+.p3{background:#5A5859;color:#fff}
+.p4{background:var(--hellgrau);color:var(--fg);border:1px solid var(--line)}
+:root[data-theme=dark] .p1{background:#ececec;color:#111;border:1px solid #ececec}
+.pn{background:var(--bg);color:var(--grau);border:1px dashed var(--grau)}
+.e0{background:var(--hellgrau);color:var(--fg)}
 .e1{background:var(--gelb);color:#000}
-.e2{background:var(--anthrazit);color:#fff}
-.e3{background:#000;color:#fff}
-.st{background:var(--hellgrau);border:1px solid var(--line);color:#000}
-.dom{background:#fff;border:1px solid var(--anthrazit);color:var(--anthrazit)}
-.lock{background:var(--anthrazit);color:#fff}
+.e2{background:#3E3E3E;color:#fff;border:1px solid #777}
+.e3{background:#000;color:#fff;border:1px solid #777}
+:root[data-theme=dark] .e3{background:#ececec;color:#111}
+.st{background:var(--hellgrau);border:1px solid var(--line);color:var(--fg)}
+.dom{background:var(--bg);border:1px solid var(--anthrazit);color:var(--anthrazit)}
+.lock{background:var(--head);color:var(--headfg)}
 .amp{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .amp.g{background:var(--ok)}.amp.y{background:var(--gelb);border:1px solid #b29200}.amp.o{background:var(--warn)}.amp.r{background:var(--crit)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 22px}
 @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
-.section{border:1px solid var(--line);border-radius:8px;margin:14px 0;background:#fff}
+.section{border:1px solid var(--line);border-radius:8px;margin:14px 0;background:var(--bg)}
 .section>.head{background:var(--hellgrau);padding:9px 14px;font-weight:700;color:var(--anthrazit);border-radius:8px 8px 0 0;display:flex;align-items:center;gap:10px}
 .section>.body{padding:6px 14px 14px}
 .note{background:var(--hellgrau);border-left:4px solid var(--gelb);padding:9px 12px;margin:10px 0;font-size:13.5px}
-.err{background:var(--hellgrau);border-left:4px solid var(--crit);padding:9px 12px;margin:10px 0;font-size:13.5px;color:#000;font-weight:700}
-.oklight{border-left-color:var(--ok);color:var(--ok)}
+.err{background:var(--hellgrau);border-left:4px solid var(--crit);padding:9px 12px;margin:10px 0;font-size:13.5px;color:var(--fg);font-weight:700}
+.oklight{border-left-color:var(--ok)}
 .muted{color:var(--grau)}
 .small{font-size:12.5px}
 .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .filter{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:10px 0}
 .filter>div{min-width:140px}
-.statusflow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
-.statusflow .chip{padding:5px 10px;border-radius:14px;border:1px solid var(--line);font-size:12.5px;background:#fff}
-.statusflow .chip.cur{background:var(--gelb);border-color:var(--gelb);font-weight:700}
-.log{font-size:12.5px;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:8px;background:#fafafa}
+.statusflow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center}
+.statusflow .chip{padding:5px 10px;border-radius:14px;border:1px solid var(--line);font-size:12.5px;background:var(--bg)}
+.statusflow .chip.cur{background:var(--gelb);border-color:var(--gelb);font-weight:700;color:#000}
+.log{font-size:12.5px;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--soft)}
 .log div{padding:2px 0;border-bottom:1px dotted var(--line)}
 .taskrow.done{opacity:.55;text-decoration:line-through}
 footer{padding:20px;text-align:center;color:var(--grau);font-size:12px;border-top:1px solid var(--line);margin-top:30px}
 a{color:var(--anthrazit)}
 .help{cursor:help;border-bottom:1px dotted var(--grau)}
-dialog{border:1px solid var(--anthrazit);border-radius:8px;max-width:560px;padding:18px}
-dialog::backdrop{background:rgba(0,0,0,.35)}
-.matrix td.n0{color:#bbb}
-.printonly{display:none}
-@media print{header,nav,.noprint{display:none}.printonly{display:block}}
+dialog{border:1px solid var(--anthrazit);border-radius:8px;max-width:560px;padding:18px;background:var(--bg);color:var(--fg)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.matrix td.n0{color:var(--line)}
+.langbtn{border:1px solid var(--line);background:var(--bg);color:var(--grau);padding:5px 9px;font-weight:700}
+.langbtn.on{background:var(--gelb);color:#000;border-color:var(--gelb)}
+@media print{header,nav,.noprint{display:none}}
 </style>
 </head>
 <body>
 <header>
-  <div class="brand"><span class="r">REUTTER</span> GROUP <small>Incident Response Management (IRM) · Prototyp nach GDL_010.001 V1.00</small></div>
+  <div class="brand"><span class="r">REUTTER</span> GROUP <small id="brandSub"></small></div>
   <div class="spacer"></div>
   <div class="rolebox noprint">
-    <b>Rolle (Simulation):</b>
+    <b id="roleLbl"></b>
     <select id="roleSel" onchange="setRole()"></select>
     <select id="roleDom" onchange="setRole()" style="display:none;width:auto"></select>
   </div>
   <div class="flex noprint">
-    <button class="sec" onclick="exportJson()">Stand sichern</button>
-    <button class="sec" onclick="document.getElementById('impFile').click()">Stand laden</button>
+    <button class="langbtn mini" id="btnDe" onclick="setLang('de')">DE</button>
+    <button class="langbtn mini" id="btnEn" onclick="setLang('en')">EN</button>
+    <button class="sec mini" id="btnTheme" onclick="toggleTheme()" title="Hell/Dunkel – Light/Dark">🌓</button>
+    <button class="sec mini" id="btnExp" onclick="exportJson()"></button>
+    <button class="sec mini" id="btnImp" onclick="document.getElementById('impFile').click()"></button>
     <input type="file" id="impFile" accept=".json" style="display:none" onchange="importJson(event)">
   </div>
 </header>
 <nav id="nav" class="noprint"></nav>
 <main id="main"></main>
-<footer>
-  REUTIB · Prototyp zur Guideline GDL_010.001 „Implementierung des Incident Response Managements in Freshservice" V1.00 (01.08.2026) ·
-  fachliche Grundlage POL_010.001 V3.00 / PROC_010.001 V2.10 · Vertraulich – nur für den internen Gebrauch.
-  Datenhaltung ausschließlich lokal im Browser (localStorage) – keine Serverkomponente.
-</footer>
+<footer id="foot"></footer>
 
-<dialog id="dlg"><div id="dlgBody"></div><div class="flex" style="margin-top:12px;justify-content:flex-end"><button class="sec" onclick="document.getElementById('dlg').close()">Schließen</button></div></dialog>
+<dialog id="dlg"><div id="dlgBody"></div><div class="flex" style="margin-top:12px;justify-content:flex-end"><button class="sec" id="dlgClose" onclick="document.getElementById('dlg').close()">Schließen</button></div></dialog>
 
 <script>
 "use strict";
 /* =====================================================================
-   REUTIB IRM-Prototyp — bildet die Kernanforderungen der GDL_010.001 ab:
-   Feldmodell (Anhang A), Domänen A–J, S1–S6 mit berechneter Gesamtstufe,
-   Statusmodell mit blockierenden Übergängen, Fristen ab Kenntniserlangung,
-   Meldepflichten mit terminierten Aufgaben, geschützte Bereiche (E/I),
-   Rollen-/Sichtbarkeitsmodell, Genehmigungen, Fristenmonitor, Berichte.
+   REUTIB IRM-Prototyp (GDL_010.001) — zweisprachig DE/EN, Hell/Dunkel.
+   Interne Werte (Status, Wertelisten, Enums) sind kanonisch Deutsch und
+   werden zur Anzeige übersetzt; DE- und EN-Ansicht teilen denselben
+   Datenbestand (localStorage).
    ===================================================================== */
+
+/* ---------- i18n ---------- */
+const EN = {
+ /* header/nav */
+ "Incident Response Management (IRM) · Prototyp nach GDL_010.001 V1.00":"Incident Response Management (IRM) · Prototype per GDL_010.001 V1.00",
+ "Rolle (Simulation):":"Role (simulation):",
+ "Stand sichern":"Save state","Stand laden":"Load state","Schließen":"Close",
+ "Meldung (Portal)":"Report (portal)","Tickets":"Tickets","Fristenmonitor":"Deadline monitor","Berichte":"Reports","Dokumentation":"Documentation",
+ /* roles */
+ "Melder (Beschäftigte)":"Reporter (employees)","IRM – Triage":"IRM – Triage","Domänenbearbeiter":"Domain agent",
+ "ISB / Vertretung":"ISO (ISB) / deputy","Geschäftsleitung":"Executive management","Datenschutzbeauftragter":"Data Protection Officer",
+ "Prüfer / Auditor (nur lesen)":"Auditor (read-only)",
+ /* status */
+ "Open":"Open","Triage":"Triage","In Bearbeitung – Eindämmung":"In progress – Containment","In Bearbeitung – Analyse":"In progress – Analysis",
+ "In Bearbeitung – Behebung":"In progress – Remediation","Verifikation und Freigabe":"Verification and release","Resolved":"Resolved",
+ "Ausgesetzt – BCM":"Suspended – BCM","Closed":"Closed",
+ /* enums */
+ "nicht betroffen":"not affected","nicht geprüft":"not assessed","in Prüfung":"under review","ja":"yes","nein":"no",
+ "noch nicht bestimmt":"not yet determined","beantragt":"requested","genehmigt":"approved","abgelehnt":"rejected","offen":"open",
+ "standortübergreifend":"cross-site","keiner":"none","Instandhaltung":"Maintenance","Lieferantenbewertung":"Supplier evaluation","Unfallanzeige":"Accident report",
+ /* domains */
+ "Informations- und Cybersicherheit":"Information and cyber security","IT-/OT-Betrieb":"IT/OT operations",
+ "Physische Sicherheit und Prototypenschutz":"Physical security and prototype protection","Infrastruktur, Gebäude und Umwelt":"Infrastructure, buildings and environment",
+ "Arbeitssicherheit, Gesundheit und Umwelt":"Occupational safety, health and environment","Anlagen und Instandhaltung":"Equipment and maintenance",
+ "Lieferkette und Lieferanten":"Supply chain and suppliers","Produkt und Qualität":"Product and quality",
+ "Personal und Organisation":"People and organisation","Datenschutz und Compliance":"Data protection and compliance",
+ /* Meldepflichten */
+ "NIS-2 Deutschland":"NIS-2 Germany","NIS-2 Österreich":"NIS-2 Austria","NIS-2 Slowakei":"NIS-2 Slovakia","NIS-2 Polen":"NIS-2 Poland",
+ "Unterrichtung der Empfänger von Diensten (§ 35 BSIG)":"Notification of service recipients (Sec. 35 BSIG)",
+ "Datenschutz Art. 33 / 34 DSGVO":"Data protection Art. 33 / 34 GDPR",
+ "Kundeninformation – Liefermenge oder Liefertermin":"Customer information – delivery quantity or date",
+ "Kundeninformation – Produktfehler oder Rückrufverdacht":"Customer information – product defect or suspected recall",
+ "Kunden-/OEM-Information – Kunden-, Entwicklungs- oder Prototypendaten":"Customer/OEM information – customer, development or prototype data",
+ "Unfallversicherungsträger":"Statutory accident insurer","Arbeitsschutzbehörde":"Occupational safety authority","Umweltbehörde":"Environmental authority",
+ "Versicherer":"Insurer","Zertifizierungsstelle":"Certification body","Arbeitnehmervertretung":"Employee representation","Strafverfolgungsbehörde":"Law enforcement authority",
+ /* responsible roles */
+ "ISB":"ISB (ISO)","Supply Chain":"Supply Chain","Qualitätsleitung":"Quality management","Arbeitssicherheit":"Occupational safety",
+ "Standortleitung":"Site management","Finanzen":"Finance","Personalwesen":"HR","Incident Owner":"Incident Owner",
+ /* S dimensions */
+ "S1 Personen":"S1 People","S2 Betrieb und Lieferfähigkeit":"S2 Operations and delivery capability","S3 Information und Daten":"S3 Information and data",
+ "S4 Produkt und Qualität":"S4 Product and quality","S5 Umwelt und Sachwerte":"S5 Environment and assets","S6 Recht, Meldepflicht und Reputation":"S6 Legal, reporting duty and reputation",
+ /* common UI */
+ "– bitte wählen –":"– please select –","– wählen –":"– select –","– System –":"– system –",
+ "Suche":"Search","Leitdomäne":"Lead domain","Status":"Status","Gesamtstufe":"Overall level","Standort":"Site","alle":"all",
+ "CSV-Export":"CSV export","Testdaten laden":"Load test data",
+ "ID, Betreff, Gefährdung …":"ID, subject, threat …",
+ "Betreff":"Subject","Domäne":"Domain","Esk.":"Esc.","Kenntniserlangung":"Time of awareness","Aufgaben offen":"Open tasks",
+ "Meldepflicht":"Reporting duty","Bewertung":"Assessment","Zuständig":"Responsible","Hinweis":"Note",
+ "Aufgabe":"Task","Fällig":"Due","Restlaufzeit":"Time remaining","Typ":"Type","Frist / Aufgabe":"Deadline / task","Ticket":"Ticket",
+ "Vorgang":"Item","Genehmigt durch":"Approved by","Aktion":"Action","Genehmigen":"Approve","Ablehnen":"Reject",
+ "Genehmigungen":"Approvals","Aufgaben und Fristen":"Tasks and deadlines","Aktivitätsprotokoll":"Activity log",
+ "Zur Liste":"Back to list","Herabstufung beantragen":"Request downgrade","E3 / BCM-Übergabe":"E3 / hand-over to BCM",
+ "Statuswechsel:":"Status change:","keiner möglich":"none possible","(Wiedereröffnung: ISB-Recht)":"(reopening: ISB privilege)",
+ "Statuswechsel nicht möglich":"Status change not possible",
+ "erledigt":"done","Meldung absenden":"Submit report","überfällig":"overdue","überfällig seit ":"overdue by ",
+ "offene Fristen":"open deadlines","überfällig (Fristverletzung → Monatsbericht)":"overdue (deadline breach → monthly report)",
+ "Erledigt":"Done","Erstreaktion":"First response","ausstehend":"pending",
+ /* sections */
+ "1 · Meldung":"1 · Report","2 · Klassifizierung":"2 · Classification","3 · Meldepflichten und Fristen":"3 · Reporting duties and deadlines",
+ "4 · Bearbeitung":"4 · Handling","5 · Abschluss":"5 · Closure",
+ /* field labels */
+ "Beschreibung":"Description","Ticket erstellt":"Ticket created","Meldende Person / Quelle":"Reporting person / source",
+ "Personen betroffen":"People affected","Near Miss":"Near miss","Nebendomänen":"Secondary domains",
+ "Gefährdungsbezug":"Threat reference","Weitere Gefährdungen":"Additional threats","Betroffene Objekte":"Affected assets",
+ "Kennzeichen":"Flags","Prototypenbezug":"Prototype-related","TISAX-relevant":"TISAX-relevant",
+ "Informationsklassifizierung":"Information classification","Eskalationsstufe":"Escalation level",
+ "Begründung der Einstufung":"Justification of classification","(fortschreibend)":"(running record)",
+ "Unmittelbare Ursache":"Immediate cause","Systemursache":"Root cause","Sofortmaßnahmen (Protokoll)":"Immediate actions (log)",
+ "Beweissicherung erfolgt":"Evidence secured","Art und Ablage der Beweise":"Type and location of evidence",
+ "Führender Fachvorgang":"Leading business record","Vorgangsnummer":"Record number","abgeschlossen":"completed",
+ "Übergabeprotokoll BCM":"BCM hand-over record","(Pflicht für „Ausgesetzt – BCM“ und E3)":"(mandatory for “Suspended – BCM” and E3)",
+ "Freigabe der Wiederaufnahme":"Release for resumption","Bestätigung ISB":"ISB confirmation","(nur ISB)":"(ISB only)",
+ "Bestätigung Qualitätsleitung":"Quality management confirmation",
+ "Abschlussbericht":"Final report","Referenz Risikoregister":"Risk register reference","Lessons Learned":"Lessons learned",
+ "Nachweis der Meldung":"Evidence of notification",
+ "Begründung der Abweichung Kenntniserlangung / Erstellung":"Justification of gap between awareness and ticket creation",
+ "Dateiname / Ablageort der Anlage":"File name / storage location of the attachment",
+ "Beobachter:":"Watchers:","SLA Erstreaktion:":"First-response SLA:","Standortkalender":"site calendar",
+ "(berechnet, schreibgeschützt)":"(calculated, read-only)","(berechnet; E3 nur ISB)":"(calculated; E3 by ISB only)",
+ "(Herabstufung genehmigt; berechnet ":"(downgrade approved; calculated ",
+ "noch nicht klassifiziert":"not yet classified","geschützter Bereich":"protected workspace",
+ "Herabstufung beantragt":"downgrade requested","Herabstufung genehmigt":"downgrade approved",
+ "Eskalation":"Escalation","Fristenanker":"deadline anchor",
+ /* dialogs & messages */
+ "Bitte ausfüllen: ":"Please fill in: ",
+ "Wiedereröffnung nur durch den ISB.":"Reopening is restricted to the ISB.",
+ "Genehmigung nur durch: ":"Approval restricted to: ",
+ "E3 kann nur durch den ISB gesetzt werden.":"E3 can only be set by the ISB.",
+ "Zuerst das Übergabeprotokoll BCM (Notiz) erfassen – ohne Notiz ist die Übergabe blockiert (Testfall 41).":"Record the BCM hand-over note first – without it the hand-over is blocked (test case 41).",
+ "Beantragte Zielstufe (P2, P3 oder P4):":"Requested target level (P2, P3 or P4):",
+ "Begründung der Herabstufung (Pflicht):":"Justification for the downgrade (mandatory):",
+ "Testdatenbestand zusätzlich zu den vorhandenen Tickets anlegen?":"Create the test data set in addition to the existing tickets?",
+ "Datei konnte nicht gelesen werden.":"File could not be read.",
+ /* misc */
+ "Keine Aufgaben. Meldeaufgaben entstehen automatisch, sobald eine Meldepflicht auf „ja“ gesetzt wird.":"No tasks. Notification tasks are created automatically as soon as a reporting duty is set to “yes”.",
+ "Keine offenen Fristen im sichtbaren Bereich.":"No open deadlines in the visible scope.",
+ "Keine Tickets im aktuellen Filter.":"No tickets match the current filter."
+};
+function tr(s){ return S.lang==="en" ? (EN[s]!==undefined?EN[s]:s) : s; }
 
 /* ---------- Stammdaten ---------- */
 const STANDORTE = ["Leutenbach","Bischofshofen","Graz","Myjava","Międzyrzecze Górne","Mexiko","Indien","standortübergreifend"];
+function siteLabel(s){ if(S.lang!=="en") return s; return s==="standortübergreifend"?"cross-site":s==="Mexiko"?"Mexico":s==="Indien"?"India":s; }
 
-/* Domänenbezeichnungen: Arbeitsstand aus dem Kontext der GDL abgeleitet —
-   verbindliche Benennung gemäß PROC_010.001 Kap. 5 vor Produktivsetzung verifizieren. */
+/* Domänenbezeichnungen: Arbeitsstand — verbindliche Benennung gemäß PROC_010.001 Kap. 5 verifizieren. */
 const DOM = {
   A:{n:"Informations- und Cybersicherheit", site:false},
   B:{n:"IT-/OT-Betrieb", site:true},
@@ -156,21 +276,34 @@ const DOM = {
   J:{n:"Datenschutz und Compliance"}
 };
 const DOMKEYS = Object.keys(DOM);
+function domName(d){ return tr(DOM[d].n); }
 
 const SVALS = ["nicht betroffen","P4","P3","P2","P1"];
-const SDIM = [
-  ["s1","S1 Personen","Gefährdung oder Schädigung von Personen. P1 = Lebensgefahr/Todesfall oder mehrere Schwerverletzte · P2 = schwere Verletzung, stationäre Behandlung · P3 = meldepflichtiger Arbeitsunfall, ambulant · P4 = Bagatelle/Erste Hilfe. (Hilfetexte final aus Anhang B der Richtlinie POL_010.001 übernehmen.)"],
-  ["s2","S2 Betrieb und Lieferfähigkeit","P1 = Stillstand eines Werks oder Lieferstopp zu einem OEM · P2 = Stillstand einer Linie > 1 Schicht · P3 = spürbare Störung, kompensierbar · P4 = ohne Auswirkung auf Liefertermine."],
-  ["s3","S3 Information und Daten","P1 = Abfluss/Verlust C4- oder großvolumiger C3-Daten · P2 = C3 betroffen · P3 = C2 · P4 = C1/ohne Vertraulichkeitsbezug."],
-  ["s4","S4 Produkt und Qualität","P1 = Sicherheitsrelevanter Produktfehler/Rückrufverdacht im Feld · P2 = fehlerverdächtige Auslieferung an Kunden · P3 = interner Serienfehler · P4 = Einzelfall intern abgestellt."],
-  ["s5","S5 Umwelt und Sachwerte","P1 = Umweltschaden mit Behördenrelevanz/Großschaden · P2 = erheblicher Sachschaden · P3 = begrenzter Schaden · P4 = geringfügig."],
-  ["s6","S6 Recht, Meldepflicht und Reputation","P1 = gesetzliche Meldepflicht ≤ 24 h oder erheblicher Reputationsschaden absehbar · P2 = Meldepflicht wahrscheinlich · P3 = rechtliche Prüfung nötig · P4 = ohne Rechts-/Meldebezug."]
+const SDIM_HELP_DE = [
+ "Gefährdung oder Schädigung von Personen. P1 = Lebensgefahr/Todesfall oder mehrere Schwerverletzte · P2 = schwere Verletzung, stationäre Behandlung · P3 = meldepflichtiger Arbeitsunfall, ambulant · P4 = Bagatelle/Erste Hilfe. (Hilfetexte final aus Anhang B der Richtlinie POL_010.001 übernehmen.)",
+ "P1 = Stillstand eines Werks oder Lieferstopp zu einem OEM · P2 = Stillstand einer Linie > 1 Schicht · P3 = spürbare Störung, kompensierbar · P4 = ohne Auswirkung auf Liefertermine.",
+ "P1 = Abfluss/Verlust C4- oder großvolumiger C3-Daten · P2 = C3 betroffen · P3 = C2 · P4 = C1/ohne Vertraulichkeitsbezug.",
+ "P1 = Sicherheitsrelevanter Produktfehler/Rückrufverdacht im Feld · P2 = fehlerverdächtige Auslieferung an Kunden · P3 = interner Serienfehler · P4 = Einzelfall intern abgestellt.",
+ "P1 = Umweltschaden mit Behördenrelevanz/Großschaden · P2 = erheblicher Sachschaden · P3 = begrenzter Schaden · P4 = geringfügig.",
+ "P1 = gesetzliche Meldepflicht ≤ 24 h oder erheblicher Reputationsschaden absehbar · P2 = Meldepflicht wahrscheinlich · P3 = rechtliche Prüfung nötig · P4 = ohne Rechts-/Meldebezug."
 ];
+const SDIM_HELP_EN = [
+ "Danger to or harm of people. P1 = danger to life/fatality or several seriously injured · P2 = serious injury, in-patient treatment · P3 = reportable occupational accident, out-patient · P4 = minor/first aid. (Final criteria to be taken from Annex B of policy POL_010.001.)",
+ "P1 = plant standstill or delivery stop towards an OEM · P2 = line standstill > 1 shift · P3 = noticeable disruption, can be compensated · P4 = no impact on delivery dates.",
+ "P1 = leakage/loss of C4 or large-volume C3 data · P2 = C3 affected · P3 = C2 · P4 = C1/no confidentiality impact.",
+ "P1 = safety-relevant product defect/suspected recall in the field · P2 = suspect delivery to customers · P3 = internal series defect · P4 = single case, resolved internally.",
+ "P1 = environmental damage with authority relevance/major loss · P2 = considerable property damage · P3 = limited damage · P4 = minor.",
+ "P1 = statutory reporting duty ≤ 24 h or considerable reputational damage foreseeable · P2 = reporting duty likely · P3 = legal review required · P4 = no legal/reporting impact."
+];
+const SDIM = [
+ ["s1","S1 Personen"],["s2","S2 Betrieb und Lieferfähigkeit"],["s3","S3 Information und Daten"],
+ ["s4","S4 Produkt und Qualität"],["s5","S5 Umwelt und Sachwerte"],["s6","S6 Recht, Meldepflicht und Reputation"]
+];
+function sdimHelp(i){ return (S.lang==="en"?SDIM_HELP_EN:SDIM_HELP_DE)[i]; }
 
 const PVALS = ["nicht geprüft","in Prüfung","ja","nein"];
 
-/* Meldepflichten (Anhang A) — anwendbar() entscheidet über Pflichtprüfung,
-   tasks = terminierte Meldeaufgaben ab Kenntniserlangung (Kalenderzeit). */
+/* Meldepflichten (Anhang A) */
 const PFL = [
  {id:"nis2_de", l:"NIS-2 Deutschland", app:t=>true,
   tasks:[["NIS-2 DE – Frühwarnung an das BSI",24],["NIS-2 DE – Folgemeldung",72],["NIS-2 DE – Abschlussmeldung",720]], rolle:"ISB"},
@@ -205,10 +338,47 @@ const PFL = [
  {id:"straf", l:"Strafverfolgungsbehörde", app:t=>false, opt:true,
   tasks:[["Strafanzeige / Anzeige bei der Strafverfolgungsbehörde (Entscheidung GL)",72]], rolle:"Geschäftsleitung"}
 ];
+const TASK_EN = {
+ "NIS-2 DE – Frühwarnung an das BSI":"NIS-2 DE – early warning to the BSI","NIS-2 DE – Folgemeldung":"NIS-2 DE – follow-up notification","NIS-2 DE – Abschlussmeldung":"NIS-2 DE – final report",
+ "NIS-2 AT – Frühwarnung":"NIS-2 AT – early warning","NIS-2 AT – Folgemeldung":"NIS-2 AT – follow-up notification","NIS-2 AT – Abschlussmeldung":"NIS-2 AT – final report",
+ "NIS-2 SK – Frühwarnung":"NIS-2 SK – early warning","NIS-2 SK – Folgemeldung":"NIS-2 SK – follow-up notification","NIS-2 SK – Abschlussmeldung":"NIS-2 SK – final report",
+ "NIS-2 PL – Frühwarnung":"NIS-2 PL – early warning","NIS-2 PL – Folgemeldung":"NIS-2 PL – follow-up notification","NIS-2 PL – Abschlussmeldung":"NIS-2 PL – final report",
+ "§ 35 BSIG – Unterrichtung der Empfänger (nach GL-Freigabe versenden; Frist läuft weiter)":"Sec. 35 BSIG – notify service recipients (send after management approval; deadline keeps running)",
+ "DSGVO Art. 33 – Meldung an die Aufsichtsbehörde":"GDPR Art. 33 – notification to the supervisory authority",
+ "Kundeninformation Lieferfähigkeit (nach GL-Freigabe versenden)":"Customer information on delivery capability (send after management approval)",
+ "Kundeninformation Produktfehler/Rückruf (nach GL-Freigabe versenden)":"Customer information on product defect/recall (send after management approval)",
+ "Information des Kunden/OEM zu betroffenen Daten":"Inform customer/OEM about affected data",
+ "Unfallanzeige an den Unfallversicherungsträger":"Accident report to the statutory accident insurer",
+ "Meldung an die Arbeitsschutzbehörde":"Notification to the occupational safety authority",
+ "Meldung an die Umweltbehörde":"Notification to the environmental authority",
+ "Schadenmeldung an den Versicherer":"Damage report to the insurer",
+ "Information der Zertifizierungsstelle":"Information to the certification body",
+ "Unterrichtung der Arbeitnehmervertretung (unverzüglich)":"Notification of the employee representation (without undue delay)",
+ "Strafanzeige / Anzeige bei der Strafverfolgungsbehörde (Entscheidung GL)":"Criminal complaint to law enforcement (management decision)",
+ "Post-Incident-Review durchführen":"Conduct post-incident review",
+ "Abschlussbericht und Risikobewertung erstellen":"Prepare final report and risk assessment",
+ "Wirksamkeitsprüfung der Maßnahmen":"Effectiveness review of the measures"
+};
+function taskLabel(n){
+  if(S.lang!=="en") return n;
+  if(TASK_EN[n]) return TASK_EN[n];
+  const m=n.match(/^Mitwirkung Nebendomäne ([A-J]) – (.*)$/);
+  if(m) return "Contribution secondary domain "+m[1]+" – "+tr(m[2]);
+  return n;
+}
 
-/* BSI-Gefährdungskatalog G 0.1–G 0.47 + REUTIB-Ergänzungen (Entwurf). */
+/* BSI-Gefährdungskatalog + REUTIB-Ergänzungen (Entwurf) */
 const G_BSI = ["Feuer","Ungünstige klimatische Bedingungen","Wasser","Verschmutzung, Staub, Korrosion","Naturkatastrophen","Katastrophen im Umfeld","Großereignisse im Umfeld","Ausfall oder Störung der Stromversorgung","Ausfall oder Störung von Kommunikationsnetzen","Ausfall oder Störung von Versorgungsnetzen","Ausfall oder Störung von Dienstleistungsunternehmen","Elektromagnetische Störstrahlung","Abfangen kompromittierender Strahlung","Ausspähen von Informationen (Spionage)","Abhören","Diebstahl von Geräten, Datenträgern oder Dokumenten","Verlust von Geräten, Datenträgern oder Dokumenten","Fehlplanung oder fehlende Anpassung","Offenlegung schützenswerter Informationen","Informationen oder Produkte aus unzuverlässiger Quelle","Manipulation von Hard- oder Software","Manipulation von Informationen","Unbefugtes Eindringen in IT-Systeme","Zerstörung von Geräten oder Datenträgern","Ausfall von Geräten oder Systemen","Fehlfunktion von Geräten oder Systemen","Ressourcenmangel","Software-Schwachstellen oder -Fehler","Verstoß gegen Gesetze oder Regelungen","Unberechtigte Nutzung oder Administration von Geräten und Systemen","Fehlerhafte Nutzung oder Administration von Geräten und Systemen","Missbrauch von Berechtigungen","Personalausfall","Anschlag","Nötigung, Erpressung oder Korruption","Identitätsdiebstahl","Abstreiten von Handlungen","Missbrauch personenbezogener Daten","Schadprogramme","Verhinderung von Diensten (Denial of Service)","Sabotage","Social Engineering","Einspielen von Nachrichten (Replay)","Unbefugtes Eindringen in Räumlichkeiten","Datenverlust","Integritätsverlust schützenswerter Informationen","Schädliche Seiteneffekte IT-gestützter Angriffe"];
+const G_BSI_EN = ["Fire","Unfavourable climatic conditions","Water","Pollution, dust, corrosion","Natural disasters","Disasters in the vicinity","Major events in the vicinity","Failure or disruption of the power supply","Failure or disruption of communication networks","Failure or disruption of supply networks","Failure or disruption of service providers","Electromagnetic interference","Interception of compromising emanations","Spying on information (espionage)","Eavesdropping","Theft of devices, storage media or documents","Loss of devices, storage media or documents","Poor planning or lack of adaptation","Disclosure of sensitive information","Information or products from an unreliable source","Manipulation of hardware or software","Manipulation of information","Unauthorised intrusion into IT systems","Destruction of devices or storage media","Failure of devices or systems","Malfunction of devices or systems","Lack of resources","Software vulnerabilities or errors","Violation of laws or regulations","Unauthorised use or administration of devices and systems","Incorrect use or administration of devices and systems","Misuse of authorisations","Loss of personnel","Attack","Coercion, extortion or corruption","Identity theft","Repudiation of actions","Misuse of personal data","Malware","Denial of service","Sabotage","Social engineering","Replay of messages","Unauthorised entry to premises","Loss of data","Loss of integrity of sensitive information","Harmful side effects of IT-supported attacks"];
 const G_REUTIB = ["Arbeitsunfall / Personenschaden","Produktfehler mit Feld-/Rückrufrelevanz","Ausfall kritischer Produktionsanlagen (OT)","Lieferantenausfall / Unterbrechung der Lieferkette","Verlust oder Kompromittierung von Prototypen(-daten)","Qualitätsabweichung mit Kundenauswirkung","Umweltereignis am Standort","Pandemie / großflächiger Personalausfall","Streik / Arbeitskampf mit Betriebsauswirkung","Compliance-Verstoß / Betrugsverdacht","Verlust der Zertifizierungsfähigkeit (TISAX/IATF)","Reputationsereignis / Medienlage"];
+const G_REUTIB_EN = ["Occupational accident / personal injury","Product defect with field/recall relevance","Failure of critical production equipment (OT)","Supplier failure / supply chain disruption","Loss or compromise of prototypes / prototype data","Quality deviation with customer impact","Environmental event at a site","Pandemic / large-scale staff absence","Strike / industrial action affecting operations","Compliance violation / suspected fraud","Loss of certification capability (TISAX/IATF)","Reputation event / media exposure"];
+function gefLabel(v){
+  if(S.lang!=="en") return v;
+  if(v==="noch nicht bestimmt") return "not yet determined";
+  let m=v.match(/^G 0\.(\d+) – /); if(m) return "G 0."+m[1]+" – "+(G_BSI_EN[+m[1]-1]||v);
+  m=v.match(/^G-R 1\.(\d+) – /); if(m) return "G-R 1."+m[1]+" – "+(G_REUTIB_EN[+m[1]-1]||v);
+  return v;
+}
 
 /* ---------- Rollen ---------- */
 const ROLES = {
@@ -228,8 +398,12 @@ const STATUS = ["Open","Triage","In Bearbeitung – Eindämmung","In Bearbeitung
 const LSKEY = "reutib-irm-v1";
 let S = load();
 function load(){
-  try{ const s = JSON.parse(localStorage.getItem(LSKEY)); if(s && s.tickets) return s; }catch(e){}
-  return {tickets:[], seq:1, role:"triage", roleDom:"A", tab:"portal"};
+  let s=null;
+  try{ s = JSON.parse(localStorage.getItem(LSKEY)); }catch(e){}
+  if(!s || !s.tickets) s = {tickets:[], seq:1, role:"triage", roleDom:"A", tab:"portal"};
+  if(!s.lang) s.lang = (navigator.language||"de").toLowerCase().startsWith("de") ? "de" : "en";
+  if(!s.theme) s.theme = (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  return s;
 }
 function save(){ localStorage.setItem(LSKEY, JSON.stringify(S)); }
 
@@ -237,19 +411,21 @@ function save(){ localStorage.setItem(LSKEY, JSON.stringify(S)); }
 const $ = id=>document.getElementById(id);
 const esc = s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const now = ()=>Date.now();
-function fmt(ts){ if(!ts) return "–"; const d=new Date(ts); return d.toLocaleDateString("de-DE")+" "+d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); }
+function fmt(ts){ if(!ts) return "–"; const d=new Date(ts); const loc=S.lang==="en"?"en-GB":"de-DE";
+  return d.toLocaleDateString(loc)+" "+d.toLocaleTimeString(loc,{hour:"2-digit",minute:"2-digit"}); }
 function fmtRest(ms){
   const neg = ms<0; ms=Math.abs(ms);
   const h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000);
-  const s = h>=48 ? Math.floor(h/24)+" Tg "+(h%24)+" h" : h+" h "+String(m).padStart(2,"0")+" min";
-  return (neg?"überfällig seit ":"")+s;
+  const dayU = S.lang==="en"?" d ":" Tg ";
+  const s = h>=48 ? Math.floor(h/24)+dayU+(h%24)+" h" : h+" h "+String(m).padStart(2,"0")+" min";
+  return (neg?tr("überfällig seit "):"")+s;
 }
 function dtLocal(ts){ const d=new Date(ts); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
 function parseDt(v){ return v? new Date(v).getTime() : null; }
-function roleLabel(){ return ROLES[S.role].l + (S.role==="dombearb" ? " – Domäne "+S.roleDom : ""); }
+function roleLabel(){ return tr(ROLES[S.role].l) + (S.role==="dombearb" ? " – "+tr("Domäne")+" "+S.roleDom : ""); }
 function log(t, txt){ t.log.unshift({ts:now(), who:roleLabel(), txt}); }
 
-/* ---------- Severity-Berechnung (GDL Kap. 6.3) ---------- */
+/* ---------- Severity (GDL Kap. 6.3) ---------- */
 const ORD = {"P1":4,"P2":3,"P3":2,"P4":1,"nicht betroffen":0,"":0,undefined:0};
 function computed(t){
   let mx = 0;
@@ -258,7 +434,7 @@ function computed(t){
   let esk = stufe==="P1"?"E2":stufe==="P2"?"E1":"E0";
   /* Regel 12: Rückrufverdacht → Zwangsstufe P1 */
   if(t.leitdomaene==="H" && t.pf.kunde_produkt==="ja"){ stufe="P1"; esk="E2"; }
-  /* Regel 5: externe Meldepflicht ≤24 h auf „ja“ → E2 */
+  /* Regel 5: externe Meldepflicht ≤ 24 h auf „ja“ → E2 */
   const p24 = PFL.some(p=>p.tasks.some(x=>x[1]<=24) && t.pf[p.id]==="ja");
   if(p24) esk="E2";
   if(t.eskOverride==="E3") esk="E3";
@@ -273,10 +449,10 @@ function isProtected(t){ return t.leitdomaene && DOM[t.leitdomaene].prot; }
 function canSee(t){
   switch(S.role){
     case "isb": return true;
-    case "dsb": return true; /* Lesezugriff geschützter Bereich + Domäne J */
+    case "dsb": return true;
     case "gl": return !isProtected(t);
     case "auditor": return !isProtected(t);
-    case "triage": return !isProtected(t); /* nach Domänenzuordnung nicht mehr lesbar */
+    case "triage": return !isProtected(t);
     case "dombearb": return isProtected(t) ? t.leitdomaene===S.roleDom
                      : (!t.leitdomaene || t.leitdomaene===S.roleDom || (t.nebendomaenen||[]).includes(S.roleDom));
     case "melder": return false;
@@ -285,7 +461,7 @@ function canSee(t){
 }
 function canEdit(t){
   if(["auditor","melder","gl"].includes(S.role)) return false;
-  if(S.role==="dsb") return t.pf.dsgvo==="ja" || t.leitdomaene==="J" ? true : false;
+  if(S.role==="dsb") return t.pf.dsgvo==="ja" || t.leitdomaene==="J";
   return canSee(t);
 }
 
@@ -297,22 +473,22 @@ function syncTasks(t){
       let task = t.tasks.find(x=>x.origin===p.id && x.name===name);
       if(active && !task){
         t.tasks.push({id:Math.random().toString(36).slice(2), origin:p.id, name, rolle:p.rolle, due:t.kenntnis+h*3600000, done:false});
-        log(t, "Meldeaufgabe erzeugt: „"+name+"“ (fällig "+fmt(t.kenntnis+h*3600000)+", Frist ab Kenntniserlangung)");
+        log(t, tr("Meldeaufgabe erzeugt:")+" "+taskLabel(name)+" ("+tr("fällig")+" "+fmt(t.kenntnis+h*3600000)+", "+tr("Frist ab Kenntniserlangung")+")");
       } else if(active && task && !task.done){
         const soll = t.kenntnis+h*3600000;
-        if(task.due!==soll){ task.due=soll; log(t,"Meldeaufgabe neu terminiert: „"+name+"“ → "+fmt(soll)); }
+        if(task.due!==soll){ task.due=soll; log(t,tr("Meldeaufgabe neu terminiert:")+" "+taskLabel(name)+" → "+fmt(soll)); }
       } else if(!active && task && !task.done){
         t.tasks = t.tasks.filter(x=>x!==task);
-        log(t,"Meldeaufgabe entfernt (Meldepflicht nicht mehr „ja“): "+name);
+        log(t,tr("Meldeaufgabe entfernt (Meldepflicht nicht mehr aktiv):")+" "+taskLabel(name));
       }
     }
     if(active && p.appr && !t.approvals.find(a=>a.key===p.id)){
       t.approvals.push({key:p.id, l:"Freigabe: "+p.l, by:p.appr, state:"offen"});
-      log(t,"Genehmigungsschritt angelegt: "+p.l+" (genehmigt durch "+p.appr+")");
+      log(t,tr("Genehmigungsschritt angelegt:")+" "+tr(p.l)+" ("+tr(p.appr)+")");
     }
     if(active && p.dsb && !t.beobachter.includes("Datenschutzbeauftragter")){
       t.beobachter.push("Datenschutzbeauftragter");
-      log(t,"Datenschutzbeauftragter als Beobachter gesetzt (Art. 33/34).");
+      log(t,tr("Datenschutzbeauftragter als Beobachter gesetzt (Art. 33/34)."));
     }
   }
 }
@@ -325,7 +501,7 @@ function vorrang(t){
     t.leitdomaene = "E";
     t.owner = ownerFor(t);
     t.approvals.push({key:"vorrang"+now(), l:"Bestätigung Vorrangregel Personengefährdung (Leitdomäne → E, vormals "+alt+")", by:"ISB", state:"offen"});
-    log(t,"VORRANGREGEL: S1="+t.s1+" → Leitdomäne wechselt selbsttätig auf E; „"+alt+"“ wird Nebendomäne. Bestätigungsaufgabe an den ISB.");
+    log(t,tr("VORRANGREGEL: S1")+"="+t.s1+" → "+tr("Leitdomäne wechselt selbsttätig auf E; bisherige Domäne wird Nebendomäne. Bestätigungsaufgabe an den ISB.")+" ["+alt+"]");
   }
 }
 function ownerFor(t){
@@ -354,55 +530,55 @@ function checkTransition(t, to){
   const miss = [];
   const st = effStufe(t);
   const p12 = ["P1","P2"].includes(st);
+  const M = (de,en)=>miss.push(S.lang==="en"?en:de);
   if(t.status==="Open" && to==="Triage"){
-    if(!t.kenntnis) miss.push("Kenntniserlangung");
-    if(!t.standort) miss.push("Standort");
+    if(!t.kenntnis) M("Kenntniserlangung","Time of awareness");
+    if(!t.standort) M("Standort","Site");
   }
   if(t.status==="Triage" && to!=="Triage"){
-    if(!t.leitdomaene) miss.push("Leitdomäne");
-    if(!t.owner) miss.push("Incident Owner");
-    for(const [k,l] of SDIM) if(!t[k]) miss.push(l.split(" ").slice(0,2).join(" "));
+    if(!t.leitdomaene) M("Leitdomäne","Lead domain");
+    if(!t.owner) M("Incident Owner","Incident owner");
+    for(const [k,l] of SDIM) if(!t[k]) miss.push(tr(l));
     for(const p of PFL){ if(p.opt) continue;
-      if(p.app(t) && (!t.pf[p.id] || t.pf[p.id]==="nicht geprüft")) miss.push("Meldepflicht „"+p.l+"“ (steht auf „nicht geprüft“)");
+      if(p.app(t) && (!t.pf[p.id] || t.pf[p.id]==="nicht geprüft"))
+        M("Meldepflicht „"+p.l+"“ (steht auf „nicht geprüft“)","Reporting duty “"+tr(p.l)+"” (still “not assessed”)");
     }
-    if(needBegruendungAbw(t) && !t.kenntnisBegr) miss.push("Begründung der Abweichung Kenntniserlangung/Erstellung (> 1 h)");
+    if(needBegruendungAbw(t) && !t.kenntnisBegr) M("Begründung der Abweichung Kenntniserlangung/Erstellung (> 1 h)","Justification of the gap between awareness and creation (> 1 h)");
   }
   if(t.status==="In Bearbeitung – Eindämmung" && to==="In Bearbeitung – Analyse"){
-    if(!t.sofort) miss.push("Sofortmaßnahmen (Protokoll)");
-    if(p12 && !t.beweis) miss.push("Beweissicherung erfolgt (Pflicht bei P1/P2)");
+    if(!t.sofort) M("Sofortmaßnahmen (Protokoll)","Immediate actions (log)");
+    if(p12 && !t.beweis) M("Beweissicherung erfolgt (Pflicht bei P1/P2)","Evidence secured (mandatory for P1/P2)");
   }
   if(t.status==="In Bearbeitung – Analyse" && to==="In Bearbeitung – Behebung"){
-    if(!t.gef || t.gef==="noch nicht bestimmt") miss.push("Gefährdungsbezug (steht auf „noch nicht bestimmt“)");
-    if(p12 && !t.ursache1) miss.push("Unmittelbare Ursache (Pflicht bei P1/P2)");
-    if(p12 && !t.ursache2) miss.push("Systemursache (Pflicht bei P1/P2)");
+    if(!t.gef || t.gef==="noch nicht bestimmt") M("Gefährdungsbezug (steht auf „noch nicht bestimmt“)","Threat reference (still “not yet determined”)");
+    if(p12 && !t.ursache1) M("Unmittelbare Ursache (Pflicht bei P1/P2)","Immediate cause (mandatory for P1/P2)");
+    if(p12 && !t.ursache2) M("Systemursache (Pflicht bei P1/P2)","Root cause (mandatory for P1/P2)");
   }
-  if(to==="Verifikation und Freigabe"){ /* keine Bedingung */ }
   if(t.status==="Verifikation und Freigabe" && to==="Resolved"){
-    if(!t.freigabe) miss.push("Freigabe der Wiederaufnahme");
-    if(p12 && !t.freigabeIsb) miss.push("Bestätigung des ISB (Pflicht bei P1/P2)");
-    if(t.pf.kunde_produkt==="ja" && !t.freigabeQl) miss.push("Bestätigung der Qualitätsleitung (Produktbezug)");
+    if(!t.freigabe) M("Freigabe der Wiederaufnahme","Release for resumption");
+    if(p12 && !t.freigabeIsb) M("Bestätigung des ISB (Pflicht bei P1/P2)","ISB confirmation (mandatory for P1/P2)");
+    if(t.pf.kunde_produkt==="ja" && !t.freigabeQl) M("Bestätigung der Qualitätsleitung (Produktbezug)","Quality management confirmation (product-related)");
   }
-  if(to==="Resolved" && t.status==="Triage"){ /* nur P4 – über allowedNext gesichert */ }
   if(to==="Closed"){
     if(p12){
-      if(!t.abschlussbericht) miss.push("Abschlussbericht (Anlage, ISMS-TMPL-006a)");
-      if(!t.lessons) miss.push("Lessons Learned");
-      if(!t.risikoRef) miss.push("Referenz Risikoregister");
+      if(!t.abschlussbericht) M("Abschlussbericht (Anlage, ISMS-TMPL-006a)","Final report (attachment, ISMS-TMPL-006a)");
+      if(!t.lessons) M("Lessons Learned","Lessons learned");
+      if(!t.risikoRef) M("Referenz Risikoregister","Risk register reference");
     }
     if(["F","G","H"].includes(t.leitdomaene)){
-      if(!t.fvAbgeschlossen) miss.push("Fachvorgang abgeschlossen (Domäne "+t.leitdomaene+")");
-      if(!t.fvNummer) miss.push("Führender Fachvorgang – Nummer");
+      if(!t.fvAbgeschlossen) M("Fachvorgang abgeschlossen (Domäne "+t.leitdomaene+")","Business record completed (domain "+t.leitdomaene+")");
+      if(!t.fvNummer) M("Führender Fachvorgang – Nummer","Leading business record – number");
     }
-    if(t.gef==="noch nicht bestimmt"||!t.gef) miss.push("Gefährdungsbezug");
+    if(t.gef==="noch nicht bestimmt"||!t.gef) M("Gefährdungsbezug","Threat reference");
   }
   if(to==="Ausgesetzt – BCM"){
-    if(!t.bcmNote) miss.push("Übergabeprotokoll BCM (Notiz)");
+    if(!t.bcmNote) M("Übergabeprotokoll BCM (Notiz)","BCM hand-over record (note)");
   }
   return miss;
 }
 function needBegruendungAbw(t){ return t.kenntnis && t.erstellt && (t.erstellt - t.kenntnis) > 3600000; }
 
-/* Nachbereitung (Regeln 17/18, Testfälle 37/38) */
+/* Nachbereitung (Regeln 17/18) */
 function afterTransition(t, to){
   const st = effStufe(t);
   if(to==="Resolved" && ["P1","P2"].includes(st)){
@@ -417,7 +593,7 @@ function afterTransition(t, to){
 function addOnce(t, key, name, rolle, hours){
   if(!t.tasks.find(x=>x.origin===key)){
     t.tasks.push({id:Math.random().toString(36).slice(2), origin:key, name, rolle, due:now()+hours*3600000, done:false});
-    log(t,"Aufgabe erzeugt: „"+name+"“ (fällig "+fmt(now()+hours*3600000)+")");
+    log(t,tr("Aufgabe erzeugt:")+" "+taskLabel(name)+" ("+tr("fällig")+" "+fmt(now()+hours*3600000)+")");
   }
 }
 
@@ -449,18 +625,20 @@ function newTicket(o){
     erstreaktion:null
   };
   if(t.nearmiss){ t.s1=t.s1||"P4"; t.leitdomaene="E"; t.owner=ownerFor(t); t.status="Triage"; }
-  t.log.push({ts, who:"System", txt:"Ticket angelegt über Kanal „"+t.kanal+"“ und der Triage zugewiesen. Kenntniserlangung vorbelegt: "+fmt(t.kenntnis)});
-  if(t.nearmiss) t.log.push({ts, who:"System", txt:"Beinaheereignis: Kontrollkästchen vorbelegt, Zuweisung an die Arbeitssicherheit (Domäne E), Gesamtstufe P4 (Regel 19)."});
+  t.log.push({ts, who:"System", txt:tr("Ticket angelegt und der Triage zugewiesen. Kenntniserlangung vorbelegt:")+" "+fmt(t.kenntnis)});
+  if(t.nearmiss) t.log.push({ts, who:"System", txt:tr("Beinaheereignis: Kontrollkästchen vorbelegt, Zuweisung an die Arbeitssicherheit (Domäne E), Gesamtstufe P4 (Regel 19).")});
   S.tickets.unshift(t);
   save();
   return t;
 }
 
-/* ---------- Demo-Testdaten (Anhang C: ein Fall je Domäne, fiktiv) ---------- */
+/* ---------- Demo-Testdaten (Anhang C: ein fiktiver Fall je Domäne) ---------- */
 function seed(){
-  if(S.tickets.length && !confirm("Testdatenbestand zusätzlich zu den vorhandenen Tickets anlegen?")) return;
+  if(S.tickets.length && !confirm(tr("Testdatenbestand zusätzlich zu den vorhandenen Tickets anlegen?"))) return;
   const H = 3600000;
-  const mk = (o, then)=>{ const t=newTicket(o); then&&then(t); syncTasks(t); save(); };
+  const mk = (o, then)=>{ const t=newTicket(o); then&&then(t);
+    if(!["Open","Triage"].includes(t.status)) t.erstreaktion = t.kenntnis+30*60000;
+    syncTasks(t); save(); };
   mk({betreff:"Verschlüsselungstrojaner auf Fileserver LB-FS02", beschreibung:"Mehrere Dateien nicht mehr lesbar, Erpresserschreiben auf dem Desktop. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-30*H},
     t=>{ t.status="Triage"; t.leitdomaene="A"; t.owner=ownerFor(t); t.s1="nicht betroffen"; t.s2="P2"; t.s3="P1"; t.s4="P4"; t.s5="nicht betroffen"; t.s6="P1";
       t.gef="G 0.39 – Schadprogramme"; t.pf.nis2_de="ja"; t.pf.dsgvo="in Prüfung"; t.pf.kunde_liefer="in Prüfung"; t.pf.oem_daten="ja"; t.pf.anv="ja";
@@ -510,30 +688,46 @@ function exportJson(){
 function importJson(ev){
   const f=ev.target.files[0]; if(!f) return;
   const r=new FileReader();
-  r.onload=()=>{ try{ const s=JSON.parse(r.result); if(!s.tickets) throw 0; S=s; save(); render(); }catch(e){ alert("Datei konnte nicht gelesen werden."); } };
+  r.onload=()=>{ try{ const s=JSON.parse(r.result); if(!s.tickets) throw 0; S=s; save(); render(); }catch(e){ alert(tr("Datei konnte nicht gelesen werden.")); } };
   r.readAsText(f);
 }
 function exportCsv(list){
-  const cols=["ID","Betreff","Status","Leitdomäne","Standort","Gesamtstufe","Eskalation","Kenntniserlangung","Erstellt","Incident Owner","Gefährdung","TISAX","Offene Aufgaben"];
-  const rows=list.map(t=>[t.id,t.betreff,t.status,t.leitdomaene,t.standort,effStufe(t)||"",effEsk(t),fmt(t.kenntnis),fmt(t.erstellt),t.owner,t.gef,t.tisax?"ja":"nein",t.tasks.filter(x=>!x.done).length]);
+  const cols=S.lang==="en"
+    ?["ID","Subject","Status","Lead domain","Site","Overall level","Escalation","Time of awareness","Created","Incident owner","Threat","TISAX","Open tasks"]
+    :["ID","Betreff","Status","Leitdomäne","Standort","Gesamtstufe","Eskalation","Kenntniserlangung","Erstellt","Incident Owner","Gefährdung","TISAX","Offene Aufgaben"];
+  const rows=list.map(t=>[t.id,t.betreff,tr(t.status),t.leitdomaene,siteLabel(t.standort),effStufe(t)||"",effEsk(t),fmt(t.kenntnis),fmt(t.erstellt),t.owner,gefLabel(t.gef),t.tisax?tr("ja"):tr("nein"),t.tasks.filter(x=>!x.done).length]);
   const csv=[cols,...rows].map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(";")).join("\r\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"})); a.download="REUTIB_IRM_Tickets.csv"; a.click();
 }
 
-/* ---------- UI: Navigation ---------- */
+/* ---------- Navigation / Theme / Sprache ---------- */
 const TABS=[["portal","Meldung (Portal)"],["tickets","Tickets"],["fristen","Fristenmonitor"],["berichte","Berichte"],["doku","Dokumentation"]];
 function setRole(){
   S.role=$("roleSel").value; S.roleDom=$("roleDom").value||S.roleDom;
-  $("roleDom").style.display = S.role==="dombearb" ? "" : "none";
   save(); render();
 }
+function setLang(l){ S.lang=l; save(); render(); }
+function toggleTheme(){ S.theme = S.theme==="dark"?"light":"dark"; save(); applyTheme(); }
+function applyTheme(){ document.documentElement.setAttribute("data-theme", S.theme); }
 function nav(tab){ S.tab=tab; S.detail=null; save(); render(); }
 function render(){
-  $("roleSel").innerHTML = Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${S.role===k?"selected":""}>${v.l}</option>`).join("");
+  applyTheme();
+  document.documentElement.lang = S.lang;
+  $("brandSub").textContent = tr("Incident Response Management (IRM) · Prototyp nach GDL_010.001 V1.00");
+  $("roleLbl").textContent = tr("Rolle (Simulation):");
+  $("btnExp").textContent = tr("Stand sichern");
+  $("btnImp").textContent = tr("Stand laden");
+  $("btnDe").className = "langbtn mini"+(S.lang==="de"?" on":"");
+  $("btnEn").className = "langbtn mini"+(S.lang==="en"?" on":"");
+  $("dlgClose").textContent = tr("Schließen");
+  $("foot").innerHTML = S.lang==="en"
+   ? "REUTIB · Prototype for guideline GDL_010.001 “Implementation of Incident Response Management in Freshservice” V1.00 (2026-08-01) · normative basis POL_010.001 V3.00 / PROC_010.001 V2.10 · Confidential – internal use only. Data is stored locally in the browser (localStorage) – no server component."
+   : "REUTIB · Prototyp zur Guideline GDL_010.001 „Implementierung des Incident Response Managements in Freshservice“ V1.00 (01.08.2026) · fachliche Grundlage POL_010.001 V3.00 / PROC_010.001 V2.10 · Vertraulich – nur für den internen Gebrauch. Datenhaltung ausschließlich lokal im Browser (localStorage) – keine Serverkomponente.";
+  $("roleSel").innerHTML = Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${S.role===k?"selected":""}>${tr(v.l)}</option>`).join("");
   $("roleDom").innerHTML = DOMKEYS.map(d=>`<option ${S.roleDom===d?"selected":""}>${d}</option>`).join("");
   $("roleDom").style.display = S.role==="dombearb" ? "" : "none";
   $("nav").innerHTML = TABS.filter(([k])=>!(S.role==="melder" && k!=="portal"))
-    .map(([k,l])=>`<button class="${S.tab===k?"active":""}" onclick="nav('${k}')">${l}</button>`).join("");
+    .map(([k,l])=>`<button class="${S.tab===k?"active":""}" onclick="nav('${k}')">${tr(l)}</button>`).join("");
   const m=$("main");
   if(S.role==="melder" && S.tab!=="portal") S.tab="portal";
   if(S.detail){ m.innerHTML = viewDetail(S.detail); return; }
@@ -548,64 +742,71 @@ function render(){
 
 /* ---------- Portal (GDL Kap. 5.2) ---------- */
 function viewPortal(){
-  return `<h1>Incident-Meldestelle</h1>
-  <p class="muted">Zentrale Meldestelle der Reutter Group für alle Ereignisse – von der IT-Störung mit Sicherheitsverdacht über Arbeitsunfälle bis zum Lieferantenausfall. <b>Eine Meldung in gutem Glauben zieht keine Nachteile nach sich.</b> Es wird keine Bewertung von Ihnen erwartet – die Einordnung übernimmt die Triage.</p>
+  const de = S.lang!=="en";
+  return `<h1>${de?"Incident-Meldestelle":"Incident reporting point"}</h1>
+  <p class="muted">${de
+    ?"Zentrale Meldestelle der Reutter Group für alle Ereignisse – von der IT-Störung mit Sicherheitsverdacht über Arbeitsunfälle bis zum Lieferantenausfall. <b>Eine Meldung in gutem Glauben zieht keine Nachteile nach sich.</b> Es wird keine Bewertung von Ihnen erwartet – die Einordnung übernimmt die Triage."
+    :"Central reporting point of the Reutter Group for all events – from IT disruptions with a security suspicion to occupational accidents and supplier failures. <b>A report made in good faith will never lead to any disadvantage.</b> No assessment is expected from you – classification is done by the triage team."}</p>
   <div class="cards">
-    <div class="card portal" onclick="showForm(false)"><h3>⚠️ Incident melden</h3>
-      <p>Regeleinstieg für alle Ereignisse. Kurze Beschreibung genügt – keine Klassifizierung, keine Prioritätsauswahl.</p></div>
-    <div class="card portal" onclick="showForm(true)"><h3>👁️ Beinaheereignis melden (Near Miss)</h3>
-      <p>Es ist gerade noch gut gegangen? Auch das wollen wir wissen. Geht direkt an die Arbeitssicherheit.</p></div>
-    <div class="card portal danger" onclick="showNotruf()"><h3>🚨 Gefahr im Verzug</h3>
-      <p><b>Kein Formular.</b> Bei akuter Gefahr für Personen zuerst die Notrufkette – melden Sie danach.</p></div>
+    <div class="card portal" onclick="showForm(false)"><h3>⚠️ ${de?"Incident melden":"Report an incident"}</h3>
+      <p>${de?"Regeleinstieg für alle Domänen. Kurze Beschreibung genügt – keine Klassifizierung, keine Prioritätsauswahl.":"Standard entry for all domains. A short description is enough – no classification, no priority selection."}</p></div>
+    <div class="card portal" onclick="showForm(true)"><h3>👁️ ${de?"Beinaheereignis melden (Near Miss)":"Report a near miss"}</h3>
+      <p>${de?"Es ist gerade noch gut gegangen? Auch das wollen wir wissen. Geht direkt an die Arbeitssicherheit.":"It only just went well? We want to know that too. Goes straight to occupational safety."}</p></div>
+    <div class="card portal danger" onclick="showNotruf()"><h3>🚨 ${de?"Gefahr im Verzug":"Imminent danger"}</h3>
+      <p><b>${de?"Kein Formular.":"No form."}</b> ${de?"Bei akuter Gefahr für Personen zuerst die Notrufkette – melden Sie danach.":"In case of acute danger to people use the emergency chain first – report afterwards."}</p></div>
   </div>
   <div id="formBox"></div>`;
 }
 function showNotruf(){
-  $("dlgBody").innerHTML = `<h2 style="margin-top:0">Gefahr im Verzug – Notrufkette</h2>
-  <p><b>Erst handeln, dann melden.</b> Bei akuter Gefahr für Leib und Leben:</p>
-  <table><tr><th>Stelle</th><th>Nummer (Beispielwerte des Prototyps)</th></tr>
-  <tr><td>Notruf (europaweit)</td><td><b>112</b></td></tr>
-  <tr><td>Werkschutz / Empfang Standort</td><td>interne <b>-2222</b></td></tr>
-  <tr><td>IRM-Bereitschaft (24/7, P1)</td><td>laut Aushang / Intranet</td></tr>
-  <tr><td>IT-Security-Bereitschaft</td><td>laut Aushang / Intranet</td></tr></table>
-  <p class="small muted">Die tatsächlichen Bereitschaftsnummern werden bei der Einführung gepflegt (STD_010.001). Die nachträgliche Erfassung übernimmt die empfangende Rolle; Fristen laufen ab Kenntniserlangung.</p>`;
+  const de = S.lang!=="en";
+  $("dlgBody").innerHTML = `<h2 style="margin-top:0">${de?"Gefahr im Verzug – Notrufkette":"Imminent danger – emergency chain"}</h2>
+  <p><b>${de?"Erst handeln, dann melden.":"Act first, report afterwards."}</b> ${de?"Bei akuter Gefahr für Leib und Leben:":"In case of acute danger to life and limb:"}</p>
+  <table><tr><th>${de?"Stelle":"Contact"}</th><th>${de?"Nummer (Beispielwerte des Prototyps)":"Number (prototype sample values)"}</th></tr>
+  <tr><td>${de?"Notruf (europaweit)":"Emergency call (Europe-wide)"}</td><td><b>112</b></td></tr>
+  <tr><td>${de?"Werkschutz / Empfang Standort":"Plant security / site reception"}</td><td>${de?"intern":"internal"} <b>-2222</b></td></tr>
+  <tr><td>${de?"IRM-Bereitschaft (24/7, P1)":"IRM on-call duty (24/7, P1)"}</td><td>${de?"laut Aushang / Intranet":"see notice / intranet"}</td></tr>
+  <tr><td>${de?"IT-Security-Bereitschaft":"IT security on-call duty"}</td><td>${de?"laut Aushang / Intranet":"see notice / intranet"}</td></tr></table>
+  <p class="small muted">${de?"Die tatsächlichen Bereitschaftsnummern werden bei der Einführung gepflegt (STD_010.001). Die nachträgliche Erfassung übernimmt die empfangende Rolle; Fristen laufen ab Kenntniserlangung.":"The actual on-call numbers are maintained at go-live (STD_010.001). Subsequent recording is done by the receiving role; deadlines run from the time of awareness."}</p>`;
   $("dlg").showModal();
 }
 function showForm(nearmiss){
-  $("formBox").innerHTML = `<div class="section"><div class="head">${nearmiss?"Beinaheereignis melden (Near Miss)":"Incident melden"}</div><div class="body">
+  const de = S.lang!=="en";
+  $("formBox").innerHTML = `<div class="section"><div class="head">${nearmiss?(de?"Beinaheereignis melden (Near Miss)":"Report a near miss"):(de?"Incident melden":"Report an incident")}</div><div class="body">
     <div class="grid2">
-      <div><label>Betreff <span class="req">*</span> <span class="hint">– Kurzbeschreibung ohne Personenbezug</span></label>
+      <div><label>${tr("Betreff")} <span class="req">*</span> <span class="hint">– ${de?"Kurzbeschreibung ohne Personenbezug":"short description without personal data"}</span></label>
         <input id="f_betreff" type="text" maxlength="140"></div>
-      <div><label>Standort <span class="req">*</span></label>
-        <select id="f_standort"><option value="">– bitte wählen –</option>${STANDORTE.map(s=>`<option>${s}</option>`).join("")}</select></div>
+      <div><label>${tr("Standort")} <span class="req">*</span></label>
+        <select id="f_standort"><option value="">${tr("– bitte wählen –")}</option>${STANDORTE.map(s=>`<option value="${s}">${siteLabel(s)}</option>`).join("")}</select></div>
     </div>
-    <label>Beschreibung <span class="req">*</span> <span class="hint">– Was wurde beobachtet, wo, wann? Personenbezogene Angaben bitte auf das erforderliche Maß beschränken.</span></label>
+    <label>${tr("Beschreibung")} <span class="req">*</span> <span class="hint">– ${de?"Was wurde beobachtet, wo, wann? Personenbezogene Angaben bitte auf das erforderliche Maß beschränken.":"What was observed, where, when? Please limit personal data to what is strictly necessary."}</span></label>
     <textarea id="f_beschr"></textarea>
     <div class="grid2">
-      <div><label>Zeitpunkt der Beobachtung</label><input id="f_beob" type="datetime-local" value="${dtLocal(now())}"></div>
-      <div><label>Meldende Person oder Quelle</label><input id="f_quelle" type="text" placeholder="Name oder Quelle (vorbelegt)" value="${esc(roleLabel())}"></div>
+      <div><label>${de?"Zeitpunkt der Beobachtung":"Time of observation"}</label><input id="f_beob" type="datetime-local" value="${dtLocal(now())}"></div>
+      <div><label>${tr("Meldende Person / Quelle")}</label><input id="f_quelle" type="text" value="${esc(roleLabel())}"></div>
     </div>
-    <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="f_pers" style="width:auto"> <b>Sind Personen betroffen?</b></label>
+    <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="f_pers" style="width:auto"> <b>${de?"Sind Personen betroffen?":"Are people affected?"}</b></label>
     <div id="f_persHint"></div>
     <div class="flex" style="margin-top:12px">
-      <button class="acc" onclick="submitMeldung(${nearmiss})">Meldung absenden</button>
-      <span class="small muted">Keine Klassifizierungsfelder, keine Prioritätsauswahl – die Einstufung erfolgt durch die Triage (GDL Kap. 5.1).</span>
+      <button class="acc" onclick="submitMeldung(${nearmiss})">${tr("Meldung absenden")}</button>
+      <span class="small muted">${de?"Keine Klassifizierungsfelder, keine Prioritätsauswahl – die Einstufung erfolgt durch die Triage (GDL Kap. 5.1).":"No classification fields, no priority selection – classification is done by the triage team (GDL ch. 5.1)."}</span>
     </div>
   </div></div>`;
-  $("f_pers").onchange = e=>{ $("f_persHint").innerHTML = e.target.checked ? `<div class="err">Sind Personen aktuell in Gefahr? Nutzen Sie zuerst die Notrufkette („Gefahr im Verzug“).</div>` : ""; };
+  $("f_pers").onchange = e=>{ $("f_persHint").innerHTML = e.target.checked ? `<div class="err">${de?"Sind Personen aktuell in Gefahr? Nutzen Sie zuerst die Notrufkette („Gefahr im Verzug“).":"Are people currently in danger? Use the emergency chain first (“Imminent danger”)."}</div>` : ""; };
 }
 function submitMeldung(nearmiss){
   const betreff=$("f_betreff").value.trim(), beschr=$("f_beschr").value.trim(), standort=$("f_standort").value;
-  const miss=[]; if(!betreff)miss.push("Betreff"); if(!beschr)miss.push("Beschreibung"); if(!standort)miss.push("Standort");
-  if(miss.length){ alert("Bitte ausfüllen: "+miss.join(", ")); return; }
+  const miss=[]; if(!betreff)miss.push(tr("Betreff")); if(!beschr)miss.push(tr("Beschreibung")); if(!standort)miss.push(tr("Standort"));
+  if(miss.length){ alert(tr("Bitte ausfüllen: ")+miss.join(", ")); return; }
   const t=newTicket({betreff, beschreibung:beschr, standort, beobachtet:parseDt($("f_beob").value), personen:$("f_pers").checked, quelle:$("f_quelle").value, nearmiss, kanal:"Portal"});
-  $("formBox").innerHTML=`<div class="note oklight" style="border-left-color:var(--ok)"><b>Vielen Dank – Ihre Meldung wurde aufgenommen (${t.id}).</b><br>
-  Die Triage übernimmt jetzt die Einordnung. ${nearmiss?"Die Arbeitssicherheit wurde informiert.":""} Bei Rückfragen meldet sich das IRM-Team.</div>`;
+  const de = S.lang!=="en";
+  $("formBox").innerHTML=`<div class="note oklight"><b>${de?"Vielen Dank – Ihre Meldung wurde aufgenommen":"Thank you – your report has been recorded"} (${t.id}).</b><br>
+  ${de?"Die Triage übernimmt jetzt die Einordnung.":"The triage team will now classify it."} ${nearmiss?(de?"Die Arbeitssicherheit wurde informiert.":"Occupational safety has been informed."):""} ${de?"Bei Rückfragen meldet sich das IRM-Team.":"The IRM team will contact you if anything is unclear."}</div>`;
 }
 
 /* ---------- Ticketliste ---------- */
 let F = {q:"",dom:"",st:"",stufe:"",ort:""};
 function viewTickets(){
+  const de = S.lang!=="en";
   const vis = S.tickets.filter(canSee);
   const list = vis.filter(t=>{
     if(F.q && !(t.id+" "+t.betreff+" "+t.beschreibung+" "+t.gef+" "+t.owner).toLowerCase().includes(F.q.toLowerCase())) return false;
@@ -616,30 +817,30 @@ function viewTickets(){
     return true;
   });
   const protHidden = S.tickets.length - vis.length;
-  return `<h1>Tickets <span class="muted small">(${list.length} von ${vis.length} sichtbar${protHidden?` · ${protHidden} im geschützten Bereich für Ihre Rolle nicht einsehbar`:""})</span></h1>
+  return `<h1>${tr("Tickets")} <span class="muted small">(${list.length} ${de?"von":"of"} ${vis.length} ${de?"sichtbar":"visible"}${protHidden?` · ${protHidden} ${de?"im geschützten Bereich für Ihre Rolle nicht einsehbar":"in the protected workspace, not visible for your role"}`:""})</span></h1>
   <div class="filter noprint">
-    <div style="flex:2;min-width:220px"><label>Suche</label><input type="text" value="${esc(F.q)}" oninput="F.q=this.value;render()" placeholder="ID, Betreff, Gefährdung …"></div>
-    <div><label>Leitdomäne</label><select onchange="F.dom=this.value;render()"><option value="">alle</option>${DOMKEYS.map(d=>`<option ${F.dom===d?"selected":""} value="${d}">${d} – ${DOM[d].n}</option>`).join("")}</select></div>
-    <div><label>Status</label><select onchange="F.st=this.value;render()"><option value="">alle</option>${STATUS.map(s=>`<option ${F.st===s?"selected":""}>${s}</option>`).join("")}</select></div>
-    <div><label>Gesamtstufe</label><select onchange="F.stufe=this.value;render()"><option value="">alle</option><option ${F.stufe==="P1"?"selected":""}>P1</option><option ${F.stufe==="P2"?"selected":""}>P2</option><option ${F.stufe==="P3"?"selected":""}>P3</option><option ${F.stufe==="P4"?"selected":""}>P4</option></select></div>
-    <div><label>Standort</label><select onchange="F.ort=this.value;render()"><option value="">alle</option>${STANDORTE.map(s=>`<option ${F.ort===s?"selected":""}>${s}</option>`).join("")}</select></div>
-    <div><button class="sec" onclick="exportCsv(S.tickets.filter(canSee))">CSV-Export</button></div>
-    <div><button class="sec" onclick="seed()">Testdaten laden</button></div>
+    <div style="flex:2;min-width:220px"><label>${tr("Suche")}</label><input type="text" value="${esc(F.q)}" oninput="F.q=this.value;render()" placeholder="${tr("ID, Betreff, Gefährdung …")}"></div>
+    <div><label>${tr("Leitdomäne")}</label><select onchange="F.dom=this.value;render()"><option value="">${tr("alle")}</option>${DOMKEYS.map(d=>`<option ${F.dom===d?"selected":""} value="${d}">${d} – ${domName(d)}</option>`).join("")}</select></div>
+    <div><label>${tr("Status")}</label><select onchange="F.st=this.value;render()"><option value="">${tr("alle")}</option>${STATUS.map(s=>`<option value="${s}" ${F.st===s?"selected":""}>${tr(s)}</option>`).join("")}</select></div>
+    <div><label>${tr("Gesamtstufe")}</label><select onchange="F.stufe=this.value;render()"><option value="">${tr("alle")}</option>${["P1","P2","P3","P4"].map(p=>`<option ${F.stufe===p?"selected":""}>${p}</option>`).join("")}</select></div>
+    <div><label>${tr("Standort")}</label><select onchange="F.ort=this.value;render()"><option value="">${tr("alle")}</option>${STANDORTE.map(s=>`<option value="${s}" ${F.ort===s?"selected":""}>${siteLabel(s)}</option>`).join("")}</select></div>
+    <div><button class="sec" onclick="exportCsv(S.tickets.filter(canSee))">${tr("CSV-Export")}</button></div>
+    <div><button class="sec" onclick="seed()">${tr("Testdaten laden")}</button></div>
   </div>
-  ${list.length?`<table><thead><tr><th>ID</th><th>Betreff</th><th>Domäne</th><th>Standort</th><th>Stufe</th><th>Esk.</th><th>Status</th><th>Kenntniserlangung</th><th>Aufgaben offen</th></tr></thead><tbody>
+  ${list.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${tr("Domäne")}</th><th>${tr("Standort")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Esk.")}</th><th>${tr("Status")}</th><th>${tr("Kenntniserlangung")}</th><th>${tr("Aufgaben offen")}</th></tr></thead><tbody>
   ${list.map(t=>{
     const st=effStufe(t), open=t.tasks.filter(x=>!x.done), od=open.filter(x=>x.due<now());
     return `<tr class="click" onclick="openT('${t.id}')">
-     <td><b>${t.id}</b>${isProtected(t)?' <span class="badge lock" title="geschützter Bereich">🔒</span>':""}${t.nearmiss?' <span class="badge st">Near Miss</span>':""}</td>
+     <td><b>${t.id}</b>${isProtected(t)?' <span class="badge lock" title="'+tr("geschützter Bereich")+'">🔒</span>':""}${t.nearmiss?' <span class="badge st">'+tr("Near Miss")+'</span>':""}</td>
      <td>${esc(t.betreff)}</td>
      <td>${t.leitdomaene?`<span class="badge dom">${t.leitdomaene}</span>`:"–"}${(t.nebendomaenen||[]).map(d=>` <span class="badge st">${d}</span>`).join("")}</td>
-     <td>${esc(t.standort)}</td>
-     <td>${st?`<span class="badge ${st.toLowerCase()}">${st}</span>`:'<span class="badge pn">offen</span>'}${t.herab==="beantragt"?' <span class="badge st" title="Herabstufung beantragt">↓?</span>':""}</td>
+     <td>${siteLabel(t.standort)}</td>
+     <td>${st?`<span class="badge ${st.toLowerCase()}">${st}</span>`:'<span class="badge pn">'+tr("offen")+'</span>'}${t.herab==="beantragt"?' <span class="badge st" title="'+tr("Herabstufung beantragt")+'">↓?</span>':""}</td>
      <td><span class="badge ${effEsk(t).toLowerCase()}">${effEsk(t)}</span></td>
-     <td><span class="badge st">${t.status}</span></td>
+     <td><span class="badge st">${tr(t.status)}</span></td>
      <td class="small">${fmt(t.kenntnis)}</td>
-     <td>${open.length?`${od.length?`<span class="amp r"></span>`:`<span class="amp g"></span>`}${open.length}${od.length?` <b class="small" style="color:var(--crit)">(${od.length} überfällig)</b>`:""}`:"–"}</td></tr>`;
-  }).join("")}</tbody></table>`:`<div class="note">Keine Tickets im aktuellen Filter. Über <b>„Testdaten laden“</b> lässt sich der Abnahme-Testdatenbestand (ein fiktiver Fall je Domäne, Anhang C) erzeugen.</div>`}`;
+     <td>${open.length?`${od.length?`<span class="amp r"></span>`:`<span class="amp g"></span>`}${open.length}${od.length?` <b class="small" style="color:var(--crit)">(${od.length} ${tr("überfällig")})</b>`:""}`:"–"}</td></tr>`;
+  }).join("")}</tbody></table>`:`<div class="note">${tr("Keine Tickets im aktuellen Filter.")} ${de?"Über <b>„Testdaten laden“</b> lässt sich der Abnahme-Testdatenbestand (ein fiktiver Fall je Domäne, Anhang C) erzeugen.":"Use <b>“Load test data”</b> to create the acceptance test data set (one fictitious case per domain, Annex C)."}</div>`}`;
 }
 function openT(id){ S.detail=id; save(); render(); window.scrollTo(0,0); }
 
@@ -650,14 +851,14 @@ function upd(field, value, label){
   const old=t[field];
   if(old===value) return;
   t[field]=value;
-  log(t, (label||field)+": „"+(old===undefined||old===""?"leer":old)+"“ → „"+value+"“");
+  const f=v=>field==="kenntnis"?fmt(v):String(v===undefined||v===""?"—":v);
+  log(t, (label||field)+": "+f(old)+" → "+f(value));
   if(field==="kenntnis"){ syncTasks(t); }
   if(["s1","s2","s3","s4","s5","s6"].includes(field)){ vorrang(t); }
   if(field==="leitdomaene"){
     t.owner=ownerFor(t);
-    if(isProtected(t)) log(t,"Ticket in den geschützten Arbeitsbereich verschoben (Domäne "+t[field]+"). Triage-Rollen haben ab jetzt keinen Lesezugriff mehr.");
+    if(isProtected(t)) log(t,tr("Ticket in den geschützten Arbeitsbereich verschoben. Triage-Rollen haben ab jetzt keinen Lesezugriff mehr.")+" ["+t[field]+"]");
   }
-  if(!t.erstreaktion && S.role!=="melder" && !["Open"].includes(t.status)){ /* Erstreaktion über Button */ }
   save(); render();
 }
 function updPf(id, value){
@@ -665,240 +866,246 @@ function updPf(id, value){
   const p=PFL.find(x=>x.id===id);
   const old=t.pf[id]; if(old===value) return;
   t.pf[id]=value;
-  log(t,"Meldepflicht „"+p.l+"“: „"+old+"“ → „"+value+"“");
+  log(t,tr("Meldepflicht")+" "+tr(p.l)+": "+tr(old)+" → "+tr(value));
   syncTasks(t);
   save(); render();
 }
 function setStatus(to){
   const t=T(); if(!t) return;
-  if(t.status==="Closed" && S.role!=="isb"){ alert("Wiedereröffnung nur durch den ISB."); return; }
+  if(t.status==="Closed" && S.role!=="isb"){ alert(tr("Wiedereröffnung nur durch den ISB.")); return; }
   const miss=checkTransition(t,to);
   if(miss.length){
-    $("dlgBody").innerHTML=`<h2 style="margin-top:0">Statuswechsel nicht möglich</h2>
-    <div class="err">Der Wechsel nach „${to}“ ist blockiert. Folgende Pflichtangaben fehlen:</div>
+    const de=S.lang!=="en";
+    $("dlgBody").innerHTML=`<h2 style="margin-top:0">${tr("Statuswechsel nicht möglich")}</h2>
+    <div class="err">${de?`Der Wechsel nach „${tr(to)}“ ist blockiert. Folgende Pflichtangaben fehlen:`:`The transition to “${tr(to)}” is blocked. The following mandatory entries are missing:`}</div>
     <ul>${miss.map(m=>`<li><b>${esc(m)}</b></li>`).join("")}</ul>
-    <p class="small muted">Blockierende Pflichten werden nicht durch Erinnerungen ersetzt (GDL Kap. 10.1, Anhang B).</p>`;
+    <p class="small muted">${de?"Blockierende Pflichten werden nicht durch Erinnerungen ersetzt (GDL Kap. 10.1, Anhang B).":"Blocking obligations are never replaced by reminders (GDL ch. 10.1, Annex B)."}</p>`;
     $("dlg").showModal(); return;
   }
   const from=t.status; t.status=to;
-  if(!t.erstreaktion && from==="Open"){ t.erstreaktion=now(); log(t,"Erstreaktion dokumentiert (Übernahme durch die Triage)."); }
-  log(t,"Statuswechsel: „"+from+"“ → „"+to+"“");
+  if(!t.erstreaktion && from==="Open"){ t.erstreaktion=now(); log(t,tr("Erstreaktion dokumentiert (Übernahme durch die Triage).")); }
+  log(t,tr("Statuswechsel:")+" "+tr(from)+" → "+tr(to));
   afterTransition(t,to);
   save(); render();
 }
 function taskDone(tid){
   const t=T(); const task=t.tasks.find(x=>x.id===tid); if(!task) return;
   task.done=!task.done; task.doneTs=task.done?now():null;
-  log(t,(task.done?"Aufgabe erledigt: ":"Aufgabe wieder geöffnet: ")+task.name);
+  log(t,(task.done?tr("Aufgabe erledigt:"):tr("Aufgabe wieder geöffnet:"))+" "+taskLabel(task.name));
   save(); render();
 }
 function approve(idx, state){
   const t=T(); const a=t.approvals[idx]; if(!a) return;
   const need = a.by==="ISB"?"isb":"gl";
-  if(S.role!==need){ alert("Genehmigung nur durch: "+a.by); return; }
+  if(S.role!==need){ alert(tr("Genehmigung nur durch: ")+tr(a.by)); return; }
   a.state=state; a.ts=now(); a.who=roleLabel();
-  log(t,"Genehmigung „"+a.l+"“: "+state+" durch "+a.by);
-  if(a.key==="herab" && state==="genehmigt"){ t.herab="genehmigt"; log(t,"Herabstufung wirksam: Gesamtstufe jetzt "+t.herabStufe+" (Override durch ISB)."); }
+  log(t,tr("Genehmigung")+" "+a.l+": "+tr(state)+" ("+tr(a.by)+")");
+  if(a.key==="herab" && state==="genehmigt"){ t.herab="genehmigt"; log(t,tr("Herabstufung wirksam: Gesamtstufe jetzt")+" "+t.herabStufe+" (Override ISB)."); }
   if(a.key==="herab" && state==="abgelehnt"){ t.herab="abgelehnt"; t.herabStufe=""; }
   save(); render();
 }
 function requestHerab(){
   const t=T();
-  const ziel=prompt("Beantragte Zielstufe (P2, P3 oder P4):","P3");
+  const ziel=prompt(tr("Beantragte Zielstufe (P2, P3 oder P4):"),"P3");
   if(!ziel||!["P2","P3","P4"].includes(ziel.toUpperCase())) return;
-  const begr=prompt("Begründung der Herabstufung (Pflicht):",""); if(!begr) return;
+  const begr=prompt(tr("Begründung der Herabstufung (Pflicht):"),""); if(!begr) return;
   t.herab="beantragt"; t.herabStufe=ziel.toUpperCase(); t.herabBegr=begr;
-  t.einstufungBegr=(t.einstufungBegr?t.einstufungBegr+"\n":"")+fmt(now())+" Herabstufung beantragt → "+ziel.toUpperCase()+": "+begr;
+  t.einstufungBegr=(t.einstufungBegr?t.einstufungBegr+"\n":"")+fmt(now())+" "+tr("Herabstufung beantragt")+" → "+ziel.toUpperCase()+": "+begr;
   t.approvals.push({key:"herab", l:"Herabstufung "+computed(t).stufe+" → "+ziel.toUpperCase(), by:"ISB", state:"offen"});
-  log(t,"Herabstufung beantragt ("+ziel.toUpperCase()+"). Gesamtstufe, Priorität und Reaktionszeit bleiben bis zur Entscheidung unverändert (GDL Kap. 10.3).");
+  log(t,tr("Herabstufung beantragt")+" ("+ziel.toUpperCase()+"). "+tr("Gesamtstufe, Priorität und Reaktionszeit bleiben bis zur Entscheidung unverändert (GDL Kap. 10.3)."));
   save(); render();
 }
 function setE3(){
   const t=T();
-  if(S.role!=="isb"){ alert("E3 kann nur durch den ISB gesetzt werden."); return; }
-  if(!t.bcmNote){ alert("Zuerst das Übergabeprotokoll BCM (Notiz) erfassen – ohne Notiz ist die Übergabe blockiert (Testfall 41)."); return; }
+  if(S.role!=="isb"){ alert(tr("E3 kann nur durch den ISB gesetzt werden.")); return; }
+  if(!t.bcmNote){ alert(tr("Zuerst das Übergabeprotokoll BCM (Notiz) erfassen – ohne Notiz ist die Übergabe blockiert (Testfall 41).")); return; }
   t.eskOverride="E3";
   t.approvals.push({key:"bcm"+now(), l:"Übergabe an das BCM (E3) – Genehmigung", by:"Geschäftsleitung", state:"offen"});
-  log(t,"Eskalationsstufe E3 gesetzt (ISB). Genehmigungsschritt der Geschäftsleitung angelegt; Meldeaufgaben laufen unabhängig weiter.");
+  log(t,tr("Eskalationsstufe E3 gesetzt (ISB). Genehmigungsschritt der Geschäftsleitung angelegt; Meldeaufgaben laufen unabhängig weiter."));
   save(); render();
 }
 
-function sel(field, val, opts, dis){
-  return `<select ${dis?"disabled":""} onchange="upd('${field}',this.value)">${opts.map(o=>`<option ${o===val?"selected":""}>${o}</option>`).join("")}</select>`;
+function sel(field, val, opts, dis, labelFn){
+  const lf = labelFn || (v=>v===""?tr("– wählen –"):tr(v));
+  return `<select ${dis?"disabled":""} onchange="upd('${field}',this.value)">${opts.map(o=>`<option value="${esc(o)}" ${o===val?"selected":""}>${lf(o)}</option>`).join("")}</select>`;
 }
 function viewDetail(id){
   const t=T();
   if(!t) { S.detail=null; return viewTickets(); }
-  if(!canSee(t)){ S.detail=null; return `<div class="err">Dieses Ticket liegt im geschützten Arbeitsbereich und ist für die Rolle „${roleLabel()}“ nicht einsehbar (GDL Kap. 4).</div><button class="sec" onclick="nav('tickets')">Zurück</button>`; }
+  const de = S.lang!=="en";
+  if(!canSee(t)){ S.detail=null; return `<div class="err">${de?`Dieses Ticket liegt im geschützten Arbeitsbereich und ist für die Rolle „${roleLabel()}“ nicht einsehbar (GDL Kap. 4).`:`This ticket is in the protected workspace and not visible for the role “${roleLabel()}” (GDL ch. 4).`}</div><button class="sec" onclick="nav('tickets')">← ${tr("Zur Liste")}</button>`; }
   const ro = !canEdit(t);
   const st=effStufe(t), cst=computed(t);
   const abw = t.erstellt-t.kenntnis;
   const gefOpts = ["noch nicht bestimmt", ...G_BSI.map((g,i)=>"G 0."+(i+1)+" – "+g), ...G_REUTIB.map((g,i)=>"G-R 1."+String(i+1).padStart(2,"0")+" – "+g)];
   const openTasks=t.tasks.filter(x=>!x.done);
   return `
-  <div class="flex noprint"><button class="sec" onclick="nav('tickets')">← Zur Liste</button><div class="spacer"></div>
-    ${ro?`<span class="badge st">Nur-Lesen (${esc(roleLabel())})</span>`:""}
-    ${t.status!=="Closed"&&!ro?`<button class="sec" onclick="requestHerab()" ${["P1","P2"].includes(cst.stufe)?"":"disabled"}>Herabstufung beantragen</button>`:""}
-    ${S.role==="isb"&&t.eskOverride!=="E3"&&t.status!=="Closed"?`<button class="sec" onclick="setE3()">E3 / BCM-Übergabe</button>`:""}
+  <div class="flex noprint"><button class="sec" onclick="nav('tickets')">← ${tr("Zur Liste")}</button><div class="spacer"></div>
+    ${ro?`<span class="badge st">${de?"Nur-Lesen":"Read-only"} (${esc(roleLabel())})</span>`:""}
+    ${t.status!=="Closed"&&!ro?`<button class="sec" onclick="requestHerab()" ${["P1","P2"].includes(cst.stufe)?"":"disabled"}>${tr("Herabstufung beantragen")}</button>`:""}
+    ${S.role==="isb"&&t.eskOverride!=="E3"&&t.status!=="Closed"?`<button class="sec" onclick="setE3()">${tr("E3 / BCM-Übergabe")}</button>`:""}
   </div>
-  <h1>${t.id} · ${esc(t.betreff)} ${isProtected(t)?'<span class="badge lock">🔒 geschützter Bereich</span>':""}${t.tisax?' <span class="badge st">TISAX-relevant</span>':""}</h1>
+  <h1>${t.id} · ${esc(t.betreff)} ${isProtected(t)?'<span class="badge lock">🔒 '+tr("geschützter Bereich")+'</span>':""}${t.tisax?' <span class="badge st">'+tr("TISAX-relevant")+'</span>':""}</h1>
   <div class="flex">
-    ${st?`<span class="badge ${st.toLowerCase()}">Gesamtstufe ${st}</span>`:'<span class="badge pn">noch nicht klassifiziert</span>'}
-    <span class="badge ${effEsk(t).toLowerCase()}">Eskalation ${effEsk(t)}</span>
-    <span class="badge st">${t.status}</span>
-    ${t.leitdomaene?`<span class="badge dom">Leitdomäne ${t.leitdomaene} – ${DOM[t.leitdomaene].n}</span>`:""}
-    ${t.herab==="beantragt"?`<span class="badge st">Herabstufung beantragt → ${t.herabStufe}</span>`:""}
-    ${t.herab==="genehmigt"?`<span class="badge st">Herabstufung genehmigt (berechnet: ${cst.stufe})</span>`:""}
+    ${st?`<span class="badge ${st.toLowerCase()}">${tr("Gesamtstufe")} ${st}</span>`:'<span class="badge pn">'+tr("noch nicht klassifiziert")+'</span>'}
+    <span class="badge ${effEsk(t).toLowerCase()}">${tr("Eskalation")} ${effEsk(t)}</span>
+    <span class="badge st">${tr(t.status)}</span>
+    ${t.leitdomaene?`<span class="badge dom">${tr("Leitdomäne")} ${t.leitdomaene} – ${domName(t.leitdomaene)}</span>`:""}
+    ${t.herab==="beantragt"?`<span class="badge st">${tr("Herabstufung beantragt")} → ${t.herabStufe}</span>`:""}
+    ${t.herab==="genehmigt"?`<span class="badge st">${tr("Herabstufung genehmigt")} (${de?"berechnet":"calculated"}: ${cst.stufe})</span>`:""}
   </div>
-  <div class="statusflow">${STATUS.filter(s=>s!=="Ausgesetzt – BCM"||t.status===s).map(s=>`<span class="chip ${t.status===s?"cur":""}">${s}</span>`).join("<span class='muted'>→</span>")}</div>
-  ${!ro?`<div class="flex noprint"><b class="small" style="color:var(--anthrazit)">Statuswechsel:</b>
-    ${allowedNext(t).map(s=>`<button class="acc" onclick="setStatus('${s}')">→ ${s}</button>`).join("")||'<span class="muted small">keiner möglich</span>'}
-    ${t.status==="Closed"&&S.role==="isb"?'<span class="small muted">(Wiedereröffnung: ISB-Recht)</span>':""}</div>`:""}
+  <div class="statusflow">${STATUS.filter(s=>s!=="Ausgesetzt – BCM"||t.status===s).map(s=>`<span class="chip ${t.status===s?"cur":""}">${tr(s)}</span>`).join("<span class='muted'>→</span>")}</div>
+  ${!ro?`<div class="flex noprint"><b class="small" style="color:var(--anthrazit)">${tr("Statuswechsel:")}</b>
+    ${allowedNext(t).map(s=>`<button class="acc" onclick="setStatus('${s}')">→ ${tr(s)}</button>`).join("")||'<span class="muted small">'+tr("keiner möglich")+'</span>'}
+    ${t.status==="Closed"&&S.role==="isb"?'<span class="small muted">'+tr("(Wiedereröffnung: ISB-Recht)")+'</span>':""}</div>`:""}
 
-  ${st==="P1"?`<div class="err">P1: Benachrichtigung an ISB, Vertretung, Incident Owner und Geschäftsleitung (E-Mail + mobil; außerhalb der Betriebszeit zusätzlich Anruf/SMS – GDL Kap. 11). Reaktionszeit 1 h, Kalender 24/7.</div>`:""}
-  ${needBegruendungAbw(t)&&!t.kenntnisBegr?`<div class="err">Zwischen Kenntniserlangung und Ticketerstellung liegen ${fmtRest(abw).replace("überfällig seit ","")} (&gt; 1 h): Begründung der Abweichung ist Pflicht${abw>4*3600000?" – Abweichung &gt; 4 h, Hinweis auf Begründungspflicht (E-Mail-/Telefonkanal, GDL Kap. 5.3)":""}.</div>`:""}
+  ${st==="P1"?`<div class="err">${de?"P1: Benachrichtigung an ISB, Vertretung, Incident Owner und Geschäftsleitung (E-Mail + mobil; außerhalb der Betriebszeit zusätzlich Anruf/SMS – GDL Kap. 11). Reaktionszeit 1 h, Kalender 24/7.":"P1: notification to ISB, deputy, incident owner and executive management (e-mail + mobile; outside business hours additionally call/SMS – GDL ch. 11). Response time 1 h, 24/7 calendar."}</div>`:""}
+  ${needBegruendungAbw(t)&&!t.kenntnisBegr?`<div class="err">${de?`Zwischen Kenntniserlangung und Ticketerstellung liegen ${fmtRest(abw).replace(tr("überfällig seit "),"")} (&gt; 1 h): Begründung der Abweichung ist Pflicht${abw>4*3600000?" – Abweichung &gt; 4 h (E-Mail-/Telefonkanal, GDL Kap. 5.3)":""}.`:`There are ${fmtRest(abw).replace(tr("überfällig seit "),"")} between awareness and ticket creation (&gt; 1 h): a justification is mandatory${abw>4*3600000?" – gap &gt; 4 h (e-mail/phone channel, GDL ch. 5.3)":""}.`}</div>`:""}
 
-  <div class="section"><div class="head">1 · Meldung</div><div class="body"><div class="grid3">
-    <div><label>Standort <span class="req">*</span></label>${sel("standort",t.standort,STANDORTE,ro)}</div>
-    <div><label>Kenntniserlangung <span class="req">*</span> <span class="hint help" title="Fristenanker: alle gesetzlichen Meldefristen laufen ab diesem Zeitpunkt, nicht ab Ticketerstellung (GDL Kap. 10.2). Änderung wird protokolliert; offene Meldeaufgaben werden neu terminiert.">ⓘ Fristenanker</span></label>
-      <input type="datetime-local" ${ro||!["triage","isb"].includes(S.role)?"disabled":""} value="${dtLocal(t.kenntnis)}" onchange="upd('kenntnis',parseDt(this.value),'Kenntniserlangung')"></div>
-    <div><label>Ticket erstellt</label><input type="text" disabled value="${fmt(t.erstellt)}"></div>
-    <div><label>Meldende Person / Quelle</label><input type="text" ${ro?"disabled":""} value="${esc(t.quelle)}" onchange="upd('quelle',this.value)"></div>
-    <div><label>Personen betroffen</label><input type="text" disabled value="${t.personen?"ja":"nein"}"></div>
-    <div><label>Near Miss</label><input type="text" disabled value="${t.nearmiss?"ja":"nein"}"></div>
+  <div class="section"><div class="head">${tr("1 · Meldung")}</div><div class="body"><div class="grid3">
+    <div><label>${tr("Standort")} <span class="req">*</span></label>${sel("standort",t.standort,STANDORTE,ro,v=>siteLabel(v))}</div>
+    <div><label>${tr("Kenntniserlangung")} <span class="req">*</span> <span class="hint help" title="${de?"Fristenanker: alle gesetzlichen Meldefristen laufen ab diesem Zeitpunkt, nicht ab Ticketerstellung (GDL Kap. 10.2). Änderung wird protokolliert; offene Meldeaufgaben werden neu terminiert.":"Deadline anchor: all statutory reporting deadlines run from this point in time, not from ticket creation (GDL ch. 10.2). Changes are logged; open notification tasks are re-scheduled."}">ⓘ ${tr("Fristenanker")}</span></label>
+      <input type="datetime-local" ${ro||!["triage","isb"].includes(S.role)?"disabled":""} value="${dtLocal(t.kenntnis)}" onchange="upd('kenntnis',parseDt(this.value),'${tr("Kenntniserlangung")}')"></div>
+    <div><label>${tr("Ticket erstellt")}</label><input type="text" disabled value="${fmt(t.erstellt)}"></div>
+    <div><label>${tr("Meldende Person / Quelle")}</label><input type="text" ${ro?"disabled":""} value="${esc(t.quelle)}" onchange="upd('quelle',this.value)"></div>
+    <div><label>${tr("Personen betroffen")}</label><input type="text" disabled value="${t.personen?tr("ja"):tr("nein")}"></div>
+    <div><label>${tr("Near Miss")}</label><input type="text" disabled value="${t.nearmiss?tr("ja"):tr("nein")}"></div>
   </div>
-  <label>Beschreibung</label><textarea ${ro?"disabled":""} onchange="upd('beschreibung',this.value)">${esc(t.beschreibung)}</textarea>
-  ${needBegruendungAbw(t)?`<label>Begründung der Abweichung Kenntniserlangung / Erstellung <span class="req">*</span></label>
-   <textarea ${ro?"disabled":""} onchange="upd('kenntnisBegr',this.value,'Begründung Abweichung')">${esc(t.kenntnisBegr)}</textarea>`:""}
+  <label>${tr("Beschreibung")}</label><textarea ${ro?"disabled":""} onchange="upd('beschreibung',this.value)">${esc(t.beschreibung)}</textarea>
+  ${needBegruendungAbw(t)?`<label>${tr("Begründung der Abweichung Kenntniserlangung / Erstellung")} <span class="req">*</span></label>
+   <textarea ${ro?"disabled":""} onchange="upd('kenntnisBegr',this.value,'${tr("Begründung der Abweichung Kenntniserlangung / Erstellung")}')">${esc(t.kenntnisBegr)}</textarea>`:""}
   </div></div>
 
-  <div class="section"><div class="head">2 · Klassifizierung <span class="small muted">(durch Triage/Bearbeiter – Gesamtstufe wird berechnet, GDL Kap. 6.3)</span></div><div class="body">
+  <div class="section"><div class="head">${tr("2 · Klassifizierung")} <span class="small muted">${de?"(durch Triage/Bearbeiter – Gesamtstufe wird berechnet, GDL Kap. 6.3)":"(by triage/agents – the overall level is calculated, GDL ch. 6.3)"}</span></div><div class="body">
    <div class="grid3">
-    <div><label>Leitdomäne <span class="req">*</span> <span class="hint help" title="Steuert Gruppe, Arbeitsbereich und Meldepflichten. E und I → geschützter Bereich.">ⓘ</span></label>
-      <select ${ro?"disabled":""} onchange="upd('leitdomaene',this.value,'Leitdomäne')"><option value="">– wählen –</option>${DOMKEYS.map(d=>`<option value="${d}" ${t.leitdomaene===d?"selected":""}>${d} – ${DOM[d].n}${DOM[d].prot?" 🔒":""}</option>`).join("")}</select></div>
-    <div><label>Nebendomänen</label><div class="flex">${DOMKEYS.map(d=>`<label style="display:inline-flex;gap:3px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${(t.nebendomaenen||[]).includes(d)?"checked":""} ${ro?"disabled":""} onchange="toggleNeben('${d}',this.checked)">${d}</label>`).join("")}</div></div>
+    <div><label>${tr("Leitdomäne")} <span class="req">*</span> <span class="hint help" title="${de?"Steuert Gruppe, Arbeitsbereich und Meldepflichten. E und I → geschützter Bereich.":"Controls group, workspace and reporting duties. E and I → protected workspace."}">ⓘ</span></label>
+      <select ${ro?"disabled":""} onchange="upd('leitdomaene',this.value,'${tr("Leitdomäne")}')"><option value="">${tr("– wählen –")}</option>${DOMKEYS.map(d=>`<option value="${d}" ${t.leitdomaene===d?"selected":""}>${d} – ${domName(d)}${DOM[d].prot?" 🔒":""}</option>`).join("")}</select></div>
+    <div><label>${tr("Nebendomänen")}</label><div class="flex">${DOMKEYS.map(d=>`<label style="display:inline-flex;gap:3px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${(t.nebendomaenen||[]).includes(d)?"checked":""} ${ro?"disabled":""} onchange="toggleNeben('${d}',this.checked)">${d}</label>`).join("")}</div></div>
     <div><label>Incident Owner</label><input type="text" ${ro?"disabled":""} value="${esc(t.owner)}" onchange="upd('owner',this.value)"></div>
    </div>
-   <h3>Schadensdimensionen S1–S6 <span class="muted small">(Hilfetexte per ⓘ; Kriterien final aus Anhang B der Richtlinie)</span></h3>
+   <h3>${de?"Schadensdimensionen S1–S6":"Damage dimensions S1–S6"} <span class="muted small">${de?"(Hilfetexte per ⓘ; Kriterien final aus Anhang B der Richtlinie)":"(help via ⓘ; final criteria from Annex B of the policy)"}</span></h3>
    <div class="grid3">
-   ${SDIM.map(([k,l,h])=>`<div><label>${l} <span class="req">*</span> <span class="hint help" title="${esc(h)}">ⓘ</span></label>${sel(k,t[k],["",...SVALS],ro)}</div>`).join("")}
+   ${SDIM.map(([k,l],i)=>`<div><label>${tr(l)} <span class="req">*</span> <span class="hint help" title="${esc(sdimHelp(i))}">ⓘ</span></label>${sel(k,t[k],["",...SVALS],ro)}</div>`).join("")}
    </div>
    <div class="grid3">
-    <div><label>Gesamtstufe <span class="hint">(berechnet, schreibgeschützt)</span></label><input type="text" disabled value="${st||"–"} ${t.herab==="genehmigt"?"(Herabstufung genehmigt; berechnet "+cst.stufe+")":""}"></div>
-    <div><label>Eskalationsstufe <span class="hint">(berechnet; E3 nur ISB)</span></label><input type="text" disabled value="${effEsk(t)}"></div>
-    <div><label>Informationsklassifizierung ${t.s3&&t.s3!=="nicht betroffen"?'<span class="req">*</span>':""}</label>${sel("infoklass",t.infoklass,["","C1","C2","C3","C4"],ro)}</div>
+    <div><label>${tr("Gesamtstufe")} <span class="hint">${tr("(berechnet, schreibgeschützt)")}</span></label><input type="text" disabled value="${st||"–"}${t.herab==="genehmigt"?" "+tr("(Herabstufung genehmigt; berechnet ")+cst.stufe+")":""}"></div>
+    <div><label>${tr("Eskalationsstufe")} <span class="hint">${tr("(berechnet; E3 nur ISB)")}</span></label><input type="text" disabled value="${effEsk(t)}"></div>
+    <div><label>${tr("Informationsklassifizierung")} ${t.s3&&t.s3!=="nicht betroffen"?'<span class="req">*</span>':""}</label>${sel("infoklass",t.infoklass,["","C1","C2","C3","C4"],ro,v=>v||tr("– wählen –"))}</div>
    </div>
    <div class="grid3">
-    <div><label>Gefährdungsbezug <span class="req">*</span> <span class="hint help" title="BSI G 0.1–G 0.47 + REUTIB-Ergänzungen. „noch nicht bestimmt“ blockiert den Abschluss.">ⓘ</span></label>
-     <select ${ro?"disabled":""} onchange="upd('gef',this.value,'Gefährdungsbezug')">${gefOpts.map(g=>`<option ${t.gef===g?"selected":""}>${g}</option>`).join("")}</select></div>
-    <div><label>Betroffene Objekte ${["A","B"].includes(t.leitdomaene)?'<span class="req">* (CMDB-Pflicht bei A/B)</span>':""}</label><input type="text" ${ro?"disabled":""} value="${esc(t.objekte)}" onchange="upd('objekte',this.value)"></div>
-    <div><label>Kennzeichen</label><div class="flex">
-      <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.tisax?"checked":""} ${ro?"disabled":""} onchange="upd('tisax',this.checked,'TISAX-Relevanz')">TISAX</label>
-      <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.prototyp?"checked":""} ${ro?"disabled":""} onchange="upd('prototyp',this.checked,'Prototypenbezug')">Prototypenbezug ${["C","H"].includes(t.leitdomaene)?'<span class="req">*</span>':""}</label>
+    <div><label>${tr("Gefährdungsbezug")} <span class="req">*</span> <span class="hint help" title="${de?"BSI G 0.1–G 0.47 + REUTIB-Ergänzungen. „noch nicht bestimmt“ blockiert den Abschluss.":"BSI G 0.1–G 0.47 + REUTIB additions. “Not yet determined” blocks closure."}">ⓘ</span></label>
+     <select ${ro?"disabled":""} onchange="upd('gef',this.value,'${tr("Gefährdungsbezug")}')">${gefOpts.map(g=>`<option value="${esc(g)}" ${t.gef===g?"selected":""}>${gefLabel(g)}</option>`).join("")}</select></div>
+    <div><label>${tr("Betroffene Objekte")} ${["A","B"].includes(t.leitdomaene)?'<span class="req">* '+(de?"(CMDB-Pflicht bei A/B)":"(CMDB mandatory for A/B)")+'</span>':""}</label><input type="text" ${ro?"disabled":""} value="${esc(t.objekte)}" onchange="upd('objekte',this.value)"></div>
+    <div><label>${tr("Kennzeichen")}</label><div class="flex">
+      <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.tisax?"checked":""} ${ro?"disabled":""} onchange="upd('tisax',this.checked,'TISAX')">TISAX</label>
+      <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.prototyp?"checked":""} ${ro?"disabled":""} onchange="upd('prototyp',this.checked,'${tr("Prototypenbezug")}')">${tr("Prototypenbezug")} ${["C","H"].includes(t.leitdomaene)?'<span class="req">*</span>':""}</label>
     </div></div>
    </div>
-   ${["P1","P2"].includes(st)||t.herab!=="nein"?`<label>Begründung der Einstufung <span class="req">*</span> <span class="hint">(fortschreibend)</span></label>
-   <textarea ${ro?"disabled":""} onchange="upd('einstufungBegr',this.value,'Begründung Einstufung')">${esc(t.einstufungBegr)}</textarea>`:""}
+   ${["P1","P2"].includes(st)||t.herab!=="nein"?`<label>${tr("Begründung der Einstufung")} <span class="req">*</span> <span class="hint">${tr("(fortschreibend)")}</span></label>
+   <textarea ${ro?"disabled":""} onchange="upd('einstufungBegr',this.value,'${tr("Begründung der Einstufung")}')">${esc(t.einstufungBegr)}</textarea>`:""}
   </div></div>
 
-  <div class="section"><div class="head">3 · Meldepflichten und Fristen <span class="small muted">(Fälligkeit ab Kenntniserlangung, Kalenderzeit – GDL Kap. 10.2)</span></div><div class="body">
-   <table><thead><tr><th>Meldepflicht</th><th style="width:130px">Bewertung</th><th>Zuständig</th><th>Hinweis</th></tr></thead><tbody>
+  <div class="section"><div class="head">${tr("3 · Meldepflichten und Fristen")} <span class="small muted">${de?"(Fälligkeit ab Kenntniserlangung, Kalenderzeit – GDL Kap. 10.2)":"(due dates from time of awareness, calendar time – GDL ch. 10.2)"}</span></div><div class="body">
+   <table><thead><tr><th>${tr("Meldepflicht")}</th><th style="width:130px">${tr("Bewertung")}</th><th>${tr("Zuständig")}</th><th>${tr("Hinweis")}</th></tr></thead><tbody>
    ${PFL.map(p=>{
      const app = p.app(t)||p.opt;
      const v=t.pf[p.id];
      return `<tr style="${!app&&v==="nicht geprüft"?"opacity:.45":""}">
-      <td>${p.l}${p.app(t)&&!p.opt?' <span class="req">*</span>':""}</td>
-      <td><select ${ro?"disabled":""} onchange="updPf('${p.id}',this.value)">${PVALS.map(x=>`<option ${v===x?"selected":""}>${x}</option>`).join("")}</select></td>
-      <td class="small">${p.rolle}${p.appr?` · Freigabe: ${p.appr}`:""}</td>
-      <td class="small muted">${p.tasks.map(x=>x[0].split(" – ")[0]+" ("+(x[1]>=720?"1 Monat":x[1]>=72?x[1]/24+" Tage":x[1]+" h")+")").join(" · ")}${p.recall?" · setzt bei „ja“ Zwangsstufe P1 (Regel 12)":""}</td></tr>`;
+      <td>${tr(p.l)}${p.app(t)&&!p.opt?' <span class="req">*</span>':""}</td>
+      <td><select ${ro?"disabled":""} onchange="updPf('${p.id}',this.value)">${PVALS.map(x=>`<option value="${x}" ${v===x?"selected":""}>${tr(x)}</option>`).join("")}</select></td>
+      <td class="small">${tr(p.rolle)}${p.appr?` · ${de?"Freigabe":"Approval"}: ${tr(p.appr)}`:""}</td>
+      <td class="small muted">${p.tasks.map(x=>taskLabel(x[0]).split(" – ")[0]+" ("+(x[1]>=720?(de?"1 Monat":"1 month"):x[1]>=72?x[1]/24+(de?" Tage":" days"):x[1]+" h")+")").join(" · ")}${p.recall?(de?" · setzt bei „ja“ Zwangsstufe P1 (Regel 12)":" · “yes” forces level P1 (rule 12)"):""}</td></tr>`;
    }).join("")}
    </tbody></table>
-   <label>Nachweis der Meldung ${Object.values(t.pf).includes("ja")?'<span class="req">*</span> (Pflicht, sobald eine Meldepflicht auf „ja“ steht)':""} <span class="hint">– Meldung und Empfangsbestätigung als Anlage zurückführen (BSI-Portal: manuell nach STD_010.001)</span></label>
-   <textarea ${ro?"disabled":""} onchange="upd('nachweis',this.value,'Nachweis der Meldung')" placeholder="z. B. „BSI-Meldung 02.08.2026 14:12, Referenz-Nr. …, Empfangsbestätigung als PDF abgelegt"">${esc(t.nachweis)}</textarea>
+   <label>${tr("Nachweis der Meldung")} ${Object.values(t.pf).includes("ja")?'<span class="req">*</span> '+(de?"(Pflicht, sobald eine Meldepflicht auf „ja“ steht)":"(mandatory as soon as any reporting duty is “yes”)"):""} <span class="hint">– ${de?"Meldung und Empfangsbestätigung als Anlage zurückführen (BSI-Portal: manuell nach STD_010.001)":"attach the notification and its acknowledgement (BSI portal: manual per STD_010.001)"}</span></label>
+   <textarea ${ro?"disabled":""} onchange="upd('nachweis',this.value,'${tr("Nachweis der Meldung")}')">${esc(t.nachweis)}</textarea>
   </div></div>
 
-  <div class="section"><div class="head">4 · Bearbeitung</div><div class="body">
-   <label>Sofortmaßnahmen (Protokoll) <span class="req">*</span> <span class="hint">– fortschreibend, je Eintrag Zeitstempel und handelnde Person; blockiert den Wechsel aus der Eindämmung, wenn leer</span></label>
-   <textarea ${ro?"disabled":""} onchange="upd('sofort',this.value,'Sofortmaßnahmen')">${esc(t.sofort)}</textarea>
+  <div class="section"><div class="head">${tr("4 · Bearbeitung")}</div><div class="body">
+   <label>${tr("Sofortmaßnahmen (Protokoll)")} <span class="req">*</span> <span class="hint">– ${de?"fortschreibend, je Eintrag Zeitstempel und handelnde Person; blockiert den Wechsel aus der Eindämmung, wenn leer":"running record with timestamp and acting person per entry; blocks leaving containment when empty"}</span></label>
+   <textarea ${ro?"disabled":""} onchange="upd('sofort',this.value,'${tr("Sofortmaßnahmen (Protokoll)")}')">${esc(t.sofort)}</textarea>
    <div class="grid2">
-    <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.beweis?"checked":""} ${ro?"disabled":""} onchange="upd('beweis',this.checked,'Beweissicherung erfolgt')"> Beweissicherung erfolgt ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label>
-     <input type="text" placeholder="Art und Ablage der Beweise" ${ro?"disabled":""} value="${esc(t.beweisText)}" onchange="upd('beweisText',this.value,'Beweissicherung – Text')"></div>
-    <div><label>Führender Fachvorgang ${["F","G","H"].includes(t.leitdomaene)?'<span class="req">*</span>':""}</label>
-     <div class="flex"><select style="width:auto" ${ro?"disabled":""} onchange="upd('fvSystem',this.value,'Fachvorgang – System')">${["","CAQ QBD.net","Instandhaltung","Lieferantenbewertung","Unfallanzeige","keiner"].map(x=>`<option ${t.fvSystem===x?"selected":""}>${x||"– System –"}</option>`).join("")}</select>
-     <input type="text" style="width:180px" placeholder="Vorgangsnummer" ${ro?"disabled":""} value="${esc(t.fvNummer)}" onchange="upd('fvNummer',this.value,'Fachvorgang – Nummer')">
-     <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.fvAbgeschlossen?"checked":""} ${ro?"disabled":""} onchange="upd('fvAbgeschlossen',this.checked,'Fachvorgang abgeschlossen')">abgeschlossen</label></div></div>
+    <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.beweis?"checked":""} ${ro?"disabled":""} onchange="upd('beweis',this.checked,'${tr("Beweissicherung erfolgt")}')"> ${tr("Beweissicherung erfolgt")} ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label>
+     <input type="text" placeholder="${tr("Art und Ablage der Beweise")}" ${ro?"disabled":""} value="${esc(t.beweisText)}" onchange="upd('beweisText',this.value)"></div>
+    <div><label>${tr("Führender Fachvorgang")} ${["F","G","H"].includes(t.leitdomaene)?'<span class="req">*</span>':""}</label>
+     <div class="flex"><select style="width:auto" ${ro?"disabled":""} onchange="upd('fvSystem',this.value,'${tr("Führender Fachvorgang")}')">${["","CAQ QBD.net","Instandhaltung","Lieferantenbewertung","Unfallanzeige","keiner"].map(x=>`<option value="${x}" ${t.fvSystem===x?"selected":""}>${x===""?tr("– System –"):tr(x)}</option>`).join("")}</select>
+     <input type="text" style="width:180px" placeholder="${tr("Vorgangsnummer")}" ${ro?"disabled":""} value="${esc(t.fvNummer)}" onchange="upd('fvNummer',this.value,'${tr("Vorgangsnummer")}')">
+     <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.fvAbgeschlossen?"checked":""} ${ro?"disabled":""} onchange="upd('fvAbgeschlossen',this.checked,'${tr("abgeschlossen")}')">${tr("abgeschlossen")}</label></div></div>
    </div>
    <div class="grid2">
-    <div><label>Unmittelbare Ursache ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label><textarea ${ro?"disabled":""} onchange="upd('ursache1',this.value,'Unmittelbare Ursache')">${esc(t.ursache1)}</textarea></div>
-    <div><label>Systemursache ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label><textarea ${ro?"disabled":""} onchange="upd('ursache2',this.value,'Systemursache')">${esc(t.ursache2)}</textarea></div>
+    <div><label>${tr("Unmittelbare Ursache")} ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label><textarea ${ro?"disabled":""} onchange="upd('ursache1',this.value,'${tr("Unmittelbare Ursache")}')">${esc(t.ursache1)}</textarea></div>
+    <div><label>${tr("Systemursache")} ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label><textarea ${ro?"disabled":""} onchange="upd('ursache2',this.value,'${tr("Systemursache")}')">${esc(t.ursache2)}</textarea></div>
    </div>
-   <label>Übergabeprotokoll BCM <span class="hint">(Pflicht für „Ausgesetzt – BCM“ und E3)</span></label>
-   <textarea ${ro?"disabled":""} onchange="upd('bcmNote',this.value,'Übergabeprotokoll BCM')">${esc(t.bcmNote)}</textarea>
+   <label>${tr("Übergabeprotokoll BCM")} <span class="hint">${tr("(Pflicht für „Ausgesetzt – BCM“ und E3)")}</span></label>
+   <textarea ${ro?"disabled":""} onchange="upd('bcmNote',this.value,'${tr("Übergabeprotokoll BCM")}')">${esc(t.bcmNote)}</textarea>
   </div></div>
 
-  <div class="section"><div class="head">5 · Abschluss</div><div class="body">
+  <div class="section"><div class="head">${tr("5 · Abschluss")}</div><div class="body">
    <div class="grid3">
-    <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.freigabe?"checked":""} ${ro?"disabled":""} onchange="upd('freigabe',this.checked,'Freigabe der Wiederaufnahme')"> Freigabe der Wiederaufnahme <span class="req">*</span></label></div>
-    <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.freigabeIsb?"checked":""} ${ro||S.role!=="isb"?"disabled":""} onchange="upd('freigabeIsb',this.checked,'Bestätigung ISB')"> Bestätigung ISB ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""} <span class="hint">(nur ISB)</span></label></div>
-    <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.freigabeQl?"checked":""} ${ro?"disabled":""} onchange="upd('freigabeQl',this.checked,'Bestätigung Qualitätsleitung')"> Bestätigung Qualitätsleitung ${t.pf.kunde_produkt==="ja"?'<span class="req">*</span>':""}</label></div>
+    <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.freigabe?"checked":""} ${ro?"disabled":""} onchange="upd('freigabe',this.checked,'${tr("Freigabe der Wiederaufnahme")}')"> ${tr("Freigabe der Wiederaufnahme")} <span class="req">*</span></label></div>
+    <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.freigabeIsb?"checked":""} ${ro||S.role!=="isb"?"disabled":""} onchange="upd('freigabeIsb',this.checked,'${tr("Bestätigung ISB")}')"> ${tr("Bestätigung ISB")} ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""} <span class="hint">${tr("(nur ISB)")}</span></label></div>
+    <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.freigabeQl?"checked":""} ${ro?"disabled":""} onchange="upd('freigabeQl',this.checked,'${tr("Bestätigung Qualitätsleitung")}')"> ${tr("Bestätigung Qualitätsleitung")} ${t.pf.kunde_produkt==="ja"?'<span class="req">*</span>':""}</label></div>
    </div>
    <div class="grid2">
-    <div><label>Abschlussbericht ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2, ISMS-TMPL-006a)</span>':""}</label><input type="text" ${ro?"disabled":""} placeholder="Dateiname / Ablageort der Anlage" value="${esc(t.abschlussbericht)}" onchange="upd('abschlussbericht',this.value,'Abschlussbericht')"></div>
-    <div><label>Referenz Risikoregister ${["P1","P2"].includes(st)?'<span class="req">*</span>':""}</label><input type="text" ${ro?"disabled":""} value="${esc(t.risikoRef)}" onchange="upd('risikoRef',this.value,'Referenz Risikoregister')"></div>
+    <div><label>${tr("Abschlussbericht")} ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2, ISMS-TMPL-006a)</span>':""}</label><input type="text" ${ro?"disabled":""} placeholder="${tr("Dateiname / Ablageort der Anlage")}" value="${esc(t.abschlussbericht)}" onchange="upd('abschlussbericht',this.value,'${tr("Abschlussbericht")}')"></div>
+    <div><label>${tr("Referenz Risikoregister")} ${["P1","P2"].includes(st)?'<span class="req">*</span>':""}</label><input type="text" ${ro?"disabled":""} value="${esc(t.risikoRef)}" onchange="upd('risikoRef',this.value,'${tr("Referenz Risikoregister")}')"></div>
    </div>
-   <label>Lessons Learned ${["P1","P2"].includes(st)?'<span class="req">*</span>':""}</label>
-   <textarea ${ro?"disabled":""} onchange="upd('lessons',this.value,'Lessons Learned')">${esc(t.lessons)}</textarea>
-   ${t.wirksamkeit?`<div class="note">Termin Wirksamkeitsprüfung: <b>${fmt(t.wirksamkeit)}</b> (Umsetzung + 6 Monate, Nachverfolgungsaufgabe erzeugt).</div>`:""}
+   <label>${tr("Lessons Learned")} ${["P1","P2"].includes(st)?'<span class="req">*</span>':""}</label>
+   <textarea ${ro?"disabled":""} onchange="upd('lessons',this.value,'${tr("Lessons Learned")}')">${esc(t.lessons)}</textarea>
+   ${t.wirksamkeit?`<div class="note">${de?"Termin Wirksamkeitsprüfung":"Effectiveness review due"}: <b>${fmt(t.wirksamkeit)}</b> ${de?"(Umsetzung + 6 Monate, Nachverfolgungsaufgabe erzeugt).":"(implementation + 6 months, follow-up task created)."}</div>`:""}
   </div></div>
 
-  <div class="section"><div class="head">Aufgaben und Fristen <span class="small muted">(${openTasks.length} offen)</span></div><div class="body">
-   ${t.tasks.length?`<table><thead><tr><th></th><th>Aufgabe</th><th>Zuständig</th><th>Fällig</th><th>Restlaufzeit</th></tr></thead><tbody>
+  <div class="section"><div class="head">${tr("Aufgaben und Fristen")} <span class="small muted">(${openTasks.length} ${tr("offen")})</span></div><div class="body">
+   ${t.tasks.length?`<table><thead><tr><th></th><th>${tr("Aufgabe")}</th><th>${tr("Zuständig")}</th><th>${tr("Fällig")}</th><th>${tr("Restlaufzeit")}</th></tr></thead><tbody>
    ${t.tasks.slice().sort((a,b)=>a.due-b.due).map(x=>{
-     const rest=x.due-now(); const amp=x.done?"g":rest<0?"r":rest<0.25*72*3600000?"o":"g";
+     const rest=x.due-now();
      return `<tr class="taskrow ${x.done?"done":""}"><td><input type="checkbox" style="width:auto" ${x.done?"checked":""} ${ro?"disabled":""} onchange="taskDone('${x.id}')"></td>
-     <td>${esc(x.name)}</td><td class="small">${esc(x.rolle)}</td><td class="small">${fmt(x.due)}</td>
-     <td>${x.done?`<span class="small muted">erledigt ${fmt(x.doneTs)}</span>`:`<span class="amp ${rest<0?"r":rest<12*3600000?"o":"g"}"></span>${fmtRest(rest)}`}</td></tr>`;
-   }).join("")}</tbody></table>`:`<p class="muted small">Keine Aufgaben. Meldeaufgaben entstehen automatisch, sobald eine Meldepflicht auf „ja“ gesetzt wird.</p>`}
-   ${t.approvals.length?`<h3>Genehmigungen</h3><table><thead><tr><th>Vorgang</th><th>Genehmigt durch</th><th>Status</th><th class="noprint">Aktion</th></tr></thead><tbody>
-   ${t.approvals.map((a,i)=>`<tr><td>${esc(a.l)}</td><td>${a.by}</td><td>${a.state==="offen"?'<span class="badge e1">offen</span>':a.state==="genehmigt"?'<span class="badge st" style="color:var(--ok)">genehmigt</span>':'<span class="badge st" style="color:var(--crit)">abgelehnt</span>'} ${a.ts?`<span class="small muted">${fmt(a.ts)}</span>`:""}</td>
-   <td class="noprint">${a.state==="offen"?`<button class="sec" onclick="approve(${i},'genehmigt')">Genehmigen</button> <button class="sec" onclick="approve(${i},'abgelehnt')">Ablehnen</button>`:"–"}</td></tr>`).join("")}</tbody></table>
-   <p class="small muted">Genehmigungsschritte halten die Fristenuhr nicht an; die Behördenmeldung selbst ist nicht genehmigungspflichtig (GDL Kap. 10.3).</p>`:""}
+     <td>${esc(taskLabel(x.name))}</td><td class="small">${tr(x.rolle)}</td><td class="small">${fmt(x.due)}</td>
+     <td>${x.done?`<span class="small muted">${tr("erledigt")} ${fmt(x.doneTs)}</span>`:`<span class="amp ${rest<0?"r":rest<12*3600000?"o":"g"}"></span>${fmtRest(rest)}`}</td></tr>`;
+   }).join("")}</tbody></table>`:`<p class="muted small">${tr("Keine Aufgaben. Meldeaufgaben entstehen automatisch, sobald eine Meldepflicht auf „ja“ gesetzt wird.")}</p>`}
+   ${t.approvals.length?`<h3>${tr("Genehmigungen")}</h3><table><thead><tr><th>${tr("Vorgang")}</th><th>${tr("Genehmigt durch")}</th><th>${tr("Status")}</th><th class="noprint">${tr("Aktion")}</th></tr></thead><tbody>
+   ${t.approvals.map((a,i)=>`<tr><td>${esc(a.l)}</td><td>${tr(a.by)}</td><td>${a.state==="offen"?'<span class="badge e1">'+tr("offen")+'</span>':a.state==="genehmigt"?'<span class="badge st" style="color:var(--ok)">'+tr("genehmigt")+'</span>':'<span class="badge st" style="color:var(--crit)">'+tr("abgelehnt")+'</span>'} ${a.ts?`<span class="small muted">${fmt(a.ts)}</span>`:""}</td>
+   <td class="noprint">${a.state==="offen"?`<button class="sec mini" onclick="approve(${i},'genehmigt')">${tr("Genehmigen")}</button> <button class="sec mini" onclick="approve(${i},'abgelehnt')">${tr("Ablehnen")}</button>`:"–"}</td></tr>`).join("")}</tbody></table>
+   <p class="small muted">${de?"Genehmigungsschritte halten die Fristenuhr nicht an; die Behördenmeldung selbst ist nicht genehmigungspflichtig (GDL Kap. 10.3).":"Approval steps never stop the deadline clock; the notification to the authority itself does not require approval (GDL ch. 10.3)."}</p>`:""}
   </div></div>
 
-  <div class="section"><div class="head">Aktivitätsprotokoll <span class="small muted">(nicht deaktivierbar – Nachweisführung, GDL Kap. 14)</span></div><div class="body">
+  <div class="section"><div class="head">${tr("Aktivitätsprotokoll")} <span class="small muted">${de?"(nicht deaktivierbar – Nachweisführung, GDL Kap. 14)":"(cannot be disabled – evidence trail, GDL ch. 14)"}</span></div><div class="body">
    <div class="log">${t.log.map(e=>`<div><b>${fmt(e.ts)}</b> · ${esc(e.who)} · ${esc(e.txt)}</div>`).join("")}</div>
-   <p class="small muted">Beobachter: ${t.beobachter.join(", ")||"–"} · Erstreaktion: ${t.erstreaktion?fmt(t.erstreaktion):"ausstehend"} · SLA Erstreaktion: ${st?SLA_H[st]+" h ("+(["P1","P2"].includes(st)?"24/7":"Standortkalender")+")":"–"}</p>
+   <p class="small muted">${tr("Beobachter:")} ${t.beobachter.map(b=>tr(b)).join(", ")||"–"} · ${tr("Erstreaktion")}: ${t.erstreaktion?fmt(t.erstreaktion):tr("ausstehend")} · ${tr("SLA Erstreaktion:")} ${st?SLA_H[st]+" h ("+(["P1","P2"].includes(st)?"24/7":tr("Standortkalender"))+")":"–"}</p>
   </div></div>`;
 }
 function toggleNeben(d, on){
   const t=T(); if(!t||!canEdit(t)) return;
   t.nebendomaenen = on ? [...new Set([...(t.nebendomaenen||[]),d])] : (t.nebendomaenen||[]).filter(x=>x!==d);
   if(on){
-    log(t,"Nebendomäne "+d+" gesetzt → Mitwirkungsaufgabe an Incident Owner "+d+", Beobachterstatus (Regel 7).");
+    log(t,tr("Nebendomäne gesetzt → Mitwirkungsaufgabe an den Incident Owner, Beobachterstatus (Regel 7).")+" ["+d+"]");
     addOnce(t,"neben_"+d,"Mitwirkung Nebendomäne "+d+" – "+DOM[d].n,"Incident Owner "+d,72);
     if(!t.beobachter.includes("Incident Owner "+d)) t.beobachter.push("Incident Owner "+d);
-  } else log(t,"Nebendomäne "+d+" entfernt.");
+  } else log(t,tr("Nebendomäne entfernt.")+" ["+d+"]");
   save(); render();
 }
 
 /* ---------- Fristenmonitor ---------- */
 function viewFristen(){
+  const de = S.lang!=="en";
   const rows=[];
   for(const t of S.tickets.filter(canSee)){
     const st=effStufe(t);
     if(t.erstreaktion===null && st && !["Resolved","Closed"].includes(t.status)){
       const due=t.kenntnis+SLA_H[st]*3600000;
-      rows.push({t, name:"Erstreaktion ("+st+", "+SLA_H[st]+" h)", rolle:t.owner||"Triage", due, typ:"SLA"});
+      rows.push({t, name:tr("Erstreaktion")+" ("+st+", "+SLA_H[st]+" h)", rolle:t.owner||"Triage", due, typ:"SLA"});
     }
-    for(const x of t.tasks) if(!x.done && !["Closed"].includes(t.status)) rows.push({t, name:x.name, rolle:x.rolle, due:x.due, typ:x.origin.startsWith("nb")||x.origin.startsWith("neben")?"Aufgabe":"Meldepflicht"});
+    for(const x of t.tasks) if(!x.done && t.status!=="Closed") rows.push({t, name:taskLabel(x.name), rolle:tr(x.rolle), due:x.due, typ:x.origin.startsWith("nb")||x.origin.startsWith("neben")?tr("Aufgabe"):tr("Meldepflicht")});
   }
   rows.sort((a,b)=>a.due-b.due);
   const od=rows.filter(r=>r.due<now());
-  return `<h1>Fristenmonitor</h1>
-  <p class="muted">Alle offenen Melde- und SLA-Fristen mit Restlaufzeit (Ampel: &gt;50 % grün · 50–75 % gelb · &gt;75 % orange · überschritten rot). Eskalationskette gem. GDL Kap. 9.2/11: 50 % → Incident Owner, 75 % → zusätzlich ISB, Überschreitung → zusätzlich Geschäftsleitung.</p>
-  <div class="kpis"><div class="kpi"><div class="v">${rows.length}</div><div class="l">offene Fristen</div></div>
-  <div class="kpi"><div class="v" style="color:${od.length?"var(--crit)":"inherit"}">${od.length}</div><div class="l">überfällig (Fristverletzung → Monatsbericht)</div></div></div>
-  ${rows.length?`<table><thead><tr><th></th><th>Ticket</th><th>Frist / Aufgabe</th><th>Typ</th><th>Zuständig</th><th>Fällig</th><th>Restlaufzeit</th></tr></thead><tbody>
+  return `<h1>${tr("Fristenmonitor")}</h1>
+  <p class="muted">${de
+   ?"Alle offenen Melde- und SLA-Fristen mit Restlaufzeit (Ampel: &gt;50 % grün · 50–75 % gelb · &gt;75 % orange · überschritten rot). Eskalationskette gem. GDL Kap. 9.2/11: 50 % → Incident Owner, 75 % → zusätzlich ISB, Überschreitung → zusätzlich Geschäftsleitung."
+   :"All open notification and SLA deadlines with time remaining (traffic light: &gt;50 % green · 50–75 % yellow · &gt;75 % orange · breached red). Escalation chain per GDL ch. 9.2/11: 50 % → incident owner, 75 % → additionally ISB, breach → additionally executive management."}</p>
+  <div class="kpis"><div class="kpi"><div class="v">${rows.length}</div><div class="l">${tr("offene Fristen")}</div></div>
+  <div class="kpi"><div class="v" style="color:${od.length?"var(--crit)":"inherit"}">${od.length}</div><div class="l">${tr("überfällig (Fristverletzung → Monatsbericht)")}</div></div></div>
+  ${rows.length?`<table><thead><tr><th></th><th>${tr("Ticket")}</th><th>${tr("Frist / Aufgabe")}</th><th>${tr("Typ")}</th><th>${tr("Zuständig")}</th><th>${tr("Fällig")}</th><th>${tr("Restlaufzeit")}</th></tr></thead><tbody>
   ${rows.map(r=>{
     const total = r.due-(r.t.kenntnis||r.due); const gone = now()-(r.t.kenntnis||now());
     const q = total>0? gone/total : 1;
@@ -907,13 +1114,13 @@ function viewFristen(){
     <td><b>${r.t.id}</b> <span class="small muted">${esc(r.t.betreff.slice(0,40))}</span></td>
     <td>${esc(r.name)}</td><td class="small">${r.typ}</td><td class="small">${esc(r.rolle)}</td>
     <td class="small">${fmt(r.due)}</td><td>${r.due<now()?`<b style="color:var(--crit)">${fmtRest(r.due-now())}</b>`:fmtRest(r.due-now())}</td></tr>`;
-  }).join("")}</tbody></table>`:`<div class="note">Keine offenen Fristen im sichtbaren Bereich.</div>`}`;
+  }).join("")}</tbody></table>`:`<div class="note">${tr("Keine offenen Fristen im sichtbaren Bereich.")}</div>`}`;
 }
 
 /* ---------- Berichte (GDL Kap. 12) ---------- */
 function viewBerichte(){
+  const de = S.lang!=="en";
   const all=S.tickets;
-  const vis=all.filter(canSee);
   const prot=all.filter(isProtected);
   const open=all.filter(t=>!["Resolved","Closed"].includes(t.status));
   const p12=open.filter(t=>["P1","P2"].includes(effStufe(t)));
@@ -927,36 +1134,79 @@ function viewBerichte(){
   const gefCount={};
   for(const t of all){ if(t.gef && t.gef!=="noch nicht bestimmt"){ gefCount[t.gef]=(gefCount[t.gef]||0)+1; } }
   const topGef=Object.entries(gefCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  return `<h1>Auswertung und Berichte</h1>
-  <p class="muted">Kennzahlen nach Kap. 12 der Prozessbeschreibung. Der geschützte Bereich (Domänen E und I) fließt ausschließlich <b>aggregiert und ohne Personenbezug</b> ein; eine Auswertung nach Bearbeitern oder meldenden Personen ist nicht möglich und wird nicht angeboten (GDL Kap. 4/12).</p>
-  <h2>Lagebild</h2>
+  const h=all.filter(t=>t.leitdomaene==="H"); const withFv=h.filter(t=>t.fvNummer);
+  return `<h1>${de?"Auswertung und Berichte":"Evaluation and reports"}</h1>
+  <p class="muted">${de
+   ?"Kennzahlen nach Kap. 12 der Prozessbeschreibung. Der geschützte Bereich (Domänen E und I) fließt ausschließlich <b>aggregiert und ohne Personenbezug</b> ein; eine Auswertung nach Bearbeitern oder meldenden Personen ist nicht möglich und wird nicht angeboten (GDL Kap. 4/12)."
+   :"KPIs per ch. 12 of the process description. The protected workspace (domains E and I) is included <b>in aggregate form only, without any personal reference</b>; evaluation by agents or reporting persons is not possible and not offered (GDL ch. 4/12)."}</p>
+  <h2>${de?"Lagebild":"Situation picture"}</h2>
   <div class="kpis">
-   <div class="kpi"><div class="v">${all.length}</div><div class="l">Incidents gesamt</div></div>
-   <div class="kpi"><div class="v">${open.length}</div><div class="l">offen</div></div>
-   <div class="kpi"><div class="v" style="color:${p12.length?"var(--crit)":"inherit"}">${p12.length}</div><div class="l">offen P1/P2</div></div>
-   <div class="kpi"><div class="v" style="color:${odTasks.length?"var(--crit)":"inherit"}">${odTasks.length}</div><div class="l">Meldeaufgaben überfällig</div></div>
-   <div class="kpi"><div class="v">${all.length?Math.round(100*klassOk.length/all.length):0}%</div><div class="l">Klassifizierungsqualität (vollständig, ohne „nicht geprüft“)</div></div>
-   <div class="kpi"><div class="v">${nm.length}</div><div class="l">Beinaheereignisse (Meldequote-KPI)</div></div>
-   <div class="kpi"><div class="v">${prot.length}</div><div class="l">geschützter Bereich (nur aggregiert)</div></div>
+   <div class="kpi"><div class="v">${all.length}</div><div class="l">${de?"Incidents gesamt":"Incidents total"}</div></div>
+   <div class="kpi"><div class="v">${open.length}</div><div class="l">${tr("offen")}</div></div>
+   <div class="kpi"><div class="v" style="color:${p12.length?"var(--crit)":"inherit"}">${p12.length}</div><div class="l">${de?"offen P1/P2":"open P1/P2"}</div></div>
+   <div class="kpi"><div class="v" style="color:${odTasks.length?"var(--crit)":"inherit"}">${odTasks.length}</div><div class="l">${de?"Meldeaufgaben überfällig":"notification tasks overdue"}</div></div>
+   <div class="kpi"><div class="v">${all.length?Math.round(100*klassOk.length/all.length):0}%</div><div class="l">${de?"Klassifizierungsqualität (vollständig, ohne „nicht geprüft“)":"classification quality (complete, none “not assessed”)"}</div></div>
+   <div class="kpi"><div class="v">${nm.length}</div><div class="l">${de?"Beinaheereignisse (Meldequote-KPI)":"near misses (reporting-rate KPI)"}</div></div>
+   <div class="kpi"><div class="v">${prot.length}</div><div class="l">${de?"geschützter Bereich (nur aggregiert)":"protected workspace (aggregate only)"}</div></div>
   </div>
-  <h2>Lagebild Domänen <span class="small muted">– offene/gesamt je Domäne und Verteilung der Gesamtstufen</span></h2>
-  <table class="matrix"><thead><tr><th>Domäne</th><th>Bezeichnung</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>offen</th><th>gesamt</th></tr></thead><tbody>
-  ${DOMKEYS.map(d=>{const m=matrix[d];return `<tr><td><b>${d}</b>${DOM[d].prot?" 🔒":""}</td><td>${DOM[d].n}${DOM[d].prot?' <span class="small muted">(aggregiert)</span>':""}</td>
+  <h2>${de?"Lagebild Domänen":"Domain overview"} <span class="small muted">– ${de?"offene/gesamt je Domäne und Verteilung der Gesamtstufen":"open/total per domain and distribution of overall levels"}</span></h2>
+  <table class="matrix"><thead><tr><th>${tr("Domäne")}</th><th>${de?"Bezeichnung":"Name"}</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>${tr("offen")}</th><th>${de?"gesamt":"total"}</th></tr></thead><tbody>
+  ${DOMKEYS.map(d=>{const m=matrix[d];return `<tr><td><b>${d}</b>${DOM[d].prot?" 🔒":""}</td><td>${domName(d)}${DOM[d].prot?' <span class="small muted">'+(de?"(aggregiert)":"(aggregate)")+'</span>':""}</td>
    ${["P1","P2","P3","P4"].map(s=>`<td class="${m[s]?"":"n0"}">${m[s]||"·"}</td>`).join("")}
    <td class="${m.offen?"":"n0"}">${m.offen||"·"}</td><td class="${m.gesamt?"":"n0"}">${m.gesamt||"·"}</td></tr>`;}).join("")}
   </tbody></table>
-  <h2>Gefährdungstrend <span class="small muted">– Häufung gleicher Gefährdungen (Eingang in die Notfallplanprüfung)</span></h2>
-  ${topGef.length?`<table><thead><tr><th>Gefährdung</th><th>Anzahl</th><th></th></tr></thead><tbody>
-   ${topGef.map(([g,c])=>`<tr><td>${esc(g)}</td><td>${c}</td><td><div style="background:var(--gelb);height:12px;width:${Math.min(100,c*12)}%;min-width:12px;border-radius:3px"></div></td></tr>`).join("")}</tbody></table>`
-   :`<p class="muted small">Noch keine Gefährdungszuordnungen.</p>`}
-  <h2>Verknüpfungsquote Domäne H</h2>
-  ${(()=>{const h=all.filter(t=>t.leitdomaene==="H");const withFv=h.filter(t=>t.fvNummer);
-    return `<p>${h.length?`${withFv.length} von ${h.length} Tickets der Domäne H mit Fachvorgangsnummer (${Math.round(100*withFv.length/h.length)} %).`:"Keine Tickets der Domäne H."}</p>`;})()}
-  <div class="note">Berichtskatalog der GDL (Kap. 12): Lagebild Domänen (monatlich GL) · Fristenmonitor (laufend ISB) · Klassifizierungsqualität (monatlich) · Reaktionszeiten (monatlich) · Erkennung/Reaktion/Eindämmung A+B · Meldequote Near Miss (quartalsweise) · Gefährdungstrend (quartalsweise) · Verknüpfungsquote H · Jahresauswertung. Der Prototyp zeigt die wichtigsten davon live; Druck über die Browser-Druckfunktion.</div>`;
+  <h2>${de?"Gefährdungstrend":"Threat trend"} <span class="small muted">– ${de?"Häufung gleicher Gefährdungen (Eingang in die Notfallplanprüfung)":"clustering of identical threats (input to contingency plan review)"}</span></h2>
+  ${topGef.length?`<table><thead><tr><th>${de?"Gefährdung":"Threat"}</th><th>${de?"Anzahl":"Count"}</th><th></th></tr></thead><tbody>
+   ${topGef.map(([g,c])=>`<tr><td>${esc(gefLabel(g))}</td><td>${c}</td><td><div style="background:var(--gelb);height:12px;width:${Math.min(100,c*12)}%;min-width:12px;border-radius:3px"></div></td></tr>`).join("")}</tbody></table>`
+   :`<p class="muted small">${de?"Noch keine Gefährdungszuordnungen.":"No threat assignments yet."}</p>`}
+  <h2>${de?"Verknüpfungsquote Domäne H":"Linkage rate domain H"}</h2>
+  <p>${h.length?(de?`${withFv.length} von ${h.length} Tickets der Domäne H mit Fachvorgangsnummer (${Math.round(100*withFv.length/h.length)} %).`:`${withFv.length} of ${h.length} domain-H tickets carry a business record number (${Math.round(100*withFv.length/h.length)} %).`):(de?"Keine Tickets der Domäne H.":"No domain-H tickets.")}</p>
+  <div class="note">${de
+   ?"Berichtskatalog der GDL (Kap. 12): Lagebild Domänen (monatlich GL) · Fristenmonitor (laufend ISB) · Klassifizierungsqualität (monatlich) · Reaktionszeiten (monatlich) · Erkennung/Reaktion/Eindämmung A+B · Meldequote Near Miss (quartalsweise) · Gefährdungstrend (quartalsweise) · Verknüpfungsquote H · Jahresauswertung. Der Prototyp zeigt die wichtigsten davon live; Druck über die Browser-Druckfunktion."
+   :"Report catalogue of the GDL (ch. 12): domain overview (monthly, management) · deadline monitor (continuous, ISB) · classification quality (monthly) · response times (monthly) · detection/response/containment A+B · near-miss reporting rate (quarterly) · threat trend (quarterly) · linkage rate H · annual evaluation. The prototype shows the most important ones live; print via the browser print function."}</div>`;
 }
 
 /* ---------- Doku ---------- */
 function viewDoku(){
+  if(S.lang==="en") return `<h1>Prototype documentation</h1>
+  <div class="note"><b>Positioning:</b> This prototype implements the implementation recommendation <b>GDL_010.001 V1.00</b> (Freshservice implementation of Incident Response Management, 2026-08-01) as a runnable reference. It serves to validate the field, status and deadline model <b>before</b> the actual Freshservice configuration – it replaces neither a ticket system nor a server database (storage in the browser only; transfer via “Save/Load state”).</div>
+  <h2>Covered requirements</h2>
+  <table><thead><tr><th>GDL chapter</th><th>Requirement</th><th>Prototype implementation</th></tr></thead><tbody>
+  <tr><td>5.1/5.2</td><td>One ticket type, three portal entry points, lean report form without classification</td><td>Portal tab: “Report an incident”, “Near miss”, “Imminent danger” (information page)</td></tr>
+  <tr><td>6 / Annex A</td><td>Field model incl. S1–S6, reporting duties, business record, closure fields</td><td>Ticket detail, sections 1–5; obligations context-dependent (domain, site, level)</td></tr>
+  <tr><td>6.3</td><td>Overall level = maximum of S1–S6, staged rules, rule 5 (24-h duty → E2), rule 12 (recall → P1)</td><td>calculated, read-only; downgrade only via request + ISB approval</td></tr>
+  <tr><td>7</td><td>Status model with blocking transitions and named error messages</td><td>Status buttons; the blocking dialog names every missing field</td></tr>
+  <tr><td>4</td><td>Protected workspace domains E/I</td><td>Role simulation: triage/management/auditor lose read access after assignment to E/I; reports aggregate only</td></tr>
+  <tr><td>8</td><td>Group/role model, watchers (ISB, secondary domains, DPO)</td><td>Role switcher (header), automatic watcher and owner pre-assignment</td></tr>
+  <tr><td>10.2</td><td><b>Deadlines from time of awareness</b> incl. re-calculation after correction and justification duty &gt; 1 h</td><td>Time of awareness as deadline anchor; open notification tasks are re-scheduled on change (test cases 18/19)</td></tr>
+  <tr><td>10.3</td><td>Approvals (downgrade, customer info, Sec. 35 BSIG, BCM); deadline clock keeps running</td><td>Approval list in the ticket; role binding ISB/management</td></tr>
+  <tr><td>9/11</td><td>Response times P1–P4, escalation 50/75 %, notification triggers</td><td>Deadline monitor with traffic light; P1 banner (real alerting only in Freshservice)</td></tr>
+  <tr><td>12</td><td>Reports/KPIs</td><td>Reports tab: overview, classification quality, threat trend, linkage rate H</td></tr>
+  <tr><td>14</td><td>Logging, no deletion right</td><td>Activity log per ticket; tickets cannot be deleted</td></tr>
+  <tr><td>Annex C</td><td>Test data set: one fictitious case per domain</td><td>“Load test data” button in the Tickets tab</td></tr>
+  </tbody></table>
+  <h2>Deliberate simplifications (delta to the Freshservice target)</h2>
+  <ul>
+   <li><b>No server database, no tenant separation:</b> browser storage (localStorage); multi-user operation only via JSON export/import. The protected workspace is a UI simulation, not a hard object-level separation.</li>
+   <li><b>Calendars:</b> deadlines in calendar time (as the GDL requires for notification duties); site business-hour calendars for P3/P4 SLAs are not implemented.</li>
+   <li><b>Notification/alerting:</b> simulated as banners/notes – e-mail, mobile, SMS only in the target platform.</li>
+   <li><b>Domain names A–J</b> and the <b>REUTIB threats G-R 1.01–1.12</b> are working assumptions and must be verified against PROC_010.001 and Annex C of policy POL_010.001 before go-live.</li>
+   <li><b>S1–S6 help texts:</b> placeholder criteria; to be taken from Annex B of the policy.</li>
+   <li><b>Language of records:</b> log entries are stored in the language active when they were written; test data content is German.</li>
+   <li><b>Attachments/file upload, directory service, CMDB, CAQ interface:</b> represented as text inputs.</li>
+  </ul>
+  <h2>Acceptance test cases (excerpt of Annex C – directly reproducible in the prototype)</h2>
+  <ul class="small">
+   <li><b>TC 1:</b> portal report without classification → ticket created, triage, time of awareness pre-set.</li>
+   <li><b>TC 12–15:</b> set S dimensions → overall level/escalation are calculated.</li>
+   <li><b>TC 16:</b> lead domain A, then S1 = P2 → lead domain switches to E automatically, A becomes secondary, ISB confirmation.</li>
+   <li><b>TC 18/19:</b> set awareness 48 h back + NIS-2 DE “yes” → early warning/follow-up already overdue; a correction re-schedules all open tasks.</li>
+   <li><b>TC 22:</b> domain H + customer information product defect “yes” → forced level P1 + management approval.</li>
+   <li><b>TC 27:</b> request downgrade → ISB approval; level remains unchanged until decided.</li>
+   <li><b>TC 28–36:</b> status change with a missing mandatory field → blocked with a named error message.</li>
+   <li><b>TC 41:</b> E3 without BCM hand-over note → blocked.</li>
+   <li><b>TC 43:</b> switch to role “IRM – Triage”, open a domain-E ticket → no longer visible.</li>
+  </ul>`;
   return `<h1>Dokumentation des Prototyps</h1>
   <div class="note"><b>Einordnung:</b> Dieser Prototyp bildet die Umsetzungsempfehlung <b>GDL_010.001 V1.00</b> (Freshservice-Implementierung des Incident Response Managements, 01.08.2026) als lauffähige Referenz ab. Er dient der fachlichen Erprobung des Feld-, Status- und Fristenmodells vor der eigentlichen Freshservice-Konfiguration – er ersetzt kein Ticketsystem und keine Serverdatenbank (Speicherung nur im Browser; Übertragung per „Stand sichern/laden“).</div>
   <h2>Abgebildete Anforderungen</h2>
@@ -981,7 +1231,7 @@ function viewDoku(){
    <li><b>Benachrichtigung/Alarmierung:</b> als Banner/Hinweise simuliert – E-Mail, mobil, SMS erst in der Zielplattform.</li>
    <li><b>Domänenbezeichnungen A–J</b> und die <b>REUTIB-Gefährdungen G-R 1.01–1.12</b> sind Arbeitsstand und vor Produktivsetzung gegen PROC_010.001 bzw. Anhang C der Richtlinie POL_010.001 abzugleichen.</li>
    <li><b>S1–S6-Hilfetexte:</b> Platzhalter-Kriterien; final aus Anhang B der Richtlinie zu übernehmen.</li>
-   <li><b>Sprachen:</b> Prototyp nur Deutsch; die Zielumsetzung verlangt DE + EN.</li>
+   <li><b>Sprache der Nachweise:</b> Protokolleinträge werden in der beim Schreiben aktiven Sprache gespeichert; Testdaten-Inhalte sind Deutsch.</li>
    <li><b>Anlagen/Dateiupload, Verzeichnisdienst, CMDB, CAQ-Schnittstelle:</b> als Texteingaben abgebildet.</li>
   </ul>
   <h2>Abnahme-Testfälle (Auszug Anhang C – im Prototyp direkt nachvollziehbar)</h2>
@@ -997,6 +1247,24 @@ function viewDoku(){
    <li><b>TF 43:</b> Rolle „IRM – Triage“ wählen, Ticket der Domäne E öffnen → nicht mehr einsehbar.</li>
   </ul>`;
 }
+
+/* ---------- Log-Phrasen (deutsch, mit EN-Übersetzung im Wörterbuch) ---------- */
+Object.assign(EN,{
+ "Meldeaufgabe erzeugt:":"Notification task created:","fällig":"due","Frist ab Kenntniserlangung":"deadline from time of awareness",
+ "Meldeaufgabe neu terminiert:":"Notification task re-scheduled:","Meldeaufgabe entfernt (Meldepflicht nicht mehr aktiv):":"Notification task removed (reporting duty no longer active):",
+ "Genehmigungsschritt angelegt:":"Approval step created:","Datenschutzbeauftragter als Beobachter gesetzt (Art. 33/34).":"Data Protection Officer added as watcher (Art. 33/34).",
+ "VORRANGREGEL: S1":"PRIORITY RULE: S1","Leitdomäne wechselt selbsttätig auf E; bisherige Domäne wird Nebendomäne. Bestätigungsaufgabe an den ISB.":"lead domain switches to E automatically; the previous domain becomes secondary. Confirmation task for the ISB.",
+ "Aufgabe erzeugt:":"Task created:","Aufgabe erledigt:":"Task completed:","Aufgabe wieder geöffnet:":"Task reopened:",
+ "Ticket angelegt und der Triage zugewiesen. Kenntniserlangung vorbelegt:":"Ticket created and assigned to triage. Time of awareness pre-set:",
+ "Beinaheereignis: Kontrollkästchen vorbelegt, Zuweisung an die Arbeitssicherheit (Domäne E), Gesamtstufe P4 (Regel 19).":"Near miss: checkbox pre-set, assigned to occupational safety (domain E), overall level P4 (rule 19).",
+ "Ticket in den geschützten Arbeitsbereich verschoben. Triage-Rollen haben ab jetzt keinen Lesezugriff mehr.":"Ticket moved to the protected workspace. Triage roles no longer have read access.",
+ "Erstreaktion dokumentiert (Übernahme durch die Triage).":"First response documented (taken over by triage).",
+ "Statuswechsel:":"Status change:","Genehmigung":"Approval","Herabstufung wirksam: Gesamtstufe jetzt":"Downgrade effective: overall level now",
+ "Gesamtstufe, Priorität und Reaktionszeit bleiben bis zur Entscheidung unverändert (GDL Kap. 10.3).":"Overall level, priority and response time remain unchanged until decided (GDL ch. 10.3).",
+ "Eskalationsstufe E3 gesetzt (ISB). Genehmigungsschritt der Geschäftsleitung angelegt; Meldeaufgaben laufen unabhängig weiter.":"Escalation level E3 set (ISB). Management approval step created; notification tasks keep running independently.",
+ "Nebendomäne gesetzt → Mitwirkungsaufgabe an den Incident Owner, Beobachterstatus (Regel 7).":"Secondary domain set → contribution task for the incident owner, watcher status (rule 7).",
+ "Nebendomäne entfernt.":"Secondary domain removed.","Domäne":"Domain","Incident Owner / ISB":"Incident owner / ISB"
+});
 
 /* ---------- Init ---------- */
 render();
