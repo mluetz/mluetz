@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>REUTIB · Incident Response Management (IRM) – Prototyp</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23FED22C'/%3E%3Ctext x='8' y='12' font-size='10' text-anchor='middle' font-family='Arial' font-weight='bold'%3E!%3C/text%3E%3C/svg%3E">
+<title>REUTIB · Incident Response Management (IRM) V1.10</title>
 <style>
 :root{
   --rot:#E30513;      /* nur Logo/Wortmarke */
@@ -138,6 +139,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     <select id="roleDom" onchange="setRole()" style="display:none;width:auto"></select>
   </div>
   <div class="flex noprint">
+    <span id="netBadge" class="badge st"></span>
     <button class="langbtn mini" id="btnDe" onclick="setLang('de')">DE</button>
     <button class="langbtn mini" id="btnEn" onclick="setLang('en')">EN</button>
     <button class="sec mini" id="btnTheme" onclick="toggleTheme()" title="Hell/Dunkel – Light/Dark">🌓</button>
@@ -164,8 +166,16 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
 /* ---------- i18n ---------- */
 const EN = {
+ /* server mode */
+ "Server verbunden (Mehrbenutzer)":"Server connected (multi-user)",
+ "Server getrennt":"Server disconnected",
+ "Server getrennt – Änderungen können verloren gehen":"Server disconnected – changes may be lost",
+ "Lokal (Einzelplatz)":"Local (single user)",
+ "Kein IRM-Server erreichbar – Datenhaltung nur in diesem Browser.":"No IRM server reachable – data is stored in this browser only.",
+ "Zugriffstoken für den IRM-Server:":"Access token for the IRM server:",
+ "Ihr Name für das Aktivitätsprotokoll:":"Your name for the activity log:",
  /* header/nav */
- "REUTIB · Prototyp nach GDL_010.001 V1.00":"REUTIB · Prototype per GDL_010.001 V1.00",
+ "REUTIB · IRM-Tool V1.10 · nach GDL_010.001":"REUTIB · IRM tool V1.10 · per GDL_010.001",
  "Rolle (Simulation):":"Role (simulation):",
  "Stand sichern":"Save state","Stand laden":"Load state","Schließen":"Close",
  "Meldung (Portal)":"Report (portal)","Tickets":"Tickets","Fristenmonitor":"Deadline monitor","Berichte":"Reports","Dokumentation":"Documentation",
@@ -408,7 +418,73 @@ function load(){
   if(!s.theme) s.theme = (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
   return s;
 }
-function save(){ localStorage.setItem(LSKEY, JSON.stringify(S)); }
+function save(t){
+  const persist = API ? {...S, tickets: []} : S;
+  localStorage.setItem(LSKEY, JSON.stringify(persist));
+  if(API && t) pushTicket(t);
+}
+
+/* ---------- Serveranbindung: zentrale Datenbank, Mehrbenutzerbetrieb (V1.10) ---------- */
+const APP_VERSION="1.10";
+let API=null, REV=0, NET=null, SRVINFO=null;
+function authTok(){ return S.token||""; }
+async function api(p, opts={}, retried){
+  const r = await fetch(API+p, {...opts, headers:{"Content-Type":"application/json", ...(authTok()?{Authorization:"Bearer "+authTok()}:{}), ...(opts.headers||{})}});
+  if(r.status===401 && !retried){
+    const tk=prompt(tr("Zugriffstoken für den IRM-Server:"));
+    if(tk){ S.token=tk.trim(); save(); return api(p,opts,true); }
+  }
+  if(!r.ok) throw new Error("API "+r.status);
+  return r.json();
+}
+async function pushTicket(t){
+  try{ const r=await api("/api/tickets/"+encodeURIComponent(t.id),{method:"PUT",body:JSON.stringify(t)}); REV=Math.max(REV,r.rev); setNet(true); }
+  catch(e){ setNet(false); }
+}
+async function fullLoad(){
+  const r=await api("/api/tickets");
+  S.tickets=r.tickets.sort((a,b)=>b.erstellt-a.erstellt); S.seq=Math.max(1, r.seq+1); REV=r.rev;
+}
+async function pollChanges(){
+  if(!API) return;
+  try{
+    const r=await api("/api/changes?since="+REV);
+    let changed=false;
+    for(const j of r.tickets){
+      const i=S.tickets.findIndex(x=>x.id===j.id);
+      if(i>=0){ if(JSON.stringify(S.tickets[i])!==JSON.stringify(j)){ S.tickets[i]=j; changed=true; } }
+      else { S.tickets.unshift(j); changed=true; }
+    }
+    REV=r.rev; if(r.seq+1>S.seq)S.seq=r.seq+1;
+    setNet(true);
+    const tag=document.activeElement && document.activeElement.tagName;
+    if(changed && !["INPUT","TEXTAREA","SELECT"].includes(tag)) render();
+  }catch(e){ setNet(false); }
+}
+function setNet(ok){ NET=ok; updNetBadge(); }
+function updNetBadge(){
+  const b=$("netBadge"); if(!b) return;
+  if(!API){ b.textContent="🟡 "+tr("Lokal (Einzelplatz)"); b.title=tr("Kein IRM-Server erreichbar – Datenhaltung nur in diesem Browser."); }
+  else if(NET===false){ b.textContent="🔴 "+tr("Server getrennt"); b.title=tr("Server getrennt – Änderungen können verloren gehen"); }
+  else { b.textContent="🟢 "+tr("Server verbunden (Mehrbenutzer)"); b.title=SRVINFO? "DB: "+SRVINFO.storage+" · Server V"+SRVINFO.version : ""; }
+}
+async function initServer(){
+  const qs=new URLSearchParams(location.search);
+  const explicit=qs.get("api");
+  const base = explicit!==null ? explicit.replace(/\/+$/,"") : (location.protocol.indexOf("http")===0 ? "" : null);
+  if(base===null){ updNetBadge(); return; }
+  try{
+    const r=await fetch(base+"/api/health"); if(!r.ok) throw 0;
+    const h=await r.json(); if(!h.ok) throw 0;
+    API = base === "" ? location.origin : base; SRVINFO=h;
+    await fullLoad();
+    if(!S.user){ const n=prompt(tr("Ihr Name für das Aktivitätsprotokoll:")); if(n) S.user=n.trim(); }
+    save();
+    setNet(true);
+    setInterval(pollChanges, 8000);
+    render();
+  }catch(e){ API=null; updNetBadge(); }
+}
 
 /* ---------- Helpers ---------- */
 const $ = id=>document.getElementById(id);
@@ -426,7 +502,7 @@ function fmtRest(ms){
 function dtLocal(ts){ const d=new Date(ts); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
 function parseDt(v){ return v? new Date(v).getTime() : null; }
 function roleLabel(){ return tr(ROLES[S.role].l) + (S.role==="dombearb" ? " – "+tr("Domäne")+" "+S.roleDom : ""); }
-function log(t, txt){ t.log.unshift({ts:now(), who:roleLabel(), txt}); }
+function log(t, txt){ t.log.unshift({ts:now(), who:(S.user? S.user+" – ":"")+roleLabel(), txt}); }
 
 /* ---------- Severity (GDL Kap. 6.3) ---------- */
 const ORD = {"P1":4,"P2":3,"P3":2,"P4":1,"nicht betroffen":0,"":0,undefined:0};
@@ -601,10 +677,13 @@ function addOnce(t, key, name, rolle, hours){
 }
 
 /* ---------- Ticketanlage ---------- */
-function newTicket(o){
+async function newTicket(o){
   const ts = now();
+  let seqN;
+  if(API){ try{ seqN=(await api("/api/seq",{method:"POST"})).seq; if(seqN+1>S.seq)S.seq=seqN+1; }catch(e){ setNet(false); seqN=S.seq++; } }
+  else seqN=S.seq++;
   const t = {
-    id:"IRM-"+String(S.seq++).padStart(4,"0"),
+    id:"IRM-"+String(seqN).padStart(4,"0"),
     erstellt:ts, kenntnis:o.kenntnis||ts,
     betreff:o.betreff||"", beschreibung:o.beschreibung||"", standort:o.standort||"",
     beobachtet:o.beobachtet||null, personen:!!o.personen, nearmiss:!!o.nearmiss,
@@ -631,53 +710,53 @@ function newTicket(o){
   t.log.push({ts, who:"System", txt:tr("Ticket angelegt und der Triage zugewiesen. Kenntniserlangung vorbelegt:")+" "+fmt(t.kenntnis)});
   if(t.nearmiss) t.log.push({ts, who:"System", txt:tr("Beinaheereignis: Kontrollkästchen vorbelegt, Zuweisung an die Arbeitssicherheit (Domäne E), Gesamtstufe P4 (Regel 19).")});
   S.tickets.unshift(t);
-  save();
+  save(t);
   return t;
 }
 
 /* ---------- Demo-Testdaten (Anhang C: ein fiktiver Fall je Domäne) ---------- */
-function seed(){
+async function seed(){
   if(S.tickets.length && !confirm(tr("Testdatenbestand zusätzlich zu den vorhandenen Tickets anlegen?"))) return;
   const H = 3600000;
-  const mk = (o, then)=>{ const t=newTicket(o); then&&then(t);
+  const mk = async (o, then)=>{ const t=await newTicket(o); then&&then(t);
     if(!["Open","Triage"].includes(t.status)) t.erstreaktion = t.kenntnis+30*60000;
-    syncTasks(t); save(); };
-  mk({betreff:"Verschlüsselungstrojaner auf Fileserver LB-FS02", beschreibung:"Mehrere Dateien nicht mehr lesbar, Erpresserschreiben auf dem Desktop. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-30*H},
+    syncTasks(t); save(t); };
+  await mk({betreff:"Verschlüsselungstrojaner auf Fileserver LB-FS02", beschreibung:"Mehrere Dateien nicht mehr lesbar, Erpresserschreiben auf dem Desktop. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-30*H},
     t=>{ t.status="Triage"; t.leitdomaene="A"; t.owner=ownerFor(t); t.s1="nicht betroffen"; t.s2="P2"; t.s3="P1"; t.s4="P4"; t.s5="nicht betroffen"; t.s6="P1";
       t.gef="G 0.39 – Schadprogramme"; t.pf.nis2_de="ja"; t.pf.dsgvo="in Prüfung"; t.pf.kunde_liefer="in Prüfung"; t.pf.oem_daten="ja"; t.pf.anv="ja";
       t.tisax=true; t.infoklass="C3"; t.objekte="LB-FS02, Domäne PROD"; t.einstufungBegr="C3-Daten betroffen, Meldepflicht NIS-2 wahrscheinlich."; });
-  mk({betreff:"OT-Leitrechner Extrusionslinie 3 ohne Funktion", beschreibung:"Linie 3 steht, Ursache unklar. (Fiktiver Testfall)", standort:"Myjava", kenntnis:now()-6*H},
+  await mk({betreff:"OT-Leitrechner Extrusionslinie 3 ohne Funktion", beschreibung:"Linie 3 steht, Ursache unklar. (Fiktiver Testfall)", standort:"Myjava", kenntnis:now()-6*H},
     t=>{ t.status="In Bearbeitung – Eindämmung"; t.leitdomaene="B"; t.owner=ownerFor(t); t.s1="nicht betroffen"; t.s2="P2"; t.s3="P4"; t.s4="P3"; t.s5="P4"; t.s6="P4";
       t.gef="G 0.25 – Ausfall von Geräten oder Systemen"; t.pf.nis2_sk="in Prüfung"; t.pf.dsgvo="nein"; t.pf.kunde_liefer="ja"; t.pf.oem_daten="nein"; t.pf.anv="nein"; t.sofort=fmt(now()-5*H)+" Linie gestoppt, Netzwerksegment isoliert (Schichtleiter M. Novák, fiktiv)"; });
-  mk({betreff:"Unbekannte Person im Prototypenbereich fotografiert Werkzeuge", beschreibung:"Besucherausweis fehlte. (Fiktiver Testfall)", standort:"Graz", kenntnis:now()-2*H},
+  await mk({betreff:"Unbekannte Person im Prototypenbereich fotografiert Werkzeuge", beschreibung:"Besucherausweis fehlte. (Fiktiver Testfall)", standort:"Graz", kenntnis:now()-2*H},
     t=>{ t.status="Triage"; t.leitdomaene="C"; t.owner=ownerFor(t); t.prototyp=true; t.s1="nicht betroffen"; t.s2="P4"; t.s3="P2"; t.s4="P4"; t.s5="P4"; t.s6="P3";
       t.gef="G 0.14 – Ausspähen von Informationen (Spionage)"; t.pf.versicherer="nein"; t.pf.oem_daten="in Prüfung"; t.pf.dsgvo="nein"; t.pf.anv="nein"; t.pf.kunde_liefer="nein"; t.tisax=true; });
-  mk({betreff:"Wasserrohrbruch Technikraum Halle 2", beschreibung:"Wasser läuft in den Doppelboden. (Fiktiver Testfall)", standort:"Bischofshofen", kenntnis:now()-1*H},
+  await mk({betreff:"Wasserrohrbruch Technikraum Halle 2", beschreibung:"Wasser läuft in den Doppelboden. (Fiktiver Testfall)", standort:"Bischofshofen", kenntnis:now()-1*H},
     t=>{ t.leitdomaene="D"; t.owner=ownerFor(t); t.status="Triage"; t.s1="nicht betroffen"; t.s2="P3"; t.s3="nicht betroffen"; t.s4="nicht betroffen"; t.s5="P2"; t.s6="P4";
       t.gef="G 0.3 – Wasser"; t.pf.versicherer="ja"; t.pf.umwelt="nein"; t.pf.arbeitsschutz="nein"; t.pf.dsgvo="nein"; t.pf.anv="nein"; t.pf.kunde_liefer="nein"; t.pf.oem_daten="nein"; t.pf.nis2_at="nein"; });
-  mk({betreff:"Sturz von Leiter, Mitarbeiter im Krankenhaus", beschreibung:"Wartungsarbeiten Halle 1. Person ansprechbar, stationär. (Fiktiver Testfall – fiktive Person)", standort:"Leutenbach", kenntnis:now()-20*H},
+  await mk({betreff:"Sturz von Leiter, Mitarbeiter im Krankenhaus", beschreibung:"Wartungsarbeiten Halle 1. Person ansprechbar, stationär. (Fiktiver Testfall – fiktive Person)", standort:"Leutenbach", kenntnis:now()-20*H},
     t=>{ t.leitdomaene="E"; t.owner=ownerFor(t); t.status="In Bearbeitung – Analyse"; t.s1="P2"; t.s2="P4"; t.s3="nicht betroffen"; t.s4="nicht betroffen"; t.s5="P4"; t.s6="P3";
       t.gef="G-R 1.01 – Arbeitsunfall / Personenschaden"; t.pf.uvt="ja"; t.pf.arbeitsschutz="in Prüfung"; t.pf.dsgvo="nein"; t.pf.anv="ja"; t.pf.kunde_liefer="nein"; t.pf.oem_daten="nein";
       t.sofort=fmt(now()-19*H)+" Erste Hilfe, Bereich gesperrt, SiFa informiert (fiktiv)"; t.beweis=true; t.beweisText="Fotos der Leiter und des Bereichs gesichert."; });
-  mk({betreff:"Hydraulikaggregat Presse 7 ausgefallen", beschreibung:"Instandhaltung meldet Totalausfall. (Fiktiver Testfall)", standort:"Międzyrzecze Górne", kenntnis:now()-50*H},
+  await mk({betreff:"Hydraulikaggregat Presse 7 ausgefallen", beschreibung:"Instandhaltung meldet Totalausfall. (Fiktiver Testfall)", standort:"Międzyrzecze Górne", kenntnis:now()-50*H},
     t=>{ t.leitdomaene="F"; t.owner=ownerFor(t); t.status="In Bearbeitung – Behebung"; t.s1="nicht betroffen"; t.s2="P3"; t.s3="nicht betroffen"; t.s4="P3"; t.s5="P3"; t.s6="P4";
       t.gef="G 0.25 – Ausfall von Geräten oder Systemen"; t.pf.versicherer="in Prüfung"; t.pf.nis2_pl="nein"; t.pf.dsgvo="nein"; t.pf.anv="nein"; t.pf.kunde_liefer="nein"; t.pf.oem_daten="nein";
       t.fvSystem="Instandhaltung"; t.fvNummer="IH-2026-0815"; t.sofort=fmt(now()-49*H)+" Ersatzaggregat angefordert."; });
-  mk({betreff:"Granulat-Lieferant meldet Lieferstopp für 2 Wochen", beschreibung:"Force Majeure beim Lieferanten. (Fiktiver Testfall)", standort:"standortübergreifend", kenntnis:now()-10*H},
+  await mk({betreff:"Granulat-Lieferant meldet Lieferstopp für 2 Wochen", beschreibung:"Force Majeure beim Lieferanten. (Fiktiver Testfall)", standort:"standortübergreifend", kenntnis:now()-10*H},
     t=>{ t.leitdomaene="G"; t.owner=ownerFor(t); t.status="Triage"; t.s1="nicht betroffen"; t.s2="P2"; t.s3="nicht betroffen"; t.s4="P3"; t.s5="nicht betroffen"; t.s6="P4";
       t.gef="G-R 1.04 – Lieferantenausfall / Unterbrechung der Lieferkette"; t.pf.kunde_liefer="ja"; t.pf.dsgvo="nein"; t.pf.anv="nein"; t.pf.oem_daten="nein"; t.fvSystem="Lieferantenbewertung"; t.fvNummer="LB-2026-112"; });
-  mk({betreff:"Kunde reklamiert Undichtigkeit an Serienbauteil, Rückrufverdacht", beschreibung:"0-km-Beanstandung OEM, Verdacht auf Chargenfehler. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-26*H},
+  await mk({betreff:"Kunde reklamiert Undichtigkeit an Serienbauteil, Rückrufverdacht", beschreibung:"0-km-Beanstandung OEM, Verdacht auf Chargenfehler. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-26*H},
     t=>{ t.leitdomaene="H"; t.owner=ownerFor(t); t.status="Triage"; t.s1="nicht betroffen"; t.s2="P3"; t.s3="nicht betroffen"; t.s4="P2"; t.s5="P4"; t.s6="P2";
       t.gef="G-R 1.02 – Produktfehler mit Feld-/Rückrufrelevanz"; t.pf.kunde_produkt="ja"; t.pf.zert="in Prüfung"; t.pf.dsgvo="nein"; t.pf.anv="nein"; t.pf.kunde_liefer="in Prüfung"; t.pf.oem_daten="nein";
       t.fvSystem="CAQ QBD.net"; t.fvNummer="QBD-8D-2026-0451"; });
-  mk({betreff:"Beschwerde über Führungskraft – Verdacht Mobbing", beschreibung:"Vertrauliche Meldung an HR. (Fiktiver Testfall – fiktive Personen)", standort:"Graz", kenntnis:now()-70*H},
+  await mk({betreff:"Beschwerde über Führungskraft – Verdacht Mobbing", beschreibung:"Vertrauliche Meldung an HR. (Fiktiver Testfall – fiktive Personen)", standort:"Graz", kenntnis:now()-70*H},
     t=>{ t.leitdomaene="I"; t.owner=ownerFor(t); t.status="In Bearbeitung – Analyse"; t.s1="P3"; t.s2="nicht betroffen"; t.s3="P4"; t.s4="nicht betroffen"; t.s5="nicht betroffen"; t.s6="P3";
       t.gef="G 0.29 – Verstoß gegen Gesetze oder Regelungen"; t.pf.anv="ja"; t.pf.dsgvo="in Prüfung"; t.pf.kunde_liefer="nein"; t.pf.oem_daten="nein"; t.sofort=fmt(now()-69*H)+" Getrennte Anhörungen terminiert (HR, fiktiv)"; });
-  mk({betreff:"USB-Stick mit Bewerberdaten verloren", beschreibung:"Unverschlüsselter Stick auf Dienstreise verloren. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-49*H},
+  await mk({betreff:"USB-Stick mit Bewerberdaten verloren", beschreibung:"Unverschlüsselter Stick auf Dienstreise verloren. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-49*H},
     t=>{ t.leitdomaene="J"; t.owner=ownerFor(t); t.status="In Bearbeitung – Eindämmung"; t.s1="nicht betroffen"; t.s2="nicht betroffen"; t.s3="P2"; t.s4="nicht betroffen"; t.s5="P4"; t.s6="P2";
       t.gef="G 0.17 – Verlust von Geräten, Datenträgern oder Dokumenten"; t.pf.dsgvo="ja"; t.pf.anv="in Prüfung"; t.pf.kunde_liefer="nein"; t.pf.oem_daten="in Prüfung";
       t.sofort=fmt(now()-48*H)+" Fundbüro/Bahn kontaktiert, DSB informiert."; t.infoklass="C3"; });
-  mk({betreff:"Beinahe-Zusammenstoß Stapler / Fußgänger Tor 3", beschreibung:"Keine Verletzung, knappe Situation. (Fiktiver Testfall)", standort:"Myjava", kenntnis:now()-3*H, nearmiss:true},
+  await mk({betreff:"Beinahe-Zusammenstoß Stapler / Fußgänger Tor 3", beschreibung:"Keine Verletzung, knappe Situation. (Fiktiver Testfall)", standort:"Myjava", kenntnis:now()-3*H, nearmiss:true},
     t=>{ t.s2="nicht betroffen"; t.s3="nicht betroffen"; t.s4="nicht betroffen"; t.s5="nicht betroffen"; t.s6="nicht betroffen"; t.gef="G-R 1.01 – Arbeitsunfall / Personenschaden"; });
   render();
 }
@@ -691,7 +770,10 @@ function exportJson(){
 function importJson(ev){
   const f=ev.target.files[0]; if(!f) return;
   const r=new FileReader();
-  r.onload=()=>{ try{ const s=JSON.parse(r.result); if(!s.tickets) throw 0; S=s; save(); render(); }catch(e){ alert(tr("Datei konnte nicht gelesen werden.")); } };
+  r.onload=async ()=>{ try{ const s=JSON.parse(r.result); if(!s.tickets) throw 0;
+    if(API){ for(const t of s.tickets){ await pushTicket(t); } await fullLoad(); }
+    else { S=s; }
+    save(); render(); }catch(e){ alert(tr("Datei konnte nicht gelesen werden.")); } };
   r.readAsText(f);
 }
 function exportCsv(list){
@@ -716,16 +798,20 @@ function nav(tab){ S.tab=tab; S.detail=null; save(); render(); }
 function render(){
   applyTheme();
   document.documentElement.lang = S.lang;
-  $("brandSub").textContent = tr("REUTIB · Prototyp nach GDL_010.001 V1.00");
+  updNetBadge();
+  $("brandSub").textContent = tr("REUTIB · IRM-Tool V1.10 · nach GDL_010.001");
   $("roleLbl").textContent = tr("Rolle (Simulation):");
   $("btnExp").textContent = tr("Stand sichern");
   $("btnImp").textContent = tr("Stand laden");
   $("btnDe").className = "langbtn mini"+(S.lang==="de"?" on":"");
   $("btnEn").className = "langbtn mini"+(S.lang==="en"?" on":"");
   $("dlgClose").textContent = tr("Schließen");
-  $("foot").innerHTML = S.lang==="en"
-   ? "REUTIB · Prototype for guideline GDL_010.001 “Implementation of Incident Response Management in Freshservice” V1.00 (2026-08-01) · normative basis POL_010.001 V3.00 / PROC_010.001 V2.10 · Confidential – internal use only. Data is stored locally in the browser (localStorage) – no server component."
-   : "REUTIB · Prototyp zur Guideline GDL_010.001 „Implementierung des Incident Response Managements in Freshservice“ V1.00 (01.08.2026) · fachliche Grundlage POL_010.001 V3.00 / PROC_010.001 V2.10 · Vertraulich – nur für den internen Gebrauch. Datenhaltung ausschließlich lokal im Browser (localStorage) – keine Serverkomponente.";
+  $("foot").innerHTML = (S.lang==="en"
+   ? "REUTIB · IRM tool V"+APP_VERSION+" · prototype per guideline GDL_010.001 “Implementation of Incident Response Management in Freshservice” V1.00 · normative basis POL_010.001 V3.00 / PROC_010.001 V2.10 · Confidential – internal use only. "
+   : "REUTIB · IRM-Tool V"+APP_VERSION+" · Prototyp zur Guideline GDL_010.001 „Implementierung des Incident Response Managements in Freshservice“ V1.00 · fachliche Grundlage POL_010.001 V3.00 / PROC_010.001 V2.10 · Vertraulich – nur für den internen Gebrauch. ")
+   + (API
+   ? (S.lang==="en" ? "Multi-user mode: central server database ("+(SRVINFO?SRVINFO.storage:"–")+")." : "Mehrbenutzerbetrieb: zentrale Serverdatenbank ("+(SRVINFO?SRVINFO.storage:"–")+").")
+   : (S.lang==="en" ? "Single-user fallback: data stored locally in the browser (no server reachable)." : "Einzelplatz-Fallback: Datenhaltung lokal im Browser (kein Server erreichbar)."));
   $("roleSel").innerHTML = Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${S.role===k?"selected":""}>${tr(v.l)}</option>`).join("");
   $("roleDom").innerHTML = DOMKEYS.map(d=>`<option ${S.roleDom===d?"selected":""}>${d}</option>`).join("");
   $("roleDom").style.display = S.role==="dombearb" ? "" : "none";
@@ -796,11 +882,11 @@ function showForm(nearmiss){
   </div></div>`;
   $("f_pers").onchange = e=>{ $("f_persHint").innerHTML = e.target.checked ? `<div class="err">${de?"Sind Personen aktuell in Gefahr? Nutzen Sie zuerst die Notrufkette („Gefahr im Verzug“).":"Are people currently in danger? Use the emergency chain first (“Imminent danger”)."}</div>` : ""; };
 }
-function submitMeldung(nearmiss){
+async function submitMeldung(nearmiss){
   const betreff=$("f_betreff").value.trim(), beschr=$("f_beschr").value.trim(), standort=$("f_standort").value;
   const miss=[]; if(!betreff)miss.push(tr("Betreff")); if(!beschr)miss.push(tr("Beschreibung")); if(!standort)miss.push(tr("Standort"));
   if(miss.length){ alert(tr("Bitte ausfüllen: ")+miss.join(", ")); return; }
-  const t=newTicket({betreff, beschreibung:beschr, standort, beobachtet:parseDt($("f_beob").value), personen:$("f_pers").checked, quelle:$("f_quelle").value, nearmiss, kanal:"Portal"});
+  const t=await newTicket({betreff, beschreibung:beschr, standort, beobachtet:parseDt($("f_beob").value), personen:$("f_pers").checked, quelle:$("f_quelle").value, nearmiss, kanal:"Portal"});
   const de = S.lang!=="en";
   $("formBox").innerHTML=`<div class="note oklight"><b>${de?"Vielen Dank – Ihre Meldung wurde aufgenommen":"Thank you – your report has been recorded"} (${t.id}).</b><br>
   ${de?"Die Triage übernimmt jetzt die Einordnung.":"The triage team will now classify it."} ${nearmiss?(de?"Die Arbeitssicherheit wurde informiert.":"Occupational safety has been informed."):""} ${de?"Bei Rückfragen meldet sich das IRM-Team.":"The IRM team will contact you if anything is unclear."}</div>`;
@@ -862,7 +948,7 @@ function upd(field, value, label){
     t.owner=ownerFor(t);
     if(isProtected(t)) log(t,tr("Ticket in den geschützten Arbeitsbereich verschoben. Triage-Rollen haben ab jetzt keinen Lesezugriff mehr.")+" ["+t[field]+"]");
   }
-  save(); render();
+  save(t); render();
 }
 function updPf(id, value){
   const t=T(); if(!t||!canEdit(t)) return;
@@ -871,7 +957,7 @@ function updPf(id, value){
   t.pf[id]=value;
   log(t,tr("Meldepflicht")+" "+tr(p.l)+": "+tr(old)+" → "+tr(value));
   syncTasks(t);
-  save(); render();
+  save(t); render();
 }
 function setStatus(to){
   const t=T(); if(!t) return;
@@ -889,13 +975,13 @@ function setStatus(to){
   if(!t.erstreaktion && from==="Open"){ t.erstreaktion=now(); log(t,tr("Erstreaktion dokumentiert (Übernahme durch die Triage).")); }
   log(t,tr("Statuswechsel:")+" "+tr(from)+" → "+tr(to));
   afterTransition(t,to);
-  save(); render();
+  save(t); render();
 }
 function taskDone(tid){
   const t=T(); const task=t.tasks.find(x=>x.id===tid); if(!task) return;
   task.done=!task.done; task.doneTs=task.done?now():null;
   log(t,(task.done?tr("Aufgabe erledigt:"):tr("Aufgabe wieder geöffnet:"))+" "+taskLabel(task.name));
-  save(); render();
+  save(t); render();
 }
 function approve(idx, state){
   const t=T(); const a=t.approvals[idx]; if(!a) return;
@@ -905,7 +991,7 @@ function approve(idx, state){
   log(t,tr("Genehmigung")+" "+a.l+": "+tr(state)+" ("+tr(a.by)+")");
   if(a.key==="herab" && state==="genehmigt"){ t.herab="genehmigt"; log(t,tr("Herabstufung wirksam: Gesamtstufe jetzt")+" "+t.herabStufe+" (Override ISB)."); }
   if(a.key==="herab" && state==="abgelehnt"){ t.herab="abgelehnt"; t.herabStufe=""; }
-  save(); render();
+  save(t); render();
 }
 function requestHerab(){
   const t=T();
@@ -916,7 +1002,7 @@ function requestHerab(){
   t.einstufungBegr=(t.einstufungBegr?t.einstufungBegr+"\n":"")+fmt(now())+" "+tr("Herabstufung beantragt")+" → "+ziel.toUpperCase()+": "+begr;
   t.approvals.push({key:"herab", l:"Herabstufung "+computed(t).stufe+" → "+ziel.toUpperCase(), by:"ISB", state:"offen"});
   log(t,tr("Herabstufung beantragt")+" ("+ziel.toUpperCase()+"). "+tr("Gesamtstufe, Priorität und Reaktionszeit bleiben bis zur Entscheidung unverändert (GDL Kap. 10.3)."));
-  save(); render();
+  save(t); render();
 }
 function setE3(){
   const t=T();
@@ -925,7 +1011,7 @@ function setE3(){
   t.eskOverride="E3";
   t.approvals.push({key:"bcm"+now(), l:"Übergabe an das BCM (E3) – Genehmigung", by:"Geschäftsleitung", state:"offen"});
   log(t,tr("Eskalationsstufe E3 gesetzt (ISB). Genehmigungsschritt der Geschäftsleitung angelegt; Meldeaufgaben laufen unabhängig weiter."));
-  save(); render();
+  save(t); render();
 }
 
 function sel(field, val, opts, dis, labelFn){
@@ -1085,7 +1171,7 @@ function toggleNeben(d, on){
     addOnce(t,"neben_"+d,"Mitwirkung Nebendomäne "+d+" – "+DOM[d].n,"Incident Owner "+d,72);
     if(!t.beobachter.includes("Incident Owner "+d)) t.beobachter.push("Incident Owner "+d);
   } else log(t,tr("Nebendomäne entfernt.")+" ["+d+"]");
-  save(); render();
+  save(t); render();
 }
 
 /* ---------- Fristenmonitor ---------- */
@@ -1190,7 +1276,7 @@ function viewDoku(){
   </tbody></table>
   <h2>Deliberate simplifications (delta to the Freshservice target)</h2>
   <ul>
-   <li><b>No server database, no tenant separation:</b> browser storage (localStorage); multi-user operation only via JSON export/import. The protected workspace is a UI simulation, not a hard object-level separation.</li>
+   <li><b>Server database (since V1.10):</b> multi-user operation via the bundled IRM server (Node.js, SQLite; <code>irm/server/</code>) — the tool connects automatically and synchronises all clients (indicator top right). Without a reachable server it runs in single-user fallback (localStorage). Tenant separation is deliberately not provided (Reutter Group only). The protected workspace E/I remains a UI simulation, not a hard server-side object separation.</li>
    <li><b>Calendars:</b> deadlines in calendar time (as the GDL requires for notification duties); site business-hour calendars for P3/P4 SLAs are not implemented.</li>
    <li><b>Notification/alerting:</b> simulated as banners/notes – e-mail, mobile, SMS only in the target platform.</li>
    <li><b>Domain names A–J</b> and the <b>REUTIB threats G-R 1.01–1.12</b> are working assumptions and must be verified against PROC_010.001 and Annex C of policy POL_010.001 before go-live.</li>
@@ -1229,7 +1315,7 @@ function viewDoku(){
   </tbody></table>
   <h2>Bewusste Vereinfachungen (Delta zur Freshservice-Zielumsetzung)</h2>
   <ul>
-   <li><b>Keine Serverdatenbank, keine Mandantentrennung:</b> Datenhaltung im Browser (localStorage); Mehrbenutzerbetrieb nur über JSON-Export/-Import. Der geschützte Bereich ist eine UI-Simulation, keine harte Objekttrennung.</li>
+   <li><b>Serverdatenbank (seit V1.10):</b> Mehrbenutzerbetrieb über den mitgelieferten IRM-Server (Node.js, SQLite; <code>irm/server/</code>) — das Tool verbindet sich automatisch und synchronisiert alle Clients (Anzeige oben rechts). Ohne erreichbaren Server läuft es im Einzelplatz-Fallback (localStorage). Eine Mandantentrennung ist bewusst nicht vorgesehen (Betrieb nur für die Reutter-Group). Der geschützte Bereich E/I bleibt eine UI-Simulation, keine harte serverseitige Objekttrennung.</li>
    <li><b>Kalender:</b> Fristen in Kalenderzeit (wie von der GDL für Meldefristen gefordert); Standort-Betriebszeitkalender für P3/P4-SLA sind nicht hinterlegt.</li>
    <li><b>Benachrichtigung/Alarmierung:</b> als Banner/Hinweise simuliert – E-Mail, mobil, SMS erst in der Zielplattform.</li>
    <li><b>Domänenbezeichnungen A–J</b> und die <b>REUTIB-Gefährdungen G-R 1.01–1.12</b> sind Arbeitsstand und vor Produktivsetzung gegen PROC_010.001 bzw. Anhang C der Richtlinie POL_010.001 abzugleichen.</li>
@@ -1271,6 +1357,7 @@ Object.assign(EN,{
 
 /* ---------- Init ---------- */
 render();
+initServer();
 </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ Dieses Repository enthält zwei in sich geschlossene HTML-Anwendungen für die R
 | Anwendung | Pfad | Zweck |
 |---|---|---|
 | **TISAX AL3 Finding-Register** | `index.html` (DE) / `index-en.html` (EN) | Stage-Review-Findings mit VDA-ISA-6.0.3-Control-Verknüpfung |
-| **IRM-Prototyp (Incident Response Management)** | `irm/index.html` | Lauffähige Referenz der Umsetzungsempfehlung GDL_010.001 (Freshservice-IRM) |
+| **IRM-Tool V1.10 (Incident Response Management)** | `irm/index.html` + `irm/server/` | Lauffähige Referenz der Umsetzungsempfehlung GDL_010.001 (Freshservice-IRM), mehrbenutzerfähig mit Serverdatenbank |
 
 ## IRM-Prototyp (`irm/`)
 
@@ -31,9 +31,30 @@ Sprachfassungen teilen denselben Datenbestand — der BSI-Gefährdungskatalog, a
 Wertelisten und Fehlermeldungen sind übersetzt) und mit **Hell-/Dunkelmodus** (folgt beim ersten
 Aufruf der Systemeinstellung, 🌓-Schalter in der Kopfzeile, Wahl wird gespeichert).
 
-Datenhaltung ausschließlich lokal im Browser (localStorage) + JSON-Export/-Import — keine
-Serverkomponente, kein Ersatz für das Ticketsystem. Aufruf lokal per Doppelklick oder über
-GitHub Pages unter `…/irm/`.
+### Mehrbenutzerbetrieb mit Serverdatenbank (ab V1.10)
+
+Für den Mehrbenutzerbetrieb bringt das Tool einen eigenen Server mit zentraler Datenbank mit
+(`irm/server/server.js`, Node.js ≥ 22, **keine npm-Abhängigkeiten**; Speicher: SQLite über das
+eingebaute `node:sqlite`, automatischer Fallback auf eine JSON-Datei):
+
+```bash
+node irm/server/server.js                      # Start auf Port 8010
+# Umgebung: PORT, IRM_DB (DB-Pfad), IRM_TOKEN (Zugriffstoken, empfohlen!), IRM_CORS
+# Oder als Container:  docker build -t reutib-irm -f irm/server/Dockerfile irm
+#                      docker run -d -p 8010:8010 -e IRM_TOKEN=geheim -v irm-data:/data reutib-irm
+```
+
+Der Server liefert die Anwendung unter `http://<host>:8010/` selbst aus; alle Clients
+synchronisieren sich über die REST-API (`/api/…`, atomare Ticketnummern-Vergabe, Änderungs-Polling
+alle 8 s, Statusanzeige oben rechts). Beim ersten Zugriff wird der Name für das
+Aktivitätsprotokoll abgefragt. Eine Mandantentrennung ist bewusst nicht vorgesehen (Betrieb
+ausschließlich für die Reutter-Group). Tickets werden serverseitig nie gelöscht (GDL Kap. 14).
+
+**Wichtig:** GitHub Pages ist statisch und kann den Server nicht ausführen — die Pages-Instanz
+unter `…/irm/` läuft daher automatisch im **Einzelplatz-Fallback** (localStorage, Demo/Erprobung).
+Für den produktiven Mehrbenutzerbetrieb den Server intern hosten (VM/Container) und **keine echten
+Incident-Daten** auf der öffentlichen Pages-Seite erfassen. JSON-Export/-Import überträgt einen
+lokalen Stand bei Bedarf auf den Server.
 
 ---
 
