@@ -1740,6 +1740,35 @@ function viewGuidance(){
    </ul>
   </div></details>
 
+  <details><summary>3a · NIS-2 relevance assessment in the ticket (STD_010.002)</summary><div class="dbody">
+   <p>The assessment form in ticket section <b>“2a · NIS-2 relevance assessment”</b> answers the <b>“whether”</b> of the regulatory NIS-2 notification — mandatory for <b>every incident with IT or OT involvement, independent of severity</b>: a P3 can be reportable (e.g. exfiltration of a single prototype record), a P1 need not be (e.g. fire without any system involvement).</p>
+   <p><b>Five parts:</b> Part 1 system involvement and affected sites (they control the country duties and the Slovakia check; “no” ends the check with a documented justification) · Part 2 criteria RK-01–RK-07 with immediate relevance effect (<b>one “yes” suffices</b>) · Part 3 examination-duty criteria RK-08–RK-12 · Part 4 additional Slovakia check · Part 5 overall result and reporting decision.</p>
+   <table><thead><tr><th>Criterion</th><th>Threshold (strictest-threshold principle)</th></tr></thead><tbody>
+   <tr><td>RK-01 system outage</td><td>&gt; 60 min complete / &gt; 180 min impaired — <b>Myjava: 30 / 60 min</b></td></tr>
+   <tr><td>RK-02 production/delivery</td><td>&gt; 4 h standstill, (imminent) line stoppage at the customer, special transport/shift</td></tr>
+   <tr><td>RK-03 financial loss</td><td>&gt; €250,000 gross (Slovak value, stricter than the €500,000 of the Implementing Regulation)</td></tr>
+   <tr><td>RK-04 trade secrets</td><td>prototype/development/customer data or C3/C4 — <b>no volume threshold, one record suffices</b></td></tr>
+   <tr><td>RK-05 personal injury</td><td>death/injury requiring treatment with system involvement</td></tr>
+   <tr><td>RK-06 unauthorised access</td><td>capability to cause severe disruption suffices — <b>no actual damage required</b></td></tr>
+   <tr><td>RK-07 encryption</td><td>any encryption of productive data/systems or compromise of backups</td></tr>
+   </tbody></table>
+   <p><b>Automatisms and dependencies — what the tool sets by itself:</b></p>
+   <ul>
+    <li><b>Automatic “significant”:</b> a “yes” for RK-01–RK-07 (or the Vyhláška criterion in part 4) sets the overall result to “significant” automatically (ch. 5.1) — with a log entry. Reversal despite a fulfilled criterion is <b>reserved to the ISB</b>; negation for P1/P2 additionally requires the incident owner's <b>four-eyes confirmation</b>.</li>
+    <li><b>18-hour safety margin:</b> system involvement “yes” immediately creates the task “decision on the early warning” due at <b>awareness + 18 h</b> — visible in the deadline monitor and re-scheduled on any awareness correction.</li>
+    <li><b>Transfer to the reporting duties:</b> the button in part 5 sets the NIS-2 fields in section 3 <b>per affected state</b>, which creates the deadline tasks (early warning 24 h · follow-up 72 h · final report 1 month, each from awareness). <b>Austria</b> is automatically set to “no” with a log note before 2026-10-01 (NISG 2026 not yet applicable; nevertheless rehearse the process).</li>
+    <li><b>Blocking:</b> without an answered system-involvement question (and, if “yes”, without part 2) the ticket cannot leave triage; closure requires the complete form including the supporting justification.</li>
+    <li><b>Doubt rule:</b> with justified doubts choose “precautionarily significant” and report in time — a precautionary report has no adverse consequences, a missed deadline cannot be healed.</li>
+   </ul>
+   <p><b>Slovakia specifics (Myjava):</b></p>
+   <ul>
+    <li>Slovakia is the <b>only jurisdiction with hard numeric thresholds</b> (Vyhláška NBÚ no. 226/2025): if Myjava is affected, the form highlights the stricter <b>30/60-minute thresholds</b> at RK-01 — a 45-minute outage is reportable in Myjava but not in Leutenbach.</li>
+    <li><b>Part 4</b> appears only when Myjava is affected and additionally checks the duties per <b>Sec. 24(5)</b>: significant cyber threats, last-minute averted events (near miss!) and unremedied vulnerabilities of publicly reachable systems. A “yes” automatically creates the <b>NBÚ/JISKB additional task</b> (without undue delay, 24 h).</li>
+    <li>Reporting language <b>Slovak</b>, prepared by the Myjava site responsible together with the ISB; the German working version belongs in the ticket as an attachment.</li>
+   </ul>
+   <p class="small muted">Binding basis: STD_010.002 (relevance assessment and reporting thresholds) — the “how” of reporting is governed by STD_010.001 (portal access, reporting process, deadline monitoring).</p>
+  </div></details>
+
   <details><summary>4 · Reporting duties and deadlines (PROC ch. 9)</summary><div class="dbody">
    <p>Every duty creates a scheduled task; due dates are calculated from the <b>time of awareness</b>. The check must be documented even when negative — “not assessed” blocks closure. As soon as a duty is “yes”, a copy of the notification and its acknowledgement must be attached.</p>
    <table><thead><tr><th>Duty</th><th>Deadline</th><th>Responsible</th></tr></thead><tbody>
@@ -1865,6 +1894,35 @@ function viewGuidance(){
     <li><b>Near Misses</b> sind meldepflichtig, haben einen eigenen Portaleinstieg, i. d. R. P4 — sie sind eine erwünschte Kennzahl der Meldekultur, kein Störfaktor.</li>
     <li><b>Triage-Unterstützung:</b> Bei Auswahl einer Gefährdung schlägt das Tool die Primärdomäne und die regelmäßig ebenfalls betroffenen Domänen nach Anhang C der Richtlinie vor; die Übernahme erfolgt per Klick, eine abweichende Zuordnung bleibt zulässig und ist zu begründen.</li>
    </ul>
+  </div></details>
+
+  <details><summary>3a · NIS-2-Relevanzbewertung im Ticket (STD_010.002)</summary><div class="dbody">
+   <p>Der Prüfbogen im Ticketabschnitt <b>„2a · NIS-2-Relevanzbewertung“</b> beantwortet das <b>„Ob“</b> der behördlichen NIS-2-Meldung — verbindlich für <b>jeden Incident mit IT- oder OT-Bezug, unabhängig vom Schweregrad</b>: Ein P3 kann meldepflichtig sein (z. B. Abfluss eines einzigen Prototypen-Datensatzes), ein P1 muss es nicht sein (z. B. Brand ohne Systembezug).</p>
+   <p><b>Ablauf in fünf Teilen:</b> Teil 1 Systembezug und betroffene Standorte (steuern die Länderpflichten und die Slowakei-Prüfung; bei „nein“ endet die Prüfung mit dokumentierter Begründung) · Teil 2 Kriterien RK-01–RK-07 mit unmittelbarer Relevanzwirkung (<b>ein „ja“ genügt</b>) · Teil 3 Prüfpflicht-Kriterien RK-08–RK-12 · Teil 4 Zusatzprüfung Slowakei · Teil 5 Gesamtergebnis und Meldeentscheidung.</p>
+   <table><thead><tr><th>Kriterium</th><th>Schwelle (Prinzip der strengsten Schwelle)</th></tr></thead><tbody>
+   <tr><td>RK-01 Systemausfall</td><td>&gt; 60 min Totalausfall / &gt; 180 min Einschränkung — <b>Myjava: 30 / 60 min</b></td></tr>
+   <tr><td>RK-02 Fertigung/Lieferung</td><td>&gt; 4 h Stillstand, (drohender) Bandstillstand beim Kunden, Sonderfahrt/-schicht</td></tr>
+   <tr><td>RK-03 Finanzschaden</td><td>&gt; 250.000 € brutto (slowakischer Wert, strenger als die 500.000 € der DVO)</td></tr>
+   <tr><td>RK-04 Geschäftsgeheimnisse</td><td>Prototypen-/Entwicklungs-/Kundendaten oder C3/C4 — <b>ohne Mengenschwelle, ein Datensatz genügt</b></td></tr>
+   <tr><td>RK-05 Personenschaden</td><td>Tod/behandlungsbedürftige Verletzung mit Systembezug</td></tr>
+   <tr><td>RK-06 Unbefugter Zugriff</td><td>Eignung zur schweren Störung genügt — <b>kein Schadenseintritt erforderlich</b></td></tr>
+   <tr><td>RK-07 Verschlüsselung</td><td>jede Verschlüsselung produktiver Daten/Systeme oder Kompromittierung von Backups</td></tr>
+   </tbody></table>
+   <p><b>Automatiken und Abhängigkeiten — was das Tool selbsttätig setzt:</b></p>
+   <ul>
+    <li><b>Automatisch „erheblich“:</b> Ein „ja“ bei RK-01–RK-07 (oder beim Vyhláška-Kriterium in Teil 4) setzt das Gesamtergebnis selbsttätig auf „erheblich“ (Kap. 5.1) — mit Protokolleintrag. Die Rücknahme trotz erfüllten Kriteriums ist dem <b>ISB vorbehalten</b>; die Verneinung bei P1/P2 verlangt zusätzlich die <b>Vier-Augen-Bestätigung</b> des Incident Owners.</li>
+    <li><b>18-h-Sicherheitsabstand:</b> Systembezug „ja“ erzeugt sofort die Aufgabe „Entscheidung über die Frühwarnung“ mit Fälligkeit <b>Kenntniserlangung + 18 h</b> — sichtbar im Fristenmonitor, neu terminiert bei jeder Kenntnis-Korrektur.</li>
+    <li><b>Übernahme in die Meldepflichten:</b> Der Button in Teil 5 setzt die NIS-2-Felder in Abschnitt 3 <b>je betroffenem Staat</b> und erzeugt damit die Fristenaufgaben (Frühwarnung 24 h · Folgemeldung 72 h · Abschluss 1 Monat, jeweils ab Kenntniserlangung). <b>Österreich</b> wird vor dem 01.10.2026 automatisch mit Protokollvermerk auf „nein“ gesetzt (NISG 2026 noch nicht anwendbar; Prozess gleichwohl erproben).</li>
+    <li><b>Blockaden:</b> Ohne beantworteten Systembezug (und bei „ja“: ohne Teil 2) verlässt das Ticket die Triage nicht; der Abschluss verlangt den vollständigen Bogen samt tragender Begründung.</li>
+    <li><b>Zweifelsregel:</b> Bei begründeten Zweifeln „vorsorglich erheblich“ wählen und fristwahrend melden — eine vorsorgliche Meldung ist folgenlos, eine versäumte Frist nicht heilbar.</li>
+   </ul>
+   <p><b>Besonderheiten Slowakei (Myjava):</b></p>
+   <ul>
+    <li>Die Slowakei ist die <b>einzige Rechtsordnung mit harten Zahlenwerten</b> (Vyhláška NBÚ č. 226/2025): Ist Myjava betroffen, hebt der Bogen bei RK-01 die verschärften <b>30/60-Minuten-Schwellen</b> hervor — ein 45-Minuten-Ausfall ist in Myjava meldepflichtig, in Leutenbach nicht.</li>
+    <li><b>Teil 4</b> erscheint nur bei Betroffenheit Myjavas und prüft zusätzlich die Pflichten nach <b>§ 24 Abs. 5</b>: bedeutende Cyberbedrohung, in letzter Minute abgewendetes Ereignis (Near Miss!) und nicht behobene Schwachstellen öffentlich erreichbarer Systeme. Ein „ja“ erzeugt automatisch die <b>NBÚ/JISKB-Zusatzaufgabe</b> (unverzüglich, 24 h).</li>
+    <li>Meldesprache <b>Slowakisch</b>, Meldung durch den Standortverantwortlichen Myjava gemeinsam mit dem ISB; die deutsche Arbeitsfassung gehört als Anlage ins Ticket.</li>
+   </ul>
+   <p class="small muted">Verbindliche Grundlage: STD_010.002 (Relevanzbewertung und Meldeschwellen) — das „Wie“ der Meldung regelt STD_010.001 (Portalzugang, Meldeprozess, Fristenüberwachung).</p>
   </div></details>
 
   <details><summary>4 · Meldepflichten und Fristen (PROC Kap. 9)</summary><div class="dbody">
