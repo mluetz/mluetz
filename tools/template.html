@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TISAX AL3 Finding-Register — REUTIB (Reutter-Group)</title>
+<style>
+:root{
+  --ground:#f6f8fb; --surface:#ffffff; --surface-2:#eef2f7; --ink:#182231; --ink-2:#4a586b;
+  --ink-3:#7d8a9c; --border:#dbe2ec; --border-strong:#c3cddb; --accent:#2f5f95; --accent-soft:#e7eef7;
+  --shadow:0 1px 2px rgba(20,34,54,.05),0 4px 14px rgba(20,34,54,.05);
+  --krit:#b3261e; --hoch:#c2410c; --mittel:#b07d00; --niedrig:#3f7a4b;
+  --major:#b3261e; --minor:#b07d00; --obs:#4a6a8f;
+  --radius:11px; --maxw:1240px;
+  --fs-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --fs-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#0e131b; --surface:#161d28; --surface-2:#1e2836; --ink:#e7ecf4; --ink-2:#a9b6c8;
+    --ink-3:#76859a; --border:#28323f; --border-strong:#39465a; --accent:#5b9bd8; --accent-soft:#1b2a3c;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+    --krit:#f0736a; --hoch:#f0954e; --mittel:#e3b64b; --niedrig:#69b078;
+    --major:#f0736a; --minor:#e3b64b; --obs:#8bb0d8;
+  }
+}
+:root[data-theme="light"]{
+  --ground:#f6f8fb; --surface:#ffffff; --surface-2:#eef2f7; --ink:#182231; --ink-2:#4a586b;
+  --ink-3:#7d8a9c; --border:#dbe2ec; --border-strong:#c3cddb; --accent:#2f5f95; --accent-soft:#e7eef7;
+  --shadow:0 1px 2px rgba(20,34,54,.05),0 4px 14px rgba(20,34,54,.05);
+  --krit:#b3261e; --hoch:#c2410c; --mittel:#b07d00; --niedrig:#3f7a4b;
+  --major:#b3261e; --minor:#b07d00; --obs:#4a6a8f;
+}
+:root[data-theme="dark"]{
+  --ground:#0e131b; --surface:#161d28; --surface-2:#1e2836; --ink:#e7ecf4; --ink-2:#a9b6c8;
+  --ink-3:#76859a; --border:#28323f; --border-strong:#39465a; --accent:#5b9bd8; --accent-soft:#1b2a3c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+  --krit:#f0736a; --hoch:#f0954e; --mittel:#e3b64b; --niedrig:#69b078;
+  --major:#f0736a; --minor:#e3b64b; --obs:#8bb0d8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--fs-ui);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;font-feature-settings:"kern","liga"}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+a{color:var(--accent)}
+h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--fs-serif);font-weight:600;letter-spacing:-.01em}
+
+/* ---- Masthead ---- */
+header.mast{background:linear-gradient(180deg,var(--surface),var(--ground));border-bottom:1px solid var(--border)}
+.mast-inner{padding:22px 0 18px}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;font-family:var(--fs-ui)}
+h1.title{font-size:27px;margin:4px 0 6px;line-height:1.15}
+.sub{color:var(--ink-2);font-size:13.5px;max-width:70ch}
+.scope-row{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:12px}
+.scope{font-size:11.5px;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;
+  padding:3px 10px;color:var(--ink-2);font-family:var(--fs-ui)}
+.scope b{color:var(--ink);font-weight:600}
+.mast-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.theme-btn{flex:none;background:var(--surface);border:1px solid var(--border);color:var(--ink-2);
+  border-radius:9px;padding:7px 11px;font-size:12.5px;cursor:pointer;font-family:var(--fs-ui);display:flex;gap:6px;align-items:center}
+.theme-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+
+/* ---- KPI tiles ---- */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:16px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi .n{font-size:25px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;font-family:var(--fs-serif)}
+.kpi .l{font-size:11px;color:var(--ink-3);margin-top:5px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.kpi .bar{height:3px;border-radius:3px;margin-top:9px;background:var(--surface-2);overflow:hidden}
+.kpi .bar>span{display:block;height:100%}
+.kpi.stripe::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px}
+.kpi.k-krit::before{background:var(--krit)} .kpi.k-hoch::before{background:var(--hoch)}
+.kpi.k-ot::before{background:var(--accent)} .kpi.k-open::before{background:var(--ink-3)}
+
+/* ---- Toolbar ---- */
+.toolbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:blur(9px);border-bottom:1px solid var(--border);padding:11px 0}
+.tb-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.search{flex:1;min-width:220px;position:relative}
+.search input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--border-strong);border-radius:9px;
+  background:var(--surface);color:var(--ink);font-size:14px;font-family:var(--fs-ui)}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-3)}
+select,.btn{border:1px solid var(--border-strong);border-radius:9px;background:var(--surface);color:var(--ink);
+  font-size:13px;padding:8px 10px;font-family:var(--fs-ui);cursor:pointer}
+select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.06);color:#fff}
+.ot-toggle{display:flex;align-items:center;gap:7px;border:1px solid var(--border-strong);border-radius:9px;
+  padding:7px 11px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface);user-select:none}
+.ot-toggle .dot{width:9px;height:9px;border-radius:50%;background:var(--ink-3)}
+.ot-toggle.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ot-toggle.on .dot{background:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.chip{font-size:12px;padding:4px 11px;border-radius:20px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--ink-2);cursor:pointer;user-select:none;font-family:var(--fs-ui)}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip .c{opacity:.65;font-variant-numeric:tabular-nums}
+.chips-label{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-right:2px;align-self:center}
+
+/* ---- Results meta ---- */
+.meta-row{display:flex;justify-content:space-between;align-items:baseline;margin:16px 0 10px;gap:12px;flex-wrap:wrap}
+.count{font-size:14px;color:var(--ink-2)}
+.count b{color:var(--ink);font-variant-numeric:tabular-nums}
+.viewsel{display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:2px}
+.viewsel button{border:none;background:transparent;color:var(--ink-2);font-size:12.5px;padding:5px 11px;border-radius:7px;cursor:pointer;font-family:var(--fs-ui)}
+.viewsel button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+
+/* ---- Group headers ---- */
+.grp{margin:22px 0 10px;display:flex;align-items:center;gap:11px}
+.grp h2{font-size:16px}
+.grp .gcount{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums;background:var(--surface-2);
+  border:1px solid var(--border);padding:2px 9px;border-radius:14px}
+.grp .rule{flex:1;height:1px;background:var(--border)}
+
+/* ---- Cards ---- */
+.cards{display:flex;flex-direction:column;gap:9px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:150px;border-left:3px solid var(--border)}
+.card.sev-Major{border-left-color:var(--major)} .card.sev-Minor{border-left-color:var(--minor)}
+.card.sev-Observation{border-left-color:var(--obs)}
+.card.flash{animation:flash 1.6s ease}
+@keyframes flash{0%,40%{background:var(--accent-soft)}100%{background:var(--surface)}}
+.chead{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;cursor:pointer}
+.chead:hover{background:var(--surface-2)}
+.fid{flex:none;font-family:var(--fs-ui);font-weight:700;font-size:12.5px;font-variant-numeric:tabular-nums;
+  background:var(--ink);color:var(--surface);padding:3px 8px;border-radius:6px;letter-spacing:.02em}
+.ctrl{flex:none;font-weight:700;font-size:12.5px;color:var(--accent);background:var(--accent-soft);
+  padding:3px 8px;border-radius:6px;font-variant-numeric:tabular-nums}
+.chead .mid{flex:1;min-width:0}
+.qtitle{font-size:14.5px;font-weight:600;line-height:1.35;color:var(--ink)}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center}
+.b{font-size:11px;padding:2px 8px;border-radius:5px;border:1px solid transparent;font-weight:600;white-space:nowrap;font-family:var(--fs-ui)}
+.b-typ.Major{color:var(--major);background:color-mix(in srgb,var(--major) 12%,transparent);border-color:color-mix(in srgb,var(--major) 30%,transparent)}
+.b-typ.Minor{color:var(--minor);background:color-mix(in srgb,var(--minor) 13%,transparent);border-color:color-mix(in srgb,var(--minor) 32%,transparent)}
+.b-typ.Observation{color:var(--obs);background:color-mix(in srgb,var(--obs) 12%,transparent);border-color:color-mix(in srgb,var(--obs) 30%,transparent)}
+.b-prio{color:var(--ink-2);background:var(--surface-2);border-color:var(--border)}
+.b-prio.Kritisch{color:var(--krit);border-color:color-mix(in srgb,var(--krit) 40%,transparent);background:color-mix(in srgb,var(--krit) 10%,transparent)}
+.b-prio.Hoch{color:var(--hoch);border-color:color-mix(in srgb,var(--hoch) 40%,transparent);background:color-mix(in srgb,var(--hoch) 10%,transparent)}
+.b-prio.Mittel{color:var(--mittel);border-color:color-mix(in srgb,var(--mittel) 40%,transparent);background:color-mix(in srgb,var(--mittel) 10%,transparent)}
+.b-prio.Niedrig{color:var(--niedrig);border-color:color-mix(in srgb,var(--niedrig) 40%,transparent)}
+.b-site{color:var(--ink-2);background:var(--surface-2);border-color:var(--border);font-weight:600}
+.b-ot{color:#fff;background:var(--accent);border-color:var(--accent)}
+.b-tag{color:var(--ink-2);background:var(--surface-2);border-color:var(--border);font-weight:500}
+.b-status{color:var(--ink-2);background:transparent;border-color:var(--border-strong)}
+.b-status.prog{color:var(--accent);border-color:var(--accent)}
+.chev{flex:none;color:var(--ink-3);transition:transform .18s;margin-top:3px}
+.card.open .chev{transform:rotate(90deg)}
+.cbody{display:none;padding:2px 14px 16px;border-top:1px solid var(--border)}
+.card.open .cbody{display:block}
+.frage-en{font-size:12.5px;color:var(--ink-3);font-style:italic;margin:10px 0 2px}
+.field{margin-top:13px}
+.field .fl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:700;margin-bottom:3px;font-family:var(--fs-ui)}
+.field .fv{font-size:13.5px;color:var(--ink);white-space:pre-wrap;line-height:1.55}
+.field .fv.muted{color:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px 22px}
+.metaline{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);font-size:12.5px;color:var(--ink-2)}
+.metaline b{color:var(--ink);font-weight:600}
+.xrefs{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.xref{font-size:12px;font-variant-numeric:tabular-nums;background:var(--accent-soft);color:var(--accent);
+  border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:6px;padding:3px 9px;cursor:pointer;font-weight:600}
+.xref:hover{background:var(--accent);color:#fff}
+.xref.dead{background:var(--surface-2);color:var(--ink-3);border-color:var(--border);cursor:default}
+.reifebars{display:inline-flex;gap:2px;vertical-align:middle;margin-left:6px}
+.reifebars i{width:8px;height:12px;border-radius:2px;background:var(--surface-2);border:1px solid var(--border)}
+.reifebars i.ist{background:var(--hoch);border-color:var(--hoch)}
+.reifebars i.soll{background:var(--niedrig);border-color:var(--niedrig)}
+/* ---- Erledigt / done state ---- */
+.donebtn{flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border-strong);
+  background:var(--surface);color:var(--ink-3);font-size:13px;line-height:1;cursor:pointer;margin-top:1px;padding:0}
+.donebtn:hover{border-color:var(--niedrig);color:var(--niedrig)}
+.donebtn.on{background:var(--niedrig);border-color:var(--niedrig);color:#fff}
+.card.done{border-left-color:var(--niedrig)}
+.card.done .chead{opacity:.72}
+.card.done .qtitle{text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:var(--ink-3)}
+.b-done{color:var(--niedrig);border-color:color-mix(in srgb,var(--niedrig) 45%,transparent);
+  background:color-mix(in srgb,var(--niedrig) 12%,transparent)}
+.xref.donex{background:color-mix(in srgb,var(--niedrig) 12%,transparent);color:var(--niedrig);
+  border-color:color-mix(in srgb,var(--niedrig) 40%,transparent)}
+.xref.donex:hover{background:var(--niedrig);color:#fff}
+.xg{margin-top:7px}
+.xg .xgl{font-size:11px;color:var(--ink-3);font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+.actrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.done-cta{font-weight:600}
+.done-cta.on{color:var(--niedrig);border-color:var(--niedrig)}
+.presum{font-size:12.5px;font-weight:600;padding:4px 11px;border-radius:16px;border:1px solid transparent}
+.presum.ok{color:var(--niedrig);background:color-mix(in srgb,var(--niedrig) 11%,transparent);border-color:color-mix(in srgb,var(--niedrig) 35%,transparent)}
+.presum.warn{color:var(--hoch);background:color-mix(in srgb,var(--hoch) 11%,transparent);border-color:color-mix(in srgb,var(--hoch) 35%,transparent)}
+.kpi.k-done::before{background:var(--niedrig)}
+.empty{text-align:center;padding:60px 20px;color:var(--ink-3)}
+footer{margin:40px 0 30px;padding-top:18px;border-top:1px solid var(--border);color:var(--ink-3);font-size:12px;line-height:1.7}
+footer b{color:var(--ink-2)}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,1fr)}.chead{flex-wrap:wrap}h1.title{font-size:22px}}
+@media print{.toolbar,.theme-btn,.viewsel,.chev{display:none}.card{break-inside:avoid}.cbody{display:block!important}}
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap mast-inner">
+    <div class="mast-top">
+      <div>
+        <div class="eyebrow">TISAX AL3 · VDA ISA 6.0.3 · Maßnahmen- &amp; Finding-Register</div>
+        <h1 class="title">REUTIB — TISAX AL3 Finding-Register</h1>
+        <p class="sub">Interaktive Datenbank der Stage-Review-Findings mit Cross-Referenzen zu den Controls des
+        VDA-ISA-Prüfkatalogs. Filterbar nach Domäne (u.&nbsp;a. <b>OT</b>), Modul, Priorität, Standort und Status.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex:none">
+        <a class="theme-btn" id="langLink" href="index-en.html" title="Switch to English" style="text-decoration:none">EN</a>
+        <button class="theme-btn" id="themeBtn" aria-label="Theme wechseln"><span id="themeIcon">◐</span><span id="themeTxt">Theme</span></button>
+      </div>
+    </div>
+    <div class="scope-row">
+      <span class="scope">Participant <b>Reutter Group GmbH</b></span>
+      <span class="scope">ENX Scope <b>S9WC6X</b></span>
+      <span class="scope">Participant-ID <b>PMVKRX</b></span>
+      <span class="scope">Prüfkatalog <b>VDA ISA 6.0.3</b></span>
+      <span class="scope">Auditor <b>CIS GmbH, Wien</b></span>
+      <span class="scope">Labels <b>Vertraulichkeit · Verfügbarkeit sehr hoch</b></span>
+      <span class="scope">Scope <b>DE / AT / SK / PL</b></span>
+    </div>
+    <div class="kpis" id="kpis"></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="tb-row">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="Volltextsuche: Finding, Control-Nr, Maßnahme, Verantwortlich …" autocomplete="off">
+      </div>
+      <div class="ot-toggle" id="otToggle" title="Nur OT-relevante Findings"><span class="dot"></span>OT-relevant</div>
+      <select id="fModul"></select>
+      <select id="fTyp"></select>
+      <select id="fPrio"></select>
+      <select id="fStatus"></select>
+      <select id="fSite"></select>
+      <button class="btn" id="resetBtn">Zurücksetzen</button>
+      <button class="btn primary" id="csvBtn">CSV Export</button>
+      <button class="btn" id="saveBtn" title="Erledigt-Stand als Datei sichern">Stand sichern</button>
+      <button class="btn" id="loadBtn" title="Erledigt-Stand aus Datei laden">Stand laden</button>
+      <input type="file" id="loadInput" accept="application/json,.json" hidden>
+    </div>
+    <div class="chips" id="tagChips"><span class="chips-label">Domäne</span></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="meta-row">
+    <div class="count" id="count"></div>
+    <div class="viewsel" id="viewsel">
+      <button data-v="modul" class="on">Nach ISA-Modul</button>
+      <button data-v="control">Nach Control</button>
+      <button data-v="flat">Liste (Prio)</button>
+    </div>
+  </div>
+  <div id="results"></div>
+  <footer>
+    <div><b>Datengrundlage:</b> TISAX Finding Register v3 (Stage Review 29.04.2026, CIS GmbH) — Spalten M/N/O
+    (Umsetzungsgegenstand · X-Referenzen · Complete Remediation Scope) integriert. <b id="fcount"></b> Findings.</div>
+    <div>Erzeugt aus <code>TISAX_Finding_Register_v3_M_N_O.xlsx</code>. Vertraulich — nur für den internen ISMS-/Audit-Gebrauch der Reutter-Group (REUTIB).
+    Änderungen bitte in der Quell-Datei pflegen und HTML neu generieren.</div>
+  </footer>
+</main>
+
+<script>
+const FINDINGS = /*__DATA__*/;
+const SEV_ORDER={ "Major NC":0,"Minor NC":1,"Observation":2,"":3 };
+const PRIO_ORDER={ "Kritisch":0,"Hoch":1,"Mittel":2,"Niedrig":3,"":4 };
+const SITE_TOKENS=["DE","AT","SK","PL","IT"];
+
+function siteTokens(s){
+  s=(s||"").toUpperCase();
+  if(!s) return [];
+  if(s.includes("ALLE")) return ["Alle"];
+  return SITE_TOKENS.filter(t=>s.includes(t));
+}
+FINDINGS.forEach((f,i)=>{ f._i=i; f._sites=siteTokens(f.standort); });
+const ROWMAP={}; FINDINGS.forEach(f=>ROWMAP[f.excelRow]=f);
+
+/* Erledigt-Stand: localStorage (DE- und EN-Seite teilen sich denselben Stand) */
+const LS_KEY="reutib-tisax-done-v1";
+let DONE={};
+try{ DONE=JSON.parse(localStorage.getItem(LS_KEY)||"{}")||{}; }catch(e){ DONE={}; }
+function saveDone(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(DONE)); }catch(e){} }
+function isDone(f){ return !!DONE[f.excelRow]; }
+
+/* Abhängigkeits-Graph: Voraussetzungen je Finding =
+   eigene 'pre'-Referenzen + Findings, die dieses Finding als 'nachgelagert' (post) führen */
+const PREREQ={};
+FINDINGS.forEach(f=>PREREQ[f.excelRow]=new Set());
+FINDINGS.forEach(f=>(f.xrefs||[]).forEach(x=>{
+  if(!ROWMAP[x.row]||x.row===f.excelRow) return;
+  if(x.kind==="pre") PREREQ[f.excelRow].add(x.row);
+  if(x.kind==="post") PREREQ[x.row].add(f.excelRow);
+}));
+
+const ST_DONE="✓ Erledigt", ST_NOTDONE="○ Nicht erledigt";
+const XKIND={pre:"Voraussetzung (vorgelagert)",post:"Liefert Input an (nachgelagert)",cross:"Querverweise"};
+const warnMsg=(n,ids)=>`Achtung: ${n} vorausgesetzte(s) Finding(s) noch nicht erledigt:\n· ${ids}\n\nTrotzdem als erledigt markieren?`;
+
+const state={ q:"", modul:"", typ:"", prio:"", status:"", site:"", ot:false, tags:new Set(), view:"modul", open:new Set() };
+
+function toggleDone(ev,row){
+  ev.stopPropagation();
+  if(!DONE[row]){
+    const openPre=[...(PREREQ[row]||[])].filter(r=>!DONE[r]);
+    if(openPre.length){
+      const ids=openPre.map(r=>`${ROWMAP[r].findingId} / Ctrl ${ROWMAP[r].kontrollNr||"—"}`).join("\n· ");
+      if(!confirm(warnMsg(openPre.length,ids))) return;
+    }
+    DONE[row]={t:new Date().toISOString().slice(0,10)};
+    state.open.delete(row);
+  } else { delete DONE[row]; }
+  saveDone(); kpis(); render();
+}
+window.toggleDone=toggleDone;
+
+/* ---------- facets ---------- */
+function distinct(key){ return [...new Set(FINDINGS.map(f=>f[key]).filter(Boolean))]; }
+function fillSelect(el,label,vals){
+  el.innerHTML="";
+  const o=document.createElement("option"); o.value=""; o.textContent=label; el.appendChild(o);
+  vals.forEach(v=>{const op=document.createElement("option");op.value=v;op.textContent=v;el.appendChild(op);});
+}
+const modules=[...new Set(FINDINGS.map(f=>f.moduleName))].sort((a,b)=>{
+  const na=parseInt(a)||99, nb=parseInt(b)||99; return na-nb || a.localeCompare(b);});
+fillSelect(document.getElementById("fModul"),"Alle Module",modules);
+fillSelect(document.getElementById("fTyp"),"Alle Finding-Typen",["Major NC","Minor NC","Observation"]);
+fillSelect(document.getElementById("fPrio"),"Alle Prioritäten",["Kritisch","Hoch","Mittel","Niedrig"]);
+fillSelect(document.getElementById("fStatus"),"Alle Status",distinct("status").sort().concat([ST_DONE,ST_NOTDONE]));
+fillSelect(document.getElementById("fSite"),"Alle Standorte",["DE","AT","SK","PL","IT","Alle"]);
+
+const allTags={};
+FINDINGS.forEach(f=>(f.tags||[]).forEach(t=>allTags[t]=(allTags[t]||0)+1));
+const tagOrder=["OT","BCM/Verfügbarkeit","Governance/Policy","IAM","Physical","HR","Supplier","Logging/Monitoring","Malware","Datenschutz","Compliance"];
+const tagChips=document.getElementById("tagChips");
+tagOrder.filter(t=>allTags[t]).forEach(t=>{
+  const c=document.createElement("span"); c.className="chip"; c.dataset.tag=t;
+  c.innerHTML=`${t} <span class="c">${allTags[t]}</span>`;
+  c.onclick=()=>{ if(state.tags.has(t))state.tags.delete(t); else state.tags.add(t);
+    if(t==="OT"){ state.ot=state.tags.has("OT"); syncOt(); } render(); };
+  tagChips.appendChild(c);
+});
+
+/* ---------- filtering ---------- */
+function matches(f){
+  if(state.modul && f.moduleName!==state.modul) return false;
+  if(state.typ && f.typ!==state.typ) return false;
+  if(state.prio && f.prioritaet!==state.prio) return false;
+  if(state.status===ST_DONE){ if(!isDone(f)) return false; }
+  else if(state.status===ST_NOTDONE){ if(isDone(f)) return false; }
+  else if(state.status && f.status!==state.status) return false;
+  if(state.ot && !(f.tags||[]).includes("OT")) return false;
+  if(state.site){
+    if(state.site==="Alle"){ if(!f._sites.includes("Alle")) return false; }
+    else if(!(f._sites.includes(state.site)||f._sites.includes("Alle"))) return false;
+  }
+  if(state.tags.size){ for(const t of state.tags){ if(!(f.tags||[]).includes(t)) return false; } }
+  if(state.q){
+    const hay=[f.findingId,f.kontrollNr,f.moduleName,f.kapitel,f.frageEn,f.frageDe,f.beschreibung,
+      f.massnahme,f.umsetzung,f.xref,f.scope,f.verantwortlich,f.standort,f.isbKommentar,(f.tags||[]).join(" ")]
+      .join(" ").toLowerCase();
+    if(!state.q.toLowerCase().split(/\s+/).every(w=>hay.includes(w))) return false;
+  }
+  return true;
+}
+
+/* ---------- rendering ---------- */
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function typShort(t){ return (t||"").replace(/ NC$/,"").replace("Observation","Observation"); }
+
+function reifeBars(ist,soll){
+  ist=parseInt(ist); soll=parseInt(soll);
+  if(isNaN(ist)&&isNaN(soll)) return "";
+  let h="<span class='reifebars' title='Reifegrad IST → SOLL'>";
+  for(let i=1;i<=5;i++){ let cl=""; if(!isNaN(ist)&&i<=ist)cl="ist"; else if(!isNaN(soll)&&i<=soll)cl="soll"; h+=`<i class='${cl}'></i>`; }
+  h+="</span>";
+  return h;
+}
+
+function field(label,val,muted){ if(!val||!String(val).trim())return "";
+  return `<div class="field"><div class="fl">${esc(label)}</div><div class="fv ${muted?"muted":""}">${esc(val)}</div></div>`; }
+
+function xrefChips(f){
+  if(!f.xrefs||!f.xrefs.length) return "";
+  const groups={pre:[],post:[],cross:[]};
+  f.xrefs.forEach(x=>{(groups[x.kind]||groups.cross).push(x);});
+  let h="";
+  for(const k of ["pre","post","cross"]){
+    if(!groups[k].length) continue;
+    const chips=groups[k].map(x=>{
+      const tgt=ROWMAP[x.row];
+      if(tgt) return `<span class="xref ${isDone(tgt)?"donex":""}" data-goto="${tgt.excelRow}">${isDone(tgt)?"✓ ":""}${esc(x.fid)} · Ctrl ${esc(tgt.kontrollNr||"—")}</span>`;
+      return `<span class="xref dead">${esc(x.fid)}</span>`;
+    }).join("");
+    h+=`<div class="xg"><div class="xgl">${esc(XKIND[k])}</div><div class="xrefs">${chips}</div></div>`;
+  }
+  return `<div class="field"><div class="fl">Cross-Referenzen (abhängige Findings)</div>${h}</div>`;
+}
+
+function preSummary(f){
+  const pres=[...(PREREQ[f.excelRow]||[])];
+  if(!pres.length) return "";
+  const d=pres.filter(r=>DONE[r]).length;
+  return `<span class="presum ${d===pres.length?"ok":"warn"}">Voraussetzungen erledigt: ${d}/${pres.length}</span>`;
+}
+
+function card(f){
+  const sev=typShort(f.typ)||"—";
+  const isOt=(f.tags||[]).includes("OT");
+  const tagBadges=(f.tags||[]).filter(t=>t!=="OT").slice(0,6).map(t=>`<span class="b b-tag">${esc(t)}</span>`).join("");
+  const sites=(f._sites.length?f._sites:["—"]).map(s=>`<span class="b b-site">${esc(s)}</span>`).join("");
+  const statusCl=/bearbeit/i.test(f.status)?"prog":"";
+  return `<div class="card sev-${sev.split(" ")[0]} ${isDone(f)?"done":""} ${state.open.has(f.excelRow)?"open":""}" id="f-${f.excelRow}">
+    <div class="chead" onclick="toggle(this,${f.excelRow})">
+      <span class="fid">${esc(f.findingId||"—")}</span>
+      ${f.kontrollNr?`<span class="ctrl">${esc(f.kontrollNr)}</span>`:""}
+      <div class="mid">
+        <div class="qtitle">${esc(f.frageDe||f.kapitel||f.beschreibung||"(ohne Titel)")}</div>
+        <div class="badges">
+          ${f.typ?`<span class="b b-typ ${sev.split(" ")[0]}">${esc(f.typ)}</span>`:""}
+          ${f.prioritaet?`<span class="b b-prio ${esc(f.prioritaet)}">${esc(f.prioritaet)}</span>`:""}
+          ${isDone(f)?`<span class="b b-done">Erledigt${DONE[f.excelRow].t?" · "+esc(DONE[f.excelRow].t):""}</span>`:(f.status?`<span class="b b-status ${statusCl}">${esc(f.status)}</span>`:"")}
+          ${isOt?`<span class="b b-ot">OT</span>`:""}
+          ${sites}
+          ${tagBadges}
+          ${reifeBars(f.reifeIst,f.reifeSoll)}
+        </div>
+      </div>
+      <button class="donebtn ${isDone(f)?"on":""}" title="Erledigt umschalten" aria-label="Erledigt umschalten" onclick="toggleDone(event,${f.excelRow})">✓</button>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+    </div>
+    <div class="cbody">
+      ${f.frageEn?`<div class="frage-en">EN: ${esc(f.frageEn)}</div>`:""}
+      ${field("Finding-Beschreibung",f.beschreibung)}
+      <div class="grid2">
+        ${field("Gap",f.gap)}
+        ${field("Maßnahme",f.massnahme)}
+      </div>
+      ${field("Umsetzungsgegenstand, Prozessbezug & Workflow Items (Spalte M)",f.umsetzung)}
+      ${xrefChips(f)}
+      ${field("X-Referenzen zu StageReview Findings (Spalte N)",f.xref,true)}
+      ${field("Complete Remediation Scope (Spalte O)",f.scope,true)}
+      <div class="metaline">
+        <span><b>Modul:</b> ${esc(f.moduleName)}</span>
+        <span><b>Kapitel:</b> ${esc(f.kapitel||"—")}</span>
+        <span><b>Verantwortlich:</b> ${esc(f.verantwortlich||"—")}</span>
+        <span><b>Standort:</b> ${esc(f.standort||"—")}</span>
+        <span><b>Frist:</b> ${esc(f.frist||"—")}</span>
+        ${f.reifeIst!==""||f.reifeSoll!==""?`<span><b>Reifegrad:</b> IST ${esc(f.reifeIst||"–")} → SOLL ${esc(f.reifeSoll||"–")}</span>`:""}
+        ${f.nachweis?`<span><b>Nachweis:</b> ${esc(f.nachweis)}</span>`:""}
+        ${f.isbKommentar?`<span><b>ISB:</b> ${esc(f.isbKommentar)}</span>`:""}
+      </div>
+      <div class="actrow">
+        <button class="btn done-cta ${isDone(f)?"on":""}" onclick="toggleDone(event,${f.excelRow})">${isDone(f)?"✓ Erledigt — als offen markieren":"Als erledigt markieren"}</button>
+        ${preSummary(f)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function groupHeader(title,n){ return `<div class="grp"><h2>${esc(title)}</h2><span class="gcount">${n}</span><span class="rule"></span></div>`; }
+
+function render(){
+  // sync selects/chips visual
+  document.querySelectorAll("#tagChips .chip").forEach(c=>c.classList.toggle("on",state.tags.has(c.dataset.tag)));
+  const list=FINDINGS.filter(matches);
+  const res=document.getElementById("results");
+  document.getElementById("count").innerHTML=`<b>${list.length}</b> von ${FINDINGS.length} Findings`;
+
+  if(!list.length){ res.innerHTML=`<div class="empty">Keine Findings für diese Filter.<br>Filter zurücksetzen und erneut versuchen.</div>`; return; }
+
+  let html="";
+  if(state.view==="flat"){
+    const sorted=[...list].sort((a,b)=>(PRIO_ORDER[a.prioritaet]??9)-(PRIO_ORDER[b.prioritaet]??9)
+      || (SEV_ORDER[a.typ]??9)-(SEV_ORDER[b.typ]??9) || (a.kontrollNr||"").localeCompare(b.kontrollNr||""));
+    html=`<div class="cards">${sorted.map(card).join("")}</div>`;
+  } else if(state.view==="control"){
+    const groups={};
+    list.forEach(f=>{ const k=f.kontrollNr||"(ohne Control)"; (groups[k]=groups[k]||[]).push(f); });
+    Object.keys(groups).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).forEach(k=>{
+      const g=groups[k]; const kap=g[0].kapitel||"";
+      html+=groupHeader(`Control ${k}${kap?" · "+kap:""}`,g.length)+`<div class="cards">${g.map(card).join("")}</div>`;
+    });
+  } else {
+    const groups={};
+    list.forEach(f=>{ (groups[f.moduleName]=groups[f.moduleName]||[]).push(f); });
+    modules.filter(m=>groups[m]).forEach(m=>{
+      const g=groups[m].sort((a,b)=>(a.kontrollNr||"").localeCompare(b.kontrollNr||"",undefined,{numeric:true})
+        || (SEV_ORDER[a.typ]??9)-(SEV_ORDER[b.typ]??9));
+      html+=groupHeader(m,g.length)+`<div class="cards">${g.map(card).join("")}</div>`;
+    });
+  }
+  res.innerHTML=html;
+}
+
+function toggle(el,row){
+  const c=el.parentElement; c.classList.toggle("open");
+  if(row!=null){ if(c.classList.contains("open")) state.open.add(row); else state.open.delete(row); }
+}
+window.toggle=toggle;
+
+document.addEventListener("click",e=>{
+  const x=e.target.closest("[data-goto]"); if(!x) return;
+  const row=parseInt(x.dataset.goto,10); const el=document.getElementById("f-"+row);
+  if(el){ el.classList.add("open"); state.open.add(row); el.scrollIntoView({behavior:"smooth",block:"center"});
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+});
+
+/* ---------- KPIs ---------- */
+function kpis(){
+  const t=FINDINGS.length;
+  const major=FINDINGS.filter(f=>f.typ==="Major NC").length;
+  const minor=FINDINGS.filter(f=>f.typ==="Minor NC").length;
+  const krit=FINDINGS.filter(f=>f.prioritaet==="Kritisch").length;
+  const hoch=FINDINGS.filter(f=>f.prioritaet==="Hoch").length;
+  const ot=FINDINGS.filter(f=>(f.tags||[]).includes("OT")).length;
+  const done=FINDINGS.filter(isDone).length, rest=t-done;
+  const tile=(n,l,cls,frac,color)=>`<div class="kpi stripe ${cls||""}"><div class="n">${n}</div><div class="l">${l}</div>
+    ${frac!=null?`<div class="bar"><span style="width:${Math.round(frac*100)}%;background:${color}"></span></div>`:""}</div>`;
+  document.getElementById("kpis").innerHTML=
+    tile(t,"Findings gesamt")+
+    tile(krit+hoch,"Kritisch + Hoch","k-hoch",(krit+hoch)/t,"var(--hoch)")+
+    tile(major,"Major NC","k-krit",major/t,"var(--krit)")+
+    tile(minor,"Minor NC",null,minor/t,"var(--mittel)")+
+    tile(ot,"OT-relevant","k-ot",ot/t,"var(--accent)")+
+    tile(done,`Erledigt · ${rest} offen`,"k-done",done/t,"var(--niedrig)");
+  document.getElementById("fcount").textContent=t;
+}
+
+/* ---------- CSV export ---------- */
+function csv(){
+  const cols=[["findingId","Finding-ID"],["kontrollNr","Control"],["moduleName","Modul"],["kapitel","Kapitel"],
+    ["frageDe","Kontrollfrage"],["typ","Typ"],["prioritaet","Prio"],["status","Status"],["standort","Standort"],
+    ["verantwortlich","Verantwortlich"],["frist","Frist"],["beschreibung","Beschreibung"],["massnahme","Maßnahme"],
+    ["umsetzung","Umsetzung(M)"],["xref","XRef(N)"],["scope","Scope(O)"]];
+  const DONE_CSV={col:"Erledigt",yes:"Ja",no:"Nein"};
+  const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+  const rows=FINDINGS.filter(matches);
+  let out=cols.map(c=>q(c[1])).join(";")+";"+q(DONE_CSV.col)+"\r\n";
+  rows.forEach(f=>{ out+=cols.map(c=>q(c[0]==="tags"?(f.tags||[]).join(", "):f[c[0]])).join(";")
+    +";"+q(DONE[f.excelRow]?DONE_CSV.yes+" "+(DONE[f.excelRow].t||""):DONE_CSV.no)+"\r\n"; });
+  const blob=new Blob(["﻿"+out],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="TISAX_Findings_gefiltert.csv"; a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ---------- wiring ---------- */
+function syncOt(){ document.getElementById("otToggle").classList.toggle("on",state.ot); }
+document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value;render();});
+document.getElementById("fModul").addEventListener("change",e=>{state.modul=e.target.value;render();});
+document.getElementById("fTyp").addEventListener("change",e=>{state.typ=e.target.value;render();});
+document.getElementById("fPrio").addEventListener("change",e=>{state.prio=e.target.value;render();});
+document.getElementById("fStatus").addEventListener("change",e=>{state.status=e.target.value;render();});
+document.getElementById("fSite").addEventListener("change",e=>{state.site=e.target.value;render();});
+document.getElementById("otToggle").addEventListener("click",()=>{
+  state.ot=!state.ot; if(state.ot)state.tags.add("OT"); else state.tags.delete("OT"); syncOt(); render();});
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  Object.assign(state,{q:"",modul:"",typ:"",prio:"",status:"",site:"",ot:false,tags:new Set()});
+  document.getElementById("q").value="";
+  ["fModul","fTyp","fPrio","fStatus","fSite"].forEach(id=>document.getElementById(id).value="");
+  syncOt(); render();});
+document.getElementById("csvBtn").addEventListener("click",csv);
+document.getElementById("saveBtn").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify({format:"reutib-tisax-done",exported:new Date().toISOString(),done:DONE},null,1)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="TISAX_Findings_Stand.json"; a.click(); URL.revokeObjectURL(a.href);});
+document.getElementById("loadBtn").addEventListener("click",()=>document.getElementById("loadInput").click());
+document.getElementById("loadInput").addEventListener("change",e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+      const obj=JSON.parse(rd.result);
+      const d=obj&&obj.done?obj.done:obj;
+      if(!d||typeof d!=="object"||Array.isArray(d)) throw new Error("bad");
+      DONE=d; saveDone(); kpis(); render();
+    }catch(err){ alert("Datei konnte nicht gelesen werden — bitte einen zuvor gesicherten Stand (JSON) wählen."); }
+    e.target.value=""; };
+  rd.readAsText(file);});
+document.querySelectorAll("#viewsel button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#viewsel button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); state.view=b.dataset.v; render();}));
+
+/* theme */
+const themeBtn=document.getElementById("themeBtn");
+function applyTheme(t){ if(t){document.documentElement.setAttribute("data-theme",t);}
+  const dark=(document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"))==="dark";
+  document.getElementById("themeIcon").textContent=dark?"☾":"☀";
+  document.getElementById("themeTxt").textContent=dark?"Dunkel":"Hell"; }
+themeBtn.addEventListener("click",()=>{
+  const cur=document.documentElement.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+  applyTheme(cur==="dark"?"light":"dark");});
+applyTheme(null);
+
+kpis(); render();
+</script>
+</body>
+</html>
