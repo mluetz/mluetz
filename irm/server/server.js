@@ -34,7 +34,7 @@ const VERSION = "1.10";
 const PORT = parseInt(process.env.PORT || "8010", 10);
 const TOKEN = process.env.IRM_TOKEN || "";
 const CORS = process.env.IRM_CORS || "";
-const MAX_BODY = 2 * 1024 * 1024;
+const MAX_BODY = 8 * 1024 * 1024; /* Tickets können eingebettete Anlagen tragen (bis 4 MB je Ticket) */
 
 /* ---------- Speicher-Abstraktion: SQLite, sonst JSON-Datei ---------- */
 let store;
