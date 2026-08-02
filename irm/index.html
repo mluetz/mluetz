@@ -196,6 +196,26 @@ const EN = {
  "Entfernen von Anlagen nur durch den ISB.":"Only the ISB may remove attachments.",
  "Anlage wirklich entfernen? Der Vorgang wird protokolliert.":"Really remove this attachment? The removal will be logged.",
  "Anlage vorhanden":"attachment present","von":"by",
+ "2a · NIS-2-Relevanzbewertung":"2a · NIS-2 relevance assessment",
+ "erheblich":"significant","nicht erheblich":"not significant","vorsorglich erheblich":"precautionarily significant (doubt rule)",
+ "kein Systembezug":"no system involvement","Systembezug":"System involvement",
+ "Sind Netz- oder Informationssysteme betroffen?":"Are network or information systems affected?",
+ "Begründung fehlender Systembezug":"Justification of missing system involvement",
+ "Betroffene Standorte":"Affected sites",
+ "Teil 2 – Kriterien mit unmittelbarer Relevanzwirkung (ein „ja“ genügt)":"Part 2 – criteria with immediate relevance effect (one “yes” suffices)",
+ "Teil 3 – Kriterien mit Prüfpflicht":"Part 3 – criteria with examination duty",
+ "Teil 4 – Standortbezogene Zusatzprüfung Slowakei (Myjava)":"Part 4 – site-specific additional check Slovakia (Myjava)",
+ "Teil 5 – Ergebnis und Meldeentscheidung":"Part 5 – result and reporting decision",
+ "Gesamtergebnis":"Overall result","Tragende Begründung":"Supporting justification",
+ "Bestätigung Incident Owner (Vier-Augen-Prinzip bei Verneinung, P1/P2)":"Incident-owner confirmation (four-eyes principle for negation, P1/P2)",
+ "Ergebnis in die Meldepflichten übernehmen":"Apply result to the reporting duties",
+ "aus der NIS-2-Relevanzbewertung übernommen":"applied from the NIS-2 relevance assessment",
+ "Bitte zuerst das Gesamtergebnis der Relevanzbewertung festlegen.":"Please set the overall result of the relevance assessment first.",
+ "Die Verneinung trotz erfüllten Relevanzkriteriums ist dem ISB vorbehalten (STD_010.002 Kap. 7.4).":"Negation despite a fulfilled relevance criterion is reserved to the ISB (STD_010.002 ch. 7.4).",
+ "NIS-2-Relevanz automatisch auf „erheblich“ gesetzt (mindestens ein Kriterium mit unmittelbarer Relevanzwirkung erfüllt, STD_010.002 Kap. 5.1).":"NIS-2 relevance automatically set to “significant” (at least one criterion with immediate relevance effect fulfilled, STD_010.002 ch. 5.1).",
+ "NIS-2 AT: vor dem 01.10.2026 nicht anwendbar – Feld auf „nein“ gesetzt; Prozess gleichwohl erproben (STD_010.002 Kap. 6.2).":"NIS-2 AT: not applicable before 2026-10-01 – field set to “no”; nevertheless rehearse the process (STD_010.002 ch. 6.2).",
+ "Frühwarnung fällig":"early warning due","Entscheidung spätestens":"decision at the latest",
+ "Behörde / Portal":"Authority / portal","Meldesprache":"Reporting language",
  /* header/nav */
  "REUTIB · IRM-Tool V1.10 · nach GDL_010.001":"REUTIB · IRM tool V1.10 · per GDL_010.001",
  "Rolle (Simulation):":"Role (simulation):",
@@ -388,15 +408,155 @@ function delAtt(id){
   save(t); render();
 }
 
+/* ==== NIS-2-Relevanzbewertung nach STD_010.002 V1.00 (Prüfbogen Anhang A) ==== */
+const nisOrte = t => (t.nis2 && t.nis2.orte) || [];
+const NIS2_SITES = ["Leutenbach","Bischofshofen","Graz","Myjava","Międzyrzecze Górne","Mexiko","Indien"];
+const NIS2_LAND = {
+  DE:{sites:["Leutenbach"], pf:"nis2_de", beh:"BSI", portal:"Melde- und Informationsportal des BSI", spr:"Deutsch"},
+  AT:{sites:["Bischofshofen","Graz"], pf:"nis2_at", beh:"CSIRT / Bundesamt für Cybersicherheit", portal:"NIS-Meldeplattform", spr:"Deutsch"},
+  SK:{sites:["Myjava"], pf:"nis2_sk", beh:"NBÚ", portal:"JISKB", spr:"Slowakisch"},
+  PL:{sites:["Międzyrzecze Górne"], pf:"nis2_pl", beh:"CSIRT NASK", portal:"S46", spr:"Polnisch"}
+};
+const AT_NIS_START = Date.UTC(2026,9,1); /* NISG 2026 anwendbar ab 01.10.2026 */
+const NIS2_DIRECT = [
+ {id:"rk01", de:"Produktions- oder lieferkritisches System > 60 min vollständig ausgefallen oder > 180 min erheblich eingeschränkt? (Myjava: 30 bzw. 60 min)",
+  en:"Production- or delivery-critical system completely unavailable > 60 min or significantly impaired > 180 min? (Myjava: 30 / 60 min)",
+  hd:"Vyhláška 226/2025 Anh. 1 Nr. 1–2. Kritisch u. a.: SAP (PP/MM/SD), EDI/Kundenanbindung, MES, CAQ, Verzeichnis-/Authentisierungsdienste, IT/OT-Kopplung, Zutrittssteuerung.",
+  he:"Vyhláška 226/2025 Annex 1 no. 1–2. Critical: SAP (PP/MM/SD), EDI/customer link, MES, CAQ, directory/authentication services, IT/OT coupling, access control."},
+ {id:"rk02", de:"Fertigungs- oder Lieferfähigkeit cyberbedingt unterbrochen? (> 4 h Stillstand, eingetretener/drohender Bandstillstand beim Kunden, erforderliche Sonderfahrt/Sonderschicht)",
+  en:"Manufacturing or delivery capability interrupted by a cyber cause? (> 4 h standstill, actual/imminent line stoppage at the customer, special transport/shift required)",
+  hd:"Deckungsgleich mit S2 = P1/P2; löst zugleich die Kundeninformation nach IATF 16949 aus.",
+  he:"Congruent with S2 = P1/P2; also triggers the customer information per IATF 16949."},
+ {id:"rk03", de:"Direkter Bruttoschaden > 250.000 € für die REUTIB oder einen einzelnen Dritten? (inkl. Wiederherstellungs-, Ausfall-, Sonderlogistik- und Vertragsstrafenkosten)",
+  en:"Direct gross loss > €250,000 for REUTIB or a single third party? (incl. recovery, downtime, special logistics and contractual penalties)",
+  hd:"Vyhláška 226/2025 Anh. 1 Nr. 6 – strengster Wert (Prinzip der strengsten Schwelle) gegenüber 500.000 € der DVO (EU) 2024/2690.",
+  he:"Vyhláška 226/2025 Annex 1 no. 6 – strictest value (strictest-threshold principle) vs. €500,000 of Implementing Regulation (EU) 2024/2690."},
+ {id:"rk04", de:"Abfluss von Prototypen-, Entwicklungs-, Werkzeug-, Prozess- oder Kundendaten oder von C3/C4-Informationen eingetreten oder nicht sicher auszuschließen?",
+  en:"Exfiltration of prototype, development, tooling, process or customer data or of C3/C4 information occurred or not safely excludable?",
+  hd:"Kein Mengenschwellenwert – ein einzelner Datensatz genügt. Praktisch wichtigstes Kriterium der REUTIB; löst zugleich die OEM-Information (24 h) aus.",
+  he:"No volume threshold – a single record suffices. REUTIB's most relevant criterion in practice; also triggers the OEM information (24 h)."},
+ {id:"rk05", de:"Tod oder behandlungsbedürftige Gesundheitsschädigung einer Person durch Manipulation, Ausfall oder Fehlfunktion eines Systems, einer Steuerung oder Schutzeinrichtung?",
+  en:"Death or injury requiring treatment caused by manipulation, failure or malfunction of a system, control or safety device?",
+  hd:"DVO (EU) 2024/2690 Art. 3 Abs. 1 c/d; Vyhláška Anh. 1 Nr. 7. In der OT-Umgebung realistisch.",
+  he:"IR (EU) 2024/2690 Art. 3(1)(c)/(d); Vyhláška Annex 1 no. 7. Realistic in the OT environment."},
+ {id:"rk06", de:"Bestätigter, mutmaßlich böswilliger unbefugter Zugriff, der geeignet ist, eine schwere Betriebsstörung zu verursachen? (Verzeichnisdienste, Hypervisor, Sicherungen, Fernwartung, OT-Zellennetze, privilegierte Konten)",
+  en:"Confirmed, presumably malicious unauthorised access capable of causing severe operational disruption? (directory services, hypervisors, backups, remote maintenance, OT cell networks, privileged accounts)",
+  hd:"Die Eignung genügt – ein tatsächlicher Schadenseintritt ist nicht erforderlich (Potenzialität).",
+  he:"Capability suffices – actual damage is not required (potentiality)."},
+ {id:"rk07", de:"Produktive Daten oder Systeme verschlüsselt oder Sicherungsbestände kompromittiert, gelöscht oder verschlüsselt?",
+  en:"Productive data or systems encrypted, or backups compromised, deleted or encrypted?",
+  hd:"Stets zugleich P1 und Eskalationsstufe E2.",
+  he:"Always simultaneously P1 and escalation level E2."}
+];
+const NIS2_CHECK = [
+ {id:"rk08", de:"Betrifft der Vorfall Daten oder Dienste von mehr als 25.000 Personen?", en:"Does the incident affect data or services of more than 25,000 persons?",
+  hd:"Vyhláška Anh. 1 Nr. 4.", he:"Vyhláška Annex 1 no. 4."},
+ {id:"rk09", de:"Mindestens zwei Vorfälle mit derselben Grundursache in sechs Monaten, kumuliert > 250.000 €?", en:"At least two incidents with the same root cause within six months, cumulatively > €250,000?",
+  hd:"DVO Art. 4; ergänzt die 30-Tage-Kumulationsregel der POL_010.001.", he:"IR Art. 4; complements the 30-day cumulation rule of POL_010.001."},
+ {id:"rk10", de:"Leistungserbringung eines Kunden, Lieferanten oder einer anderen wesentlichen/wichtigen Einrichtung beeinträchtigt oder gefährdet?", en:"Service provision of a customer, supplier or another essential/important entity impaired or endangered?",
+  hd:"Tatbestand B (Außenwirkung); bei OEM-Bezug in der Regel zu bejahen.", he:"Element B (external effect); usually affirmative where an OEM is involved."},
+ {id:"rk11", de:"Auswirkung auf Standorte in mehr als einem Mitgliedstaat oder auf standortübergreifend genutzte zentrale Systeme?", en:"Effect on sites in more than one Member State or on centrally shared systems?",
+  hd:"Art. 23 Abs. 4 NIS-2; löst regelmäßig die Mehrfachmeldung aus.", he:"Art. 23(4) NIS-2; regularly triggers multi-country reporting."},
+ {id:"rk12", de:"Prüf-, Mess-, Rückverfolgbarkeits- oder Freigabedaten betroffen, die Konformität oder Sicherheit ausgelieferter Produkte berühren können?", en:"Test, measurement, traceability or release data affected that may concern conformity or safety of delivered products?",
+  hd:"Schnittstelle zur Domäne H; parallel IATF 16949 und ProdSG prüfen.", he:"Interface to domain H; check IATF 16949 and product-safety law in parallel."}
+];
+const NIS2_SK = [
+ {id:"sk1", de:"Kriterium des Anhangs 1 der Vyhláška 226/2025 erfüllt, das über den REUTIB-Katalog hinausgeht? (insb. Nr. 1/2 mit 30/60 min, Nr. 5 volkswirtschaftlicher Schaden, Nr. 7)", en:"Criterion of Annex 1 of Vyhláška 226/2025 fulfilled that goes beyond the REUTIB catalogue? (esp. no. 1/2 with 30/60 min, no. 5, no. 7)", erh:true},
+ {id:"sk2", de:"Bedeutende Cyberbedrohung, von der die Einrichtung Kenntnis erlangt hat? (§ 24 Abs. 5)", en:"Significant cyber threat of which the entity has become aware? (Sec. 24(5))"},
+ {id:"sk3", de:"In letzter Minute abgewendetes Ereignis, das einen erheblichen Vorfall hätte verursachen können? (§ 24 Abs. 5)", en:"Last-minute averted event that could have caused a significant incident? (Sec. 24(5))"},
+ {id:"sk4", de:"Ausnutzbare, nicht in angemessener Zeit behobene Schwachstelle eines öffentlich erreichbaren Systems? (§ 24 Abs. 5)", en:"Exploitable vulnerability of a publicly reachable system not remedied in due time? (Sec. 24(5))"}
+];
+function nis2(t){
+  if(!t.nis2) t.nis2={sysbezug:"nicht geprüft", sysbegr:"", orte:[], rk:{}, sk:{}, ergebnis:"offen", begr:"", vieraugen:false};
+  if(!t.nis2.orte.length && t.standort)
+    t.nis2.orte = t.standort==="standortübergreifend" ? ["Leutenbach","Bischofshofen","Graz","Myjava","Międzyrzecze Górne"] : [t.standort];
+  return t.nis2;
+}
+const nisMyjava = t => nisOrte(t).includes("Myjava");
+function nisAutoErheblich(t){
+  const n=nis2(t);
+  return NIS2_DIRECT.some(k=>n.rk[k.id]==="ja") || n.sk.sk1==="ja";
+}
+function ensureNisTask(t, origin, name, rolle, hours){
+  let task=t.tasks.find(x=>x.origin===origin);
+  const soll=t.kenntnis+hours*3600000;
+  if(!task){
+    t.tasks.push({id:Math.random().toString(36).slice(2), origin, name, rolle, due:soll, done:false});
+    log(t,tr("Aufgabe erzeugt:")+" "+taskLabel(name)+" ("+tr("fällig")+" "+fmt(soll)+")");
+  } else if(!task.done && task.due!==soll){ task.due=soll; log(t,tr("Meldeaufgabe neu terminiert:")+" "+taskLabel(name)+" → "+fmt(soll)); }
+}
+const NIS18_NAME="NIS-2 – Entscheidung über die Frühwarnung (Sicherheitsabstand 18 h)";
+const NISSK_NAME="NIS-2 SK – Zusatzmeldung nach § 24 Abs. 5 an das NBÚ (unverzüglich)";
+function nisAfterChange(t){
+  const n=nis2(t);
+  if(n.sysbezug==="ja") ensureNisTask(t,"nis18",NIS18_NAME,"ISB",18);
+  if(nisMyjava(t) && ["sk2","sk3","sk4"].some(k=>n.sk[k]==="ja"))
+    ensureNisTask(t,"nis24sk",NISSK_NAME,"ISB / Standortverantwortlicher Myjava",24);
+  if(n.ergebnis==="offen" && nisAutoErheblich(t)){
+    n.ergebnis="erheblich";
+    log(t,tr("NIS-2-Relevanz automatisch auf „erheblich“ gesetzt (mindestens ein Kriterium mit unmittelbarer Relevanzwirkung erfüllt, STD_010.002 Kap. 5.1)."));
+  }
+}
+function updNisF(f,v,label){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const n=nis2(t); if(n[f]===v) return;
+  if(f==="ergebnis" && v==="nicht erheblich" && nisAutoErheblich(t) && S.role!=="isb"){
+    alert(tr("Die Verneinung trotz erfüllten Relevanzkriteriums ist dem ISB vorbehalten (STD_010.002 Kap. 7.4).")); render(); return;
+  }
+  const old=n[f]; n[f]=v;
+  log(t,"NIS-2 · "+(label||f)+": "+tr(String(old===""||old===undefined?"—":old))+" → "+tr(String(v===""?"—":v)));
+  nisAfterChange(t); save(t); render();
+}
+function updNisRk(id,v){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const n=nis2(t); if(n.rk[id]===v) return;
+  n.rk[id]=v;
+  log(t,"NIS-2 · "+id.toUpperCase().replace("RK","RK-")+": "+tr(v||"—"));
+  nisAfterChange(t); save(t); render();
+}
+function updNisSk(id,v){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const n=nis2(t); if(n.sk[id]===v) return;
+  n.sk[id]=v;
+  log(t,"NIS-2 · SK-"+id.slice(2)+" (§ 24 Abs. 5 / Vyhláška): "+tr(v||"—"));
+  nisAfterChange(t); save(t); render();
+}
+function toggleNisOrt(site,on){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const n=nis2(t);
+  n.orte = on? [...new Set([...n.orte,site])] : n.orte.filter(x=>x!==site);
+  log(t,"NIS-2 · "+tr("Betroffene Standorte")+": "+(n.orte.map(siteLabel).join(", ")||"—"));
+  nisAfterChange(t); save(t); render();
+}
+function applyNis2ToPf(){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const n=nis2(t);
+  if(n.ergebnis==="offen"){ alert(tr("Bitte zuerst das Gesamtergebnis der Relevanzbewertung festlegen.")); return; }
+  const pos = n.ergebnis!=="nicht erheblich";
+  for(const cfg of Object.values(NIS2_LAND)){
+    if(!cfg.sites.some(sx=>n.orte.includes(sx))) continue;
+    let v = pos? "ja":"nein";
+    if(cfg.pf==="nis2_at" && pos && now()<AT_NIS_START){
+      v="nein";
+      log(t,tr("NIS-2 AT: vor dem 01.10.2026 nicht anwendbar – Feld auf „nein“ gesetzt; Prozess gleichwohl erproben (STD_010.002 Kap. 6.2)."));
+    }
+    if(t.pf[cfg.pf]!==v){
+      t.pf[cfg.pf]=v;
+      log(t,tr("Meldepflicht")+" "+tr(PFL.find(px=>px.id===cfg.pf).l)+" → "+tr(v)+" ("+tr("aus der NIS-2-Relevanzbewertung übernommen")+")");
+    }
+  }
+  syncTasks(t); save(t); render();
+}
+
 /* Meldepflichten (Anhang A) */
 const PFL = [
  {id:"nis2_de", l:"NIS-2 Deutschland", app:t=>true,
   tasks:[["NIS-2 DE – Frühwarnung an das BSI",24],["NIS-2 DE – Folgemeldung",72],["NIS-2 DE – Abschlussmeldung",720]], rolle:"ISB"},
- {id:"nis2_at", l:"NIS-2 Österreich", app:t=>["Bischofshofen","Graz"].includes(t.standort),
+ {id:"nis2_at", l:"NIS-2 Österreich", app:t=>["Bischofshofen","Graz"].includes(t.standort)||nisOrte(t).some(o=>["Bischofshofen","Graz"].includes(o)),
   tasks:[["NIS-2 AT – Frühwarnung",24],["NIS-2 AT – Folgemeldung",72],["NIS-2 AT – Abschlussmeldung",720]], rolle:"ISB"},
- {id:"nis2_sk", l:"NIS-2 Slowakei", app:t=>t.standort==="Myjava",
+ {id:"nis2_sk", l:"NIS-2 Slowakei", app:t=>t.standort==="Myjava"||nisOrte(t).includes("Myjava"),
   tasks:[["NIS-2 SK – Frühwarnung",24],["NIS-2 SK – Folgemeldung",72],["NIS-2 SK – Abschlussmeldung",720]], rolle:"ISB"},
- {id:"nis2_pl", l:"NIS-2 Polen", app:t=>t.standort==="Międzyrzecze Górne",
+ {id:"nis2_pl", l:"NIS-2 Polen", app:t=>t.standort==="Międzyrzecze Górne"||nisOrte(t).includes("Międzyrzecze Górne"),
   tasks:[["NIS-2 PL – Frühwarnung",24],["NIS-2 PL – Folgemeldung",72],["NIS-2 PL – Abschlussmeldung",720]], rolle:"ISB"},
  {id:"bsig35", l:"Unterrichtung der Empfänger von Diensten (§ 35 BSIG)", app:t=>["ja","in Prüfung"].includes(t.pf.nis2_de),
   tasks:[["§ 35 BSIG – Unterrichtung der Empfänger (nach GL-Freigabe versenden; Frist läuft weiter)",24]], rolle:"ISB", appr:"Geschäftsleitung"},
@@ -442,7 +602,9 @@ const TASK_EN = {
  "Strafanzeige / Anzeige bei der Strafverfolgungsbehörde (Entscheidung GL)":"Criminal complaint to law enforcement (management decision)",
  "Post-Incident-Review durchführen":"Conduct post-incident review",
  "Abschlussbericht und Risikobewertung erstellen":"Prepare final report and risk assessment",
- "Wirksamkeitsprüfung der Maßnahmen":"Effectiveness review of the measures"
+ "Wirksamkeitsprüfung der Maßnahmen":"Effectiveness review of the measures",
+ "NIS-2 – Entscheidung über die Frühwarnung (Sicherheitsabstand 18 h)":"NIS-2 – decision on the early warning (18-hour safety margin)",
+ "NIS-2 SK – Zusatzmeldung nach § 24 Abs. 5 an das NBÚ (unverzüglich)":"NIS-2 SK – additional notification per Sec. 24(5) to the NBÚ (without undue delay)"
 };
 function taskLabel(n){
   if(S.lang!=="en") return n;
@@ -662,6 +824,11 @@ function syncTasks(t){
       log(t,tr("Datenschutzbeauftragter als Beobachter gesetzt (Art. 33/34)."));
     }
   }
+  for(const [org,h] of [["nis18",18],["nis24sk",24]]){
+    const task=t.tasks.find(x=>x.origin===org);
+    if(task && !task.done){ const soll=t.kenntnis+h*3600000;
+      if(task.due!==soll){ task.due=soll; log(t,tr("Meldeaufgabe neu terminiert:")+" "+taskLabel(task.name)+" → "+fmt(soll)); } }
+  }
 }
 
 /* Vorrangregel Personengefährdung (Regel 6 / Testfall 16) */
@@ -715,6 +882,12 @@ function checkTransition(t, to){
         M("Meldepflicht „"+p.l+"“ (steht auf „nicht geprüft“)","Reporting duty “"+tr(p.l)+"” (still “not assessed”)");
     }
     if(needBegruendungAbw(t) && !t.kenntnisBegr) M("Begründung der Abweichung Kenntniserlangung/Erstellung (> 1 h)","Justification of the gap between awareness and creation (> 1 h)");
+    const nx=t.nis2||{};
+    if(!nx.sysbezug || nx.sysbezug==="nicht geprüft") M("NIS-2-Relevanzbewertung: Systembezug (steht auf „nicht geprüft“)","NIS-2 relevance: system involvement (still “not assessed”)");
+    if(nx.sysbezug==="nein" && !nx.sysbegr) M("NIS-2-Relevanzbewertung: Begründung fehlender Systembezug","NIS-2 relevance: justification of missing system involvement");
+    if(nx.sysbezug==="ja"){
+      for(const k of NIS2_DIRECT) if(!nx.rk || !nx.rk[k.id]) M("NIS-2-Prüfbogen Teil 2: "+k.id.toUpperCase().replace("RK","RK-")+" unbeantwortet","NIS-2 form part 2: "+k.id.toUpperCase().replace("RK","RK-")+" unanswered");
+    }
   }
   if(t.status==="In Bearbeitung – Eindämmung" && to==="In Bearbeitung – Analyse"){
     if(!t.sofort) M("Sofortmaßnahmen (Protokoll)","Immediate actions (log)");
@@ -741,6 +914,14 @@ function checkTransition(t, to){
       if(!t.fvNummer) M("Führender Fachvorgang – Nummer","Leading business record – number");
     }
     if(t.gef==="noch nicht bestimmt"||!t.gef) M("Gefährdungsbezug","Threat reference");
+    const nc=t.nis2||{};
+    if(nc.sysbezug==="ja"){
+      for(const k of NIS2_CHECK) if(!nc.rk || !nc.rk[k.id]) M("NIS-2-Prüfbogen Teil 3: "+k.id.toUpperCase().replace("RK","RK-")+" unbeantwortet","NIS-2 form part 3: "+k.id.toUpperCase().replace("RK","RK-")+" unanswered");
+      if(nisMyjava(t)) for(const k of NIS2_SK) if(!nc.sk || !nc.sk[k.id]) M("NIS-2-Prüfbogen Teil 4 (Slowakei): Frage unbeantwortet","NIS-2 form part 4 (Slovakia): question unanswered");
+      if(!nc.ergebnis || nc.ergebnis==="offen") M("NIS-2-Relevanzbewertung: Gesamtergebnis","NIS-2 relevance: overall result");
+      if(nc.ergebnis && nc.ergebnis!=="offen" && !nc.begr) M("NIS-2-Relevanzbewertung: Tragende Begründung","NIS-2 relevance: supporting justification");
+      if(nc.ergebnis==="nicht erheblich" && p12 && !nc.vieraugen) M("NIS-2-Verneinung bei P1/P2: Vier-Augen-Bestätigung des Incident Owners","NIS-2 negation for P1/P2: four-eyes confirmation of the incident owner");
+    }
   }
   if(to==="Ausgesetzt – BCM"){
     if(!t.bcmNote) M("Übergabeprotokoll BCM (Notiz)","BCM hand-over record (note)");
@@ -817,7 +998,9 @@ async function seed(){
   await mk({betreff:"Verschlüsselungstrojaner auf Fileserver LB-FS02", beschreibung:"Mehrere Dateien nicht mehr lesbar, Erpresserschreiben auf dem Desktop. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-30*H},
     t=>{ t.status="Triage"; t.leitdomaene="A"; t.owner=ownerFor(t); t.s1="nicht betroffen"; t.s2="P2"; t.s3="P1"; t.s4="P4"; t.s5="nicht betroffen"; t.s6="P1";
       t.gef="G 0.39 – Schadprogramme"; t.pf.nis2_de="ja"; t.pf.dsgvo="in Prüfung"; t.pf.kunde_liefer="in Prüfung"; t.pf.oem_daten="ja"; t.pf.anv="ja";
-      t.tisax=true; t.infoklass="C3"; t.objekte="LB-FS02, Domäne PROD"; t.einstufungBegr="C3-Daten betroffen, Meldepflicht NIS-2 wahrscheinlich."; });
+      t.tisax=true; t.infoklass="C3"; t.objekte="LB-FS02, Domäne PROD"; t.einstufungBegr="C3-Daten betroffen, Meldepflicht NIS-2 wahrscheinlich.";
+      t.nis2={sysbezug:"ja", sysbegr:"", orte:["Leutenbach"], rk:{rk01:"ja",rk02:"ja",rk03:"nein",rk04:"ja",rk05:"nein",rk06:"ja",rk07:"ja",rk08:"nein",rk09:"nein",rk10:"ja",rk11:"nein",rk12:"nein"}, sk:{}, ergebnis:"erheblich", begr:"RK-07 Verschlüsselungsangriff, RK-01/02 Systemausfall mit Lieferwirkung, RK-04 C3-Datenabfluss nicht auszuschließen (fiktiver Testfall).", vieraugen:false};
+      ensureNisTask(t,"nis18",NIS18_NAME,"ISB",18); });
   await mk({betreff:"OT-Leitrechner Extrusionslinie 3 ohne Funktion", beschreibung:"Linie 3 steht, Ursache unklar. (Fiktiver Testfall)", standort:"Myjava", kenntnis:now()-6*H},
     t=>{ t.status="In Bearbeitung – Eindämmung"; t.leitdomaene="B"; t.owner=ownerFor(t); t.s1="nicht betroffen"; t.s2="P2"; t.s3="P4"; t.s4="P3"; t.s5="P4"; t.s6="P4";
       t.gef="G 0.25 – Ausfall von Geräten oder Systemen"; t.pf.nis2_sk="in Prüfung"; t.pf.dsgvo="nein"; t.pf.kunde_liefer="ja"; t.pf.oem_daten="nein"; t.pf.anv="nein"; t.sofort=fmt(now()-5*H)+" Linie gestoppt, Netzwerksegment isoliert (Schichtleiter M. Novák, fiktiv)"; });
@@ -1220,6 +1403,66 @@ function viewDetail(id){
    <textarea ${ro?"disabled":""} onchange="upd('einstufungBegr',this.value,'${tr("Begründung der Einstufung")}')">${esc(t.einstufungBegr)}</textarea>`:""}
   </div></div>
 
+  ${(()=>{ const n=nis2(t);
+    const jn = (v,fn,arg)=>`<select ${ro?"disabled":""} style="width:auto" onchange="${fn}('${arg}',this.value)"><option value="">–</option><option value="ja" ${v==="ja"?"selected":""}>${tr("ja")}</option><option value="nein" ${v==="nein"?"selected":""}>${tr("nein")}</option></select>`;
+    const resBadge = n.sysbezug==="nein" ? `<span class="badge st">${tr("kein Systembezug")}</span>`
+      : n.ergebnis==="erheblich" ? `<span class="badge e2">${tr("erheblich")}</span>`
+      : n.ergebnis==="vorsorglich erheblich" ? `<span class="badge e1">${tr("vorsorglich erheblich")}</span>`
+      : n.ergebnis==="nicht erheblich" ? `<span class="badge st" style="color:var(--ok)">${tr("nicht erheblich")}</span>`
+      : `<span class="badge pn">${tr("offen")}</span>`;
+    const myj = nisMyjava(t);
+    return `<div class="section"><div class="head">${tr("2a · NIS-2-Relevanzbewertung")} <span class="small muted">(STD_010.002 · ${de?"Prüfbogen Anhang A":"assessment form Annex A"})</span><div class="spacer"></div>${resBadge}</div><div class="body">
+    <div class="note" style="margin-top:8px">${de
+      ?"Schweregrad und Meldepflicht sind getrennte Bewertungen: Auch ein P3/P4-Incident kann meldepflichtig sein. <b>Zweifelsregel:</b> Im Zweifel wird vorsorglich und fristwahrend gemeldet — eine vorsorgliche Meldung ist folgenlos, eine versäumte Frist nicht heilbar. Die Entscheidung über die Frühwarnung fällt spätestens <b>18 h nach Kenntniserlangung</b> (${fmt(t.kenntnis+18*3600000)})."
+      :"Severity and reporting duty are separate assessments: even a P3/P4 incident can be reportable. <b>Doubt rule:</b> when in doubt, report precautionarily and in time — a precautionary report has no adverse consequences, a missed deadline cannot be healed. The early-warning decision is due at the latest <b>18 h after awareness</b> (${fmt(t.kenntnis+18*3600000)})."}</div>
+    <div class="grid3">
+     <div><label>${tr("Sind Netz- oder Informationssysteme betroffen?")} <span class="req">*</span></label>
+      <select ${ro?"disabled":""} onchange="updNisF('sysbezug',this.value,'${tr("Systembezug")}')">${["nicht geprüft","ja","nein"].map(v=>`<option value="${v}" ${n.sysbezug===v?"selected":""}>${tr(v)}</option>`).join("")}</select></div>
+     <div style="grid-column:span 2"><label>${tr("Betroffene Standorte")} <span class="hint">${de?"(steuert Länder-Meldepflichten und Myjava-Sonderprüfung)":"(controls country duties and the Myjava special check)"}</span></label>
+      <div class="flex">${NIS2_SITES.map(sx=>`<label class="tip" data-tip="${esc(siteLabel(sx))}" style="display:inline-flex;gap:3px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${n.orte.includes(sx)?"checked":""} ${ro||n.sysbezug!=="ja"?"disabled":""} onchange="toggleNisOrt('${sx}',this.checked)">${siteLabel(sx).slice(0,2)}</label>`).join("")}
+      <span class="small muted">${n.orte.map(siteLabel).join(", ")||"—"}</span></div></div>
+    </div>
+    ${n.sysbezug==="nein"?`<label>${tr("Begründung fehlender Systembezug")} <span class="req">*</span></label>
+     <textarea ${ro?"disabled":""} onchange="updNisF('sysbegr',this.value,'${tr("Begründung fehlender Systembezug")}')">${esc(n.sysbegr)}</textarea>
+     <p class="small muted">${de?"Prüfung endet hier; die Verneinung wird dokumentiert (STD_010.002 Kap. 9.2).":"The check ends here; the negation is documented (STD_010.002 ch. 9.2)."}</p>`:""}
+    ${n.sysbezug==="ja"?`
+    <h3>${tr("Teil 2 – Kriterien mit unmittelbarer Relevanzwirkung (ein „ja“ genügt)")}</h3>
+    <table><thead><tr><th style="width:70px">ID</th><th>${de?"Prüffrage":"Question"}</th><th style="width:90px">${de?"Ergebnis":"Result"}</th></tr></thead><tbody>
+    ${NIS2_DIRECT.map(k=>`<tr ${k.id==="rk01"&&myj?'style="background:var(--hellgrau)"':""}><td><b class="help" title="${esc(de?k.hd:k.he)}">${k.id.toUpperCase().replace("RK","RK-")}</b></td>
+     <td class="small">${de?k.de:k.en}${k.id==="rk01"&&myj?` <b>${de?"— Myjava betroffen: 30/60 min maßgeblich!":"— Myjava affected: 30/60 min apply!"}</b>`:""}</td>
+     <td>${jn(n.rk[k.id],"updNisRk",k.id)}</td></tr>`).join("")}
+    </tbody></table>
+    <h3>${tr("Teil 3 – Kriterien mit Prüfpflicht")}</h3>
+    <table><thead><tr><th style="width:70px">ID</th><th>${de?"Prüffrage":"Question"}</th><th style="width:90px">${de?"Ergebnis":"Result"}</th></tr></thead><tbody>
+    ${NIS2_CHECK.map(k=>`<tr><td><b class="help" title="${esc(de?k.hd:k.he)}">${k.id.toUpperCase().replace("RK","RK-")}</b></td><td class="small">${de?k.de:k.en}</td><td>${jn(n.rk[k.id],"updNisRk",k.id)}</td></tr>`).join("")}
+    </tbody></table>
+    ${myj?`<h3>${tr("Teil 4 – Standortbezogene Zusatzprüfung Slowakei (Myjava)")}</h3>
+    <table><tbody>
+    ${NIS2_SK.map(k=>`<tr><td class="small">${de?k.de:k.en}</td><td style="width:90px">${jn(n.sk[k.id],"updNisSk",k.id)}</td></tr>`).join("")}
+    </tbody></table>
+    <p class="small muted">${de?"Bedrohungen, in letzter Minute abgewendete Ereignisse und Schwachstellen sind in der Slowakei gesondert meldepflichtig (§ 24 Abs. 5) — bei „ja“ entsteht automatisch die Zusatzaufgabe an NBÚ/JISKB.":"Threats, last-minute averted events and vulnerabilities are separately reportable in Slovakia (Sec. 24(5)) — “yes” automatically creates the additional NBÚ/JISKB task."}</p>`:""}
+    <h3>${tr("Teil 5 – Ergebnis und Meldeentscheidung")}</h3>
+    ${nisAutoErheblich(t)?`<div class="err">${de?"Mindestens ein Kriterium mit unmittelbarer Relevanzwirkung ist erfüllt — der Vorfall ist als erheblich zu behandeln (Verneinung nur durch den ISB mit Begründung).":"At least one criterion with immediate relevance effect is fulfilled — the incident must be treated as significant (negation only by the ISB with justification)."}</div>`:""}
+    <div class="grid2">
+     <div><label>${tr("Gesamtergebnis")} <span class="req">*</span></label>
+      <select ${ro?"disabled":""} onchange="updNisF('ergebnis',this.value,'${tr("Gesamtergebnis")}')">${["offen","erheblich","vorsorglich erheblich","nicht erheblich"].map(v=>`<option value="${v}" ${n.ergebnis===v?"selected":""}>${tr(v)}</option>`).join("")}</select>
+      ${n.ergebnis==="nicht erheblich"&&["P1","P2"].includes(st)?`<label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" style="width:auto" ${n.vieraugen?"checked":""} ${ro?"disabled":""} onchange="updNisF('vieraugen',this.checked,'Vier-Augen-Bestätigung')"> ${tr("Bestätigung Incident Owner (Vier-Augen-Prinzip bei Verneinung, P1/P2)")} <span class="req">*</span></label>`:""}
+     </div>
+     <div><label>${tr("Tragende Begründung")} ${n.ergebnis!=="offen"?'<span class="req">*</span>':""}</label>
+      <textarea ${ro?"disabled":""} onchange="updNisF('begr',this.value,'${tr("Tragende Begründung")}')">${esc(n.begr)}</textarea></div>
+    </div>
+    ${(()=>{ const rows=Object.entries(NIS2_LAND).filter(([cc,cfg])=>cfg.sites.some(sx=>n.orte.includes(sx)));
+      if(!rows.length) return "";
+      return `<table><thead><tr><th>${de?"Staat":"State"}</th><th>${tr("Behörde / Portal")}</th><th>${tr("Meldesprache")}</th><th>${de?"Meldepflicht (Feld)":"Reporting duty (field)"}</th><th>${tr("Frühwarnung fällig")}</th></tr></thead><tbody>
+      ${rows.map(([cc,cfg])=>`<tr><td><b>${cc}</b>${cc==="AT"&&now()<AT_NIS_START?` <span class="small muted">${de?"(anwendbar ab 01.10.2026)":"(applicable from 2026-10-01)"}</span>`:""}</td>
+       <td class="small">${cfg.beh} · ${cfg.portal}</td><td class="small">${de?cfg.spr:tr(cfg.spr)||cfg.spr}</td>
+       <td><span class="badge ${t.pf[cfg.pf]==="ja"?"e1":"st"}">${tr(t.pf[cfg.pf])}</span></td>
+       <td class="small">${fmt(t.kenntnis+24*3600000)}</td></tr>`).join("")}</tbody></table>
+      ${!ro&&n.ergebnis!=="offen"?`<div class="flex noprint"><button class="acc" onclick="applyNis2ToPf()">${tr("Ergebnis in die Meldepflichten übernehmen")}</button>
+       <span class="small muted">${de?"Setzt die NIS-2-Felder in Abschnitt 3 je betroffenem Staat und erzeugt die Fristenaufgaben (24 h / 72 h / 1 Monat ab Kenntniserlangung).":"Sets the NIS-2 fields in section 3 per affected state and creates the deadline tasks (24 h / 72 h / 1 month from awareness)."}</span></div>`:""}`;
+    })()}`:""}
+  </div></div>`; })()}
+
   <div class="section"><div class="head">${tr("3 · Meldepflichten und Fristen")} <span class="small muted">${de?"(Fälligkeit ab Kenntniserlangung, Kalenderzeit – GDL Kap. 10.2)":"(due dates from time of awareness, calendar time – GDL ch. 10.2)"}</span></div><div class="body">
    <table><thead><tr><th>${tr("Meldepflicht")}</th><th style="width:130px">${tr("Bewertung")}</th><th>${tr("Zuständig")}</th><th>${tr("Hinweis")}</th></tr></thead><tbody>
    ${PFL.map(p=>{
@@ -1511,7 +1754,7 @@ function viewGuidance(){
    <tr><td>Employee representation (co-determination)</td><td>without delay — checked for <b>every</b> incident</td><td>HR</td></tr>
    <tr><td>Insurer / certification body / law enforcement</td><td>per Annex D of the policy / management decision</td><td>site / quality management / management</td></tr>
    </tbody></table>
-   <p class="small muted">The materiality assessment (persons affected, economic damage, service impact, reputational damage) is documented in “Justification of classification” — positive or negative. Approval steps never stop the deadline clock; the notification to the authority itself needs no approval.</p>
+   <p class="small muted">The NIS-2 relevance assessment is performed directly in the ticket (section 2a) using the STD_010.002 form: criteria RK-01–RK-12 under the strictest-threshold principle, Myjava special rules (30/60-min thresholds, Sec. 24(5) additional notifications), an 18-h safety margin for the early-warning decision and documented negation under the four-eyes principle. The materiality assessment (persons affected, economic damage, service impact, reputational damage) is documented in “Justification of classification” — positive or negative. Approval steps never stop the deadline clock; the notification to the authority itself needs no approval.</p>
   </div></details>
 
   <details><summary>5 · Life cycle: phases, statuses and duties (PROC ch. 8)</summary><div class="dbody">
@@ -1638,7 +1881,7 @@ function viewGuidance(){
    <tr><td>Arbeitnehmervertretung (Mitbestimmung)</td><td>unverzüglich — bei <b>jedem</b> Incident zu prüfen</td><td>Personalwesen</td></tr>
    <tr><td>Versicherer / Zertifizierungsstelle / Strafverfolgung</td><td>gem. Anhang D der Richtlinie / Entscheidung GL</td><td>Standort / Qualitätsleitung / GL</td></tr>
    </tbody></table>
-   <p class="small muted">Die Erheblichkeitsbewertung (betroffene Personen, wirtschaftlicher Schaden, Auswirkung auf die Dienste, Ansehensschaden) wird im Feld „Begründung der Einstufung" dokumentiert — positiv wie negativ. Genehmigungsschritte halten die Fristenuhr nie an; die Behördenmeldung selbst ist nicht genehmigungspflichtig.</p>
+   <p class="small muted">Die NIS-2-Relevanzbewertung erfolgt direkt im Ticket (Abschnitt 2a) anhand des Prüfbogens der STD_010.002: Kriterien RK-01–RK-12 nach dem Prinzip der strengsten Schwelle, Myjava-Sonderregeln (30/60-min-Schwellen, § 24 Abs. 5-Zusatzmeldungen), 18-h-Sicherheitsabstand für die Frühwarnungsentscheidung und dokumentierte Verneinung im Vier-Augen-Prinzip. Die Erheblichkeitsbewertung (betroffene Personen, wirtschaftlicher Schaden, Auswirkung auf die Dienste, Ansehensschaden) wird im Feld „Begründung der Einstufung" dokumentiert — positiv wie negativ. Genehmigungsschritte halten die Fristenuhr nie an; die Behördenmeldung selbst ist nicht genehmigungspflichtig.</p>
   </div></details>
 
   <details><summary>5 · Lebenszyklus: Phasen, Status und Pflichten (PROC Kap. 8)</summary><div class="dbody">
@@ -1711,6 +1954,7 @@ function viewDoku(){
   <tr><td>9/11</td><td>Response times P1–P4, escalation 50/75 %, notification triggers</td><td>Deadline monitor with traffic light; P1 banner (real alerting only in Freshservice)</td></tr>
   <tr><td>12</td><td>Reports/KPIs</td><td>Reports tab: overview, classification quality, threat trend, linkage rate H</td></tr>
   <tr><td>14</td><td>Logging, no deletion right</td><td>Activity log per ticket; tickets cannot be deleted</td></tr>
+  <tr><td>STD_010.002</td><td>NIS-2 relevance assessment: form Annex A (RK-01–RK-12), Myjava special check, 18-h safety margin, four-eyes negation, transfer into the country reporting duties</td><td>Section “2a” in the ticket detail; blocking at triage (system involvement + part 2) and at closure (complete form); automatic tasks (18 h, Sec. 24(5) SK)</td></tr>
   <tr><td>Annex C</td><td>Test data set: one fictitious case per domain</td><td>“Load test data” button in the Tickets tab</td></tr>
   </tbody></table>
   <h2>Deliberate simplifications (delta to the Freshservice target)</h2>
@@ -1749,6 +1993,7 @@ function viewDoku(){
   <tr><td>9/11</td><td>Reaktionszeiten P1–P4, Eskalation 50/75 %, Benachrichtigungsanlässe</td><td>Fristenmonitor mit Ampel; P1-Hinweisbanner (echte Alarmierung erst in Freshservice)</td></tr>
   <tr><td>12</td><td>Berichte/Kennzahlen</td><td>Berichte-Tab: Lagebild, Klassifizierungsqualität, Gefährdungstrend, Verknüpfungsquote H</td></tr>
   <tr><td>14</td><td>Protokollierung, kein Löschrecht</td><td>Aktivitätsprotokoll je Ticket; Tickets sind nicht löschbar</td></tr>
+  <tr><td>STD_010.002</td><td>NIS-2-Relevanzbewertung: Prüfbogen Anhang A (RK-01–RK-12), Myjava-Sonderprüfung, 18-h-Sicherheitsabstand, Vier-Augen-Verneinung, Übernahme in die Länder-Meldepflichten</td><td>Abschnitt „2a“ im Ticketdetail; blockierend bei Triage (Systembezug + Teil 2) und Abschluss (vollständiger Bogen); automatische Aufgaben (18 h, § 24 Abs. 5 SK)</td></tr>
   <tr><td>Anhang C</td><td>Testdatenbestand: ein fiktiver Fall je Domäne</td><td>Button „Testdaten laden“ im Tickets-Tab</td></tr>
   </tbody></table>
   <h2>Bewusste Vereinfachungen (Delta zur Freshservice-Zielumsetzung)</h2>
