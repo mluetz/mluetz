@@ -1,3 +1,37 @@
+# REUTIB ISMS-Tools — Finding-Register & IRM-Prototyp
+
+Dieses Repository enthält zwei in sich geschlossene HTML-Anwendungen für die Reutter-Group (REUTIB):
+
+| Anwendung | Pfad | Zweck |
+|---|---|---|
+| **TISAX AL3 Finding-Register** | `index.html` (DE) / `index-en.html` (EN) | Stage-Review-Findings mit VDA-ISA-6.0.3-Control-Verknüpfung |
+| **IRM-Prototyp (Incident Response Management)** | `irm/index.html` | Lauffähige Referenz der Umsetzungsempfehlung GDL_010.001 (Freshservice-IRM) |
+
+## IRM-Prototyp (`irm/`)
+
+Prototyp zur Guideline **GDL_010.001 V1.00** („Implementierung des Incident Response Managements
+in Freshservice", 01.08.2026; fachliche Grundlage POL_010.001 V3.00 / PROC_010.001 V2.10).
+Er dient der fachlichen Erprobung von Feld-, Status- und Fristenmodell **vor** der
+Freshservice-Konfiguration und als Abnahme-Referenz („so soll sich das System verhalten").
+
+Abgebildet sind u. a.: die drei Portaleinstiege (Incident / Near Miss / Gefahr im Verzug),
+das vollständige Feldmodell nach Anhang A, die Domänen A–J inkl. **geschütztem Bereich E/I**
+mit Rollen-Simulation, die **berechnete Gesamtstufe P1–P4** aus S1–S6 (inkl. Vorrangregel
+Personengefährdung und Zwangsstufe bei Rückrufverdacht), das Statusmodell mit **blockierenden
+Übergängen** und benannten Fehlermeldungen, die **Fristenberechnung ab Kenntniserlangung**
+(NIS-2 DE/AT/SK/PL, DSGVO Art. 33/34 u. a.) mit Neuberechnung bei Korrektur,
+Genehmigungsschritte (Herabstufung/ISB, Kundeninformation/GL, § 35 BSIG, BCM-Übergabe E3),
+Fristenmonitor mit Ampel, Berichte (Lagebild, Klassifizierungsqualität, Gefährdungstrend)
+sowie das Aktivitätsprotokoll je Ticket. Ein Testdatenbestand (ein fiktiver Fall je Domäne,
+Anhang C) lässt sich per Knopfdruck erzeugen. Details und bewusste Vereinfachungen: Tab
+**„Dokumentation"** in der Anwendung.
+
+Datenhaltung ausschließlich lokal im Browser (localStorage) + JSON-Export/-Import — keine
+Serverkomponente, kein Ersatz für das Ticketsystem. Aufruf lokal per Doppelklick oder über
+GitHub Pages unter `…/irm/`.
+
+---
+
 # TISAX AL3 Finding-Register — REUTIB (Reutter-Group)
 
 Interaktive HTML-Datenbank der Stage-Review-Findings aus dem TISAX-AL3-Projekt der
