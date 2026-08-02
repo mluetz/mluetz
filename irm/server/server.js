@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* =====================================================================
-   REUTIB IRM-Server V1.10 — zentrale Serverdatenbank für den
+   REUTIB IRM-Server V1.20 — zentrale Serverdatenbank für den
    Mehrbenutzerbetrieb des IRM-Tools (GDL_010.001).
 
    Zero-Dependency: benötigt nur Node.js >= 22 (kein npm install).
@@ -30,7 +30,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const VERSION = "1.10";
+const VERSION = "1.20";
 const PORT = parseInt(process.env.PORT || "8010", 10);
 const TOKEN = process.env.IRM_TOKEN || "";
 const CORS = process.env.IRM_CORS || "";
