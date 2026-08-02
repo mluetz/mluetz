@@ -122,10 +122,14 @@ a{color:var(--anthrazit)}
 dialog{border:1px solid var(--anthrazit);border-radius:8px;max-width:560px;padding:18px;background:var(--bg);color:var(--fg)}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 .matrix td.n0{color:var(--line)}
+details{border:1px solid var(--line);border-radius:8px;margin:10px 0;background:var(--bg)}
+details>summary{cursor:pointer;font-weight:700;color:var(--anthrazit);padding:10px 14px;background:var(--hellgrau);border-radius:8px;list-style-position:inside}
+details[open]>summary{border-radius:8px 8px 0 0}
+details>.dbody{padding:4px 14px 12px}
 .langbtn{border:1px solid var(--line);background:var(--bg);color:var(--grau);padding:5px 9px;font-weight:700}
 .langbtn.on{background:var(--gelb);color:#000;border-color:var(--gelb)}
-.logo{height:52px;display:block;background:#fff;border-radius:6px;padding:3px 8px;border:1px solid var(--line)}
-@media(max-width:1100px){.logo{height:40px}}
+.logo{height:52px;display:block;background:#fff;border-radius:6px;padding:3px 8px;border:1px solid var(--line);margin-left:auto}
+@media(max-width:1480px){.logo{height:42px}}
 @media print{header,nav,.noprint{display:none}}
 </style>
 </head>
@@ -178,7 +182,7 @@ const EN = {
  "REUTIB · IRM-Tool V1.10 · nach GDL_010.001":"REUTIB · IRM tool V1.10 · per GDL_010.001",
  "Rolle (Simulation):":"Role (simulation):",
  "Stand sichern":"Save state","Stand laden":"Load state","Schließen":"Close",
- "Meldung (Portal)":"Report (portal)","Tickets":"Tickets","Fristenmonitor":"Deadline monitor","Berichte":"Reports","Dokumentation":"Documentation",
+ "Meldung (Portal)":"Report (portal)","Tickets":"Tickets","Fristenmonitor":"Deadline monitor","Berichte":"Reports","IRM-Guidance (DE/EN)":"IRM Guidance (DE/EN)","Implementierungsinformationen":"Implementation information",
  /* roles */
  "Melder (Beschäftigte)":"Reporter (employees)","IRM – Triage":"IRM – Triage","Domänenbearbeiter":"Domain agent",
  "ISB / Vertretung":"ISO (ISB) / deputy","Geschäftsleitung":"Executive management","Datenschutzbeauftragter":"Data Protection Officer",
@@ -191,12 +195,16 @@ const EN = {
  "nicht betroffen":"not affected","nicht geprüft":"not assessed","in Prüfung":"under review","ja":"yes","nein":"no",
  "noch nicht bestimmt":"not yet determined","beantragt":"requested","genehmigt":"approved","abgelehnt":"rejected","offen":"open",
  "standortübergreifend":"cross-site","keiner":"none","Instandhaltung":"Maintenance","Lieferantenbewertung":"Supplier evaluation","Unfallanzeige":"Accident report",
- /* domains */
- "Informations- und Cybersicherheit":"Information and cyber security","IT-/OT-Betrieb":"IT/OT operations",
- "Physische Sicherheit und Prototypenschutz":"Physical security and prototype protection","Infrastruktur, Gebäude und Umwelt":"Infrastructure, buildings and environment",
- "Arbeitssicherheit, Gesundheit und Umwelt":"Occupational safety, health and environment","Anlagen und Instandhaltung":"Equipment and maintenance",
- "Lieferkette und Lieferanten":"Supply chain and suppliers","Produkt und Qualität":"Product and quality",
- "Personal und Organisation":"People and organisation","Datenschutz und Compliance":"Data protection and compliance",
+ /* domains (official EN wording per PROC_010.001 EN V2.10) */
+ "IT- und Cybersicherheit":"IT and Cybersecurity","OT- und Produktions-IT":"OT and Production IT",
+ "Physische Sicherheit, Objekt- und Prototypenschutz":"Physical Security, Asset and Prototype Protection",
+ "Brand, Elementarereignis, Gebäude und Versorgung":"Fire, Natural Disasters, Buildings, and Utilities",
+ "Arbeitssicherheit, Gesundheit und Umwelt":"Occupational Safety, Health, and Environment",
+ "Anlagen, Werkzeuge und Fertigungsprozess":"Equipment, Tools, and Manufacturing Process",
+ "Lieferkette, Beschaffung und Logistik":"Supply Chain, Procurement, and Logistics",
+ "Produkt, Qualität und Produktsicherheit":"Product, Quality, and Product Safety",
+ "Personal und Organisation":"Personnel and Organization",
+ "Recht, Datenschutz, Compliance und Reputation":"Legal, Data Protection, Compliance, and Reputation",
  /* Meldepflichten */
  "NIS-2 Deutschland":"NIS-2 Germany","NIS-2 Österreich":"NIS-2 Austria","NIS-2 Slowakei":"NIS-2 Slovakia","NIS-2 Polen":"NIS-2 Poland",
  "Unterrichtung der Empfänger von Diensten (§ 35 BSIG)":"Notification of service recipients (Sec. 35 BSIG)",
@@ -275,18 +283,18 @@ function tr(s){ return S.lang==="en" ? (EN[s]!==undefined?EN[s]:s) : s; }
 const STANDORTE = ["Leutenbach","Bischofshofen","Graz","Myjava","Międzyrzecze Górne","Mexiko","Indien","standortübergreifend"];
 function siteLabel(s){ if(S.lang!=="en") return s; return s==="standortübergreifend"?"cross-site":s==="Mexiko"?"Mexico":s==="Indien"?"India":s; }
 
-/* Domänenbezeichnungen: Arbeitsstand — verbindliche Benennung gemäß PROC_010.001 Kap. 5 verifizieren. */
+/* Verbindliche Domänenbezeichnungen gemäß PROC_010.001 V2.10, Kap. 6.2 / Anhang A. */
 const DOM = {
-  A:{n:"Informations- und Cybersicherheit", site:false},
-  B:{n:"IT-/OT-Betrieb", site:true},
-  C:{n:"Physische Sicherheit und Prototypenschutz", site:true},
-  D:{n:"Infrastruktur, Gebäude und Umwelt", site:true},
+  A:{n:"IT- und Cybersicherheit", site:false},
+  B:{n:"OT- und Produktions-IT", site:true},
+  C:{n:"Physische Sicherheit, Objekt- und Prototypenschutz", site:true},
+  D:{n:"Brand, Elementarereignis, Gebäude und Versorgung", site:true},
   E:{n:"Arbeitssicherheit, Gesundheit und Umwelt", prot:true},
-  F:{n:"Anlagen und Instandhaltung", site:true},
-  G:{n:"Lieferkette und Lieferanten"},
-  H:{n:"Produkt und Qualität"},
+  F:{n:"Anlagen, Werkzeuge und Fertigungsprozess", site:true},
+  G:{n:"Lieferkette, Beschaffung und Logistik"},
+  H:{n:"Produkt, Qualität und Produktsicherheit"},
   I:{n:"Personal und Organisation", prot:true},
-  J:{n:"Datenschutz und Compliance"}
+  J:{n:"Recht, Datenschutz, Compliance und Reputation"}
 };
 const DOMKEYS = Object.keys(DOM);
 function domName(d){ return tr(DOM[d].n); }
@@ -464,9 +472,9 @@ async function pollChanges(){
 function setNet(ok){ NET=ok; updNetBadge(); }
 function updNetBadge(){
   const b=$("netBadge"); if(!b) return;
-  if(!API){ b.textContent="🟡 "+tr("Lokal (Einzelplatz)"); b.title=tr("Kein IRM-Server erreichbar – Datenhaltung nur in diesem Browser."); }
-  else if(NET===false){ b.textContent="🔴 "+tr("Server getrennt"); b.title=tr("Server getrennt – Änderungen können verloren gehen"); }
-  else { b.textContent="🟢 "+tr("Server verbunden (Mehrbenutzer)"); b.title=SRVINFO? "DB: "+SRVINFO.storage+" · Server V"+SRVINFO.version : ""; }
+  if(!API){ b.textContent="🟡 "+(S.lang==="en"?"Local":"Lokal"); b.title=tr("Kein IRM-Server erreichbar – Datenhaltung nur in diesem Browser."); }
+  else if(NET===false){ b.textContent="🔴 Offline"; b.title=tr("Server getrennt – Änderungen können verloren gehen"); }
+  else { b.textContent="🟢 Server"; b.title=tr("Server verbunden (Mehrbenutzer)")+(SRVINFO? " · DB: "+SRVINFO.storage+" · Server V"+SRVINFO.version : ""); }
 }
 async function initServer(){
   const qs=new URLSearchParams(location.search);
@@ -786,7 +794,7 @@ function exportCsv(list){
 }
 
 /* ---------- Navigation / Theme / Sprache ---------- */
-const TABS=[["portal","Meldung (Portal)"],["tickets","Tickets"],["fristen","Fristenmonitor"],["berichte","Berichte"],["doku","Dokumentation"]];
+const TABS=[["portal","Meldung (Portal)"],["tickets","Tickets"],["fristen","Fristenmonitor"],["berichte","Berichte"],["guidance","IRM-Guidance (DE/EN)"],["doku","Implementierungsinformationen"]];
 function setRole(){
   S.role=$("roleSel").value; S.roleDom=$("roleDom").value||S.roleDom;
   save(); render();
@@ -825,6 +833,7 @@ function render(){
     case "tickets": m.innerHTML=viewTickets(); break;
     case "fristen": m.innerHTML=viewFristen(); break;
     case "berichte": m.innerHTML=viewBerichte(); break;
+    case "guidance": m.innerHTML=viewGuidance(); break;
     case "doku": m.innerHTML=viewDoku(); break;
   }
 }
@@ -1255,9 +1264,264 @@ function viewBerichte(){
    :"Report catalogue of the GDL (ch. 12): domain overview (monthly, management) · deadline monitor (continuous, ISB) · classification quality (monthly) · response times (monthly) · detection/response/containment A+B · near-miss reporting rate (quarterly) · threat trend (quarterly) · linkage rate H · annual evaluation. The prototype shows the most important ones live; print via the browser print function."}</div>`;
 }
 
+/* ---------- IRM-Guidance (PROC_010.001 V2.10, nutzerorientierte Kurzfassung) ---------- */
+function viewGuidance(){
+  if(S.lang==="en") return `<h1>IRM Guidance – Incident Response in practice</h1>
+  <p class="muted">Condensed, user-oriented summary of the process description <b>PROC_010.001 V2.10</b> (Incident Response Process &amp; Management in Freshservice, 2026-08-01), which implements policy POL_010.001 V3.00. This page guides the daily use of the IRM tool. <b>In case of doubt, the full documents are binding</b> — this summary does not replace them.</p>
+
+  <h2>Quick start by role</h2>
+  <div class="cards">
+   <div class="card"><h3>👤 I am an employee (reporter)</h3>
+    <p>See something unusual? <b>Report it — always.</b> Use “Report an incident” in the portal (or the near-miss entry). You do <b>not</b> classify or prioritise anything; a short description, location and time are enough. A report made in good faith never leads to any disadvantage. <b>People in acute danger? Emergency chain first (112 / plant security), report afterwards.</b></p></div>
+   <div class="card"><h3>🔎 I am triage (IT helpdesk / site responsible)</h3>
+    <p>Take over new tickets, verify and correct the <b>time of awareness</b> (all statutory deadlines run from it!), propose the lead domain, assess the six damage dimensions S1–S6 and complete the reporting-duty check. Phone or verbal reports must be recorded without delay, at the latest by the end of the shift.</p></div>
+   <div class="card"><h3>🛠️ I am an incident owner (domain)</h3>
+    <p>You drive the substantive handling: log every immediate action with timestamp and acting person, secure evidence <b>before</b> restoration (P1/P2), determine immediate and root cause, release resumption and provide lessons learned and the effectiveness review.</p></div>
+   <div class="card"><h3>🛡️ ISB / management / DPO</h3>
+    <p>The ISO (ISB) confirms classification, decides on reporting duties and escalation, approves downgrades (four-eyes) and monitors the deadline monitor. Management approves customer/public communication, field actions and BCM hand-over. The DPO handles Art. 33/34 GDPR and joins automatically when data-protection relevance is set.</p></div>
+  </div>
+
+  <details open><summary>1 · Purpose, scope and principles (PROC ch. 1)</summary><div class="dbody">
+   <p>One single reporting point for <b>all</b> incidents — IT and cyber attacks as much as occupational accidents, fire, machine breakdowns, supply-chain disruptions, quality deviations or compliance matters. Scope: Leutenbach (DE), Bischofshofen (AT), Graz (AT), Myjava (SK), Międzyrzecze Górne (PL), plus Mexico and India under extended governance.</p>
+   <ul>
+    <li>Every incident is classified in <b>four dimensions</b>: D1 domain, D2 threat reference, D3 severity, D4 reporting-duty relevance.</li>
+    <li>The severity is <b>calculated</b> from six damage dimensions (maximum-value principle) — never chosen freely.</li>
+    <li>All external deadlines run from the <b>time of awareness</b>, not from ticket creation.</li>
+    <li>The entire life cycle is recorded audit-proof in the ticket; tickets are never deleted.</li>
+   </ul>
+  </div></details>
+
+  <details><summary>2 · Reporting channels — all equally valid (PROC ch. 6.1.1)</summary><div class="dbody">
+   <table><thead><tr><th>Channel</th><th>Recorded by</th><th>Rule</th></tr></thead><tbody>
+   <tr><td>Service portal / incident e-mail address</td><td>System</td><td>ticket is created immediately</td></tr>
+   <tr><td>Phone/verbal report to supervisor or shift lead</td><td>Supervisor / shift lead</td><td>record without delay, at the latest by end of shift; name the reporter as source</td></tr>
+   <tr><td>Report to the site responsible</td><td>Site responsible</td><td>without delay; outside business hours via site on-call duty</td></tr>
+   <tr><td>Direct report to the ISO (on-call number)</td><td>ISO / deputy</td><td>also valid when the ticket system is down</td></tr>
+   <tr><td>Emergency chain</td><td>Site responsible, after the hazard ends</td><td>hazard mitigation first; record afterwards with the <b>real</b> time of awareness</td></tr>
+   <tr><td>Quality system (CAQ QBD.net)</td><td>Quality management</td><td>additional incident report for P1–P3 deviations</td></tr>
+   <tr><td>Whistleblower system</td><td>Compliance officer</td><td>no automatic transfer; anonymised ticket where security-relevant</td></tr>
+   </tbody></table>
+   <p class="small muted">If the ticket system is unavailable: report by phone to the ISO or site responsible; subsequent recording within 24 hours (paper form at the sites).</p>
+  </div></details>
+
+  <details><summary>3 · Classification: domains, S1–S6, overall level (PROC ch. 6.2–6.4, 7)</summary><div class="dbody">
+   <p><b>D1 — Lead domain</b> (controls group, workspace and duties):</p>
+   <table><tbody>${DOMKEYS.map(d=>`<tr><td><b>${d}</b>${DOM[d].prot?" 🔒":""}</td><td>${domName(d)}</td></tr>`).join("")}</tbody></table>
+   <p><b>D3 — Severity:</b> six damage dimensions (S1 people, S2 operations/delivery, S3 information/data, S4 product/quality, S5 environment/assets, S6 legal/reporting/reputation), each P1–P4 or “not affected”. The <b>overall level is the maximum</b> — no offsetting between dimensions.</p>
+   <table><thead><tr><th>Level</th><th>First response</th><th>Escalation</th><th>Effect</th></tr></thead><tbody>
+   <tr><td><span class="badge p1">P1</span> critical</td><td>1 h · 24/7</td><td>E2</td><td>IRT convened; ISO and management notified immediately; final report mandatory</td></tr>
+   <tr><td><span class="badge p2">P2</span> high</td><td>4 h · 24/7</td><td>E1</td><td>owner works with the ISO; final report mandatory</td></tr>
+   <tr><td><span class="badge p3">P3</span> medium</td><td>8 h · site hours</td><td>E0</td><td>handled in the line process; ISO informed via ticket</td></tr>
+   <tr><td><span class="badge p4">P4</span> low</td><td>24 h · site hours</td><td>E0</td><td>monthly trend analysis</td></tr>
+   </tbody></table>
+   <ul>
+    <li><b>Priority rule for danger to people:</b> if S1 = P1/P2 the lead domain switches to E automatically until the hazard has ended (“hazard situation resolved” must be recorded before switching back). Hazard mitigation always takes precedence over documentation.</li>
+    <li>A reporting duty with a deadline of ≤ 24 h forces escalation E2 — even below P1.</li>
+    <li><b>Downgrades</b> of P1/P2 need an application and ISO approval (four-eyes); until then priority and SLA stay unchanged. Upgrades take effect immediately.</li>
+    <li>Similar incidents with the same cause within 30 days are linked and assessed jointly.</li>
+    <li><b>Near misses</b> are reportable, get their own portal entry, usually P4 — they are a valued KPI of the reporting culture, not noise.</li>
+   </ul>
+  </div></details>
+
+  <details><summary>4 · Reporting duties and deadlines (PROC ch. 9)</summary><div class="dbody">
+   <p>Every duty creates a scheduled task; due dates are calculated from the <b>time of awareness</b>. The check must be documented even when negative — “not assessed” blocks closure. As soon as a duty is “yes”, a copy of the notification and its acknowledgement must be attached.</p>
+   <table><thead><tr><th>Duty</th><th>Deadline</th><th>Responsible</th></tr></thead><tbody>
+   <tr><td>NIS-2 (DE; AT/SK/PL per site)</td><td>early warning 24 h · follow-up 72 h · final report 1 month</td><td>ISO</td></tr>
+   <tr><td>GDPR Art. 33/34</td><td>72 h</td><td>DPO (added automatically)</td></tr>
+   <tr><td>Sec. 35 BSIG — notify service recipients</td><td>without delay</td><td>management approval, ISO drafts</td></tr>
+   <tr><td>Customer information — delivery quantity/date</td><td>without delay, next working day at the latest (IATF 16949)</td><td>Supply Chain, management approval</td></tr>
+   <tr><td>Customer information — product defect / suspected recall</td><td>without delay; suspected recall forces P1</td><td>Quality management, management approval</td></tr>
+   <tr><td>Customer/OEM — customer, development or prototype data</td><td>24 h</td><td>ISO with incident owner</td></tr>
+   <tr><td>Accident insurer (accident report)</td><td>3 days (death or &gt;3 days unfit for work)</td><td>Occupational safety + HR</td></tr>
+   <tr><td>Occupational safety / environmental authority</td><td>without delay</td><td>Occupational safety / environmental officer</td></tr>
+   <tr><td>Employee representation (co-determination)</td><td>without delay — checked for <b>every</b> incident</td><td>HR</td></tr>
+   <tr><td>Insurer / certification body / law enforcement</td><td>per Annex D of the policy / management decision</td><td>site / quality management / management</td></tr>
+   </tbody></table>
+   <p class="small muted">The materiality assessment (persons affected, economic damage, service impact, reputational damage) is documented in “Justification of classification” — positive or negative. Approval steps never stop the deadline clock; the notification to the authority itself needs no approval.</p>
+  </div></details>
+
+  <details><summary>5 · Life cycle: phases, statuses and duties (PROC ch. 8)</summary><div class="dbody">
+   <table><thead><tr><th>Phase</th><th>Status</th><th>Key duties</th></tr></thead><tbody>
+   <tr><td>1 Identification and reporting</td><td>Open</td><td>subject, site, time of awareness, observation</td></tr>
+   <tr><td>2 Recording and triage</td><td>Triage</td><td>lead domain, incident owner, S1–S6, reporting-duty check</td></tr>
+   <tr><td>3 Immediate measures</td><td>In progress – Containment</td><td>time-stamped action log; evidence secured (P1/P2) before moving on</td></tr>
+   <tr><td>4 Root cause analysis</td><td>In progress – Analysis</td><td>threat reference, immediate and root cause; <b>14 days (P1) / 30 days (P2)</b></td></tr>
+   <tr><td>5 Resolution and repair</td><td>In progress – Remediation</td><td>corrective actions, hardening, restoration</td></tr>
+   <tr><td>6 Resumption</td><td>Verification and release</td><td>release for resumption; P1/P2: ISO confirmation; product-related: quality management</td></tr>
+   <tr><td>7 Follow-up</td><td>Resolved → Closed</td><td>post-incident review ≤ 14 days, final report, lessons learned, risk register reference, effectiveness review after 6 months</td></tr>
+   <tr><td>— BCM hand-over (E3)</td><td>Suspended – BCM</td><td>hand-over note mandatory; external deadlines keep running with the ISO</td></tr>
+   </tbody></table>
+   <p class="small muted">Every status change checks the mandatory fields of the target phase and names missing entries. Reopening closed tickets is reserved to the ISO. For domains F, G, H the specialist process (e.g. 8D/CAPA in CAQ QBD.net) leads — the ticket carries the record number and the result; closure requires the completed record.</p>
+  </div></details>
+
+  <details><summary>6 · Documentation, confidentiality and retention (PROC ch. 9.6, 11)</summary><div class="dbody">
+   <ul>
+    <li><b>Action log:</b> every ordered or executed measure with timestamp and acting person — the ticket activity log complements but never replaces it.</li>
+    <li><b>Evidence before restoration</b> (P1/P2): the transition to remediation is blocked until evidence is secured.</li>
+    <li><b>No deletion:</b> tickets are never deleted; retention at least 5 years after closure (longer for occupational accidents and product liability).</li>
+    <li><b>Protected workspaces E and I:</b> health and personnel data are only visible to the domain group, ISO and DPO; evaluations only aggregated, never per person.</li>
+    <li><b>Communication:</b> internal need-to-know only; public statements only via corporate communications after management approval; customer and authority correspondence lives in the ticket, not in personal mailboxes.</li>
+   </ul>
+  </div></details>
+
+  <details><summary>7 · Key performance indicators (PROC ch. 12)</summary><div class="dbody">
+   <table><thead><tr><th>KPI</th><th>Target</th></tr></thead><tbody>
+   <tr><td>Complete classification (D1–D4)</td><td>≥ 95 %</td></tr>
+   <tr><td>P1 first-response compliance</td><td>100 %</td></tr>
+   <tr><td>P2/P3 first-response compliance</td><td>≥ 90 %</td></tr>
+   <tr><td>External notifications on time</td><td>100 %</td></tr>
+   <tr><td>Root cause analysis within deadline</td><td>≥ 90 %</td></tr>
+   <tr><td>Post-incident review ≤ 14 days</td><td>100 %</td></tr>
+   <tr><td>Effectiveness review after 6 months</td><td>≥ 90 %</td></tr>
+   <tr><td>Near-miss reporting rate</td><td>≥ 1 per 10 employees/year</td></tr>
+   <tr><td>Risk-register feedback (P1/P2)</td><td>100 %</td></tr>
+   <tr><td>Linkage rate domain H (CAQ)</td><td>100 %</td></tr>
+   </tbody></table>
+   <p class="small muted">A low near-miss rate signals weak reporting culture — not a fault-free operation.</p>
+  </div></details>
+
+  <details><summary>8 · Training (PROC ch. 13)</summary><div class="dbody">
+   <table><thead><tr><th>Audience</th><th>Frequency</th><th>Content</th></tr></thead><tbody>
+   <tr><td>All employees</td><td>annually</td><td>portal entry, incident vs. service request, near-miss entry</td></tr>
+   <tr><td>Triage roles</td><td>every 6 months</td><td>domain assignment, time of awareness, S1–S6, reporting-duty check, threat catalogue</td></tr>
+   <tr><td>Incident owners</td><td>every 6 months</td><td>status model, mandatory fields, evidence, leading business record, closure</td></tr>
+   <tr><td>ISO / deputy, administrators</td><td>annually</td><td>deadline monitor, approvals, downgrade, BCM hand-over / configuration review</td></tr>
+   <tr><td>Cross-functional exercise</td><td>annually</td><td>simulated P1 incident across at least two domains with full ticket handling</td></tr>
+   </tbody></table>
+  </div></details>
+
+  <div class="note"><b>Binding documents:</b> POL_010.001 V3.00 (policy) · PROC_010.001 V2.10 (process, DE/EN) · STD_010.001 (NIS-2 reporting) · ANL_010.001 (roles, KPIs, evidence). This page is a condensed working aid for tool users, maintained by the ISO.</div>`;
+
+  return `<h1>IRM-Guidance – Incident Response in der Praxis</h1>
+  <p class="muted">Verdichtete, nutzerorientierte Kurzfassung der Prozessbeschreibung <b>PROC_010.001 V2.10</b> (Incident-Response-Prozess und -Management in Freshservice, 01.08.2026), die die Richtlinie POL_010.001 V3.00 umsetzt. Diese Seite leitet die tägliche Arbeit mit dem IRM-Tool an. <b>Im Zweifel gelten die vollständigen Dokumente</b> — diese Kurzfassung ersetzt sie nicht.</p>
+
+  <h2>Schnelleinstieg nach Rolle</h2>
+  <div class="cards">
+   <div class="card"><h3>👤 Ich bin Beschäftigte/r (Melder)</h3>
+    <p>Etwas Ungewöhnliches beobachtet? <b>Melden — immer.</b> Über „Incident melden" im Portal (oder den Near-Miss-Einstieg). Sie müssen <b>nichts</b> klassifizieren oder priorisieren; Kurzbeschreibung, Ort und Zeitpunkt genügen. Eine Meldung in gutem Glauben zieht keine Nachteile nach sich. <b>Personen in akuter Gefahr? Erst Notrufkette (112 / Werkschutz), danach melden.</b></p></div>
+   <div class="card"><h3>🔎 Ich bin Triage (IT-Helpdesk / Standortverantwortliche)</h3>
+    <p>Neue Tickets übernehmen, die <b>Kenntniserlangung</b> prüfen und korrigieren (alle gesetzlichen Fristen laufen ab ihr!), Leitdomäne vorschlagen, die sechs Schadensdimensionen S1–S6 bewerten und die Meldepflichtprüfung vollständig durchführen. Telefonische und mündliche Meldungen unverzüglich erfassen, spätestens bis Schichtende.</p></div>
+   <div class="card"><h3>🛠️ Ich bin Incident Owner (Domäne)</h3>
+    <p>Sie tragen die fachliche Bearbeitung: jede Sofortmaßnahme mit Zeitstempel und handelnder Person protokollieren, Beweise <b>vor</b> der Wiederherstellung sichern (P1/P2), unmittelbare und Systemursache feststellen, Wiederaufnahme freigeben, Lessons Learned und Wirksamkeitsnachweis liefern.</p></div>
+   <div class="card"><h3>🛡️ ISB / Geschäftsleitung / DSB</h3>
+    <p>Der ISB bestätigt die Klassifizierung, entscheidet über Meldepflichten und Eskalation, genehmigt Herabstufungen (Vieraugenprinzip) und überwacht den Fristenmonitor. Die Geschäftsleitung gibt Kunden-/Öffentlichkeitskommunikation, Feldmaßnahmen und die BCM-Übergabe frei. Der DSB verantwortet Art. 33/34 DSGVO und wird bei Datenschutzrelevanz automatisch beteiligt.</p></div>
+  </div>
+
+  <details open><summary>1 · Zweck, Geltungsbereich und Grundsätze (PROC Kap. 1)</summary><div class="dbody">
+   <p>Eine einzige Meldestelle für <b>alle</b> Incidents — IT- und Cyberangriffe ebenso wie Arbeitsunfälle, Brand, Anlagenausfälle, Lieferkettenstörungen, Qualitätsabweichungen oder Compliance-Sachverhalte. Geltungsbereich: Leutenbach (DE), Bischofshofen (AT), Graz (AT), Myjava (SK), Międzyrzecze Górne (PL) sowie Mexiko und Indien im erweiterten Governance-Geltungsbereich.</p>
+   <ul>
+    <li>Jeder Incident wird <b>vierdimensional</b> klassifiziert: D1 Domäne, D2 Gefährdungsbezug, D3 Schweregrad, D4 Meldepflichtrelevanz.</li>
+    <li>Der Schweregrad wird aus sechs Schadensdimensionen <b>berechnet</b> (Höchstwertprinzip) — nie frei vergeben.</li>
+    <li>Alle externen Fristen laufen ab der <b>Kenntniserlangung</b>, nicht ab Ticketerstellung.</li>
+    <li>Der gesamte Lebenszyklus wird revisionssicher im Ticket geführt; Tickets werden nie gelöscht.</li>
+   </ul>
+  </div></details>
+
+  <details><summary>2 · Meldewege — alle gleichwertig (PROC Kap. 6.1.1)</summary><div class="dbody">
+   <table><thead><tr><th>Meldeweg</th><th>Erfassung durch</th><th>Regel</th></tr></thead><tbody>
+   <tr><td>Serviceportal / Incident-E-Mail-Adresse</td><td>System</td><td>unmittelbare Ticketerzeugung</td></tr>
+   <tr><td>Telefonisch/mündlich an Vorgesetzte oder Schichtleitung</td><td>Vorgesetzte / Schichtleitung</td><td>unverzüglich erfassen, spätestens bis Schichtende; meldende Person als Quelle nennen</td></tr>
+   <tr><td>Meldung an den Standortverantwortlichen</td><td>Standortverantwortlicher</td><td>unverzüglich; außerhalb der Betriebszeit über die Standortbereitschaft</td></tr>
+   <tr><td>Direkt an den ISB (Bereitschaftsnummer)</td><td>ISB / Vertretung</td><td>gilt ausdrücklich auch bei Ausfall des Ticketsystems</td></tr>
+   <tr><td>Betriebliche Notrufkette</td><td>Standortverantwortlicher nach Ende der Gefahrenlage</td><td>Gefahrenabwehr geht vor; danach mit dem <b>tatsächlichen</b> Zeitpunkt der Kenntniserlangung erfassen</td></tr>
+   <tr><td>Qualitätsmanagementsystem (CAQ QBD.net)</td><td>Leitung Qualitätsmanagement</td><td>zusätzliche Incident-Meldung bei Abweichungen P1–P3</td></tr>
+   <tr><td>Hinweisgebersystem</td><td>Compliance-Verantwortlicher</td><td>kein automatischer Übertrag; bei Sicherheitsbezug anonymisiertes Ticket</td></tr>
+   </tbody></table>
+   <p class="small muted">Bei Ausfall des Ticketsystems: telefonische Meldung an ISB oder Standortverantwortlichen; Nacherfassung innerhalb von 24 Stunden (papiergebundenes Formular am Standort).</p>
+  </div></details>
+
+  <details><summary>3 · Klassifizierung: Domänen, S1–S6, Gesamtstufe (PROC Kap. 6.2–6.4, 7)</summary><div class="dbody">
+   <p><b>D1 — Leitdomäne</b> (steuert Gruppe, Arbeitsbereich und Pflichten):</p>
+   <table><tbody>${DOMKEYS.map(d=>`<tr><td><b>${d}</b>${DOM[d].prot?" 🔒":""}</td><td>${domName(d)}</td></tr>`).join("")}</tbody></table>
+   <p><b>D3 — Schweregrad:</b> sechs Schadensdimensionen (S1 Personen, S2 Betrieb/Lieferfähigkeit, S3 Information/Daten, S4 Produkt/Qualität, S5 Umwelt/Sachwerte, S6 Recht/Meldepflicht/Reputation), jeweils P1–P4 oder „nicht betroffen". Die <b>Gesamtstufe ist der Höchstwert</b> — eine Kompensation zwischen den Dimensionen findet nicht statt.</p>
+   <table><thead><tr><th>Stufe</th><th>Erstreaktion</th><th>Eskalation</th><th>Wirkung</th></tr></thead><tbody>
+   <tr><td><span class="badge p1">P1</span> kritisch</td><td>1 h · 24/7</td><td>E2</td><td>IRT wird einberufen; ISB und Geschäftsleitung unverzüglich benachrichtigt; Abschlussbericht Pflicht</td></tr>
+   <tr><td><span class="badge p2">P2</span> hoch</td><td>4 h · 24/7</td><td>E1</td><td>Owner in Abstimmung mit dem ISB; Abschlussbericht Pflicht</td></tr>
+   <tr><td><span class="badge p3">P3</span> mittel</td><td>8 h · Betriebszeit</td><td>E0</td><td>Bearbeitung im Fachprozess; ISB erhält Kenntnis über das Ticket</td></tr>
+   <tr><td><span class="badge p4">P4</span> niedrig</td><td>24 h · Betriebszeit</td><td>E0</td><td>monatliche Trendanalyse</td></tr>
+   </tbody></table>
+   <ul>
+    <li><b>Vorrangregel Personengefährdung:</b> bei S1 = P1/P2 wechselt die Leitdomäne automatisch auf E, bis die Gefahrenlage beendet ist („Gefahrenlage beendet" muss vor dem Rückwechsel erfasst sein). Gefahrenabwehr geht immer vor Dokumentation.</li>
+    <li>Eine Meldepflicht mit Frist ≤ 24 h erzwingt Eskalationsstufe E2 — auch unterhalb von P1.</li>
+    <li><b>Herabstufungen</b> von P1/P2 nur über Antrag und ISB-Genehmigung (Vieraugenprinzip); bis dahin bleiben Priorität und SLA unverändert. Höherstufungen wirken sofort.</li>
+    <li>Gleichartige Incidents derselben Ursache innerhalb von 30 Tagen werden verknüpft und gemeinsam bewertet.</li>
+    <li><b>Near Misses</b> sind meldepflichtig, haben einen eigenen Portaleinstieg, i. d. R. P4 — sie sind eine erwünschte Kennzahl der Meldekultur, kein Störfaktor.</li>
+   </ul>
+  </div></details>
+
+  <details><summary>4 · Meldepflichten und Fristen (PROC Kap. 9)</summary><div class="dbody">
+   <p>Jede Pflicht erzeugt eine terminierte Aufgabe; die Fälligkeit wird aus der <b>Kenntniserlangung</b> berechnet. Die Prüfung ist auch bei negativem Ergebnis zu dokumentieren — „nicht geprüft" blockiert den Abschluss. Sobald eine Pflicht auf „ja" steht, sind Meldung und Empfangsbestätigung als Anlage zu hinterlegen.</p>
+   <table><thead><tr><th>Pflicht</th><th>Frist</th><th>Verantwortlich</th></tr></thead><tbody>
+   <tr><td>NIS-2 (DE; AT/SK/PL je Standort)</td><td>Frühwarnung 24 h · Folgemeldung 72 h · Abschlussmeldung 1 Monat</td><td>ISB</td></tr>
+   <tr><td>DSGVO Art. 33/34</td><td>72 h</td><td>DSB (wird automatisch beteiligt)</td></tr>
+   <tr><td>§ 35 BSIG — Unterrichtung der Empfänger von Diensten</td><td>unverzüglich</td><td>Freigabe Geschäftsleitung, Vorschlag ISB</td></tr>
+   <tr><td>Kundeninformation — Liefermenge/Liefertermin</td><td>unverzüglich, spätestens am folgenden Arbeitstag (IATF 16949)</td><td>Supply Chain, Freigabe GL</td></tr>
+   <tr><td>Kundeninformation — Produktfehler / Rückrufverdacht</td><td>unverzüglich; Rückrufverdacht erzwingt P1</td><td>Qualitätsleitung, Freigabe GL</td></tr>
+   <tr><td>Kunden-/OEM-Info — Kunden-, Entwicklungs- oder Prototypendaten</td><td>24 h</td><td>ISB mit Incident Owner</td></tr>
+   <tr><td>Unfallversicherungsträger (Unfallanzeige)</td><td>3 Tage (Tod oder Arbeitsunfähigkeit &gt; 3 Tage)</td><td>Arbeitssicherheit + Personalwesen</td></tr>
+   <tr><td>Arbeitsschutz-/Umweltbehörde</td><td>unverzüglich</td><td>Fachkraft für Arbeitssicherheit / Umweltmanagementbeauftragter</td></tr>
+   <tr><td>Arbeitnehmervertretung (Mitbestimmung)</td><td>unverzüglich — bei <b>jedem</b> Incident zu prüfen</td><td>Personalwesen</td></tr>
+   <tr><td>Versicherer / Zertifizierungsstelle / Strafverfolgung</td><td>gem. Anhang D der Richtlinie / Entscheidung GL</td><td>Standort / Qualitätsleitung / GL</td></tr>
+   </tbody></table>
+   <p class="small muted">Die Erheblichkeitsbewertung (betroffene Personen, wirtschaftlicher Schaden, Auswirkung auf die Dienste, Ansehensschaden) wird im Feld „Begründung der Einstufung" dokumentiert — positiv wie negativ. Genehmigungsschritte halten die Fristenuhr nie an; die Behördenmeldung selbst ist nicht genehmigungspflichtig.</p>
+  </div></details>
+
+  <details><summary>5 · Lebenszyklus: Phasen, Status und Pflichten (PROC Kap. 8)</summary><div class="dbody">
+   <table><thead><tr><th>Phase</th><th>Status</th><th>Wesentliche Pflichten</th></tr></thead><tbody>
+   <tr><td>1 Erkennung und Meldung</td><td>Open</td><td>Betreff, Standort, Kenntniserlangung, Beobachtung</td></tr>
+   <tr><td>2 Erfassung und Triage</td><td>Triage</td><td>Leitdomäne, Incident Owner, S1–S6, Meldepflichtprüfung</td></tr>
+   <tr><td>3 Sofortmaßnahmen</td><td>In Bearbeitung – Eindämmung</td><td>Maßnahmenprotokoll mit Zeitstempel; Beweissicherung (P1/P2) vor dem Weitergehen</td></tr>
+   <tr><td>4 Ursachenanalyse</td><td>In Bearbeitung – Analyse</td><td>Gefährdungsbezug, unmittelbare und Systemursache; <b>14 Tage (P1) / 30 Tage (P2)</b></td></tr>
+   <tr><td>5 Beseitigung</td><td>In Bearbeitung – Behebung</td><td>Korrekturmaßnahmen, Härtung, Instandsetzung</td></tr>
+   <tr><td>6 Wiederaufnahme</td><td>Verifikation und Freigabe</td><td>Freigabe der Wiederaufnahme; P1/P2: Bestätigung ISB; Produktbezug: Qualitätsleitung</td></tr>
+   <tr><td>7 Nachbereitung</td><td>Resolved → Closed</td><td>Post-Incident-Review ≤ 14 Tage, Abschlussbericht, Lessons Learned, Referenz Risikoregister, Wirksamkeitsprüfung nach 6 Monaten</td></tr>
+   <tr><td>— BCM-Übergabe (E3)</td><td>Ausgesetzt – BCM</td><td>Übergabenotiz Pflicht; externe Fristen laufen beim ISB weiter</td></tr>
+   </tbody></table>
+   <p class="small muted">Jeder Statuswechsel prüft die Pflichtfelder der Zielphase und benennt fehlende Angaben. Das Wiederöffnen abgeschlossener Tickets ist dem ISB vorbehalten. Für die Domänen F, G, H führt der Fachprozess (z. B. 8D/CAPA in CAQ QBD.net) — das Ticket trägt Vorgangsnummer und Ergebnis; der Abschluss setzt den abgeschlossenen Fachvorgang voraus.</p>
+  </div></details>
+
+  <details><summary>6 · Dokumentation, Vertraulichkeit und Aufbewahrung (PROC Kap. 9.6, 11)</summary><div class="dbody">
+   <ul>
+    <li><b>Maßnahmenprotokoll:</b> jede angeordnete oder durchgeführte Maßnahme mit Zeitstempel und handelnder Person — das Ticket-Aktivitätsprotokoll ergänzt, ersetzt es aber nicht.</li>
+    <li><b>Beweissicherung vor Wiederherstellung</b> (P1/P2): der Wechsel in die Behebungsphase ist bis zur gesetzten Beweissicherung blockiert.</li>
+    <li><b>Keine Löschung:</b> Tickets werden nie gelöscht; Aufbewahrung mindestens 5 Jahre nach Abschluss (länger bei Arbeitsunfällen und Produkthaftung).</li>
+    <li><b>Geschützte Arbeitsbereiche E und I:</b> Gesundheits- und Personaldaten sehen nur die Domänengruppe, der ISB und der DSB; Auswertungen nur aggregiert, nie personenbezogen.</li>
+    <li><b>Kommunikation:</b> intern nur im Kreis der Beteiligten; öffentliche Aussagen nur über die Unternehmenskommunikation nach GL-Freigabe; Kunden- und Behördenkorrespondenz gehört ins Ticket, nicht in persönliche Postfächer.</li>
+   </ul>
+  </div></details>
+
+  <details><summary>7 · Kennzahlen (PROC Kap. 12)</summary><div class="dbody">
+   <table><thead><tr><th>Kennzahl</th><th>Zielwert</th></tr></thead><tbody>
+   <tr><td>Vollständige Klassifizierung (D1–D4)</td><td>≥ 95 %</td></tr>
+   <tr><td>Reaktionszeit P1 eingehalten</td><td>100 %</td></tr>
+   <tr><td>Reaktionszeit P2/P3 eingehalten</td><td>≥ 90 %</td></tr>
+   <tr><td>Fristgerechte externe Meldungen</td><td>100 %</td></tr>
+   <tr><td>Ursachenanalyse in der Frist</td><td>≥ 90 %</td></tr>
+   <tr><td>Post-Incident-Review ≤ 14 Tage</td><td>100 %</td></tr>
+   <tr><td>Wirksamkeitsnachweis nach 6 Monaten</td><td>≥ 90 %</td></tr>
+   <tr><td>Meldequote Near Miss</td><td>≥ 1 je 10 Beschäftigte/Jahr</td></tr>
+   <tr><td>Rückkopplung Risikoregister (P1/P2)</td><td>100 %</td></tr>
+   <tr><td>Verknüpfungsquote Domäne H (CAQ)</td><td>100 %</td></tr>
+   </tbody></table>
+   <p class="small muted">Eine niedrige Near-Miss-Quote ist ein Hinweis auf unzureichende Meldebereitschaft — nicht auf störungsfreien Betrieb.</p>
+  </div></details>
+
+  <details><summary>8 · Schulung (PROC Kap. 13)</summary><div class="dbody">
+   <table><thead><tr><th>Zielgruppe</th><th>Frequenz</th><th>Inhalte</th></tr></thead><tbody>
+   <tr><td>Alle Beschäftigten</td><td>jährlich</td><td>Portaleinstieg, Incident vs. Servicewunsch, Near-Miss-Einstieg</td></tr>
+   <tr><td>Triage-Rollen</td><td>halbjährlich</td><td>Domänenzuordnung, Kenntniserlangung, S1–S6, Meldepflichtprüfung, Gefährdungskatalog</td></tr>
+   <tr><td>Incident Owner</td><td>halbjährlich</td><td>Statusmodell, Pflichtfelder, Beweissicherung, Fachvorgang, Abschluss</td></tr>
+   <tr><td>ISB / Vertretung, Administration</td><td>jährlich</td><td>Fristenmonitor, Genehmigungen, Herabstufung, BCM-Übergabe / Konfigurationsreview</td></tr>
+   <tr><td>Bereichsübergreifende Übung</td><td>jährlich</td><td>simulierter P1-Incident über mindestens zwei Domänen mit vollständiger Ticketführung</td></tr>
+   </tbody></table>
+  </div></details>
+
+  <div class="note"><b>Verbindliche Dokumente:</b> POL_010.001 V3.00 (Richtlinie) · PROC_010.001 V2.10 (Prozess, DE/EN) · STD_010.001 (NIS-2-Meldung) · ANL_010.001 (Rollen, KPI, Nachweise). Diese Seite ist eine verdichtete Arbeitshilfe für die Tool-Nutzer und wird durch den ISB gepflegt.</div>`;
+}
+
 /* ---------- Doku ---------- */
 function viewDoku(){
-  if(S.lang==="en") return `<h1>Prototype documentation</h1>
+  if(S.lang==="en") return `<h1>Implementation information</h1>
   <div class="note"><b>Positioning:</b> This prototype implements the implementation recommendation <b>GDL_010.001 V1.00</b> (Freshservice implementation of Incident Response Management, 2026-08-01) as a runnable reference. It serves to validate the field, status and deadline model <b>before</b> the actual Freshservice configuration – it replaces neither a ticket system nor a server database (storage in the browser only; transfer via “Save/Load state”).</div>
   <h2>Covered requirements</h2>
   <table><thead><tr><th>GDL chapter</th><th>Requirement</th><th>Prototype implementation</th></tr></thead><tbody>
@@ -1279,7 +1543,7 @@ function viewDoku(){
    <li><b>Server database (since V1.10):</b> multi-user operation via the bundled IRM server (Node.js, SQLite; <code>irm/server/</code>) — the tool connects automatically and synchronises all clients (indicator top right). Without a reachable server it runs in single-user fallback (localStorage). Tenant separation is deliberately not provided (Reutter Group only). The protected workspace E/I remains a UI simulation, not a hard server-side object separation.</li>
    <li><b>Calendars:</b> deadlines in calendar time (as the GDL requires for notification duties); site business-hour calendars for P3/P4 SLAs are not implemented.</li>
    <li><b>Notification/alerting:</b> simulated as banners/notes – e-mail, mobile, SMS only in the target platform.</li>
-   <li><b>Domain names A–J</b> and the <b>REUTIB threats G-R 1.01–1.12</b> are working assumptions and must be verified against PROC_010.001 and Annex C of policy POL_010.001 before go-live.</li>
+   <li><b>Domain names A–J:</b> adopted as binding per PROC_010.001 V2.10 (ch. 6.2/Annex A). The <b>REUTIB threats G-R 1.01–1.12</b> remain a working assumption to be verified against Annex C of policy POL_010.001.</li>
    <li><b>S1–S6 help texts:</b> placeholder criteria; to be taken from Annex B of the policy.</li>
    <li><b>Language of records:</b> log entries are stored in the language active when they were written; test data content is German.</li>
    <li><b>Attachments/file upload, directory service, CMDB, CAQ interface:</b> represented as text inputs.</li>
@@ -1296,7 +1560,7 @@ function viewDoku(){
    <li><b>TC 41:</b> E3 without BCM hand-over note → blocked.</li>
    <li><b>TC 43:</b> switch to role “IRM – Triage”, open a domain-E ticket → no longer visible.</li>
   </ul>`;
-  return `<h1>Dokumentation des Prototyps</h1>
+  return `<h1>Implementierungsinformationen</h1>
   <div class="note"><b>Einordnung:</b> Dieser Prototyp bildet die Umsetzungsempfehlung <b>GDL_010.001 V1.00</b> (Freshservice-Implementierung des Incident Response Managements, 01.08.2026) als lauffähige Referenz ab. Er dient der fachlichen Erprobung des Feld-, Status- und Fristenmodells vor der eigentlichen Freshservice-Konfiguration – er ersetzt kein Ticketsystem und keine Serverdatenbank (Speicherung nur im Browser; Übertragung per „Stand sichern/laden“).</div>
   <h2>Abgebildete Anforderungen</h2>
   <table><thead><tr><th>GDL-Kapitel</th><th>Anforderung</th><th>Umsetzung im Prototyp</th></tr></thead><tbody>
@@ -1318,7 +1582,7 @@ function viewDoku(){
    <li><b>Serverdatenbank (seit V1.10):</b> Mehrbenutzerbetrieb über den mitgelieferten IRM-Server (Node.js, SQLite; <code>irm/server/</code>) — das Tool verbindet sich automatisch und synchronisiert alle Clients (Anzeige oben rechts). Ohne erreichbaren Server läuft es im Einzelplatz-Fallback (localStorage). Eine Mandantentrennung ist bewusst nicht vorgesehen (Betrieb nur für die Reutter-Group). Der geschützte Bereich E/I bleibt eine UI-Simulation, keine harte serverseitige Objekttrennung.</li>
    <li><b>Kalender:</b> Fristen in Kalenderzeit (wie von der GDL für Meldefristen gefordert); Standort-Betriebszeitkalender für P3/P4-SLA sind nicht hinterlegt.</li>
    <li><b>Benachrichtigung/Alarmierung:</b> als Banner/Hinweise simuliert – E-Mail, mobil, SMS erst in der Zielplattform.</li>
-   <li><b>Domänenbezeichnungen A–J</b> und die <b>REUTIB-Gefährdungen G-R 1.01–1.12</b> sind Arbeitsstand und vor Produktivsetzung gegen PROC_010.001 bzw. Anhang C der Richtlinie POL_010.001 abzugleichen.</li>
+   <li><b>Domänenbezeichnungen A–J:</b> verbindlich gemäß PROC_010.001 V2.10 (Kap. 6.2/Anhang A) übernommen. Die <b>REUTIB-Gefährdungen G-R 1.01–1.12</b> bleiben Arbeitsstand und sind gegen Anhang C der Richtlinie POL_010.001 abzugleichen.</li>
    <li><b>S1–S6-Hilfetexte:</b> Platzhalter-Kriterien; final aus Anhang B der Richtlinie zu übernehmen.</li>
    <li><b>Sprache der Nachweise:</b> Protokolleinträge werden in der beim Schreiben aktiven Sprache gespeichert; Testdaten-Inhalte sind Deutsch.</li>
    <li><b>Anlagen/Dateiupload, Verzeichnisdienst, CMDB, CAQ-Schnittstelle:</b> als Texteingaben abgebildet.</li>
