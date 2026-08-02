@@ -1083,8 +1083,8 @@ function render(){
   $("btnEn").className = "langbtn mini"+(S.lang==="en"?" on":"");
   $("dlgClose").textContent = tr("Schließen");
   $("foot").innerHTML = (S.lang==="en"
-   ? "Reutter-Group IRM Tool V"+APP_VERSION+" – Incident Response Management tool per the REUTIB requirements for incident response management. The assessment basis includes, among others, the standards STD_010_001 (operational NIS-2 reporting process, portal access, deadline monitoring) and STD_010_002 (relevance assessment and NIS-2 reporting thresholds). Confidential – internal use only. "
-   : "Reutter-Group IRM-Tool V"+APP_VERSION+" – Incident Response Management Tool analog der REUTIB-Vorgaben für das Incident Response Mgmt. Fachliche Bewertungsgrundlage sind u. a. die Standards STD_010_001_Operativer-NIS-2-Meldeprozess-Portalzugang-Fristenueberwachung und STD_010_002_Relevanzbewertung-Meldeschwellen-NIS2. Vertraulich – nur für den internen Gebrauch. ")
+   ? "Reutter-Group IRM Tool V"+APP_VERSION+" – Incident Response Management tool in line with the contractual and statutory requirements for incident response management. Confidential – internal use only. "
+   : "Reutter-Group IRM-Tool V"+APP_VERSION+" – Incident Response Management Tool analog der vertraglichen, gesetzlichen Anforderungen für das Incident Response Mgmt. Vertraulich – nur für den internen Gebrauch. ")
    + (API
    ? (S.lang==="en" ? "Multi-user mode: central server database ("+(SRVINFO?SRVINFO.storage:"–")+")." : "Mehrbenutzerbetrieb: zentrale Serverdatenbank ("+(SRVINFO?SRVINFO.storage:"–")+").")
    : (S.lang==="en" ? "Single-user fallback: data stored locally in the browser (no server reachable)." : "Einzelplatz-Fallback: Datenhaltung lokal im Browser (kein Server erreichbar)."));
