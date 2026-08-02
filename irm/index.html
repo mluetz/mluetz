@@ -129,6 +129,7 @@ details>.dbody{padding:4px 14px 12px}
 .tip{position:relative;cursor:help}
 .tip:hover::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 7px);background:#3E3E3E;color:#fff;padding:5px 10px;border-radius:5px;font-size:12.5px;font-weight:400;white-space:nowrap;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.35);pointer-events:none}
 .tip:hover::before{content:"";position:absolute;left:12px;bottom:calc(100% + 2px);border:5px solid transparent;border-top-color:#3E3E3E;z-index:50;pointer-events:none}
+th.tip{position:sticky;cursor:help}
 .langbtn{border:1px solid var(--line);background:var(--bg);color:var(--grau);padding:5px 9px;font-weight:700}
 .langbtn.on{background:var(--gelb);color:#000;border-color:var(--gelb)}
 .logo{height:52px;display:block;background:#fff;border-radius:6px;padding:3px 8px;border:1px solid var(--line);margin-left:auto}
@@ -186,6 +187,15 @@ const EN = {
  "Regelbetrieb":"Normal operations","Koordinierte Bearbeitung":"Coordinated handling","Übergabe an das BCM":"Hand-over to BCM",
  "öffentlich":"public","intern":"internal","vertraulich":"confidential","streng vertraulich":"strictly confidential",
  "Meldebezeichnung anpassen":"Edit report title","Neue Meldebezeichnung:":"New report title:",
+ "Anlagen":"Attachments","Kategorie":"Category","Datei":"File","Größe":"Size","Anlage hinzufügen":"Add attachment",
+ "Meldung":"Report","Beweissicherung":"Evidence","Sonstiges":"Other","Herunterladen":"Download","Entfernen":"Remove",
+ "Bitte zuerst eine Datei wählen.":"Please choose a file first.",
+ "Datei zu groß (max. 2 MB):":"File too large (max. 2 MB):",
+ "Anlagenbudget des Tickets erschöpft (max. 4 MB gesamt).":"Attachment budget of this ticket exhausted (max. 4 MB in total).",
+ "Anlage hinzugefügt:":"Attachment added:","Anlage entfernt (ISB):":"Attachment removed (ISB):",
+ "Entfernen von Anlagen nur durch den ISB.":"Only the ISB may remove attachments.",
+ "Anlage wirklich entfernen? Der Vorgang wird protokolliert.":"Really remove this attachment? The removal will be logged.",
+ "Anlage vorhanden":"attachment present","von":"by",
  /* header/nav */
  "REUTIB · IRM-Tool V1.10 · nach GDL_010.001":"REUTIB · IRM tool V1.10 · per GDL_010.001",
  "Rolle (Simulation):":"Role (simulation):",
@@ -340,6 +350,43 @@ const CDESC={C1:"öffentlich",C2:"intern",C3:"vertraulich",C4:"streng vertraulic
 function pLabel(v){ return PDESC[v]? v+" – "+tr(PDESC[v]) : tr(v); }
 function eLabel(v){ return EDESC[v]? v+" – "+tr(EDESC[v]) : v; }
 function cLabel(v){ return CDESC[v]? v+" – "+tr(CDESC[v]) : v; }
+
+/* Anlagen: Kategorien entsprechend den Anlage-Feldern der GDL (Anhang A) */
+const ATTCATS=[["meldung","Meldung"],["nachweis","Nachweis der Meldung"],["beweis","Beweissicherung"],["abschluss","Abschlussbericht"],["sonstig","Sonstiges"]];
+const attCatLabel=c=>{const e=ATTCATS.find(x=>x[0]===c);return e?tr(e[1]):c;};
+const hasAtt=(t,c)=>(t.anhaenge||[]).some(a=>a.cat===c);
+const fmtSize=n=>n>=1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB";
+function readFileAsAtt(file,cat){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res({id:Math.random().toString(36).slice(2),cat,name:file.name,size:file.size,ts:now(),who:(S.user?S.user+" – ":"")+roleLabel(),data:r.result});
+    r.onerror=rej; r.readAsDataURL(file);
+  });
+}
+async function addAtt(){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const inp=$("attFile"), cat=$("attCat").value;
+  if(!inp||!inp.files.length){ alert(tr("Bitte zuerst eine Datei wählen.")); return; }
+  t.anhaenge=t.anhaenge||[];
+  for(const f of inp.files){
+    if(f.size>2*1048576){ alert(tr("Datei zu groß (max. 2 MB):")+" "+f.name); continue; }
+    if(t.anhaenge.reduce((a,x)=>a+x.size,0)+f.size>4*1048576){ alert(tr("Anlagenbudget des Tickets erschöpft (max. 4 MB gesamt).")); break; }
+    const att=await readFileAsAtt(f,cat);
+    t.anhaenge.push(att);
+    log(t,tr("Anlage hinzugefügt:")+" "+att.name+" ("+attCatLabel(cat)+", "+fmtSize(att.size)+")");
+  }
+  inp.value="";
+  save(t); render();
+}
+function delAtt(id){
+  const t=T(); if(!t) return;
+  if(S.role!=="isb"){ alert(tr("Entfernen von Anlagen nur durch den ISB.")); return; }
+  const att=(t.anhaenge||[]).find(x=>x.id===id); if(!att) return;
+  if(!confirm(tr("Anlage wirklich entfernen? Der Vorgang wird protokolliert."))) return;
+  t.anhaenge=t.anhaenge.filter(x=>x.id!==id);
+  log(t,tr("Anlage entfernt (ISB):")+" "+att.name);
+  save(t); render();
+}
 
 /* Meldepflichten (Anhang A) */
 const PFL = [
@@ -685,7 +732,7 @@ function checkTransition(t, to){
   }
   if(to==="Closed"){
     if(p12){
-      if(!t.abschlussbericht) M("Abschlussbericht (Anlage, ISMS-TMPL-006a)","Final report (attachment, ISMS-TMPL-006a)");
+      if(!t.abschlussbericht && !hasAtt(t,"abschluss")) M("Abschlussbericht (Anlage, ISMS-TMPL-006a)","Final report (attachment, ISMS-TMPL-006a)");
       if(!t.lessons) M("Lessons Learned","Lessons learned");
       if(!t.risikoRef) M("Referenz Risikoregister","Risk register reference");
     }
@@ -748,6 +795,7 @@ async function newTicket(o){
     freigabe:false, freigabeIsb:false, freigabeQl:false,
     abschlussbericht:"", lessons:"", risikoRef:"", wirksamkeit:null,
     bcmNote:"",
+    anhaenge:(o.anhaenge||[]),
     beobachter:["ISB"], tasks:[], approvals:[], log:[],
     erstreaktion:null
   };
@@ -918,6 +966,7 @@ function showForm(nearmiss){
     <div class="grid2">
       <div><label>${de?"Zeitpunkt der Beobachtung":"Time of observation"}</label><input id="f_beob" type="datetime-local" value="${dtLocal(now())}"></div>
       <div><label>${tr("Meldende Person / Quelle")}</label><input id="f_quelle" type="text" value="${esc(roleLabel())}"></div>
+      <div><label>${tr("Anlagen")} <span class="hint">${de?"(optional, z. B. Fotos – je Datei max. 2 MB)":"(optional, e.g. photos – max 2 MB each)"}</span></label><input id="f_att" type="file" multiple></div>
     </div>
     <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="f_pers" style="width:auto"> <b>${de?"Sind Personen betroffen?":"Are people affected?"}</b></label>
     <div id="f_persHint"></div>
@@ -932,7 +981,16 @@ async function submitMeldung(nearmiss){
   const betreff=$("f_betreff").value.trim(), beschr=$("f_beschr").value.trim(), standort=$("f_standort").value;
   const miss=[]; if(!betreff)miss.push(tr("Betreff")); if(!beschr)miss.push(tr("Beschreibung")); if(!standort)miss.push(tr("Standort"));
   if(miss.length){ alert(tr("Bitte ausfüllen: ")+miss.join(", ")); return; }
-  const t=await newTicket({betreff, beschreibung:beschr, standort, beobachtet:parseDt($("f_beob").value), personen:$("f_pers").checked, quelle:$("f_quelle").value, nearmiss, kanal:"Portal"});
+  const atts=[];
+  const fi=$("f_att");
+  if(fi&&fi.files.length){
+    for(const f of fi.files){
+      if(f.size>2*1048576){ alert(tr("Datei zu groß (max. 2 MB):")+" "+f.name); continue; }
+      atts.push(await readFileAsAtt(f,"meldung"));
+    }
+  }
+  const t=await newTicket({betreff, beschreibung:beschr, standort, beobachtet:parseDt($("f_beob").value), personen:$("f_pers").checked, quelle:$("f_quelle").value, nearmiss, kanal:"Portal", anhaenge:atts});
+  if(atts.length){ log(t,tr("Anlage hinzugefügt:")+" "+atts.map(a=>a.name).join(", ")); save(t); }
   const de = S.lang!=="en";
   $("formBox").innerHTML=`<div class="note oklight"><b>${de?"Vielen Dank – Ihre Meldung wurde aufgenommen":"Thank you – your report has been recorded"} (${t.id}).</b><br>
   ${de?"Die Triage übernimmt jetzt die Einordnung.":"The triage team will now classify it."} ${nearmiss?(de?"Die Arbeitssicherheit wurde informiert.":"Occupational safety has been informed."):""} ${de?"Bei Rückfragen meldet sich das IRM-Team.":"The IRM team will contact you if anything is unclear."}</div>`;
@@ -1174,7 +1232,7 @@ function viewDetail(id){
       <td class="small muted">${p.tasks.map(x=>taskLabel(x[0]).split(" – ")[0]+" ("+(x[1]>=720?(de?"1 Monat":"1 month"):x[1]>=72?x[1]/24+(de?" Tage":" days"):x[1]+" h")+")").join(" · ")}${p.recall?(de?" · setzt bei „ja“ Zwangsstufe P1 (Regel 12)":" · “yes” forces level P1 (rule 12)"):""}</td></tr>`;
    }).join("")}
    </tbody></table>
-   <label>${tr("Nachweis der Meldung")} ${Object.values(t.pf).includes("ja")?'<span class="req">*</span> '+(de?"(Pflicht, sobald eine Meldepflicht auf „ja“ steht)":"(mandatory as soon as any reporting duty is “yes”)"):""} <span class="hint">– ${de?"Meldung und Empfangsbestätigung als Anlage zurückführen (BSI-Portal: manuell nach STD_010.001)":"attach the notification and its acknowledgement (BSI portal: manual per STD_010.001)"}</span></label>
+   <label>${tr("Nachweis der Meldung")} ${Object.values(t.pf).includes("ja")?'<span class="req">*</span> '+(de?"(Pflicht, sobald eine Meldepflicht auf „ja“ steht)":"(mandatory as soon as any reporting duty is “yes”)"):""}${hasAtt(t,"nachweis")?' <span class="small" style="color:var(--ok)">✓ '+tr("Anlage vorhanden")+'</span>':""} <span class="hint">– ${de?"Meldung und Empfangsbestätigung als Anlage zurückführen (BSI-Portal: manuell nach STD_010.001)":"attach the notification and its acknowledgement (BSI portal: manual per STD_010.001)"}</span></label>
    <textarea ${ro?"disabled":""} onchange="upd('nachweis',this.value,'${tr("Nachweis der Meldung")}')">${esc(t.nachweis)}</textarea>
   </div></div>
 
@@ -1210,6 +1268,21 @@ function viewDetail(id){
    <label>${tr("Lessons Learned")} ${["P1","P2"].includes(st)?'<span class="req">*</span>':""}</label>
    <textarea ${ro?"disabled":""} onchange="upd('lessons',this.value,'${tr("Lessons Learned")}')">${esc(t.lessons)}</textarea>
    ${t.wirksamkeit?`<div class="note">${de?"Termin Wirksamkeitsprüfung":"Effectiveness review due"}: <b>${fmt(t.wirksamkeit)}</b> ${de?"(Umsetzung + 6 Monate, Nachverfolgungsaufgabe erzeugt).":"(implementation + 6 months, follow-up task created)."}</div>`:""}
+  </div></div>
+
+  <div class="section"><div class="head">${tr("Anlagen")} <span class="small muted">(${(t.anhaenge||[]).length})</span></div><div class="body">
+   ${(t.anhaenge||[]).length?`<table><thead><tr><th>${tr("Kategorie")}</th><th>${tr("Datei")}</th><th>${tr("Größe")}</th><th>${tr("Fällig")==="Due"?"Date":"Datum"}</th><th>${tr("von")}</th><th class="noprint">${tr("Aktion")}</th></tr></thead><tbody>
+   ${(t.anhaenge||[]).map(a=>`<tr><td><span class="badge st">${esc(attCatLabel(a.cat))}</span></td>
+    <td><a href="${a.data}" download="${esc(a.name)}">${esc(a.name)}</a></td>
+    <td class="small">${fmtSize(a.size)}</td><td class="small">${fmt(a.ts)}</td><td class="small">${esc(a.who||"–")}</td>
+    <td class="noprint"><a class="small" href="${a.data}" download="${esc(a.name)}">${tr("Herunterladen")}</a>${S.role==="isb"?` · <a class="small" href="#" onclick="delAtt('${a.id}');return false" style="color:var(--crit)">${tr("Entfernen")}</a>`:""}</td></tr>`).join("")}
+   </tbody></table>`:`<p class="muted small">${de?"Noch keine Anlagen. Meldung und Empfangsbestätigung externer Meldungen, Beweise und der Abschlussbericht (ISMS-TMPL-006a) gehören als Anlage in das Ticket (GDL Kap. 14).":"No attachments yet. Notifications and their acknowledgements, evidence and the final report (ISMS-TMPL-006a) belong in the ticket as attachments (GDL ch. 14)."}</p>`}
+   ${!ro?`<div class="flex noprint" style="margin-top:8px">
+    <select id="attCat" style="width:auto">${ATTCATS.map(([c,l])=>`<option value="${c}">${tr(l)}</option>`).join("")}</select>
+    <input id="attFile" type="file" multiple style="width:auto">
+    <button class="sec mini" onclick="addAtt()">${tr("Anlage hinzufügen")}</button>
+    <span class="small muted">${de?"je Datei max. 2 MB, je Ticket max. 4 MB; Ablage direkt im Ticket. Entfernen nur durch den ISB (protokolliert). Eine Anlage der Kategorie „Abschlussbericht“ erfüllt die Abschluss-Pflicht bei P1/P2.":"max 2 MB per file, 4 MB per ticket; stored inside the ticket. Removal by the ISB only (logged). An attachment of category “Final report” satisfies the P1/P2 closure requirement."}</span>
+   </div>`:""}
   </div></div>
 
   <div class="section"><div class="head">${tr("Aufgaben und Fristen")} <span class="small muted">(${openTasks.length} ${tr("offen")})</span></div><div class="body">
@@ -1306,8 +1379,49 @@ function viewBerichte(){
    <div class="kpi"><div class="v">${nm.length}</div><div class="l">${de?"Beinaheereignisse (Meldequote-KPI)":"near misses (reporting-rate KPI)"}</div></div>
    <div class="kpi"><div class="v">${prot.length}</div><div class="l">${de?"geschützter Bereich (nur aggregiert)":"protected workspace (aggregate only)"}</div></div>
   </div>
+  ${(()=>{
+    const sev={P1:0,P2:0,P3:0,P4:0};
+    for(const t of open){ const sx=effStufe(t); if(sx)sev[sx]++; }
+    const sevTot=sev.P1+sev.P2+sev.P3+sev.P4;
+    const stC=STATUS.map(st=>[st, all.filter(t=>t.status===st).length]);
+    const maxSt=Math.max(1,...stC.map(x=>x[1]));
+    const W=7*24*3600000, wk=new Array(8).fill(0);
+    for(const t of all){ const dwk=Math.floor((now()-t.erstellt)/W); if(dwk>=0&&dwk<8) wk[7-dwk]++; }
+    const maxWk=Math.max(1,...wk);
+    let aok=0,awarn=0,acrit=0,aover=0;
+    for(const t of all){ if(t.status==="Closed") continue;
+      for(const x of t.tasks){ if(x.done) continue;
+        if(x.due<now()){aover++;continue;}
+        const tot=x.due-(t.kenntnis||x.due), gone=now()-(t.kenntnis||now());
+        const q= tot>0? gone/tot:1;
+        if(q>0.75)acrit++; else if(q>0.5)awarn++; else aok++;
+      } }
+    return `<h2>Dashboard <span class="small muted">– ${de?"Statusreport für das Board (druckbar über die Browser-Druckfunktion)":"status report for the board (printable via the browser print function)"}</span></h2>
+    <div class="grid2">
+     <div class="card"><h3>${de?"Offene Incidents nach Gesamtstufe":"Open incidents by overall level"}</h3>
+      ${sevTot?`<div style="display:flex;height:36px;border-radius:6px;overflow:hidden;border:1px solid var(--line)">${["P1","P2","P3","P4"].map(x=>sev[x]?`<div class="${x.toLowerCase()} tip" data-tip="${esc(pLabel(x))}: ${sev[x]}" style="width:${Math.round(100*sev[x]/sevTot)}%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;min-width:28px">${sev[x]}</div>`:"").join("")}</div>
+      <div class="flex small" style="margin-top:7px">${["P1","P2","P3","P4"].map(x=>`<span class="badge ${x.toLowerCase()} tip" data-tip="${esc(pLabel(x))}">${x}</span><span class="muted">${tr(PDESC[x])}</span>`).join("&nbsp; ")}</div>`
+      :`<p class="muted small">${de?"Keine offenen Incidents.":"No open incidents."}</p>`}
+     </div>
+     <div class="card"><h3>${de?"Fristenampel — offene Melde- und Folgeaufgaben":"Deadline traffic light — open tasks"}</h3>
+      <div class="kpis" style="margin:4px 0;grid-template-columns:repeat(4,1fr)">
+       <div class="kpi"><div class="v" style="color:var(--ok)">${aok}</div><div class="l">${de?"im Plan":"on track"}</div></div>
+       <div class="kpi"><div class="v" style="color:#b29200">${awarn}</div><div class="l">&gt; 50 %</div></div>
+       <div class="kpi"><div class="v" style="color:var(--warn)">${acrit}</div><div class="l">&gt; 75 %</div></div>
+       <div class="kpi"><div class="v" style="color:var(--crit)">${aover}</div><div class="l">${tr("überfällig")}</div></div>
+      </div>
+     </div>
+     <div class="card"><h3>${de?"Status-Pipeline (alle Tickets)":"Status pipeline (all tickets)"}</h3>
+      ${stC.map(([stx,c])=>`<div style="display:flex;align-items:center;gap:8px;margin:3px 0"><span class="small" style="width:200px;flex:none">${tr(stx)}</span><div style="background:var(--gelb);height:14px;border-radius:3px;width:${Math.round(62*c/maxSt)}%;min-width:${c?8:0}px"></div><b class="small">${c||"·"}</b></div>`).join("")}
+     </div>
+     <div class="card"><h3>${de?"Meldeaufkommen — letzte 8 Wochen":"Report volume — last 8 weeks"}</h3>
+      <div style="display:flex;align-items:flex-end;gap:6px;height:96px;padding-top:8px">${wk.map((c,i)=>`<div style="flex:1;text-align:center"><div class="small" style="font-weight:700">${c||""}</div><div style="background:${i===7?"var(--gelb)":"var(--grau)"};height:${Math.round(68*c/maxWk)}px;border-radius:3px 3px 0 0;min-height:${c?4:1}px"></div></div>`).join("")}</div>
+      <div class="small muted" style="display:flex;justify-content:space-between"><span>${de?"vor 8 Wochen":"8 weeks ago"}</span><span>${de?"diese Woche":"this week"}</span></div>
+     </div>
+    </div>`;
+  })()}
   <h2>${de?"Lagebild Domänen":"Domain overview"} <span class="small muted">– ${de?"offene/gesamt je Domäne und Verteilung der Gesamtstufen":"open/total per domain and distribution of overall levels"}</span></h2>
-  <table class="matrix"><thead><tr><th>${tr("Domäne")}</th><th>${de?"Bezeichnung":"Name"}</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>${tr("offen")}</th><th>${de?"gesamt":"total"}</th></tr></thead><tbody>
+  <table class="matrix"><thead><tr><th>${tr("Domäne")}</th><th>${de?"Bezeichnung":"Name"}</th>${["P1","P2","P3","P4"].map(x=>`<th class="tip" data-tip="${esc(pLabel(x))}">${x}</th>`).join("")}<th>${tr("offen")}</th><th>${de?"gesamt":"total"}</th></tr></thead><tbody>
   ${DOMKEYS.map(d=>{const m=matrix[d];return `<tr><td><b>${d}</b>${DOM[d].prot?" 🔒":""}</td><td>${domName(d)}${DOM[d].prot?' <span class="small muted">'+(de?"(aggregiert)":"(aggregate)")+'</span>':""}</td>
    ${["P1","P2","P3","P4"].map(s=>`<td class="${m[s]?"":"n0"}">${m[s]||"·"}</td>`).join("")}
    <td class="${m.offen?"":"n0"}">${m.offen||"·"}</td><td class="${m.gesamt?"":"n0"}">${m.gesamt||"·"}</td></tr>`;}).join("")}
@@ -1606,7 +1720,7 @@ function viewDoku(){
    <li><b>Notification/alerting:</b> simulated as banners/notes – e-mail, mobile, SMS only in the target platform.</li>
    <li><b>Value lists adopted as binding:</b> domain names A–J per PROC_010.001 V2.10 (ch. 6.2/Annex A); threat catalogue incl. REUTIB additions G-R 1.01–1.12 per POL_010.001 V3.00 Annex C; S1–S6 assessment criteria as field help texts and severity short labels P1–P4 (Critical/High/Medium/Low) per POL_010.001 V3.00 Annex A/B (EN help texts are a working translation). The <b>short labels C1–C4</b> (public/internal/confidential/strictly confidential) follow the common scheme and must be verified against POL_003.001.</li>
    <li><b>Language of records:</b> log entries are stored in the language active when they were written; test data content is German.</li>
-   <li><b>Attachments/file upload, directory service, CMDB, CAQ interface:</b> represented as text inputs.</li>
+   <li><b>Attachments:</b> files (max 2 MB each, 4 MB per ticket) are stored inside the ticket document — categories report, evidence of notification, evidence, final report, other; removal by the ISB only, logged. Directory service, CMDB and CAQ interface remain text inputs.</li>
   </ul>
   <h2>Acceptance test cases (excerpt of Annex C – directly reproducible in the prototype)</h2>
   <ul class="small">
@@ -1644,7 +1758,7 @@ function viewDoku(){
    <li><b>Benachrichtigung/Alarmierung:</b> als Banner/Hinweise simuliert – E-Mail, mobil, SMS erst in der Zielplattform.</li>
    <li><b>Wertelisten verbindlich übernommen:</b> Domänenbezeichnungen A–J gemäß PROC_010.001 V2.10 (Kap. 6.2/Anhang A); Gefährdungskatalog inkl. REUTIB-Ergänzungen G-R 1.01–1.12 gemäß POL_010.001 V3.00 Anhang C; S1–S6-Bewertungskriterien als Feld-Hilfetexte und Stufen-Kurzbeschreibungen P1–P4 (Kritisch/Hoch/Mittel/Niedrig) gemäß POL_010.001 V3.00 Anhang A/B. Die <b>Kurzbezeichnungen C1–C4</b> (öffentlich/intern/vertraulich/streng vertraulich) folgen dem üblichen Schema und sind gegen POL_003.001 zu verifizieren.</li>
    <li><b>Sprache der Nachweise:</b> Protokolleinträge werden in der beim Schreiben aktiven Sprache gespeichert; Testdaten-Inhalte sind Deutsch.</li>
-   <li><b>Anlagen/Dateiupload, Verzeichnisdienst, CMDB, CAQ-Schnittstelle:</b> als Texteingaben abgebildet.</li>
+   <li><b>Anlagen:</b> Dateien (je max. 2 MB, je Ticket 4 MB) werden direkt im Ticketdokument gespeichert — Kategorien Meldung, Nachweis der Meldung, Beweissicherung, Abschlussbericht, Sonstiges; Entfernen nur durch den ISB, protokolliert. Verzeichnisdienst, CMDB und CAQ-Schnittstelle bleiben als Texteingaben abgebildet.</li>
   </ul>
   <h2>Abnahme-Testfälle (Auszug Anhang C – im Prototyp direkt nachvollziehbar)</h2>
   <ul class="small">
