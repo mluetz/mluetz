@@ -178,6 +178,7 @@ const EN = {
  "Kein IRM-Server erreichbar – Datenhaltung nur in diesem Browser.":"No IRM server reachable – data is stored in this browser only.",
  "Zugriffstoken für den IRM-Server:":"Access token for the IRM server:",
  "Ihr Name für das Aktivitätsprotokoll:":"Your name for the activity log:",
+ "Empfehlung Anhang C übernommen":"Annex C recommendation applied",
  /* header/nav */
  "REUTIB · IRM-Tool V1.10 · nach GDL_010.001":"REUTIB · IRM tool V1.10 · per GDL_010.001",
  "Rolle (Simulation):":"Role (simulation):",
@@ -393,6 +394,26 @@ const G_BSI = ["Feuer","Ungünstige klimatische Bedingungen","Wasser","Verschmut
 const G_BSI_EN = ["Fire","Unfavourable climatic conditions","Water","Pollution, dust, corrosion","Natural disasters","Disasters in the vicinity","Major events in the vicinity","Failure or disruption of the power supply","Failure or disruption of communication networks","Failure or disruption of supply networks","Failure or disruption of service providers","Electromagnetic interference","Interception of compromising emanations","Spying on information (espionage)","Eavesdropping","Theft of devices, storage media or documents","Loss of devices, storage media or documents","Poor planning or lack of adaptation","Disclosure of sensitive information","Information or products from an unreliable source","Manipulation of hardware or software","Manipulation of information","Unauthorised intrusion into IT systems","Destruction of devices or storage media","Failure of devices or systems","Malfunction of devices or systems","Lack of resources","Software vulnerabilities or errors","Violation of laws or regulations","Unauthorised use or administration of devices and systems","Incorrect use or administration of devices and systems","Misuse of authorisations","Loss of personnel","Attack","Coercion, extortion or corruption","Identity theft","Repudiation of actions","Misuse of personal data","Malware","Denial of service","Sabotage","Social engineering","Replay of messages","Unauthorised entry to premises","Loss of data","Loss of integrity of sensitive information","Harmful side effects of IT-supported attacks"];
 const G_REUTIB = ["Arbeitsunfall oder Personenschaden im Betrieb","Gesundheitsgefährdung durch Freisetzung von Gefahrstoffen","Umweltbeeinträchtigung durch Boden-, Wasser-, Luft- oder Abfallereignis","Produktfehler, Nichtkonformität oder Feldausfall","Produktsicherheits- oder Rückrufereignis","Ausfall von Fertigungsanlagen, Werkzeugen oder Prüfmitteln","Ausfall, Insolvenz oder Leistungsverweigerung eines Lieferanten","Transport-, Verpackungs- oder Logistikschaden","Arbeitskampf oder kollektive Arbeitsniederlegung","Epidemische Lage oder behördliche Betriebsauflage","Geopolitisches oder handelsrechtliches Ereignis (Sanktionen, Zölle, Grenzschließung)","Reputations- oder Medienereignis"];
 const G_REUTIB_EN = ["Occupational accident or personal injury on site","Health hazard from release of hazardous substances","Environmental impact from a soil, water, air or waste event","Product defect, non-conformity or field failure","Product safety or recall event","Failure of production equipment, tools or inspection equipment","Failure, insolvency or refusal to perform of a supplier","Transport, packaging or logistics damage","Industrial action or collective work stoppage","Epidemic situation or official operating restriction","Geopolitical or trade-law event (sanctions, tariffs, border closure)","Reputation or media event"];
+/* Primärdomänen-Zuordnung je Gefährdung gemäß POL_010.001 V3.00 Anhang C
+   (Format: Gefährdungs-ID → [Primärdomäne, regelmäßig ebenfalls betroffene Domänen]).
+   Abweichende Zuordnungen im Einzelfall sind zulässig und zu begründen. */
+const G_PRIM = {"G 0.1":["D","EFABG"],"G 0.2":["D","ABF"],"G 0.3":["D","ABFE"],"G 0.4":["F","ABH"],"G 0.5":["D","EFGI"],"G 0.6":["D","EGI"],"G 0.7":["C","DGI"],"G 0.8":["D","ABFG"],"G 0.9":["A","BGF"],"G 0.10":["D","FBE"],"G 0.11":["G","ADF"],"G 0.12":["B","AF"],"G 0.13":["A","C"],"G 0.14":["A","CJH"],"G 0.15":["A","CJ"],"G 0.16":["C","AJ"],"G 0.17":["A","CJ"],"G 0.18":["A","FGHI"],"G 0.19":["A","CJH"],"G 0.20":["G","AH"],"G 0.21":["A","BH"],"G 0.22":["A","HJ"],"G 0.23":["A","BJ"],"G 0.24":["C","ADF"],"G 0.25":["A","BF"],"G 0.26":["F","ABH"],"G 0.27":["G","AFI"],"G 0.28":["A","B"],"G 0.29":["J","EHG"],"G 0.30":["A","BJ"],"G 0.31":["A","BF"],"G 0.32":["A","JC"],"G 0.33":["I","FGA"],"G 0.34":["C","DEI"],"G 0.35":["J","AIG"],"G 0.36":["A","JG"],"G 0.37":["A","JH"],"G 0.38":["J","AI"],"G 0.39":["A","BFG"],"G 0.40":["A","BG"],"G 0.41":["C","BFH"],"G 0.42":["A","JG"],"G 0.43":["A","BG"],"G 0.44":["C","ADJ"],"G 0.45":["A","HJ"],"G 0.46":["A","HJ"],"G 0.47":["A","BFG"],"G-R 1.01":["E","FDI"],"G-R 1.02":["E","DFI"],"G-R 1.03":["E","DJ"],"G-R 1.04":["H","FGJ"],"G-R 1.05":["H","JGI"],"G-R 1.06":["F","GHB"],"G-R 1.07":["G","FHJ"],"G-R 1.08":["G","HF"],"G-R 1.09":["I","FG"],"G-R 1.10":["I","FGE"],"G-R 1.11":["G","IJ"],"G-R 1.12":["J","IHG"]};
+function gefId(v){ const m=/^(G(?:-R)? [\d.]+) – /.exec(v||""); return m?m[1]:null; }
+function applyPrim(pd){
+  const t=T(); if(!t||!canEdit(t)) return;
+  upd("leitdomaene", pd, tr("Leitdomäne")+" ("+tr("Empfehlung Anhang C übernommen")+")");
+}
+function applyNebenSugg(ids){
+  const t=T(); if(!t||!canEdit(t)) return;
+  for(const d of ids.split("")){
+    if(d===t.leitdomaene || (t.nebendomaenen||[]).includes(d)) continue;
+    t.nebendomaenen.push(d);
+    log(t,tr("Nebendomäne gesetzt → Mitwirkungsaufgabe an den Incident Owner, Beobachterstatus (Regel 7).")+" ["+d+"] ("+tr("Empfehlung Anhang C übernommen")+")");
+    addOnce(t,"neben_"+d,"Mitwirkung Nebendomäne "+d+" – "+DOM[d].n,"Incident Owner "+d,72);
+    if(!t.beobachter.includes("Incident Owner "+d)) t.beobachter.push("Incident Owner "+d);
+  }
+  save(t); render();
+}
 function gefLabel(v){
   if(S.lang!=="en") return v;
   if(v==="noch nicht bestimmt") return "not yet determined";
@@ -1092,7 +1113,20 @@ function viewDetail(id){
    </div>
    <div class="grid3">
     <div><label>${tr("Gefährdungsbezug")} <span class="req">*</span> <span class="hint help" title="${de?"Gefährdungskatalog gemäß POL_010.001 V3.00 Anhang C: BSI G 0.1–G 0.47 + REUTIB-Ergänzungen G-R 1.01–1.12. „noch nicht bestimmt“ blockiert den Abschluss.":"Threat catalogue per POL_010.001 V3.00 Annex C: BSI G 0.1–G 0.47 + REUTIB additions G-R 1.01–1.12. “Not yet determined” blocks closure."}">ⓘ</span></label>
-     <select ${ro?"disabled":""} onchange="upd('gef',this.value,'${tr("Gefährdungsbezug")}')">${gefOpts.map(g=>`<option value="${esc(g)}" ${t.gef===g?"selected":""}>${gefLabel(g)}</option>`).join("")}</select></div>
+     <select ${ro?"disabled":""} onchange="upd('gef',this.value,'${tr("Gefährdungsbezug")}')">${gefOpts.map(g=>`<option value="${esc(g)}" ${t.gef===g?"selected":""}>${gefLabel(g)}</option>`).join("")}</select>
+     ${(()=>{ const rec=G_PRIM[gefId(t.gef)]; if(!rec) return "";
+       const [pd,nds]=rec;
+       const ndsOpen=nds.split("").filter(d=>d!==t.leitdomaene && !(t.nebendomaenen||[]).includes(d));
+       if(t.leitdomaene===pd) return `<div class="small" style="color:var(--ok);margin-top:4px">✓ ${de?"Leitdomäne entspricht der Primärdomänen-Empfehlung nach POL_010.001 Anhang C":"Lead domain matches the primary-domain recommendation of POL_010.001 Annex C"}${ndsOpen.length?` · ${de?"Regelmäßig ebenfalls betroffen":"Typically also affected"}: ${ndsOpen.join(", ")} ${!ro?`<button class="sec mini noprint" onclick="applyNebenSugg('${ndsOpen.join("")}')">${de?"Als Nebendomänen übernehmen":"Add as secondary domains"}</button>`:""}`:""}</div>`;
+       return `<div class="note" style="margin:6px 0 0;padding:7px 10px">
+        <b>${de?"Triage-Empfehlung (POL_010.001 Anhang C):":"Triage recommendation (POL_010.001 Annex C):"}</b>
+        ${de?"Primärdomäne":"Primary domain"} <b>${pd} – ${domName(pd)}</b>${DOM[pd].prot?" 🔒":""}
+        ${!ro?`<button class="acc mini noprint" onclick="applyPrim('${pd}')">${de?"Leitdomäne "+pd+" übernehmen":"Apply lead domain "+pd}</button>`:""}
+        ${nds.length?`<span class="small muted">· ${de?"Regelmäßig ebenfalls betroffen":"Typically also affected"}: ${nds.split("").join(", ")}</span>`:""}
+        ${ndsOpen.length&&!ro?`<button class="sec mini noprint" onclick="applyNebenSugg('${ndsOpen.join("")}')">${de?"Als Nebendomänen übernehmen":"Add as secondary domains"}</button>`:""}
+        <div class="small muted">${de?"Eine abweichende Zuordnung ist zulässig und zu begründen (Feld „Wechsel der Leitdomäne“ bzw. Notiz).":"A deviating assignment is permissible and must be justified (field “change of lead domain” or note)."}</div>
+       </div>`;
+     })()}</div>
     <div><label>${tr("Betroffene Objekte")} ${["A","B"].includes(t.leitdomaene)?'<span class="req">* '+(de?"(CMDB-Pflicht bei A/B)":"(CMDB mandatory for A/B)")+'</span>':""}</label><input type="text" ${ro?"disabled":""} value="${esc(t.objekte)}" onchange="upd('objekte',this.value)"></div>
     <div><label>${tr("Kennzeichen")}</label><div class="flex">
       <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.tisax?"checked":""} ${ro?"disabled":""} onchange="upd('tisax',this.checked,'TISAX')">TISAX</label>
@@ -1320,6 +1354,7 @@ function viewGuidance(){
     <li><b>Downgrades</b> of P1/P2 need an application and ISO approval (four-eyes); until then priority and SLA stay unchanged. Upgrades take effect immediately.</li>
     <li>Similar incidents with the same cause within 30 days are linked and assessed jointly.</li>
     <li><b>Near misses</b> are reportable, get their own portal entry, usually P4 — they are a valued KPI of the reporting culture, not noise.</li>
+    <li><b>Triage support:</b> when a threat is selected the tool suggests the primary domain and the typically affected domains per Annex C of the policy; apply with one click — a deviating assignment remains permissible and must be justified.</li>
    </ul>
   </div></details>
 
@@ -1446,6 +1481,7 @@ function viewGuidance(){
     <li><b>Herabstufungen</b> von P1/P2 nur über Antrag und ISB-Genehmigung (Vieraugenprinzip); bis dahin bleiben Priorität und SLA unverändert. Höherstufungen wirken sofort.</li>
     <li>Gleichartige Incidents derselben Ursache innerhalb von 30 Tagen werden verknüpft und gemeinsam bewertet.</li>
     <li><b>Near Misses</b> sind meldepflichtig, haben einen eigenen Portaleinstieg, i. d. R. P4 — sie sind eine erwünschte Kennzahl der Meldekultur, kein Störfaktor.</li>
+    <li><b>Triage-Unterstützung:</b> Bei Auswahl einer Gefährdung schlägt das Tool die Primärdomäne und die regelmäßig ebenfalls betroffenen Domänen nach Anhang C der Richtlinie vor; die Übernahme erfolgt per Klick, eine abweichende Zuordnung bleibt zulässig und ist zu begründen.</li>
    </ul>
   </div></details>
 
