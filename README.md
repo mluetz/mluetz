@@ -80,19 +80,33 @@ verknüpft. Im Zweifel gilt das deutsche Register.
 | Scope | DE / AT / SK / PL |
 | Datenstand | Stage Review 29.04.2026 — 62 Findings (inkl. Katalog-Observations) |
 
-## Aufrufen
+## Aufrufen & Zugangsschutz
 
-Die Anwendung ist eine **einzelne, in sich geschlossene `index.html`** (keine externen
-Abhängigkeiten, keine Server nötig, funktioniert offline).
+Der Einstieg ist die **geschützte Eingangsseite `index.html`**: Benutzername + Passwort.
+Die beiden Anwendungsseiten sind darin **AES-256-GCM-verschlüsselt eingebettet**; der Schlüssel
+wird erst im Browser per PBKDF2-SHA-256 (600.000 Iterationen) aus den Zugangsdaten abgeleitet.
+Es ist **kein Passwort und kein Passwort-Hash** im Repository oder auf der veröffentlichten Seite
+hinterlegt — ohne die richtigen Zugangsdaten ist der Inhalt reiner Ciphertext. Der Benutzername
+ist unabhängig von Groß-/Kleinschreibung; nach dem Entsperren gilt die Sitzung bis zum Schließen
+des Tabs oder Klick auf **„Sperren"**.
 
-- **Lokal:** `index.html` herunterladen und im Browser öffnen.
-- **Über GitHub Pages (empfohlen zum Teilen):** siehe unten — nach Aktivierung erreichbar unter
-  `https://<user>.github.io/<repo>/`.
+- **Lokal:** `index.html` herunterladen, im Browser öffnen, anmelden (funktioniert offline).
+- **Über GitHub Pages:** nach Aktivierung erreichbar unter `https://<user>.github.io/<repo>/`.
+  Der Workflow veröffentlicht **ausschließlich die Eingangsseite** — die Klartext-Apps (`app/`),
+  die Excel-Quelle und die JSON-Daten (`data/`) werden nicht mit deployt.
+
+**Zugangsdaten ändern:** `python3 tools/encrypt.py` erneut ausführen (fragt Benutzer + Passwort
+interaktiv ab, alternativ Umgebungsvariablen `VAULT_USER`/`VAULT_PASS`), neue `index.html`
+committen. Salt und Schlüssel werden dabei neu erzeugt.
 
 ### GitHub Pages aktivieren
 Repository → **Settings → Pages → Build and deployment → Source: „GitHub Actions"**.
 Der mitgelieferte Workflow (`.github/workflows/pages.yml`) veröffentlicht die Seite dann bei
 jedem Push auf den Standard-Branch automatisch.
+
+> Hinweis: Client-seitige Verschlüsselung schützt den Inhalt, solange das Passwort stark und
+> geheim ist — die veröffentlichte Datei kann offline angegriffen werden. Repository zusätzlich
+> **privat** halten.
 
 ## Funktionen
 
@@ -122,10 +136,11 @@ jedem Push auf den Standard-Branch automatisch.
 Datenquelle ist die Excel-Datei; die `index.html` wird daraus generiert – **nie direkt** im HTML editieren.
 
 ```bash
-pip install openpyxl
+pip install openpyxl cryptography
 # Quelle in data/ aktualisieren, dann:
-python3 tools/generate.py      # erzeugt index.html und data/findings.json
-python3 tools/generate_en.py   # erzeugt index-en.html und data/findings_en.json
+python3 tools/generate.py      # erzeugt app/register-de.html und data/findings.json
+python3 tools/generate_en.py   # erzeugt app/register-en.html und data/findings_en.json
+python3 tools/encrypt.py       # verschlüsselt beide -> index.html (fragt Zugangsdaten ab)
 ```
 
 Die englischen Freitexte liegen als Overlay in `data/translations_en.json` (Schlüssel = Excel-Zeile).
@@ -135,8 +150,10 @@ erscheint der deutsche Originaltext auf der englischen Seite.
 ## Struktur
 
 ```
-index.html                                  ← deutsche Anwendung (generiert)
-index-en.html                               ← englische Anwendung (generiert)
+index.html                                  ← geschützte Eingangsseite mit verschlüsselten Apps (generiert; einzige veröffentlichte Datei)
+app/
+  register-de.html                           ← deutsche Anwendung, Klartext (generiert, nur intern)
+  register-en.html                           ← englische Anwendung, Klartext (generiert, nur intern)
 data/
   TISAX_Finding_Register_v3_M_N_O.xlsx       ← Quell-Register (Spalten M/N/O integriert)
   findings.json                              ← extrahierte, angereicherte Daten (generiert)
@@ -146,5 +163,7 @@ tools/
   generate.py                                ← Extraktion + Tag-/Xref-Ableitung + HTML-Build (DE)
   generate_en.py                             ← englischer Build (UI-Strings + Overlay + Enum-Mapping)
   template.html                              ← gemeinsame HTML-/JS-Vorlage mit Platzhalter /*__DATA__*/
-.github/workflows/pages.yml                  ← Auto-Deploy nach GitHub Pages
+  login_template.html                        ← Eingangsseite (Login + Entschlüsselung im Browser)
+  encrypt.py                                 ← AES-256-GCM-Verschlüsselung -> index.html (Zugangsdaten nie gespeichert)
+.github/workflows/pages.yml                  ← Auto-Deploy nach GitHub Pages (nur index.html)
 ```
