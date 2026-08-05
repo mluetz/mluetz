@@ -135,9 +135,71 @@ th.tip{position:sticky;cursor:help}
 .logo{height:52px;display:block;background:#fff;border-radius:6px;padding:3px 8px;border:1px solid var(--line);margin-left:auto}
 @media(max-width:1480px){.logo{height:42px}}
 @media print{header,nav,.noprint{display:none}}
+body.locked>header,body.locked>nav,body.locked>main,body.locked>footer{display:none!important}
+#loginPage{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+ background:linear-gradient(115deg,#141d28 0%,#1c2a3a 40%,#25384c 70%,#1a2634 100%);overflow:hidden}
+#loginPage .bgfx{position:absolute;inset:0;pointer-events:none}
+#loginCard{position:relative;z-index:2;background:#fff;border-radius:12px;padding:34px 38px 28px;width:380px;max-width:92vw;
+ box-shadow:0 18px 60px rgba(0,0,0,.55);border-top:5px solid var(--gelb)}
+#loginCard h1{font-size:19px;margin:.6em 0 .15em;color:#000}
+#loginCard .sub{color:#5A5859;font-size:12.5px;margin-bottom:14px}
+#loginCard label{color:#3E3E3E}
+#loginCard input{background:#fff;color:#000;border:1px solid #d7d7d7;width:100%;border-radius:4px;padding:8px 10px}
+#loginCard button{width:100%;margin-top:16px;padding:10px;font-size:15px}
+#loginErr{display:none;background:#F0F0F0;border-left:4px solid #8e0000;color:#000;font-weight:700;font-size:13px;padding:8px 10px;margin-top:12px}
+#loginCard .foot{margin-top:16px;color:#5A5859;font-size:11.5px;text-align:center}
+#loginCard.shake{animation:lshake .35s}
+@keyframes lshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 </style>
 </head>
-<body>
+<body class="locked">
+<div id="loginPage">
+ <svg class="bgfx" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+   <pattern id="lgrid" width="46" height="46" patternUnits="userSpaceOnUse">
+    <path d="M46 0H0V46" fill="none" stroke="#ffffff" stroke-opacity="0.05"/>
+   </pattern>
+   <radialGradient id="lglow" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#e8a07a" stop-opacity="0.35"/><stop offset="55%" stop-color="#e8a07a" stop-opacity="0.08"/><stop offset="100%" stop-color="#e8a07a" stop-opacity="0"/>
+   </radialGradient>
+   <radialGradient id="lbokeh" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#9db8d2" stop-opacity="0.20"/><stop offset="100%" stop-color="#9db8d2" stop-opacity="0"/>
+   </radialGradient>
+  </defs>
+  <rect width="1440" height="900" fill="url(#lgrid)"/>
+  <circle cx="220" cy="240" r="180" fill="url(#lbokeh)"/>
+  <circle cx="470" cy="620" r="140" fill="url(#lbokeh)"/>
+  <circle cx="1240" cy="200" r="160" fill="url(#lbokeh)"/>
+  <circle cx="1050" cy="450" r="260" fill="url(#lglow)"/>
+  <g stroke="#ffffff" fill="none" opacity="0.85">
+   <circle cx="1050" cy="450" r="150" stroke-width="3" stroke-dasharray="500 120" stroke-linecap="round"/>
+   <circle cx="1050" cy="450" r="122" stroke-width="1.4" stroke-dasharray="4 7" opacity="0.6"/>
+   <circle cx="1050" cy="450" r="176" stroke-width="1.2" stroke-dasharray="2 9" opacity="0.45"/>
+   <path d="M1050 372 L1122 502 H978 Z" stroke-width="5" stroke-linejoin="round"/>
+   <line x1="1050" y1="425" x2="1050" y2="472" stroke-width="6" stroke-linecap="round"/>
+   <circle cx="1050" cy="486" r="3.6" fill="#ffffff" stroke="none"/>
+  </g>
+  <g stroke="#ffffff" fill="none" opacity="0.30" stroke-width="1.6">
+   <circle cx="560" cy="180" r="22"/><path d="M552 180h16M560 172v16" />
+   <circle cx="680" cy="710" r="20"/><path d="M672 710l6 6 10-12"/>
+   <rect x="1266" y="590" width="40" height="30" rx="4"/><path d="M1274 600h24M1274 608h24"/>
+   <path d="M300 760h180" stroke-dasharray="6 8"/>
+   <path d="M1180 640l60-60" stroke-width="2"/><path d="M1240 580l-14 3 11 11z" fill="#ffffff" stroke="none" opacity="0.5"/>
+  </g>
+ </svg>
+ <div id="loginCard">
+  <div id="loginLogoSlot" style="text-align:center"></div>
+  <h1>Incident Response Management (IRM)</h1>
+  <div class="sub">Reutter-Group · IRM-Tool · Vertraulich – interner Zugang / confidential – internal access</div>
+  <label>Benutzer / User</label>
+  <input id="loginUser" type="text" autocomplete="username" autofocus>
+  <label>Passwort / Password</label>
+  <input id="loginPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')tryLogin()">
+  <div id="loginErr">Anmeldung fehlgeschlagen / login failed</div>
+  <button class="acc" onclick="tryLogin()">Anmelden / Sign in</button>
+  <div class="foot">Zugriff nur für autorisierte Benutzer der Reutter-Group.</div>
+ </div>
+</div>
 <header>
   <div class="brand">Incident Response Management (IRM) · <span class="r">REUTTER</span> GROUP <span style="color:var(--grau)">Global</span> <small id="brandSub"></small></div>
   <div class="spacer"></div>
@@ -151,6 +213,7 @@ th.tip{position:sticky;cursor:help}
     <button class="langbtn mini" id="btnDe" onclick="setLang('de')">DE</button>
     <button class="langbtn mini" id="btnEn" onclick="setLang('en')">EN</button>
     <button class="sec mini" id="btnTheme" onclick="toggleTheme()" title="Hell/Dunkel – Light/Dark">🌓</button>
+    <button class="sec mini" onclick="logoutIrm()" title="Abmelden / Sign out">🔒</button>
     <button class="sec mini" id="btnExp" onclick="exportJson()"></button>
     <button class="sec mini" id="btnImp" onclick="document.getElementById('impFile').click()"></button>
     <input type="file" id="impFile" accept=".json" style="display:none" onchange="importJson(event)">
@@ -316,6 +379,53 @@ const EN = {
  "Keine Tickets im aktuellen Filter.":"No tickets match the current filter."
 };
 function tr(s){ return S.lang==="en" ? (EN[s]!==undefined?EN[s]:s) : s; }
+
+/* ---------- Zugangsschutz (Eingangsseite) ----------
+   Zugangsdaten liegen NICHT im Klartext vor, sondern als gesalzener
+   PBKDF2-SHA-256-Hash über "benutzer:passwort" (310.000 Iterationen).
+   Rotation: in der Browser-Konsole genLoginHash("benutzer","passwort")
+   aufrufen und die ausgegebene LOGIN-Konstante hier ersetzen.
+   Hinweis: clientseitiger Zugangsschutz einer statischen Seite ist eine
+   Zugangshürde, kein Ersatz für Server-Authentifizierung (Entra ID). */
+const LOGIN = {salt:"e960fd6013ab60f6bd3bf2d90694d500", iter:310000, hash:"63f8ec5183d29af293b9692b6be9cb13e3b00acf3f6c5075959f90086b69de46"};
+async function pbkdf2Hex(user, pass, saltHex, iter){
+  const enc=new TextEncoder();
+  const key=await crypto.subtle.importKey("raw", enc.encode(user+":"+pass), "PBKDF2", false, ["deriveBits"]);
+  const salt=new Uint8Array(saltHex.match(/../g).map(h=>parseInt(h,16)));
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2", hash:"SHA-256", salt, iterations:iter}, key, 256);
+  return [...new Uint8Array(bits)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function genLoginHash(user, pass){
+  const saltHex=[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,"0")).join("");
+  const hash=await pbkdf2Hex(user, pass, saltHex, 310000);
+  const out='const LOGIN = {salt:"'+saltHex+'", iter:310000, hash:"'+hash+'"};';
+  console.log(out); return out;
+}
+function irmUnlock(){
+  document.body.classList.remove("locked");
+  const lp=document.getElementById("loginPage"); if(lp) lp.remove();
+}
+function logoutIrm(){ sessionStorage.removeItem("irmAuth"); location.reload(); }
+async function tryLogin(){
+  const u=document.getElementById("loginUser").value.trim();
+  const pw=document.getElementById("loginPass").value;
+  const btn=document.querySelector("#loginCard button"); btn.disabled=true;
+  try{
+    const h=await pbkdf2Hex(u, pw, LOGIN.salt, LOGIN.iter);
+    if(h===LOGIN.hash){ sessionStorage.setItem("irmAuth", LOGIN.hash); irmUnlock(); return; }
+  }catch(e){}
+  await new Promise(r=>setTimeout(r,600));
+  btn.disabled=false;
+  const card=document.getElementById("loginCard");
+  document.getElementById("loginErr").style.display="block";
+  card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
+  document.getElementById("loginPass").value=""; document.getElementById("loginPass").focus();
+}
+function initLogin(){
+  if(sessionStorage.getItem("irmAuth")===LOGIN.hash){ irmUnlock(); return; }
+  const slot=document.getElementById("loginLogoSlot"), src=document.querySelector("header .logo");
+  if(slot&&src){ const img=src.cloneNode(); img.style.margin="0 auto"; img.style.height="56px"; slot.appendChild(img); }
+}
 
 /* ---------- Stammdaten ---------- */
 const STANDORTE = ["Leutenbach","Bischofshofen","Graz","Myjava","Międzyrzecze Górne","Mexiko","Indien","standortübergreifend"];
@@ -2096,6 +2206,7 @@ Object.assign(EN,{
 });
 
 /* ---------- Init ---------- */
+initLogin();
 render();
 initServer();
 </script>
