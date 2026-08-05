@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TISAX AL3 Finding-Register — Zugang</title>
+<style>
+:root{
+  --bg1:#33525c; --bg2:#22404b; --cy:#3ee0ea; --cy-dim:#6cb9c4;
+  --card:#132b33f2; --card-b:#2e5b66; --ink:#e8f4f6; --ink-2:#9fc3ca; --err:#ff9f8a;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);background:linear-gradient(160deg,var(--bg1),var(--bg2));overflow:hidden}
+#bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.veil{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 42%,rgba(10,30,37,.18),rgba(8,24,30,.62) 78%)}
+.stage{position:relative;z-index:2;height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{width:min(400px,94vw);background:var(--card);border:1px solid var(--card-b);border-radius:16px;
+  padding:30px 30px 24px;box-shadow:0 18px 60px rgba(0,10,14,.55),0 0 0 1px rgba(62,224,234,.06),0 0 42px rgba(62,224,234,.10);
+  backdrop-filter:blur(9px)}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cy);font-weight:700}
+h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:600;
+  font-size:22.5px;margin:6px 0 4px;letter-spacing:-.01em}
+.sub{color:var(--ink-2);font-size:12.5px;margin:0 0 20px;line-height:1.5}
+label{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--cy-dim);
+  font-weight:700;margin:14px 0 5px}
+input{width:100%;padding:11px 13px;border-radius:9px;border:1px solid #33606c;background:#0d222a;
+  color:var(--ink);font-size:15px}
+input:focus{outline:2px solid var(--cy);outline-offset:1px;border-color:var(--cy)}
+button.go{width:100%;margin-top:22px;padding:12px;border:none;border-radius:9px;cursor:pointer;
+  background:linear-gradient(180deg,#3ee0ea,#25b7c4);color:#062226;font-size:15px;font-weight:700;letter-spacing:.02em}
+button.go:hover{filter:brightness(1.07)}
+button.go:disabled{opacity:.55;cursor:wait}
+.err{display:none;margin-top:13px;font-size:13px;color:var(--err);text-align:center}
+.err.show{display:block}
+.foot{margin-top:20px;padding-top:14px;border-top:1px solid #24444e;font-size:11px;color:#7799a1;
+  line-height:1.6;text-align:center}
+.card.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@media (prefers-reduced-motion:reduce){.card.shake{animation:none}}
+</style>
+</head>
+<body>
+<svg id="bg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3a5d68"/><stop offset="1" stop-color="#203d48"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <path id="ringPath" d="M720 168 a282 282 0 1 1 -0.01 0 z" fill="none"/>
+  </defs>
+  <rect width="1440" height="900" fill="url(#g)"/>
+  <g stroke="#59cdd8" stroke-width="1.1" opacity=".30">
+    <path d="M-20 130 L150 210 L90 400 L-20 460 M150 210 L340 90 L520 170 M90 400 L260 520 L150 700 L40 640 M260 520 L340 90 M520 170 L640 40 M-30 700 L150 700 L330 830 L520 760"/>
+    <path d="M1460 90 L1290 170 L1360 360 L1460 420 M1290 170 L1120 60 M1360 360 L1200 480 L1300 660 L1440 620 M1200 480 L1050 380 M1300 660 L1180 810 L980 760 M1120 60 L960 130"/>
+    <path d="M240 870 L420 800 L580 880 M1020 880 L1160 800"/>
+  </g>
+  <g fill="#6fe3ec" opacity=".8">
+    <circle cx="150" cy="210" r="4.5"/><circle cx="90" cy="400" r="3.5"/><circle cx="340" cy="90" r="4"/>
+    <circle cx="520" cy="170" r="3"/><circle cx="260" cy="520" r="4.5"/><circle cx="150" cy="700" r="3.5"/>
+    <circle cx="330" cy="830" r="4"/><circle cx="1290" cy="170" r="4.5"/><circle cx="1360" cy="360" r="3.5"/>
+    <circle cx="1200" cy="480" r="4.5"/><circle cx="1300" cy="660" r="4"/><circle cx="1180" cy="810" r="3.5"/>
+    <circle cx="1120" cy="60" r="3.5"/><circle cx="420" cy="800" r="3"/><circle cx="1160" cy="800" r="3"/>
+    <circle cx="640" cy="40" r="3.5"/><circle cx="960" cy="130" r="3"/>
+  </g>
+  <g opacity=".85">
+    <circle cx="720" cy="450" r="330" fill="none" stroke="#4fdbe5" stroke-width="7" stroke-dasharray="1 14" stroke-linecap="round" opacity=".55"/>
+    <circle cx="720" cy="450" r="252" fill="none" stroke="#4fdbe5" stroke-width="5" stroke-dasharray="1 11" stroke-linecap="round" opacity=".65"/>
+    <text font-family="Segoe UI,Roboto,Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="7" fill="#3ee0ea" opacity=".9">
+      <textPath href="#ringPath">CYBER SECURITY &#183; TISAX AL3 &#183; REUTIB &#183; CYBER SECURITY &#183; PROTECTED AREA &#183;</textPath>
+    </text>
+  </g>
+  <g filter="url(#glow)" fill="#3ee0ea" opacity=".92">
+    <path d="M720 300 c-42 0 -74 32 -74 74 v40 h30 v-40 c0 -25 19 -44 44 -44 s44 19 44 44 v40 h30 v-40 c0 -42 -32 -74 -74 -74 z"/>
+    <rect x="618" y="410" width="204" height="150" rx="22"/>
+  </g>
+  <g fill="#0d3038">
+    <circle cx="720" cy="470" r="20"/>
+    <path d="M712 482 h16 l6 46 h-28 z"/>
+  </g>
+</svg>
+<div class="veil"></div>
+
+<div class="stage">
+  <form class="card" id="loginForm" autocomplete="off">
+    <div class="eyebrow">REUTIB · TISAX AL3 · VDA ISA 6.0.3</div>
+    <h1>Finding-Register</h1>
+    <p class="sub">Geschützter Bereich — Inhalte sind AES-256-verschlüsselt und werden erst nach
+    Anmeldung in Ihrem Browser entschlüsselt.<br>Protected area — content is AES-256 encrypted and
+    decrypted in your browser after sign-in.</p>
+    <label for="u">Benutzer / User</label>
+    <input id="u" name="username" autocomplete="username" required autofocus>
+    <label for="p">Passwort / Password</label>
+    <input id="p" name="password" type="password" autocomplete="current-password" required>
+    <button class="go" id="goBtn" type="submit">Entsperren · Unlock</button>
+    <div class="err" id="err">Zugangsdaten ungültig. / Invalid credentials.</div>
+    <div class="foot">Vertraulich · Reutter-Group (REUTIB) — interner ISMS-/Audit-Gebrauch<br>
+    AES-256-GCM · PBKDF2-SHA-256 · keine Übertragung der Zugangsdaten</div>
+  </form>
+</div>
+
+<script>
+const VAULT=/*__VAULT__*/;
+const SK="reutib-vault-k1";
+const lang=(new URLSearchParams(location.search).get("lang")==="en")?"en":"de";
+const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+
+async function deriveKey(user,pass){
+  const mat=await crypto.subtle.importKey("raw",
+    new TextEncoder().encode(user.trim().toLowerCase()+"\u0000"+pass),
+    "PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2",salt:b64d(VAULT.salt),iterations:VAULT.iter,hash:"SHA-256"},
+    mat,{name:"AES-GCM",length:256},true,["decrypt"]);
+}
+
+async function openLang(key,lg){
+  const p=VAULT.payloads[lg]||VAULT.payloads.de;
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(p.nonce)},key,b64d(p.ct));
+  const stream=new Blob([pt]).stream().pipeThrough(new DecompressionStream("gzip"));
+  let html=await new Response(stream).text();
+  html=html.replace('href="register-en.html"','href="index.html?lang=en"')
+           .replace('href="register-de.html"','href="index.html?lang=de"');
+  const lockLbl=lg==="en"?"Lock":"Sperren";
+  html=html.replace("</body>",
+    `<button style="position:fixed;bottom:16px;right:16px;z-index:99;background:#132b33;color:#7fd6dc;border:1px solid #35707c;border-radius:20px;padding:8px 14px;font:600 12.5px system-ui;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35)" onclick="sessionStorage.removeItem('${SK}');location.href='index.html'">\u{1F512} ${lockLbl}</button></body>`);
+  document.open(); document.write(html); document.close();
+}
+
+(async()=>{
+  const saved=sessionStorage.getItem(SK);
+  if(!saved) return;
+  try{
+    const key=await crypto.subtle.importKey("jwk",JSON.parse(saved),{name:"AES-GCM"},true,["decrypt"]);
+    await openLang(key,lang);
+  }catch(e){ sessionStorage.removeItem(SK); }
+})();
+
+document.getElementById("loginForm").addEventListener("submit",async ev=>{
+  ev.preventDefault();
+  const btn=document.getElementById("goBtn"), err=document.getElementById("err"),
+        card=document.querySelector(".card");
+  err.classList.remove("show"); btn.disabled=true;
+  try{
+    const key=await deriveKey(document.getElementById("u").value,document.getElementById("p").value);
+    await openLang(key,lang);
+    sessionStorage.setItem(SK,JSON.stringify(await crypto.subtle.exportKey("jwk",key)));
+  }catch(e){
+    btn.disabled=false;
+    err.classList.add("show");
+    card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
+    document.getElementById("p").value=""; document.getElementById("p").focus();
+  }
+});
+</script>
+</body>
+</html>
