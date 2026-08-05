@@ -23,10 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - name: Assemble protected site (login page only, no plaintext data)
+      - name: Assemble protected site (login page + IRM tool, no plaintext register data)
         run: |
-          mkdir -p _site
+          mkdir -p _site/irm
           cp index.html _site/
+          cp irm/index.html _site/irm/
           touch _site/.nojekyll
       - name: Upload site
         uses: actions/upload-pages-artifact@v3

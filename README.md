@@ -4,7 +4,7 @@ Dieses Repository enthält zwei in sich geschlossene HTML-Anwendungen für die R
 
 | Anwendung | Pfad | Zweck |
 |---|---|---|
-| **TISAX AL3 Finding-Register** | `index.html` (DE) / `index-en.html` (EN) | Stage-Review-Findings mit VDA-ISA-6.0.3-Control-Verknüpfung |
+| **TISAX AL3 Finding-Register** | `index.html` (geschützte Eingangsseite, DE/EN) | Stage-Review-Findings mit VDA-ISA-6.0.3-Control-Verknüpfung |
 | **IRM-Tool V1.20 (Incident Response Management)** | `irm/index.html` + `irm/server/` | Lauffähige Referenz der Umsetzungsempfehlung GDL_010.001 (Freshservice-IRM), mehrbenutzerfähig mit Serverdatenbank |
 
 ## IRM-Prototyp (`irm/`)
@@ -66,9 +66,9 @@ verknüpft und lassen sich nach Domäne (u. a. **OT**), Modul, Priorität, Stand
 
 > **Vertraulich** — nur für den internen ISMS- und Audit-Gebrauch der Reutter-Group.
 
-**Zwei Sprachfassungen:** `index.html` (Deutsch) und `index-en.html` (Englisch, vollständig
-übersetzte Oberfläche und Inhalte). Beide Seiten sind über den „EN"/„DE"-Umschalter oben rechts
-verknüpft. Im Zweifel gilt das deutsche Register.
+**Zwei Sprachfassungen** (Deutsch und Englisch, vollständig übersetzte Oberfläche und Inhalte),
+erreichbar nach Anmeldung über die Eingangsseite `index.html`; der „EN"/„DE"-Umschalter oben
+rechts wechselt innerhalb der Sitzung. Im Zweifel gilt das deutsche Register.
 
 | | |
 |---|---|
