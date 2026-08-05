@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TISAX AL3 Finding-Register — Zugang</title>
+<title>Protected Area</title>
 <style>
 :root{
   --bg1:#33525c; --bg2:#22404b; --cy:#3ee0ea; --cy-dim:#6cb9c4;
@@ -19,10 +19,9 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Hel
 .card{width:min(400px,94vw);background:var(--card);border:1px solid var(--card-b);border-radius:16px;
   padding:30px 30px 24px;box-shadow:0 18px 60px rgba(0,10,14,.55),0 0 0 1px rgba(62,224,234,.06),0 0 42px rgba(62,224,234,.10);
   backdrop-filter:blur(9px)}
-.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cy);font-weight:700}
-h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:600;
-  font-size:22.5px;margin:6px 0 4px;letter-spacing:-.01em}
-.sub{color:var(--ink-2);font-size:12.5px;margin:0 0 20px;line-height:1.5}
+h1.quote{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:600;
+  font-style:italic;font-size:20.5px;margin:2px 0 18px;letter-spacing:-.01em;line-height:1.4;
+  text-align:center;text-wrap:balance;color:var(--cy)}
 label{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--cy-dim);
   font-weight:700;margin:14px 0 5px}
 input{width:100%;padding:11px 13px;border-radius:9px;border:1px solid #33606c;background:#0d222a;
@@ -71,7 +70,7 @@ button.go:disabled{opacity:.55;cursor:wait}
     <circle cx="720" cy="450" r="330" fill="none" stroke="#4fdbe5" stroke-width="7" stroke-dasharray="1 14" stroke-linecap="round" opacity=".55"/>
     <circle cx="720" cy="450" r="252" fill="none" stroke="#4fdbe5" stroke-width="5" stroke-dasharray="1 11" stroke-linecap="round" opacity=".65"/>
     <text font-family="Segoe UI,Roboto,Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="7" fill="#3ee0ea" opacity=".9">
-      <textPath href="#ringPath">CYBER SECURITY &#183; TISAX AL3 &#183; REUTIB &#183; CYBER SECURITY &#183; PROTECTED AREA &#183;</textPath>
+      <textPath href="#ringPath">CYBER SECURITY &#183; CYBER SECURITY &#183; CYBER SECURITY &#183; CYBER SECURITY &#183;</textPath>
     </text>
   </g>
   <g filter="url(#glow)" fill="#3ee0ea" opacity=".92">
@@ -87,19 +86,14 @@ button.go:disabled{opacity:.55;cursor:wait}
 
 <div class="stage">
   <form class="card" id="loginForm" autocomplete="off">
-    <div class="eyebrow">REUTIB · TISAX AL3 · VDA ISA 6.0.3</div>
-    <h1>Finding-Register</h1>
-    <p class="sub">Geschützter Bereich — Inhalte sind AES-256-verschlüsselt und werden erst nach
-    Anmeldung in Ihrem Browser entschlüsselt.<br>Protected area — content is AES-256 encrypted and
-    decrypted in your browser after sign-in.</p>
+    <h1 class="quote">&bdquo;There is no patch for human stupidity.&ldquo;</h1>
     <label for="u">Benutzer / User</label>
     <input id="u" name="username" autocomplete="username" required autofocus>
     <label for="p">Passwort / Password</label>
     <input id="p" name="password" type="password" autocomplete="current-password" required>
     <button class="go" id="goBtn" type="submit">Entsperren · Unlock</button>
     <div class="err" id="err">Zugangsdaten ungültig. / Invalid credentials.</div>
-    <div class="foot">Vertraulich · Reutter-Group (REUTIB) — interner ISMS-/Audit-Gebrauch<br>
-    AES-256-GCM · PBKDF2-SHA-256 · keine Übertragung der Zugangsdaten</div>
+    <div class="foot">AES-256-GCM · PBKDF2-SHA-256 · keine Übertragung der Zugangsdaten</div>
   </form>
 </div>
 
