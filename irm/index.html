@@ -170,6 +170,13 @@ th.tip{position:sticky;cursor:help}
 .kcard:hover{border-color:var(--anthrazit)}
 .kcard.p1edge{border-left:4px solid var(--crit)}
 .kcard.p2edge{border-left:4px solid var(--warn)}
+.fmt tr.tg1 td{background:var(--hellgrau)}
+.fmt tr.tg0 td{background:var(--bg)}
+.fmt tr.click:hover td{filter:brightness(0.94)}
+.rcard{border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:120px;background:var(--bg)}
+.rcard:hover{background:var(--hellgrau)}
+.rcard.on{border:2px solid var(--gelb);background:var(--soft);padding:6px 11px}
+.rcard b{font-size:12.5px;color:var(--anthrazit)}
 .tlwrap{display:flex;align-items:flex-end;gap:0;overflow-x:auto;padding:4px 0}
 .tlzone{display:flex;flex-direction:column;flex:none}
 .tlbars{display:flex;align-items:flex-end;gap:3px}
@@ -2304,6 +2311,15 @@ function toggleNeben(d, on){
 }
 
 /* ---------- Fristenmonitor ---------- */
+let FM={rolle:"",amp:"",sort:"due"};
+function fmRolle(i){ const k=(FM._resp||[])[i]; if(k===undefined) return; FM.rolle=FM.rolle===k?"":k; render(); }
+function exportFristenCsv(){
+  const rows=FM._rows||[]; const de=S.lang!=="en";
+  const cols=de?["Ticket","Betreff","Stufe","Frist/Aufgabe","Typ","Zuständig","Fällig","Status"]:["Ticket","Subject","Level","Deadline/Task","Type","Responsible","Due","Status"];
+  const data=rows.map(r=>[r.t.id,r.t.betreff,r.st||"",r.name,r.typ,r.rolle,fmt(r.due),r.due<now()?(de?"überfällig":"overdue"):(de?"offen":"open")]);
+  const csv=[cols,...data].map(rr=>rr.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(";")).join("\r\n");
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv"})); a.download="REUTIB_IRM_Fristen.csv"; a.click();
+}
 function viewFristen(){
   const de = S.lang!=="en";
   const rows=[];
@@ -2311,28 +2327,73 @@ function viewFristen(){
     const st=effStufe(t);
     if(t.erstreaktion===null && st && !["Resolved","Closed"].includes(t.status)){
       const due=t.kenntnis+SLA_H[st]*3600000+waitExtra(t);
-      rows.push({t, name:tr("Erstreaktion")+" ("+st+", "+SLA_H[st]+" h)", rolle:t.owner||"Triage", due, typ:"SLA"});
+      rows.push({t, st, name:tr("Erstreaktion")+" ("+st+", "+SLA_H[st]+" h)", rolle:t.owner||"Triage", due, typ:"SLA"});
     }
-    for(const x of t.tasks) if(!x.done && t.status!=="Closed") rows.push({t, name:taskLabel(x.name), rolle:tr(x.rolle), due:x.due, typ:x.origin.startsWith("nb")||x.origin.startsWith("neben")?tr("Aufgabe"):tr("Meldepflicht")});
+    for(const x of t.tasks) if(!x.done && t.status!=="Closed") rows.push({t, st, name:taskLabel(x.name), rolle:tr(x.rolle), due:x.due, typ:x.origin.startsWith("nb")||x.origin.startsWith("neben")?tr("Aufgabe"):tr("Meldepflicht")});
   }
-  rows.sort((a,b)=>a.due-b.due);
   const od=rows.filter(r=>r.due<now());
+  const soon=rows.filter(r=>r.due>=now()&&r.due<now()+24*3600000);
+  /* Zuständigkeits-Übersicht */
+  const respMap={};
+  for(const r of rows){ const k=r.rolle||"—"; respMap[k]=respMap[k]||{n:0,od:0}; respMap[k].n++; if(r.due<now())respMap[k].od++; }
+  const resp=Object.entries(respMap).sort((a,b)=>b[1].n-a[1].n);
+  FM._resp=resp.map(([k])=>k);
+  /* Filter */
+  const passes=r=>{
+    if(FM.rolle && r.rolle!==FM.rolle) return false;
+    if(FM.amp==="od" && r.due>=now()) return false;
+    if(FM.amp==="crit"){ const tot=r.due-(r.t.kenntnis||r.due), gone=now()-(r.t.kenntnis||now()); const qq=tot>0?gone/tot:1; if(!(r.due<now()||qq>0.75)) return false; }
+    return true;
+  };
+  const frows=rows.filter(passes);
+  FM._rows=frows;
+  /* Ticket-Gruppen: alle Fristen eines Tickets zusammen, Gruppen abwechselnd hinterlegt */
+  const gm={};
+  for(const r of frows){ (gm[r.t.id]=gm[r.t.id]||{t:r.t, st:r.st, rows:[]}).rows.push(r); }
+  const groups=Object.values(gm);
+  for(const g of groups){ g.rows.sort((a,b)=>a.due-b.due); g.min=g.rows[0].due; }
+  if(FM.sort==="krit") groups.sort((a,b)=>((ORD[b.st]||0)-(ORD[a.st]||0))||(a.min-b.min));
+  else if(FM.sort==="id") groups.sort((a,b)=>a.t.id<b.t.id?-1:1);
+  else groups.sort((a,b)=>a.min-b.min);
+  const ampOf=r=>{ const tot=r.due-(r.t.kenntnis||r.due), gone=now()-(r.t.kenntnis||now()); const qq=tot>0?gone/tot:1; return r.due<now()?"r":qq>0.75?"o":qq>0.5?"y":"g"; };
+  const sortBtn=(k,l)=>`<button class="${FM.sort===k?"acc":"sec"} mini" onclick="FM.sort='${k}';render()">${l}${FM.sort===k?" ↓":""}</button>`;
   return `<h1>${tr("Fristenmonitor")}</h1>
   <p class="muted">${de
-   ?"Alle offenen Melde- und SLA-Fristen mit Restlaufzeit (Ampel: &gt;50 % grün · 50–75 % gelb · &gt;75 % orange · überschritten rot). Eskalationskette gem. GDL Kap. 9.2/11: 50 % → Incident Owner, 75 % → zusätzlich ISB, Überschreitung → zusätzlich Geschäftsleitung."
-   :"All open notification and SLA deadlines with time remaining (traffic light: &gt;50 % green · 50–75 % yellow · &gt;75 % orange · breached red). Escalation chain per GDL ch. 9.2/11: 50 % → incident owner, 75 % → additionally ISB, breach → additionally executive management."}</p>
-  <div class="kpis"><div class="kpi"><div class="v">${rows.length}</div><div class="l">${tr("offene Fristen")}</div></div>
-  <div class="kpi"><div class="v" style="color:${od.length?"var(--crit)":"inherit"}">${od.length}</div><div class="l">${tr("überfällig (Fristverletzung → Monatsbericht)")}</div></div></div>
-  ${rows.length?`<table><thead><tr><th></th><th>${tr("Ticket")}</th><th>${tr("Frist / Aufgabe")}</th><th>${tr("Typ")}</th><th>${tr("Zuständig")}</th><th>${tr("Fällig")}</th><th>${tr("Restlaufzeit")}</th></tr></thead><tbody>
-  ${rows.map(r=>{
-    const total = r.due-(r.t.kenntnis||r.due); const gone = now()-(r.t.kenntnis||now());
-    const q = total>0? gone/total : 1;
-    const amp = r.due<now()?"r":q>0.75?"o":q>0.5?"y":"g";
-    return `<tr class="click" onclick="openT('${r.t.id}')"><td><span class="amp ${amp}"></span></td>
-    <td><b>${r.t.id}</b> <span class="small muted">${esc(r.t.betreff.slice(0,40))}</span></td>
-    <td>${esc(r.name)}</td><td class="small">${r.typ}</td><td class="small">${esc(r.rolle)}</td>
-    <td class="small">${fmt(r.due)}</td><td>${r.due<now()?`<b style="color:var(--crit)">${fmtRest(r.due-now())}</b>`:fmtRest(r.due-now())}</td></tr>`;
-  }).join("")}</tbody></table>`:`<div class="note">${tr("Keine offenen Fristen im sichtbaren Bereich.")}</div>`}`;
+   ?"Alle offenen Melde- und SLA-Fristen, gruppiert je Ticket (abwechselnd hinterlegt), mit laufender Restlaufzeit (Ampel: &gt;50 % grün · 50–75 % gelb · &gt;75 % orange · überschritten rot). Eskalationskette gem. GDL Kap. 9.2/11: 50 % → Incident Owner, 75 % → zusätzlich ISB, Überschreitung → zusätzlich Geschäftsleitung."
+   :"All open notification and SLA deadlines, grouped per ticket (alternating background), with live time remaining (traffic light: &gt;50 % green · 50–75 % yellow · &gt;75 % orange · breached red). Escalation chain per GDL ch. 9.2/11: 50 % → incident owner, 75 % → additionally ISB, breach → additionally executive management."}</p>
+  <div class="kpis">
+   <div class="kpi"><div class="v">${rows.length}</div><div class="l">${tr("offene Fristen")}</div></div>
+   <div class="kpi"><div class="v" style="color:${od.length?"var(--crit)":"inherit"}">${od.length}</div><div class="l">${tr("überfällig (Fristverletzung → Monatsbericht)")}</div></div>
+   <div class="kpi"><div class="v" style="color:${soon.length?"var(--warn)":"inherit"}">${soon.length}</div><div class="l">${de?"fällig in < 24 h":"due in < 24 h"}</div></div>
+   <div class="kpi"><div class="v">${groups.filter(g=>["P1","P2"].includes(g.st)).length}</div><div class="l">${de?"P1/P2-Tickets mit offenen Fristen (im Filter)":"P1/P2 tickets with open deadlines (in filter)"}</div></div>
+  </div>
+  <h2 style="margin-top:14px">${de?"Zuständigkeiten":"Responsibilities"} <span class="small muted">– ${de?"wer hat wie viele Fristen offen · Klick filtert die Liste":"open deadlines per responsibility · click filters the list"}</span></h2>
+  <div class="flex noprint" style="margin:6px 0 12px;align-items:stretch">
+   <div class="rcard ${FM.rolle===""?"on":""}" onclick="FM.rolle='';render()"><b>${de?"Alle":"All"}</b><span class="small">${rows.length} ${de?"Fristen":"deadlines"}</span></div>
+   ${resp.map(([k,v],i)=>`<div class="rcard ${FM.rolle===k?"on":""}" onclick="fmRolle(${i})"><b>${esc(k)}</b><span class="small">${v.n} ${de?"offen":"open"}${v.od?` · <b style="color:var(--crit)">${v.od} ${tr("überfällig")}</b>`:""}</span></div>`).join("")}
+  </div>
+  <div class="flex noprint" style="margin:0 0 8px">
+   <b class="small" style="color:var(--anthrazit)">${de?"Sortierung":"Sort"}:</b>
+   ${sortBtn("due",de?"Fälligkeit":"Due date")}${sortBtn("krit",de?"Kritikalität":"Criticality")}${sortBtn("id",de?"Ticketnummer":"Ticket no.")}
+   <span style="width:12px"></span>
+   <b class="small" style="color:var(--anthrazit)">${de?"Anzeige":"Show"}:</b>
+   <button class="${FM.amp===""?"acc":"sec"} mini" onclick="FM.amp='';render()">${de?"alle":"all"}</button>
+   <button class="${FM.amp==="crit"?"acc":"sec"} mini" onclick="FM.amp='crit';render()">≥ 75 %</button>
+   <button class="${FM.amp==="od"?"acc":"sec"} mini" onclick="FM.amp='od';render()">${tr("überfällig")}</button>
+   <div class="spacer"></div>
+   <button class="sec mini" onclick="exportFristenCsv()">CSV-Export</button>
+  </div>
+  ${groups.length?`<table class="fmt"><thead><tr><th></th><th>${tr("Ticket")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Frist / Aufgabe")}</th><th>${tr("Typ")}</th><th>${tr("Zuständig")}</th><th>${tr("Fällig")}</th><th>${tr("Restlaufzeit")}</th></tr></thead><tbody>
+  ${groups.map((g,gi)=>g.rows.map((r,ri)=>{
+    const amp=ampOf(r); const rest=r.due-now();
+    return `<tr class="click tg${gi%2}" onclick="openT('${g.t.id}')">
+     <td><span class="amp ${amp}"></span></td>
+     <td>${ri===0?`<b>${g.t.id}</b><div class="small muted">${esc(g.t.betreff.slice(0,38))}${g.rows.length>1?` · ${g.rows.length} ${de?"Fristen":"deadlines"}`:""}</div>`:`<span class="muted" style="padding-left:6px">↳</span>`}</td>
+     <td>${ri===0?(g.st?`<span class="badge ${g.st.toLowerCase()}" title="${esc(pLabel(g.st))}">${g.st}</span>`:"–"):""}</td>
+     <td>${esc(r.name)}</td><td class="small">${r.typ}</td><td class="small">${esc(r.rolle)}</td>
+     <td class="small">${fmt(r.due)}</td>
+     <td><span class="cd${rest<0?" od":""}" data-due="${r.due}">${fmtCd(rest)}</span></td></tr>`;
+  }).join("")).join("")}</tbody></table>`:`<div class="note">${tr("Keine offenen Fristen im sichtbaren Bereich.")}${FM.rolle||FM.amp?` <button class="sec mini" onclick="FM.rolle='';FM.amp='';render()">${de?"Filter zurücksetzen":"Reset filters"}</button>`:""}</div>`}`;
 }
 
 /* ---------- Berichte (GDL Kap. 12) ---------- */
@@ -2697,6 +2758,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> the quick action opens a selection menu of all domains with hover expertise (who can do what); domains typically also affected per the threat catalogue (POL Annex C) are pre-selected with ⭐. Selected experts become secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
    <p><b>New KPIs:</b> MTTA (time to first response), MTTR (time to resolution), first-contact-resolution rate, CSAT (reporter satisfaction, optional in closure) and the self-help rate.</p>
    <p><b>Timeline overview (reports):</b> the report area contains a multi-year summary — rolling last 5 years, last 2 years and last 12 months with totals, P1–P4, near-miss share and resolution rate — plus the monthly distribution of the current year with the P1/P2 share highlighted in red. In addition, the <b>dynamic timeline</b> shows ten years at a glance with resolution increasing towards today: macro range (10–5 years) year epochs with P1 milestones (🚩) only, meso range (5–1 year) condensed to half-years, micro range (last 12 months) resolved into months — each column with hover details. The time anchor is the time of awareness.</p>
+   <p><b>Deadline monitor (extended):</b> deadlines are grouped per ticket with alternating background, the time remaining ticks live. Responsibility tiles show who has how many deadlines open (and overdue) — a click filters the list to that responsibility. Sorting by due date, criticality (P1 first) or ticket number; quick filters “all / ≥ 75 % / overdue”; KPIs extended by “due in &lt; 24 h” and affected P1/P2 tickets; CSV export of the filtered list.</p>
    <p><b>Ticket numbers (annual scheme):</b> as of V1.50 ticket numbers read IRM-YYYY-NNNN; the running number restarts at 0001 on 1 January of every year (example: first report in 2027 = IRM-2027-0001). Existing tickets were migrated automatically — per year in order of creation; the renaming is documented in each ticket's activity log, and parent-ticket references were carried over.</p>
    <p><b>Monitoring interface:</b> the IRM server accepts automatically generated reports from monitoring systems via <code>POST /api/inbound</code> (subject, description, site, objects); such tickets start in “Open” with source “Monitoring/API”.</p>
   </div></details>
@@ -2875,6 +2937,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> Die Schnellaktion öffnet ein Auswahlmenü aller Domänen mit Mouseover-Expertise (wer kann was); regelmäßig mitbetroffene Domänen aus dem Gefährdungskatalog (POL Anhang C) sind mit ⭐ vorausgewählt. Ausgewählte Experten werden Nebendomäne mit Mitwirkungsaufgabe und Beobachterstatus (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
    <p><b>Neue Kennzahlen:</b> MTTA (Zeit bis Erstreaktion), MTTR (Zeit bis Lösung), First-Contact-Resolution-Quote, CSAT (Melder-Zufriedenheit, optional im Abschluss) sowie die Selbsthilfe-Quote.</p>
    <p><b>Zeitliche Übersicht (Berichte):</b> Der Berichtsbereich enthält eine Mehrjahresübersicht — rollierend die letzten 5 Jahre, letzten 2 Jahre und letzten 12 Monate mit Gesamtzahl, P1–P4, Near-Miss-Anteil und Lösungsquote — sowie die Monatsverteilung des laufenden Jahres mit rot hervorgehobenem P1/P2-Anteil. Ergänzend zeigt der <b>dynamische Zeitstrahl</b> zehn Jahre auf einen Blick, mit zur Gegenwart hin zunehmender Auflösung: Makrobereich (10–5 Jahre) nur Jahres-Epochen mit P1-Meilensteinen (🚩), Mesobereich (5–1 Jahr) verdichtet zu Halbjahren, Mikrobereich (letzte 12 Monate) aufgelöst in Monate — jede Säule mit Mouseover-Details. Zeitanker ist die Kenntniserlangung.</p>
+   <p><b>Fristenmonitor (ausgebaut):</b> Die Fristen sind je Ticket gruppiert und abwechselnd hinterlegt, die Restlaufzeit tickt live. Zuständigkeits-Kacheln zeigen, wer wie viele Fristen offen (und überfällig) hat — ein Klick filtert die Liste auf diese Zuständigkeit. Sortierung nach Fälligkeit, Kritikalität (P1 zuerst) oder Ticketnummer; Schnellfilter „alle / ≥ 75 % / überfällig“; Kennzahlen ergänzt um „fällig in &lt; 24 h“ und betroffene P1/P2-Tickets; CSV-Export der gefilterten Liste.</p>
    <p><b>Ticketnummern (Jahresschema):</b> Seit V1.50 lauten die Ticketnummern IRM-JJJJ-NNNN; die laufende Nummer beginnt am 1. Januar jedes Jahres neu bei 0001 (Beispiel: erste Meldung 2027 = IRM-2027-0001). Bestehende Tickets wurden automatisch auf das Schema migriert — je Jahr in der Reihenfolge ihrer Erstellung; die Umbenennung ist im Aktivitätsprotokoll jedes Tickets dokumentiert, Verweise auf Sammeltickets wurden mitgezogen.</p>
    <p><b>Monitoring-Schnittstelle:</b> Der IRM-Server nimmt über <code>POST /api/inbound</code> automatisch erzeugte Meldungen aus Monitoring-Systemen an (Betreff, Beschreibung, Standort, Objekte); solche Tickets starten in „Open“ mit Quelle „Monitoring/API“.</p>
   </div></details>
