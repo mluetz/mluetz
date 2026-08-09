@@ -2737,6 +2737,21 @@ function viewGuidance(){
     <li><b>Near misses</b> are reportable, get their own portal entry, usually P4 — they are a valued KPI of the reporting culture, not noise.</li>
     <li><b>Triage support:</b> when a threat is selected the tool suggests the primary domain and the typically affected domains per Annex C of the policy; apply with one click — a deviating assignment remains permissible and must be justified.</li>
    </ul>
+   <h3>The threat reference — what it refers to</h3>
+   <p>In triage every incident receives exactly <b>one leading threat</b> from one of the three catalogues. It answers the question “<i>what actually happened here?</i>” independently of severity and responsibility — and is the basis for the primary-domain recommendation, the threat trend in the reports (clusters feed the contingency-plan review) and the recognition of similar cases. Without a determined threat (“not yet determined”) leaving the analysis phase and closing the ticket are blocked.</p>
+   <table><thead><tr><th>Catalogue</th><th>Reference / source</th><th>Scope</th></tr></thead><tbody>
+    <tr><td><b>BSI G 0.1–G 0.47</b></td><td>Elementary threats of the BSI IT-Grundschutz compendium</td><td>Incidents with <b>information-security relevance</b> — threats to confidentiality, integrity or availability of information and IT/OT systems (including physical causes such as fire/water where information assets are affected)</td></tr>
+    <tr><td><b>REUTIB G-R 1.01–1.12</b></td><td>POL_010.001 V3.00 Annex C (binding)</td><td>REUTIB-specific additions across all domains (occupational accident, recall event, supplier failure, media event …)</td></tr>
+    <tr><td><b>REUTIB G-D (per domain C–J)</b></td><td>Curated from subject-matter references: GDA/BAuA hazard factors (E), natural-event/facility categories (D), IATF/VDA defect types (H), supply-chain/BCM risks (G), ISO 37301 compliance taxonomy (J) et al.</td><td>Incidents <b>without</b> information-security relevance, structured by lead domain. <b>Status:</b> marked tool proposal for revising POL_010.001 Annex C — binding only once released</td></tr>
+   </tbody></table>
+   <h3>How the threat reference is applied in triage</h3>
+   <ul>
+    <li><b>Step 1 — check IS relevance:</b> the “IS relevance” field above the selection decides which catalogue is recommended. The automatic setting is “yes” when the lead domain is A or B, the damage dimension S3 (information and data) is assessed, or the NIS-2 check found system involvement “yes” — it can be overridden manually and the override is logged.</li>
+    <li><b>Step 2 — choose catalogue and entry:</b> the selection list shows the matching group first: with IS relevance the BSI catalogue, otherwise the G-D domain catalogue of the lead domain (“recommended”). All other groups (G-R, other G-D domains, BSI) remain selectable below — mixed cases are permissible.</li>
+    <li><b>Step 3 — check the recommendation:</b> after selection the tool shows the primary-domain recommendation: if the lead domain matches, a green check appears; otherwise the apply suggestion including typically affected domains (adoptable as secondary domains with one click). Deviating assignments are permissible and must be justified.</li>
+    <li><b>Step 4 — heed the review hint:</b> an off-catalogue choice (BSI without IS relevance, or G-D despite IS relevance) produces a yellow hint — deliberately <b>non-blocking</b>, because mixed cases (e.g. a cyber attack with personal injury) are real. When in doubt: pick the leading threat by the incident’s centre of gravity and cover further aspects via secondary domains and the “further threats” field.</li>
+    <li><b>Effect:</b> the chosen entry appears in the threat trend of the reports with its catalogue tag (BSI/G-R/G-D); “not yet determined” blocks leaving the analysis phase and closure.</li>
+   </ul>
   </div></details>
 
   <details><summary>4 · NIS-2 relevance assessment (ticket section 2a · STD_010.002)</summary><div class="dbody">
@@ -2916,6 +2931,21 @@ function viewGuidance(){
     <li>Gleichartige Incidents derselben Ursache innerhalb von 30 Tagen werden verknüpft und gemeinsam bewertet.</li>
     <li><b>Near Misses</b> sind meldepflichtig, haben einen eigenen Portaleinstieg, i. d. R. P4 — sie sind eine erwünschte Kennzahl der Meldekultur, kein Störfaktor.</li>
     <li><b>Triage-Unterstützung:</b> Bei Auswahl einer Gefährdung schlägt das Tool die Primärdomäne und die regelmäßig ebenfalls betroffenen Domänen nach Anhang C der Richtlinie vor; die Übernahme erfolgt per Klick, eine abweichende Zuordnung bleibt zulässig und ist zu begründen.</li>
+   </ul>
+   <h3>Der Gefährdungsbezug — worauf er referenziert</h3>
+   <p>Jeder Vorfall erhält in der Triage genau <b>eine führende Gefährdung</b> aus einem der drei hinterlegten Kataloge. Sie beantwortet die Frage „<i>Was ist hier eigentlich passiert?</i>“ unabhängig von Schwere und Zuständigkeit — und ist Grundlage für die Primärdomänen-Empfehlung, den Gefährdungstrend in den Berichten (Häufungen fließen in die Notfallplanprüfung) und die Wiedererkennung gleichartiger Fälle. Ohne bestimmte Gefährdung („noch nicht bestimmt“) sind der Austritt aus der Analyse und der Abschluss blockiert.</p>
+   <table><thead><tr><th>Katalog</th><th>Referenz / Quelle</th><th>Anwendungsbereich</th></tr></thead><tbody>
+    <tr><td><b>BSI G 0.1–G 0.47</b></td><td>Elementare Gefährdungen des BSI IT-Grundschutz-Kompendiums</td><td>Vorfälle mit <b>Informationssicherheitsbezug</b> — Gefährdungen der Vertraulichkeit, Integrität oder Verfügbarkeit von Informationen und IT-/OT-Systemen (auch physische Ursachen wie Feuer/Wasser, sofern Informationswerte betroffen sind)</td></tr>
+    <tr><td><b>REUTIB G-R 1.01–1.12</b></td><td>POL_010.001 V3.00 Anhang C (verbindlich)</td><td>REUTIB-spezifische Ergänzungen über alle Domänen (Arbeitsunfall, Rückrufereignis, Lieferantenausfall, Medienereignis …)</td></tr>
+    <tr><td><b>REUTIB G-D (je Domäne C–J)</b></td><td>Kuratiert aus Fachreferenzen: GDA/BAuA-Gefährdungsfaktoren (E), Elementar-/Facility-Kategorien (D), IATF/VDA-Fehlerarten (H), Supply-Chain-/BCM-Risiken (G), Compliance-Taxonomie nach ISO 37301 (J) u. a.</td><td>Vorfälle <b>ohne</b> Informationssicherheitsbezug, gegliedert nach Leitdomäne. <b>Status:</b> gekennzeichneter Tool-Vorschlag zur Revision von POL_010.001 Anhang C — verbindlich erst mit deren Freigabe</td></tr>
+   </tbody></table>
+   <h3>So wird der Gefährdungsbezug in der Triage angewendet</h3>
+   <ul>
+    <li><b>Schritt 1 — IS-Bezug prüfen:</b> Das Feld „IS-Bezug“ über der Auswahl entscheidet, welcher Katalog empfohlen wird. Die Automatik setzt „ja“, wenn die Leitdomäne A oder B ist, die Schadensdimension S3 (Information und Daten) bewertet wurde oder die NIS-2-Prüfung Systembezug „ja“ ergab — sie ist manuell übersteuerbar und die Übersteuerung wird protokolliert.</li>
+    <li><b>Schritt 2 — Katalog und Eintrag wählen:</b> Die Auswahlliste zeigt die passende Gruppe zuerst: bei IS-Bezug den BSI-Katalog, sonst den Domänenkatalog G-D der Leitdomäne („empfohlen“). Alle übrigen Gruppen (G-R, andere G-D-Domänen, BSI) bleiben darunter wählbar — Mischfälle sind zulässig.</li>
+    <li><b>Schritt 3 — Empfehlung prüfen:</b> Nach der Auswahl zeigt das Tool die Primärdomänen-Empfehlung: Passt die Leitdomäne, erscheint ein grüner Haken; sonst der Übernahme-Vorschlag samt regelmäßig mitbetroffener Domänen (per Klick als Nebendomänen übernehmbar). Abweichende Zuordnungen sind zulässig und zu begründen.</li>
+    <li><b>Schritt 4 — Prüfhinweis beachten:</b> Eine katalogfremde Wahl (BSI ohne IS-Bezug oder G-D trotz IS-Bezug) erzeugt einen gelben Hinweis — bewusst <b>nicht blockierend</b>, denn Mischfälle (z. B. Cyberangriff mit Personenschaden) sind real. Im Zweifel gilt: führende Gefährdung nach dem Schwerpunkt des Vorfalls wählen, weitere Aspekte über Nebendomänen und das Feld „weitere Gefährdungen“ abbilden.</li>
+    <li><b>Wirkung:</b> Der gewählte Eintrag erscheint im Gefährdungstrend der Berichte mit Katalog-Kennzeichnung (BSI/G-R/G-D); „noch nicht bestimmt“ blockiert den Wechsel aus der Analyse und den Abschluss.</li>
    </ul>
   </div></details>
 
