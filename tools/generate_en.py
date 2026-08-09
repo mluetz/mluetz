@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = ROOT / "tools" / "template.html"
 SRC_JSON = ROOT / "data" / "findings.json"
 OVERLAY = ROOT / "data" / "translations_en.json"
-OUT_HTML = ROOT / "index-en.html"
+OUT_HTML = ROOT / "app" / "register-en.html"
 OUT_JSON = ROOT / "data" / "findings_en.json"
 
 PRIO = {"Kritisch": "Critical", "Hoch": "High", "Mittel": "Medium", "Niedrig": "Low"}
@@ -45,8 +45,8 @@ UI = [
      'REUTIB — TISAX AL3 Finding Register</h1>'),
     ('<p class="sub">Interaktive Datenbank der Stage-Review-Findings mit Cross-Referenzen zu den Controls des\n        VDA-ISA-Prüfkatalogs. Filterbar nach Domäne (u.&nbsp;a. <b>OT</b>), Modul, Priorität, Standort und Status.</p>',
      '<p class="sub">Interactive database of the stage-review findings with cross-references to the controls of the\n        VDA ISA assessment catalogue. Filterable by domain (incl. <b>OT</b>), module, priority, site and status.</p>'),
-    ('<a class="theme-btn" id="langLink" href="index-en.html" title="Switch to English" style="text-decoration:none">EN</a>',
-     '<a class="theme-btn" id="langLink" href="index.html" title="Zur deutschen Version" style="text-decoration:none">DE</a>'),
+    ('<a class="theme-btn" id="langLink" href="register-en.html" title="Switch to English" style="text-decoration:none">EN</a>',
+     '<a class="theme-btn" id="langLink" href="register-de.html" title="Zur deutschen Version" style="text-decoration:none">DE</a>'),
     ('aria-label="Theme wechseln"', 'aria-label="Toggle theme"'),
     ('Prüfkatalog <b>VDA ISA 6.0.3</b>', 'Catalogue <b>VDA ISA 6.0.3</b>'),
     ('Auditor <b>CIS GmbH, Wien</b>', 'Auditor <b>CIS GmbH, Vienna</b>'),
