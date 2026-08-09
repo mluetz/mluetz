@@ -134,8 +134,27 @@ th.tip{position:sticky;cursor:help}
 .langbtn.on{background:var(--gelb);color:#000;border-color:var(--gelb)}
 .logo{height:52px;display:block;background:#fff;border-radius:6px;padding:3px 8px;border:1px solid var(--line);margin-left:auto}
 @media(max-width:1480px){.logo{height:42px}}
-@media print{header,nav,.noprint{display:none}}
-body.locked>header,body.locked>nav,body.locked>main,body.locked>footer{display:none!important}
+#alertbar{background:var(--crit);color:#fff;padding:8px 18px;font-size:13.5px;font-weight:700}
+#alertbar .abtick{cursor:pointer;text-decoration:underline;margin-right:12px;font-weight:400;color:#fff}
+#alertbar .abtick:hover{opacity:.8}
+.detgrid{display:grid;grid-template-columns:262px minmax(0,1fr) 296px;gap:0 16px;align-items:start}
+.detside{position:sticky;top:70px}
+.detright{position:sticky;top:70px;max-height:calc(100vh - 84px);overflow:auto}
+@media(max-width:1250px){.detgrid{display:block}.detside,.detright{position:static;max-height:none}}
+.sidecard{padding:12px 14px;margin:14px 0}
+.sidecard .srow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.sidecard .srow b{color:var(--anthrazit);flex:none}
+.sidecard .srow span{text-align:right;overflow-wrap:anywhere}
+.sidecard hr{border:none;border-top:1px solid var(--line);margin:8px 0}
+.cdbox{font-size:21px;font-weight:700}
+.cd.od{color:var(--crit);font-weight:700}
+.pbstep.done>span{opacity:.6;text-decoration:line-through}
+.pbbar{height:8px;background:var(--bg);border:1px solid var(--line);border-radius:4px;overflow:hidden;flex:1;max-width:200px}
+.pbbar>div{height:100%;background:var(--ok)}
+.log .lg-int{border-left:3px solid var(--grau);padding-left:6px}
+.log .lg-ext{border-left:3px solid var(--gelb);padding-left:6px}
+@media print{header,nav,.noprint{display:none}.detgrid{display:block}.detside,.detright{position:static;max-height:none}}
+body.locked>header,body.locked>nav,body.locked>main,body.locked>footer,body.locked>#alertbar{display:none!important}
 #loginPage{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
  background:linear-gradient(115deg,#141d28 0%,#1c2a3a 40%,#25384c 70%,#1a2634 100%);overflow:hidden}
 #loginPage .bgfx{position:absolute;inset:0;pointer-events:none}
@@ -253,6 +272,7 @@ body.locked>header,body.locked>nav,body.locked>main,body.locked>footer{display:n
   <img class="logo" alt="REUTTER GROUP · ITIB – Going further. Together." src="data:image/png;base64,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">
 </header>
 <nav id="nav" class="noprint"></nav>
+<div id="alertbar" class="noprint" style="display:none"></div>
 <main id="main"></main>
 <footer id="foot"></footer>
 
@@ -819,7 +839,7 @@ function save(t){
 }
 
 /* ---------- Serveranbindung: zentrale Datenbank, Mehrbenutzerbetrieb (V1.10) ---------- */
-const APP_VERSION="1.20";
+const APP_VERSION="1.30";
 let API=null, REV=0, NET=null, SRVINFO=null;
 function authTok(){ return S.token||""; }
 async function api(p, opts={}, retried){
@@ -916,6 +936,99 @@ function computed(t){
 function effStufe(t){ return t.herabStufe && t.herab==="genehmigt" ? t.herabStufe : computed(t).stufe; }
 function effEsk(t){ return computed(t).esk; }
 const SLA_H = {P1:1,P2:4,P3:8,P4:24};
+
+/* ---------- V1.30: Playbooks (PICERL-Phasen, leitdomänenspezifisch) ---------- */
+const PB_PH=["Identifikation","Eindämmung","Beseitigung","Wiederherstellung","Nachbereitung"];
+const PB_PH_EN=["Identification","Containment","Eradication","Recovery","Lessons learned"];
+const PBMAP={A:"A",B:"B",G:"G",H:"H",C:"CD",D:"CD",E:"E"};
+const PB={
+ A:[[0,"Betroffene Systeme, Konten und Datenarten identifizieren; Asset-/CMDB-Abgleich dokumentieren","Identify affected systems, accounts and data types; document the asset/CMDB check"],
+    [0,"Beweise sichern, bevor verändert wird: Logs, Images, verdächtige Mails (Beweiskette dokumentieren)","Preserve evidence before changing anything: logs, images, suspicious mails (document the chain)"],
+    [1,"Betroffene Systeme isolieren, Konten sperren, Passwörter und Token zurücksetzen","Isolate affected systems, lock accounts, reset passwords and tokens"],
+    [1,"Ausbreitung prüfen: OT-Netz, EDI-Strecken, ERP → betroffene Domänen als Nebendomäne setzen","Check spread: OT network, EDI links, ERP → add affected domains as secondary domains"],
+    [2,"Schadcode entfernen bzw. Systeme neu aufsetzen; ausgenutzte Schwachstelle schließen","Remove malware or rebuild systems; close the exploited vulnerability"],
+    [3,"Wiederanlauf nur aus geprüften, sauberen Backups; erhöhtes Monitoring aktivieren","Restore only from verified clean backups; enable enhanced monitoring"],
+    [4,"Lessons Learned, Risikoregister und Meldepflicht-Nachweise abschließen","Complete lessons learned, risk register and reporting evidence"]],
+ B:[[0,"Personensicherheit an der Anlage herstellen (Not-Halt/LOTO); Maschinen-ID, Linie und Werk erfassen","Make people safe at the machine (e-stop/LOTO); record machine ID, line and plant"],
+    [0,"Lieferwirkung bewerten: droht Bandstillstand beim OEM? → S2 prüfen (P1-Kriterium)","Assess delivery impact: OEM line stoppage imminent? → check S2 (P1 criterion)"],
+    [1,"Betroffenes OT-Segment vom IT-Netz trennen; Fernwartungszugänge deaktivieren","Disconnect the affected OT segment from IT; disable remote-maintenance access"],
+    [1,"Produktions-/Schichtleitung und Instandhaltung einbinden; Ausweichfahrweise und Handbetrieb prüfen","Involve production/shift management and maintenance; check fallback and manual operation"],
+    [2,"SPS-/Leitrechner-Stände gegen Soll prüfen (Backup-Vergleich, Checksummen); Ursache beheben","Verify PLC/line-server programs against target (backup diff, checksums); fix the cause"],
+    [3,"Wiederanlauf mit QS-Freigabe und Erstteilprüfung; Produktions-/MES-Daten nachpflegen","Restart with QA release and first-article inspection; catch up production/MES data"],
+    [4,"OT-Härtung ableiten (Segmentierung, IEC 62443); bei Kundenbezug 8D anstoßen","Derive OT hardening (segmentation, IEC 62443); trigger 8D if customer-related"]],
+ G:[[0,"Betroffene EDI-Strecken, Abrufe und Lieferanten identifizieren; Bestandsreichweite je Kunde ermitteln","Identify affected EDI links, call-offs and suppliers; determine stock coverage per customer"],
+    [1,"Notfallkommunikation mit der OEM-Disposition aufnehmen (Telefon/Kundenportal statt EDI)","Start emergency communication with the OEM scheduling desk (phone/customer portal instead of EDI)"],
+    [1,"Sonderfahrten und Sonderschichten bewerten und freigeben; Mehrkosten dokumentieren","Assess and approve special freight and extra shifts; document extra cost"],
+    [2,"Alternativlieferant, Ausweichroute oder Sicherheitsbestand aktivieren; Einkauf eskalieren","Activate alternative supplier, route or safety stock; escalate to purchasing"],
+    [3,"EDI-Wiederanlauf mit Testnachrichten verifizieren; Abrufe und Lieferscheine abgleichen","Verify EDI restart with test messages; reconcile call-offs and delivery notes"],
+    [4,"Lieferantenbewertung und Verträge nachziehen; Lessons Learned dokumentieren","Update supplier rating and contracts; document lessons learned"]],
+ H:[[0,"Betroffene Teile/Chargen über Rückverfolgbarkeit eingrenzen (Los-, Serien-, Software-Stände)","Narrow down affected parts/batches via traceability (lot, serial, software versions)"],
+    [0,"Bei Steuergerät-/Software-Bezug: Schwachstelle nach ISO/SAE 21434 bewerten (TARA/CVSS), Product Security einbinden","For ECU/software relevance: assess per ISO/SAE 21434 (TARA/CVSS), involve product security"],
+    [1,"Bestände sperren (Werk, Transit, Kunde); Sortier-/Eindämmungsmaßnahmen mit dem Kunden abstimmen","Block stock (plant, transit, customer); agree sorting/containment with the customer"],
+    [1,"8D-Report initiieren und führenden CAQ-Vorgang verknüpfen (Abschnitt 5a / Fachvorgang)","Initiate the 8D report and link the leading CAQ record (section 5a / business record)"],
+    [2,"Fehlerursache in Prozess oder Design abstellen; Wirksamkeit nachweisen","Eliminate the root cause in process or design; prove effectiveness"],
+    [3,"Lieferfreigabe nach Requalifikation; Kundeninformation mit GL-Freigabe","Delivery release after requalification; customer information with management approval"],
+    [4,"FMEA/Control Plan aktualisieren; Übertrag auf ähnliche Produkte (8D-D7)","Update FMEA/control plan; carry over to similar products (8D D7)"]],
+ CD:[[0,"Gefahrenbereich sichern und räumen; Einsatzkräfte und Werkschutz koordinieren","Secure and clear the danger zone; coordinate emergency services and plant security"],
+    [0,"Betroffene Bereiche, Anlagen und Schutzobjekte (Prototypen!) erfassen","Record affected areas, equipment and protected assets (prototypes!)"],
+    [1,"Zutritt kontrollieren, Bereich absperren; Versorgung (Strom, Wasser, Medien) stabilisieren","Control access, cordon off the area; stabilise supply (power, water, media)"],
+    [2,"Schäden beseitigen, Ersatzflächen und -anlagen organisieren; Versicherer einbinden","Remove damage, organise replacement areas and equipment; involve the insurer"],
+    [3,"Freigabe zur Wiedernutzung (Sicherheit, Statik, Messungen) dokumentieren","Document the release for re-use (safety, structural checks, measurements)"],
+    [4,"Ursachenanalyse sowie bauliche und organisatorische Prävention ableiten","Root-cause analysis and structural/organisational prevention"]],
+ E:[[0,"Erste Hilfe leisten, Rettungskette auslösen; Unfallstelle unverändert sichern","Give first aid, trigger the rescue chain; secure the accident site unchanged"],
+    [0,"Beteiligte, Zeugen und Hergang dokumentieren (ohne Schuldzuweisung)","Document persons involved, witnesses and sequence of events (no blame)"],
+    [1,"Gefahrenquelle abstellen; betroffene Tätigkeit oder Anlage bis zur Klärung sperren","Eliminate the hazard; stop the affected activity or equipment until clarified"],
+    [2,"Meldepflichten prüfen (UVT, Arbeitsschutzbehörde); Unfallanzeige fristgerecht","Check reporting duties (accident insurer, OSH authority); file the accident report in time"],
+    [3,"Wiederaufnahme nur nach Freigabe durch SiFa/Arbeitsmedizin","Resume only after release by the safety officer/occupational medicine"],
+    [4,"Unterweisungen und Gefährdungsbeurteilung aktualisieren; Lessons Learned","Update instructions and risk assessment; lessons learned"]],
+ DEF:[[0,"Sachverhalt, Betroffene und Auswirkungen strukturiert erfassen","Record facts, affected parties and impact in a structured way"],
+    [1,"Sofortmaßnahmen zur Begrenzung dokumentieren (Abschnitt 4)","Document immediate containment measures (section 4)"],
+    [2,"Ursache ermitteln und abstellen (unmittelbare Ursache + Systemursache)","Determine and eliminate the cause (immediate + system cause)"],
+    [3,"Regelbetrieb wiederherstellen; Freigaben einholen","Restore normal operation; obtain releases"],
+    [4,"Lessons Learned und Wirksamkeitsprüfung planen","Plan lessons learned and the effectiveness review"]]};
+
+/* 8D-Report (Automotive-Standard; 5-Why in D4) */
+const D8F=[
+ ["d1","D1 – Team","D1 – Team","Rollen/Funktionen, keine Klarnamen erforderlich","Roles/functions, no personal names required"],
+ ["d2","D2 – Problembeschreibung","D2 – Problem description","Was, wo, wann, wie viele (5W2H)","What, where, when, how many (5W2H)"],
+ ["d3","D3 – Sofortmaßnahmen (ICA)","D3 – Interim containment (ICA)","Sperrung, Sortierung, Kundenschutz – vgl. Abschnitt 4","Blocking, sorting, customer protection – cf. section 4"],
+ ["d4","D4 – Ursachenanalyse (5-Why / Ishikawa)","D4 – Root cause (5 Why / Ishikawa)","Warum? ×5 bis zur Systemursache","Why? ×5 down to the system cause"],
+ ["d5","D5 – Gewählte Abstellmaßnahmen (PCA)","D5 – Chosen corrective actions (PCA)","",""],
+ ["d6","D6 – Umsetzung und Wirksamkeit","D6 – Implementation and effectiveness","Nachweis der Wirksamkeit","Proof of effectiveness"],
+ ["d7","D7 – Wiederholung verhindern","D7 – Prevent recurrence","FMEA, Control Plan, Standards, ähnliche Produkte/Prozesse","FMEA, control plan, standards, similar products/processes"],
+ ["d8","D8 – Abschluss und Teamleistung","D8 – Closure and team recognition","",""]];
+
+/* Nächste fällige Frist eines Tickets (SLA Erstreaktion oder Meldeaufgabe) */
+function nextDue(t){
+  if(["Resolved","Closed"].includes(t.status)) return null;
+  const c=[]; const stx=effStufe(t);
+  if(!t.erstreaktion && stx) c.push({due:t.kenntnis+SLA_H[stx]*3600000, l:(S.lang==="en"?"Response SLA ":"SLA Erstreaktion ")+stx+" ("+SLA_H[stx]+" h)"});
+  for(const x of t.tasks) if(!x.done) c.push({due:x.due, l:taskLabel(x.name)});
+  if(!c.length) return null;
+  return c.sort((a,b)=>a.due-b.due)[0];
+}
+function fmtCd(ms){
+  const neg=ms<0, a=Math.abs(ms);
+  if(a<3600000){ const m=Math.floor(a/60000), sx=Math.floor(a%60000/1000);
+    return (neg?tr("überfällig seit "):"")+m+":"+String(sx).padStart(2,"0")+" min"; }
+  return (neg?tr("überfällig seit "):"")+fmtRest(a);
+}
+/* Tickende Countdown-Anzeigen (Elemente mit .cd und data-due) */
+setInterval(()=>{ if(document.body.classList.contains("locked")) return;
+  document.querySelectorAll(".cd").forEach(el=>{ const d=+el.dataset.due; if(!d) return;
+    const r=d-now(); el.textContent=fmtCd(r); el.classList.toggle("od", r<0); });
+},1000);
+/* Globaler Alert-Banner für aktive P1-Vorfälle */
+function alertBarHtml(){
+  const el=$("alertbar"); if(!el) return;
+  const p1=S.tickets.filter(t=>canSee(t)&&effStufe(t)==="P1"&&!["Resolved","Closed"].includes(t.status));
+  if(!p1.length){ el.style.display="none"; el.innerHTML=""; return; }
+  const de=S.lang!=="en";
+  el.style.display="";
+  el.innerHTML="🚨 <b>"+(de?"MAJOR INCIDENT – aktive P1-Vorfälle":"MAJOR INCIDENT – active P1 incidents")+" ("+p1.length+"):</b> "
+   + p1.slice(0,4).map(t=>`<span class="abtick" onclick="openT('${t.id}')">${t.id} · ${esc(t.betreff.slice(0,55))}</span>`).join(" ")
+   + (p1.length>4?" …":"");
+}
 
 /* ---------- Sichtbarkeit / Berechtigungen ---------- */
 function isProtected(t){ return t.leitdomaene && DOM[t.leitdomaene].prot; }
@@ -1116,6 +1229,7 @@ async function newTicket(o){
     freigabe:false, freigabeIsb:false, freigabeQl:false,
     abschlussbericht:"", lessons:"", risikoRef:"", wirksamkeit:null,
     bcmNote:"",
+    pb:{}, d8:null,
     anhaenge:(o.anhaenge||[]),
     beobachter:["ISB"], tasks:[], approvals:[], log:[],
     erstreaktion:null
@@ -1143,7 +1257,7 @@ async function seed(){
       ensureNisTask(t,"nis18",NIS18_NAME,"ISB",18); });
   await mk({betreff:"OT-Leitrechner Extrusionslinie 3 ohne Funktion", beschreibung:"Linie 3 steht, Ursache unklar. (Fiktiver Testfall)", standort:"Myjava", kenntnis:now()-6*H},
     t=>{ t.status="In Bearbeitung – Eindämmung"; t.leitdomaene="B"; t.owner=ownerFor(t); t.s1="nicht betroffen"; t.s2="P2"; t.s3="P4"; t.s4="P3"; t.s5="P4"; t.s6="P4";
-      t.gef="G 0.25 – Ausfall von Geräten oder Systemen"; t.pf.nis2_sk="in Prüfung"; t.pf.dsgvo="nein"; t.pf.kunde_liefer="ja"; t.pf.oem_daten="nein"; t.pf.anv="nein"; t.sofort=fmt(now()-5*H)+" Linie gestoppt, Netzwerksegment isoliert (Schichtleiter M. Novák, fiktiv)"; });
+      t.gef="G 0.25 – Ausfall von Geräten oder Systemen"; t.pf.nis2_sk="in Prüfung"; t.pf.dsgvo="nein"; t.pf.kunde_liefer="ja"; t.pf.oem_daten="nein"; t.pf.anv="nein"; t.sofort=fmt(now()-5*H)+" Linie gestoppt, Netzwerksegment isoliert (Schichtleiter M. Novák, fiktiv)"; t.pb={"B:0":{ts:now()-5*H,who:"System"},"B:2":{ts:now()-5*H,who:"System"}}; });
   await mk({betreff:"Unbekannte Person im Prototypenbereich fotografiert Werkzeuge", beschreibung:"Besucherausweis fehlte. (Fiktiver Testfall)", standort:"Graz", kenntnis:now()-2*H},
     t=>{ t.status="Triage"; t.leitdomaene="C"; t.owner=ownerFor(t); t.prototyp=true; t.s1="nicht betroffen"; t.s2="P4"; t.s3="P2"; t.s4="P4"; t.s5="P4"; t.s6="P3";
       t.gef="G 0.14 – Ausspähen von Informationen (Spionage)"; t.pf.versicherer="nein"; t.pf.oem_daten="in Prüfung"; t.pf.dsgvo="nein"; t.pf.anv="nein"; t.pf.kunde_liefer="nein"; t.tisax=true; });
@@ -1164,7 +1278,7 @@ async function seed(){
   await mk({betreff:"Kunde reklamiert Undichtigkeit an Serienbauteil, Rückrufverdacht", beschreibung:"0-km-Beanstandung OEM, Verdacht auf Chargenfehler. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-26*H},
     t=>{ t.leitdomaene="H"; t.owner=ownerFor(t); t.status="Triage"; t.s1="nicht betroffen"; t.s2="P3"; t.s3="nicht betroffen"; t.s4="P2"; t.s5="P4"; t.s6="P2";
       t.gef="G-R 1.05 – Produktsicherheits- oder Rückrufereignis"; t.pf.kunde_produkt="ja"; t.pf.zert="in Prüfung"; t.pf.dsgvo="nein"; t.pf.anv="nein"; t.pf.kunde_liefer="in Prüfung"; t.pf.oem_daten="nein";
-      t.fvSystem="CAQ QBD.net"; t.fvNummer="QBD-8D-2026-0451"; });
+      t.fvSystem="CAQ QBD.net"; t.fvNummer="QBD-8D-2026-0451"; t.d8={d1:"QS-Leitung, Produktion, Vertrieb (fiktiv)",d2:"0-km-Beanstandung OEM: Undichtigkeit an Serienbauteil, Verdacht Chargenfehler.",d3:"Chargen gesperrt, Sortieraktion beim Kunden vereinbart.",d4:"",d5:"",d6:"",d7:"",d8:"",status:"offen"}; });
   await mk({betreff:"Beschwerde über Führungskraft – Verdacht Mobbing", beschreibung:"Vertrauliche Meldung an HR. (Fiktiver Testfall – fiktive Personen)", standort:"Graz", kenntnis:now()-70*H},
     t=>{ t.leitdomaene="I"; t.owner=ownerFor(t); t.status="In Bearbeitung – Analyse"; t.s1="P3"; t.s2="nicht betroffen"; t.s3="P4"; t.s4="nicht betroffen"; t.s5="nicht betroffen"; t.s6="P3";
       t.gef="G 0.29 – Verstoß gegen Gesetze oder Regelungen"; t.pf.anv="ja"; t.pf.dsgvo="in Prüfung"; t.pf.kunde_liefer="nein"; t.pf.oem_daten="nein"; t.sofort=fmt(now()-69*H)+" Getrennte Anhörungen terminiert (HR, fiktiv)"; });
@@ -1215,7 +1329,8 @@ function render(){
   applyTheme();
   document.documentElement.lang = S.lang;
   updNetBadge();
-  $("brandSub").textContent = tr("Reutter-Group · IRM-Tool V1.20");
+  alertBarHtml();
+  $("brandSub").textContent = "Reutter-Group · IRM-Tool V"+APP_VERSION;
   $("roleLbl").textContent = tr("Rolle (Simulation):");
   $("btnExp").textContent = tr("Stand sichern");
   $("btnImp").textContent = tr("Stand laden");
@@ -1343,7 +1458,7 @@ function viewTickets(){
     <div><button class="sec" onclick="exportCsv(S.tickets.filter(canSee))">${tr("CSV-Export")}</button></div>
     <div><button class="sec" onclick="seed()">${tr("Testdaten laden")}</button></div>
   </div>
-  ${list.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${tr("Domäne")}</th><th>${tr("Standort")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Esk.")}</th><th>${tr("Status")}</th><th>${tr("Kenntniserlangung")}</th><th>${tr("Aufgaben offen")}</th></tr></thead><tbody>
+  ${list.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${tr("Domäne")}</th><th>${tr("Standort")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Esk.")}</th><th>${tr("Status")}</th><th>${tr("Kenntniserlangung")}</th><th>${de?"Nächste Frist / SLA":"Next deadline / SLA"}</th><th>${tr("Aufgaben offen")}</th></tr></thead><tbody>
   ${list.map(t=>{
     const st=effStufe(t), open=t.tasks.filter(x=>!x.done), od=open.filter(x=>x.due<now());
     return `<tr class="click" onclick="openT('${t.id}')">
@@ -1355,6 +1470,8 @@ function viewTickets(){
      <td><span class="badge ${effEsk(t).toLowerCase()}" title="${esc(eLabel(effEsk(t)))}">${effEsk(t)}</span></td>
      <td><span class="badge st">${tr(t.status)}</span></td>
      <td class="small">${fmt(t.kenntnis)}</td>
+     <td>${(()=>{const nd=nextDue(t); if(!nd) return "–"; const r=nd.due-now();
+       return `<span class="amp ${r<0?"r":r<12*3600000?"o":"g"}"></span><span class="cd${r<0?" od":""}" data-due="${nd.due}">${fmtCd(r)}</span>`;})()}</td>
      <td>${open.length?`${od.length?`<span class="amp r"></span>`:`<span class="amp g"></span>`}${open.length}${od.length?` <b class="small" style="color:var(--crit)">(${od.length} ${tr("überfällig")})</b>`:""}`:"–"}</td></tr>`;
   }).join("")}</tbody></table>`:`<div class="note">${tr("Keine Tickets im aktuellen Filter.")} ${de?"Über <b>„Testdaten laden“</b> lässt sich der Abnahme-Testdatenbestand (ein fiktiver Fall je Domäne, Anhang C) erzeugen.":"Use <b>“Load test data”</b> to create the acceptance test data set (one fictitious case per domain, Annex C)."}</div>`}`;
 }
@@ -1420,6 +1537,35 @@ function approve(idx, state){
   if(a.key==="herab" && state==="abgelehnt"){ t.herab="abgelehnt"; t.herabStufe=""; }
   save(t); render();
 }
+function togglePb(i){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const key=(PBMAP[t.leitdomaene]||"DEF");
+  const steps=PB[key]; if(!steps||!steps[i]) return;
+  t.pb=t.pb||{};
+  const k=key+":"+i, txt=S.lang==="en"?steps[i][2]:steps[i][1];
+  if(t.pb[k]){ delete t.pb[k]; log(t,(S.lang==="en"?"Playbook step reopened: ":"Playbook-Schritt wieder geöffnet: ")+txt); }
+  else { t.pb[k]={ts:now(),who:(S.user?S.user+" – ":"")+roleLabel()}; log(t,(S.lang==="en"?"Playbook step completed: ":"Playbook-Schritt erledigt: ")+txt); }
+  save(t); render();
+}
+function init8d(){
+  const t=T(); if(!t||!canEdit(t)||t.d8) return;
+  t.d8={d1:"",d2:"",d3:"",d4:"",d5:"",d6:"",d7:"",d8:"",status:"offen"};
+  log(t,S.lang==="en"?"8D report initiated.":"8D-Report initiiert.");
+  save(t); render();
+}
+function upd8(f,v){
+  const t=T(); if(!t||!canEdit(t)||!t.d8) return;
+  if(t.d8[f]===v) return; t.d8[f]=v;
+  log(t,"8D "+(f==="status"?(S.lang==="en"?"status: ":"Status: ")+tr(v):f.toUpperCase()+" "+(S.lang==="en"?"updated":"aktualisiert")));
+  save(t); render();
+}
+function addNote(){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const el=$("noteTxt"); const txt=(el&&el.value||"").trim(); if(!txt) return;
+  const kind=$("noteKind").value;
+  t.log.unshift({ts:now(), who:(S.user?S.user+" – ":"")+roleLabel(), txt, kind});
+  save(t); render();
+}
 function editBetreff(){
   const t=T(); if(!t||!canEdit(t)) return;
   const v=prompt(tr("Neue Meldebezeichnung:"), t.betreff);
@@ -1463,6 +1609,36 @@ function viewDetail(id){
   const abw = t.erstellt-t.kenntnis;
   const gefOpts = ["noch nicht bestimmt", ...G_BSI.map((g,i)=>"G 0."+(i+1)+" – "+g), ...G_REUTIB.map((g,i)=>"G-R 1."+String(i+1).padStart(2,"0")+" – "+g)];
   const openTasks=t.tasks.filter(x=>!x.done);
+  const nd=nextDue(t);
+  const slaDue=(!t.erstreaktion&&st&&!["Resolved","Closed"].includes(t.status))?t.kenntnis+SLA_H[st]*3600000:null;
+  const pbKey=t.leitdomaene?(PBMAP[t.leitdomaene]||"DEF"):null;
+  const pbSteps=pbKey?PB[pbKey]:[];
+  const pbState=t.pb||{};
+  const pbDone=pbSteps.filter((_,i)=>pbState[pbKey+":"+i]).length;
+  const qa=[];
+  if(!ro&&t.status!=="Closed"){
+    if(t.status==="In Bearbeitung – Eindämmung") qa.push(`<button class="acc" style="width:100%;margin:4px 0" onclick="setStatus('In Bearbeitung – Analyse')">✔ ${de?"Eindämmung abgeschlossen → Analyse":"Containment completed → analysis"}</button>`);
+    if(!t.d8) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="init8d()">🛠 ${de?"8D-Report initiieren":"Initiate 8D report"}</button>`);
+    if(pbKey&&pbDone<pbSteps.length) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="document.getElementById('pbsec').scrollIntoView({behavior:'smooth'})">📋 ${de?"Zum Playbook":"Go to playbook"} (${pbDone}/${pbSteps.length})</button>`);
+  }
+  const side=`<div class="card sidecard">
+   <div style="font-size:18px;font-weight:700">${t.id}</div>
+   <div class="flex" style="margin:6px 0">${st?`<span class="badge ${st.toLowerCase()}" title="${esc(pLabel(st))}">${st}</span>`:'<span class="badge pn">–</span>'}<span class="badge ${effEsk(t).toLowerCase()}" title="${esc(eLabel(effEsk(t)))}">${effEsk(t)}</span><span class="badge st">${tr(t.status)}</span></div>
+   <div class="srow"><b>${tr("Leitdomäne")}</b><span>${t.leitdomaene?t.leitdomaene+" – "+domName(t.leitdomaene):"–"}</span></div>
+   <div class="srow"><b>${tr("Standort")}</b><span>${siteLabel(t.standort)||"–"}</span></div>
+   <div class="srow"><b>${de?"Asset / Objekt":"Asset"}</b><span>${esc(t.objekte)||"–"}</span></div>
+   <div class="srow"><b>${de?"Melder":"Reporter"}</b><span>${esc(t.quelle)||"–"}</span></div>
+   <div class="srow"><b>Owner</b><span>${esc(t.owner)||"–"}</span></div>
+   <div class="srow"><b>${tr("Kenntniserlangung")}</b><span>${fmt(t.kenntnis)}</span></div>
+   <hr>
+   <div class="small muted"><b>${de?"SLA Erstreaktion":"Response SLA"}</b>${st?" ("+SLA_H[st]+" h"+(["P1","P2"].includes(st)?", 24/7":"")+")":""}</div>
+   ${slaDue?`<div class="cdbox"><span class="cd${slaDue-now()<0?" od":""}" data-due="${slaDue}">${fmtCd(slaDue-now())}</span></div>`
+     :t.erstreaktion?`<div style="color:var(--ok);font-weight:700">✓ ${de?"erfüllt":"met"} ${fmt(t.erstreaktion)}</div>`:`<div class="muted">–</div>`}
+   <div class="small muted" style="margin-top:8px"><b>${de?"Nächste Frist":"Next deadline"}</b></div>
+   ${nd?`<div><span class="cd${nd.due-now()<0?" od":""}" data-due="${nd.due}" style="font-weight:700">${fmtCd(nd.due-now())}</span><div class="small muted">${esc(nd.l)}</div></div>`:`<div class="muted">–</div>`}
+   <hr>
+   <div class="small muted">${de?"Aufgaben offen":"Open tasks"}: <b>${openTasks.length}</b> · ${de?"Anlagen":"Attachments"}: <b>${(t.anhaenge||[]).length}</b>${pbKey?` · Playbook: <b>${pbDone}/${pbSteps.length}</b>`:""}</div>
+  </div>`;
   return `
   <div class="flex noprint"><button class="sec" onclick="nav('tickets')">← ${tr("Zur Liste")}</button><div class="spacer"></div>
     ${!ro?`<button class="sec" onclick="editBetreff()">✎ ${tr("Meldebezeichnung anpassen")}</button>`:""}
@@ -1487,6 +1663,7 @@ function viewDetail(id){
   ${st==="P1"?`<div class="err">${de?"P1: Benachrichtigung an ISB, Vertretung, Incident Owner und Geschäftsleitung (E-Mail + mobil; außerhalb der Betriebszeit zusätzlich Anruf/SMS – GDL Kap. 11). Reaktionszeit 1 h, Kalender 24/7.":"P1: notification to ISB, deputy, incident owner and executive management (e-mail + mobile; outside business hours additionally call/SMS – GDL ch. 11). Response time 1 h, 24/7 calendar."}</div>`:""}
   ${needBegruendungAbw(t)&&!t.kenntnisBegr?`<div class="err">${de?`Zwischen Kenntniserlangung und Ticketerstellung liegen ${fmtRest(abw).replace(tr("überfällig seit "),"")} (&gt; 1 h): Begründung der Abweichung ist Pflicht${abw>4*3600000?" – Abweichung &gt; 4 h (E-Mail-/Telefonkanal, GDL Kap. 5.3)":""}.`:`There are ${fmtRest(abw).replace(tr("überfällig seit "),"")} between awareness and ticket creation (&gt; 1 h): a justification is mandatory${abw>4*3600000?" – gap &gt; 4 h (e-mail/phone channel, GDL ch. 5.3)":""}.`}</div>`:""}
 
+  <div class="detgrid"><aside class="detside">${side}</aside><div class="detmain">
   <div class="section"><div class="head">${tr("1 · Meldung")}</div><div class="body"><div class="grid3">
     <div><label>${tr("Standort")} <span class="req">*</span></label>${sel("standort",t.standort,STANDORTE,ro,v=>siteLabel(v))}</div>
     <div><label>${tr("Kenntniserlangung")} <span class="req">*</span> <span class="hint help" title="${de?"Fristenanker: alle gesetzlichen Meldefristen laufen ab diesem Zeitpunkt, nicht ab Ticketerstellung (GDL Kap. 10.2). Änderung wird protokolliert; offene Meldeaufgaben werden neu terminiert.":"Deadline anchor: all statutory reporting deadlines run from this point in time, not from ticket creation (GDL ch. 10.2). Changes are logged; open notification tasks are re-scheduled."}">ⓘ ${tr("Fristenanker")}</span></label>
@@ -1638,6 +1815,13 @@ function viewDetail(id){
    <textarea ${ro?"disabled":""} onchange="upd('bcmNote',this.value,'${tr("Übergabeprotokoll BCM")}')">${esc(t.bcmNote)}</textarea>
   </div></div>
 
+  ${pbKey?`<div class="section" id="pbsec"><div class="head">4a · Playbook <span class="small muted">(${de?"Leitdomäne":"lead domain"} ${t.leitdomaene} · ${de?"abhakbar, protokolliert":"checkable, logged"})</span><div class="spacer"></div><div class="pbbar"><div style="width:${pbSteps.length?Math.round(100*pbDone/pbSteps.length):0}%"></div></div><span class="small muted">${pbDone}/${pbSteps.length}</span></div><div class="body">
+   ${PB_PH.map((ph,pi)=>{const rows=pbSteps.map((sx,i)=>[sx,i]).filter(([sx])=>sx[0]===pi); if(!rows.length) return "";
+     return `<h3>${pi+1} · ${de?ph:PB_PH_EN[pi]}</h3>`+rows.map(([sx,i])=>{const dn=pbState[pbKey+":"+i];
+       return `<label class="pbstep${dn?" done":""}" style="font-weight:400;display:flex;gap:8px;align-items:flex-start;margin:5px 0"><input type="checkbox" style="width:auto;margin-top:2px" ${dn?"checked":""} ${ro?"disabled":""} onchange="togglePb(${i})"><span>${de?sx[1]:sx[2]}${dn?` <span class="small muted">✓ ${fmt(dn.ts)}</span>`:""}</span></label>`;}).join("");
+   }).join("")}
+   <p class="small muted">${de?"Domänenspezifische Checkliste nach dem Phasenmodell (Identifikation → Eindämmung → Beseitigung → Wiederherstellung → Nachbereitung). Sie ergänzt die verbindlichen Pflichtfelder der GDL, ersetzt sie nicht.":"Domain-specific checklist along the phase model (identification → containment → eradication → recovery → lessons learned). It complements the binding mandatory fields of the GDL, it does not replace them."}</p>
+  </div></div>`:""}
   <div class="section"><div class="head">${tr("5 · Abschluss")}</div><div class="body">
    <div class="grid3">
     <div><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.freigabe?"checked":""} ${ro?"disabled":""} onchange="upd('freigabe',this.checked,'${tr("Freigabe der Wiederaufnahme")}')"> ${tr("Freigabe der Wiederaufnahme")} <span class="req">*</span></label></div>
@@ -1653,19 +1837,15 @@ function viewDetail(id){
    ${t.wirksamkeit?`<div class="note">${de?"Termin Wirksamkeitsprüfung":"Effectiveness review due"}: <b>${fmt(t.wirksamkeit)}</b> ${de?"(Umsetzung + 6 Monate, Nachverfolgungsaufgabe erzeugt).":"(implementation + 6 months, follow-up task created)."}</div>`:""}
   </div></div>
 
-  <div class="section"><div class="head">${tr("Anlagen")} <span class="small muted">(${(t.anhaenge||[]).length})</span></div><div class="body">
-   ${(t.anhaenge||[]).length?`<table><thead><tr><th>${tr("Kategorie")}</th><th>${tr("Datei")}</th><th>${tr("Größe")}</th><th>${tr("Fällig")==="Due"?"Date":"Datum"}</th><th>${tr("von")}</th><th class="noprint">${tr("Aktion")}</th></tr></thead><tbody>
-   ${(t.anhaenge||[]).map(a=>`<tr><td><span class="badge st">${esc(attCatLabel(a.cat))}</span></td>
-    <td><a href="${a.data}" download="${esc(a.name)}">${esc(a.name)}</a></td>
-    <td class="small">${fmtSize(a.size)}</td><td class="small">${fmt(a.ts)}</td><td class="small">${esc(a.who||"–")}</td>
-    <td class="noprint"><a class="small" href="${a.data}" download="${esc(a.name)}">${tr("Herunterladen")}</a>${S.role==="isb"?` · <a class="small" href="#" onclick="delAtt('${a.id}');return false" style="color:var(--crit)">${tr("Entfernen")}</a>`:""}</td></tr>`).join("")}
-   </tbody></table>`:`<p class="muted small">${de?"Noch keine Anlagen. Meldung und Empfangsbestätigung externer Meldungen, Beweise und der Abschlussbericht (ISMS-TMPL-006a) gehören als Anlage in das Ticket (GDL Kap. 14).":"No attachments yet. Notifications and their acknowledgements, evidence and the final report (ISMS-TMPL-006a) belong in the ticket as attachments (GDL ch. 14)."}</p>`}
-   ${!ro?`<div class="flex noprint" style="margin-top:8px">
-    <select id="attCat" style="width:auto">${ATTCATS.map(([c,l])=>`<option value="${c}">${tr(l)}</option>`).join("")}</select>
-    <input id="attFile" type="file" multiple style="width:auto">
-    <button class="sec mini" onclick="addAtt()">${tr("Anlage hinzufügen")}</button>
-    <span class="small muted">${de?"je Datei max. 2 MB, je Ticket max. 4 MB; Ablage direkt im Ticket. Entfernen nur durch den ISB (protokolliert). Eine Anlage der Kategorie „Abschlussbericht“ erfüllt die Abschluss-Pflicht bei P1/P2.":"max 2 MB per file, 4 MB per ticket; stored inside the ticket. Removal by the ISB only (logged). An attachment of category “Final report” satisfies the P1/P2 closure requirement."}</span>
-   </div>`:""}
+  <div class="section"><div class="head">${de?"5a · 8D-Report / Ursachenanalyse":"5a · 8D report / root-cause analysis"} ${t.d8?(t.d8.status==="abgeschlossen"?`<span class="badge st" style="color:var(--ok)">✓ ${de?"abgeschlossen":"completed"}</span>`:`<span class="badge e1">${de?"in Arbeit":"in progress"}</span>`):""}</div><div class="body">
+  ${t.d8?`
+   <p class="small muted">${de?"8D nach Automotive-Standard; die 5-Why-Analyse gehört in D4. Führt die Qualität einen CAQ-8D (QBD.net), gilt dieser als führend — Referenz im Feld „Führender Fachvorgang“ (Abschnitt 4).":"8D per automotive standard; the 5-Why analysis belongs in D4. If quality runs a CAQ 8D (QBD.net), that record is authoritative — reference it in “leading business record” (section 4)."}</p>
+   <div class="grid2">
+   ${D8F.map(([f,ld,le,phd,phe])=>`<div><label>${de?ld:le}</label><textarea ${ro?"disabled":""} placeholder="${esc(de?phd:phe)}" onchange="upd8('${f}',this.value)">${esc(t.d8[f]||"")}</textarea></div>`).join("")}
+   </div>
+   <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.d8.status==="abgeschlossen"?"checked":""} ${ro?"disabled":""} onchange="upd8('status',this.checked?'abgeschlossen':'offen')"> ${de?"8D abgeschlossen (D1–D8 vollständig)":"8D completed (D1–D8 complete)"}</label>`
+  :`<p class="small muted">${de?"Strukturierte Problemlösung nach Automotive-Standard (8D; 5-Why in D4). Empfohlen für Domäne H sowie alle P1/P2 mit Kundenbezug.":"Structured problem solving per automotive standard (8D; 5-Why in D4). Recommended for domain H and all P1/P2 incidents with customer impact."}</p>
+   ${!ro?`<button class="sec" onclick="init8d()">🛠 ${de?"8D-Report initiieren":"Initiate 8D report"}</button>`:""}`}
   </div></div>
 
   <div class="section"><div class="head">${tr("Aufgaben und Fristen")} <span class="small muted">(${openTasks.length} ${tr("offen")})</span></div><div class="body">
@@ -1683,9 +1863,27 @@ function viewDetail(id){
   </div></div>
 
   <div class="section"><div class="head">${tr("Aktivitätsprotokoll")} <span class="small muted">${de?"(nicht deaktivierbar – Nachweisführung, GDL Kap. 14)":"(cannot be disabled – evidence trail, GDL ch. 14)"}</span></div><div class="body">
-   <div class="log">${t.log.map(e=>`<div><b>${fmt(e.ts)}</b> · ${esc(e.who)} · ${esc(e.txt)}</div>`).join("")}</div>
+   ${!ro?`<div class="flex noprint" style="margin:6px 0"><select id="noteKind" style="width:auto"><option value="int">${de?"Interne Notiz":"Internal note"}</option><option value="ext">${de?"Externes Update":"External update"}</option></select><input id="noteTxt" type="text" style="flex:1;min-width:200px" placeholder="${de?"Kommentar hinzufügen … (wird unveränderlich protokolliert)":"Add a comment … (immutably logged)"}" onkeydown="if(event.key==='Enter')addNote()"><button class="sec mini" onclick="addNote()">${de?"Eintragen":"Add"}</button></div>`:""}
+   <div class="log">${t.log.map(e=>`<div class="${e.kind==="int"?"lg-int":e.kind==="ext"?"lg-ext":""}"><b>${fmt(e.ts)}</b> · ${esc(e.who)}${e.kind==="int"?' <span class="badge st">'+(de?"intern":"internal")+'</span>':e.kind==="ext"?' <span class="badge e1">'+(de?"extern":"external")+'</span>':""} · ${esc(e.txt)}</div>`).join("")}</div>
    <p class="small muted">${tr("Beobachter:")} ${t.beobachter.map(b=>tr(b)).join(", ")||"–"} · ${tr("Erstreaktion")}: ${t.erstreaktion?fmt(t.erstreaktion):tr("ausstehend")} · ${tr("SLA Erstreaktion:")} ${st?SLA_H[st]+" h ("+(["P1","P2"].includes(st)?"24/7":tr("Standortkalender"))+")":"–"}</p>
-  </div></div>`;
+  </div></div>
+  </div><aside class="detright">
+  <div class="card sidecard noprint"><h3 style="margin-top:0">⚡ ${de?"Schnellaktionen":"Quick actions"}</h3>${qa.join("")||`<span class="small muted">${de?"keine verfügbar":"none available"}</span>`}</div>
+  <div class="section"><div class="head">${tr("Anlagen")} <span class="small muted">(${(t.anhaenge||[]).length})</span></div><div class="body">
+   ${(t.anhaenge||[]).length?`<table><thead><tr><th>${tr("Kategorie")}</th><th>${tr("Datei")}</th><th>${tr("Größe")}</th><th>${tr("Fällig")==="Due"?"Date":"Datum"}</th><th>${tr("von")}</th><th class="noprint">${tr("Aktion")}</th></tr></thead><tbody>
+   ${(t.anhaenge||[]).map(a=>`<tr><td><span class="badge st">${esc(attCatLabel(a.cat))}</span></td>
+    <td><a href="${a.data}" download="${esc(a.name)}">${esc(a.name)}</a></td>
+    <td class="small">${fmtSize(a.size)}</td><td class="small">${fmt(a.ts)}</td><td class="small">${esc(a.who||"–")}</td>
+    <td class="noprint"><a class="small" href="${a.data}" download="${esc(a.name)}">${tr("Herunterladen")}</a>${S.role==="isb"?` · <a class="small" href="#" onclick="delAtt('${a.id}');return false" style="color:var(--crit)">${tr("Entfernen")}</a>`:""}</td></tr>`).join("")}
+   </tbody></table>`:`<p class="muted small">${de?"Noch keine Anlagen. Meldung und Empfangsbestätigung externer Meldungen, Beweise und der Abschlussbericht (ISMS-TMPL-006a) gehören als Anlage in das Ticket (GDL Kap. 14).":"No attachments yet. Notifications and their acknowledgements, evidence and the final report (ISMS-TMPL-006a) belong in the ticket as attachments (GDL ch. 14)."}</p>`}
+   ${!ro?`<div class="flex noprint" style="margin-top:8px">
+    <select id="attCat" style="width:auto">${ATTCATS.map(([c,l])=>`<option value="${c}">${tr(l)}</option>`).join("")}</select>
+    <input id="attFile" type="file" multiple style="width:auto">
+    <button class="sec mini" onclick="addAtt()">${tr("Anlage hinzufügen")}</button>
+    <span class="small muted">${de?"je Datei max. 2 MB, je Ticket max. 4 MB; Ablage direkt im Ticket. Entfernen nur durch den ISB (protokolliert). Eine Anlage der Kategorie „Abschlussbericht“ erfüllt die Abschluss-Pflicht bei P1/P2.":"max 2 MB per file, 4 MB per ticket; stored inside the ticket. Removal by the ISB only (logged). An attachment of category “Final report” satisfies the P1/P2 closure requirement."}</span>
+   </div>`:""}
+  </div></div>
+  </aside></div>`;
 }
 function toggleNeben(d, on){
   const t=T(); if(!t||!canEdit(t)) return;
@@ -1748,6 +1946,11 @@ function viewBerichte(){
   for(const t of all){ if(t.gef && t.gef!=="noch nicht bestimmt"){ gefCount[t.gef]=(gefCount[t.gef]||0)+1; } }
   const topGef=Object.entries(gefCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const h=all.filter(t=>t.leitdomaene==="H"); const withFv=h.filter(t=>t.fvNummer);
+  const rts=all.filter(t=>t.erstreaktion&&t.kenntnis).map(t=>t.erstreaktion-t.kenntnis);
+  const mttr=rts.length?rts.reduce((a,b)=>a+b,0)/rts.length:null;
+  const slaViol=all.filter(t=>{const s=effStufe(t); if(!s) return false; const lim=SLA_H[s]*3600000;
+    return t.erstreaktion? (t.erstreaktion-t.kenntnis)>lim : (!["Resolved","Closed"].includes(t.status) && now()-t.kenntnis>lim);}).length;
+  const crit5=open.filter(t=>canSee(t)&&effStufe(t)).sort((a,b)=>(ORD[effStufe(b)]-ORD[effStufe(a)])||(((nextDue(a)||{}).due||Infinity)-((nextDue(b)||{}).due||Infinity))).slice(0,5);
   return `<h1>${de?"Auswertung und Berichte":"Evaluation and reports"}</h1>
   <p class="muted">${de
    ?"Kennzahlen nach Kap. 12 der Prozessbeschreibung. Der geschützte Bereich (Domänen E und I) fließt ausschließlich <b>aggregiert und ohne Personenbezug</b> ein; eine Auswertung nach Bearbeitern oder meldenden Personen ist nicht möglich und wird nicht angeboten (GDL Kap. 4/12)."
@@ -1761,6 +1964,8 @@ function viewBerichte(){
    <div class="kpi"><div class="v">${all.length?Math.round(100*klassOk.length/all.length):0}%</div><div class="l">${de?"Klassifizierungsqualität (vollständig, ohne „nicht geprüft“)":"classification quality (complete, none “not assessed”)"}</div></div>
    <div class="kpi"><div class="v">${nm.length}</div><div class="l">${de?"Beinaheereignisse (Meldequote-KPI)":"near misses (reporting-rate KPI)"}</div></div>
    <div class="kpi"><div class="v">${prot.length}</div><div class="l">${de?"geschützter Bereich (nur aggregiert)":"protected workspace (aggregate only)"}</div></div>
+   <div class="kpi"><div class="v">${mttr!==null?fmtRest(mttr):"–"}</div><div class="l">${de?"MTTR – mittlere Zeit bis Erstreaktion":"MTTR – mean time to respond"}</div></div>
+   <div class="kpi"><div class="v" style="color:${slaViol?"var(--crit)":"inherit"}">${slaViol}</div><div class="l">${de?"SLA-Verletzungen Erstreaktion":"response-SLA breaches"}</div></div>
   </div>
   ${(()=>{
     const sev={P1:0,P2:0,P3:0,P4:0};
@@ -1803,6 +2008,11 @@ function viewBerichte(){
      </div>
     </div>`;
   })()}
+  <h2>${de?"Top 5 – kritischste offene Vorfälle":"Top 5 – most critical open incidents"}</h2>
+  ${crit5.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Domäne")}</th><th>${tr("Status")}</th><th>${de?"Nächste Frist":"Next deadline"}</th></tr></thead><tbody>
+  ${crit5.map(t=>{const nd=nextDue(t);const s=effStufe(t);
+    return `<tr class="click" onclick="openT('${t.id}')"><td><b>${t.id}</b></td><td>${esc(t.betreff)}</td><td><span class="badge ${s.toLowerCase()}" title="${esc(pLabel(s))}">${s}</span></td><td>${t.leitdomaene||"–"}</td><td class="small">${tr(t.status)}</td><td class="small">${nd?`<span class="cd${nd.due-now()<0?" od":""}" data-due="${nd.due}">${fmtCd(nd.due-now())}</span>`:"–"}</td></tr>`;}).join("")}</tbody></table>`
+  :`<p class="muted small">${de?"Keine offenen klassifizierten Vorfälle.":"No open classified incidents."}</p>`}
   <h2>${de?"Lagebild Domänen":"Domain overview"} <span class="small muted">– ${de?"offene/gesamt je Domäne und Verteilung der Gesamtstufen":"open/total per domain and distribution of overall levels"}</span></h2>
   <table class="matrix"><thead><tr><th>${tr("Domäne")}</th><th>${de?"Bezeichnung":"Name"}</th>${["P1","P2","P3","P4"].map(x=>`<th class="tip" data-tip="${esc(pLabel(x))}">${x}</th>`).join("")}<th>${tr("offen")}</th><th>${de?"gesamt":"total"}</th></tr></thead><tbody>
   ${DOMKEYS.map(d=>{const m=matrix[d];return `<tr><td><b>${d}</b>${DOM[d].prot?" 🔒":""}</td><td>${domName(d)}${DOM[d].prot?' <span class="small muted">'+(de?"(aggregiert)":"(aggregate)")+'</span>':""}</td>
