@@ -1,4 +1,4 @@
-# REUTIB IRM-Server V1.40 — Container-Bereitstellung
+# REUTIB IRM-Server V1.50 — Container-Bereitstellung
 # Build:  docker build -t reutib-irm ./irm/server  (aus dem Repo-Root; kopiert auch ../index.html)
 #         Hinweis: wegen des Zugriffs auf ../index.html aus dem Repo-Root bauen:
 #         docker build -t reutib-irm -f irm/server/Dockerfile irm

@@ -898,7 +898,7 @@ function save(t){
 }
 
 /* ---------- Serveranbindung: zentrale Datenbank, Mehrbenutzerbetrieb (V1.10) ---------- */
-const APP_VERSION="1.40";
+const APP_VERSION="1.50";
 let API=null, REV=0, NET=null, SRVINFO=null;
 function authTok(){ return S.token||""; }
 async function api(p, opts={}, retried){
@@ -916,7 +916,7 @@ async function pushTicket(t){
 }
 async function fullLoad(){
   const r=await api("/api/tickets");
-  S.tickets=r.tickets.sort((a,b)=>b.erstellt-a.erstellt); S.seq=Math.max(1, r.seq+1); REV=r.rev;
+  S.tickets=r.tickets.sort((a,b)=>b.erstellt-a.erstellt); mergeSeqY(r.seqY); ensureSeqY(); REV=r.rev;
 }
 async function pollChanges(){
   if(!API) return;
@@ -928,12 +928,13 @@ async function pollChanges(){
       if(i>=0){ if(JSON.stringify(S.tickets[i])!==JSON.stringify(j)){ S.tickets[i]=j; changed=true; } }
       else { S.tickets.unshift(j); changed=true; }
     }
-    REV=r.rev; if(r.seq+1>S.seq)S.seq=r.seq+1;
+    REV=r.rev; mergeSeqY(r.seqY);
     setNet(true);
     const tag=document.activeElement && document.activeElement.tagName;
     if(changed && !["INPUT","TEXTAREA","SELECT"].includes(tag)) render();
   }catch(e){ setNet(false); }
 }
+function mergeSeqY(sy){ if(!sy) return; S.seqY=S.seqY||{}; for(const y in sy){ if(!(S.seqY[y]>=sy[y])) S.seqY[y]=sy[y]; } }
 function setNet(ok){ NET=ok; updNetBadge(); }
 function updNetBadge(){
   const b=$("netBadge"); if(!b) return;
@@ -976,6 +977,37 @@ function dtLocal(ts){ const d=new Date(ts); d.setMinutes(d.getMinutes()-d.getTim
 function parseDt(v){ return v? new Date(v).getTime() : null; }
 function roleLabel(){ return tr(ROLES[S.role].l) + (S.role==="dombearb" ? " – "+tr("Domäne")+" "+S.roleDom : ""); }
 function log(t, txt){ t.log.unshift({ts:now(), who:(S.user? S.user+" – ":"")+roleLabel(), txt}); }
+
+/* ---------- V1.50: Ticketnummern-Jahresschema IRM-JJJJ-NNNN ---------- */
+function ensureSeqY(){
+  S.seqY=S.seqY||{};
+  for(const t of S.tickets){ const m=/^IRM-(\d{4})-(\d{4})$/.exec(t.id);
+    if(m){ const y=m[1], n=parseInt(m[2],10); if(!(S.seqY[y]>=n)) S.seqY[y]=n; } }
+}
+/* Einmalige Migration bestehender Tickets vom Altschema IRM-NNNN auf IRM-JJJJ-NNNN.
+   Reihenfolge je Jahr nach Erstellungszeitpunkt; Verweise (Sammelticket) werden mitgezogen;
+   die Umbenennung wird im Aktivitätsprotokoll dokumentiert. */
+function migrateIds(){
+  const oldT=S.tickets.filter(t=>/^IRM-\d{4}$/.test(t.id));
+  if(!oldT.length){ ensureSeqY(); return; }
+  ensureSeqY();
+  const byY={};
+  for(const t of oldT){ const y=new Date(t.kenntnis||t.erstellt||now()).getFullYear(); (byY[y]=byY[y]||[]).push(t); }
+  const map={};
+  for(const y of Object.keys(byY)){
+    byY[y].sort((a,b)=>(a.erstellt||0)-(b.erstellt||0));
+    let n=S.seqY[y]||0;
+    for(const t of byY[y]){ n++; map[t.id]="IRM-"+y+"-"+String(n).padStart(4,"0"); }
+    S.seqY[y]=n;
+  }
+  for(const t of S.tickets){
+    if(map[t.id]){ const oldId=t.id; t.id=map[t.id];
+      (t.log=t.log||[]).unshift({ts:now(), who:"System", txt:(S.lang==="en"?"Ticket number migrated to the annual scheme: ":"Ticketnummer auf das Jahresschema migriert: ")+oldId+" → "+t.id}); }
+    if(t.parent&&map[t.parent]) t.parent=map[t.parent];
+  }
+  if(S.detail&&map[S.detail]) S.detail=map[S.detail];
+  save();
+}
 
 /* ---------- Severity (GDL Kap. 6.3) ---------- */
 const ORD = {"P1":4,"P2":3,"P3":2,"P4":1,"nicht betroffen":0,"":0,undefined:0};
@@ -1302,13 +1334,17 @@ function addOnce(t, key, name, rolle, hours){
 }
 
 /* ---------- Ticketanlage ---------- */
+function localSeq(yr){ S.seqY=S.seqY||{}; S.seqY[yr]=(S.seqY[yr]||0)+1; return S.seqY[yr]; }
 async function newTicket(o){
   const ts = now();
+  const yr = new Date(ts).getFullYear();
   let seqN;
-  if(API){ try{ seqN=(await api("/api/seq",{method:"POST"})).seq; if(seqN+1>S.seq)S.seq=seqN+1; }catch(e){ setNet(false); seqN=S.seq++; } }
-  else seqN=S.seq++;
+  if(API){ try{ seqN=(await api("/api/seq",{method:"POST",body:JSON.stringify({year:yr})})).seq;
+      S.seqY=S.seqY||{}; if(!(S.seqY[yr]>=seqN)) S.seqY[yr]=seqN;
+    }catch(e){ setNet(false); seqN=localSeq(yr); } }
+  else seqN=localSeq(yr);
   const t = {
-    id:"IRM-"+String(seqN).padStart(4,"0"),
+    id:"IRM-"+yr+"-"+String(seqN).padStart(4,"0"),
     erstellt:ts, kenntnis:o.kenntnis||ts,
     betreff:o.betreff||"", beschreibung:o.beschreibung||"", standort:o.standort||"",
     beobachtet:o.beobachtet||null, personen:!!o.personen, nearmiss:!!o.nearmiss,
@@ -1728,7 +1764,7 @@ function bulkSel(id,on){ if(on) BULK.add(id); else BULK.delete(id); render(); }
 function bulkClear(){ BULK.clear(); render(); }
 function bulkAttach(){
   const de=S.lang!=="en";
-  const pid=(prompt(de?"ID des Sammeltickets, dem die Auswahl zugeordnet wird (z. B. IRM-0001):":"ID of the parent ticket for the selection (e.g. IRM-0001):")||"").trim().toUpperCase();
+  const pid=(prompt(de?"ID des Sammeltickets, dem die Auswahl zugeordnet wird (z. B. IRM-2026-0001):":"ID of the parent ticket for the selection (e.g. IRM-2026-0001):")||"").trim().toUpperCase();
   if(!pid) return;
   const pt=S.tickets.find(x=>x.id===pid);
   if(!pt){ alert((de?"Ticket nicht gefunden: ":"Ticket not found: ")+pid); return; }
@@ -2661,6 +2697,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> the quick action opens a selection menu of all domains with hover expertise (who can do what); domains typically also affected per the threat catalogue (POL Annex C) are pre-selected with ⭐. Selected experts become secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
    <p><b>New KPIs:</b> MTTA (time to first response), MTTR (time to resolution), first-contact-resolution rate, CSAT (reporter satisfaction, optional in closure) and the self-help rate.</p>
    <p><b>Timeline overview (reports):</b> the report area contains a multi-year summary — rolling last 5 years, last 2 years and last 12 months with totals, P1–P4, near-miss share and resolution rate — plus the monthly distribution of the current year with the P1/P2 share highlighted in red. In addition, the <b>dynamic timeline</b> shows ten years at a glance with resolution increasing towards today: macro range (10–5 years) year epochs with P1 milestones (🚩) only, meso range (5–1 year) condensed to half-years, micro range (last 12 months) resolved into months — each column with hover details. The time anchor is the time of awareness.</p>
+   <p><b>Ticket numbers (annual scheme):</b> as of V1.50 ticket numbers read IRM-YYYY-NNNN; the running number restarts at 0001 on 1 January of every year (example: first report in 2027 = IRM-2027-0001). Existing tickets were migrated automatically — per year in order of creation; the renaming is documented in each ticket's activity log, and parent-ticket references were carried over.</p>
    <p><b>Monitoring interface:</b> the IRM server accepts automatically generated reports from monitoring systems via <code>POST /api/inbound</code> (subject, description, site, objects); such tickets start in “Open” with source “Monitoring/API”.</p>
   </div></details>
 
@@ -2838,6 +2875,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> Die Schnellaktion öffnet ein Auswahlmenü aller Domänen mit Mouseover-Expertise (wer kann was); regelmäßig mitbetroffene Domänen aus dem Gefährdungskatalog (POL Anhang C) sind mit ⭐ vorausgewählt. Ausgewählte Experten werden Nebendomäne mit Mitwirkungsaufgabe und Beobachterstatus (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
    <p><b>Neue Kennzahlen:</b> MTTA (Zeit bis Erstreaktion), MTTR (Zeit bis Lösung), First-Contact-Resolution-Quote, CSAT (Melder-Zufriedenheit, optional im Abschluss) sowie die Selbsthilfe-Quote.</p>
    <p><b>Zeitliche Übersicht (Berichte):</b> Der Berichtsbereich enthält eine Mehrjahresübersicht — rollierend die letzten 5 Jahre, letzten 2 Jahre und letzten 12 Monate mit Gesamtzahl, P1–P4, Near-Miss-Anteil und Lösungsquote — sowie die Monatsverteilung des laufenden Jahres mit rot hervorgehobenem P1/P2-Anteil. Ergänzend zeigt der <b>dynamische Zeitstrahl</b> zehn Jahre auf einen Blick, mit zur Gegenwart hin zunehmender Auflösung: Makrobereich (10–5 Jahre) nur Jahres-Epochen mit P1-Meilensteinen (🚩), Mesobereich (5–1 Jahr) verdichtet zu Halbjahren, Mikrobereich (letzte 12 Monate) aufgelöst in Monate — jede Säule mit Mouseover-Details. Zeitanker ist die Kenntniserlangung.</p>
+   <p><b>Ticketnummern (Jahresschema):</b> Seit V1.50 lauten die Ticketnummern IRM-JJJJ-NNNN; die laufende Nummer beginnt am 1. Januar jedes Jahres neu bei 0001 (Beispiel: erste Meldung 2027 = IRM-2027-0001). Bestehende Tickets wurden automatisch auf das Schema migriert — je Jahr in der Reihenfolge ihrer Erstellung; die Umbenennung ist im Aktivitätsprotokoll jedes Tickets dokumentiert, Verweise auf Sammeltickets wurden mitgezogen.</p>
    <p><b>Monitoring-Schnittstelle:</b> Der IRM-Server nimmt über <code>POST /api/inbound</code> automatisch erzeugte Meldungen aus Monitoring-Systemen an (Betreff, Beschreibung, Standort, Objekte); solche Tickets starten in „Open“ mit Quelle „Monitoring/API“.</p>
   </div></details>
 
@@ -2946,6 +2984,7 @@ Object.assign(EN,{
 
 /* ---------- Init ---------- */
 initLogin();
+migrateIds();
 render();
 initServer();
 </script>
