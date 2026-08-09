@@ -145,7 +145,11 @@ th.tip{position:sticky;cursor:help}
 .langbtn.on{background:var(--gelb);color:#000;border-color:var(--gelb)}
 .logo{height:52px;display:block;background:#fff;border-radius:6px;padding:3px 8px;border:1px solid var(--line);margin-left:auto}
 @media(max-width:1480px){.logo{height:42px}}
-#alertbar{background:var(--crit);color:#fff;padding:8px 18px;font-size:13.5px;font-weight:700}
+#alertbar{background:var(--crit);color:#fff;padding:8px 0;font-size:13.5px;font-weight:700;overflow:hidden;white-space:nowrap}
+#alertbar .abscroll{display:inline-block;white-space:nowrap;padding-left:100%;animation:abmove var(--abdur,30s) linear infinite;will-change:transform}
+#alertbar:hover .abscroll{animation-play-state:paused}
+@keyframes abmove{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+@media print{#alertbar .abscroll{animation:none;padding-left:18px}}
 #alertbar .abtick{cursor:pointer;text-decoration:underline;margin-right:12px;font-weight:400;color:#fff}
 #alertbar .abtick:hover{opacity:.8}
 .detgrid{display:grid;grid-template-columns:262px minmax(0,1fr) 296px;gap:0 16px;align-items:start}
@@ -1247,9 +1251,11 @@ function alertBarHtml(){
   if(!p1.length){ el.style.display="none"; el.innerHTML=""; return; }
   const de=S.lang!=="en";
   el.style.display="";
-  el.innerHTML="🚨 <b>"+(de?"MAJOR INCIDENT – aktive P1-Vorfälle":"MAJOR INCIDENT – active P1 incidents")+" ("+p1.length+"):</b> "
-   + p1.slice(0,4).map(t=>`<span class="abtick" onclick="openT('${t.id}')">${t.id} · ${esc(t.betreff.slice(0,55))}</span>`).join(" ")
-   + (p1.length>4?" …":"");
+  const content="🚨 <b>"+(de?"MAJOR INCIDENT – aktive P1-Vorfälle":"MAJOR INCIDENT – active P1 incidents")+" ("+p1.length+"):</b> "
+   + p1.map(t=>`<span class="abtick" onclick="openT('${t.id}')">${t.id} · ${esc(t.betreff.slice(0,70))}</span>`).join(" &nbsp;•&nbsp; ");
+  const plain=content.replace(/<[^>]+>/g,"");
+  const dur=Math.max(18, Math.round(plain.length*0.22));
+  el.innerHTML=`<div class="abscroll" style="--abdur:${dur}s" title="${de?"Laufschrift – Mouseover hält an, Klick öffnet das Ticket":"Ticker – hover pauses, click opens the ticket"}">${content}</div>`;
 }
 
 /* ---------- Sichtbarkeit / Berechtigungen ---------- */
