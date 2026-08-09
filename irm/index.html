@@ -675,6 +675,16 @@ function nis2(t){
   return t.nis2;
 }
 const nisMyjava = t => nisOrte(t).includes("Myjava");
+const fmtEur=n=>Math.round(n).toLocaleString("de-DE")+" €";
+/* RK-09-Kumulationshilfe (DVO Art. 4): Vorfälle der letzten 6 Monate am selben Standort,
+   kumulierte Schadenshöhe gegen die 250.000-€-Schwelle; gleiche Gefährdung = Indiz für dieselbe Grundursache. */
+function rk09Check(t){
+  const from=(t.kenntnis||now())-183*24*3600000;
+  const cand=S.tickets.filter(x=>x.id!==t.id && (x.kenntnis||0)>=from && (x.kenntnis||0)<=(t.kenntnis||now()) && x.standort===t.standort && x.standort);
+  const sum=(t.schaden||0)+cand.reduce((a,x)=>a+(x.schaden||0),0);
+  const sameGef=cand.filter(x=>x.gef&&x.gef!=="noch nicht bestimmt"&&x.gef===t.gef);
+  return {cand, sum, sameGef, over:sum>250000};
+}
 function nisAutoErheblich(t){
   const n=nis2(t);
   return NIS2_DIRECT.some(k=>n.rk[k.id]==="ja") || n.sk.sk1==="ja";
@@ -1439,7 +1449,7 @@ async function newTicket(o){
     s1:"",s2:"",s3:"",s4:"",s5:"",s6:"",
     herab:"nein", herabStufe:"", herabBegr:"",
     einstufungBegr:"", eskOverride:"",
-    infoklass:"", objekte:"", tisax:false, prototyp:false, isBezug:"",
+    infoklass:"", objekte:"", tisax:false, prototyp:false, isBezug:"", schaden:0,
     sofort:"", beweis:false, beweisText:"",
     kenntnisBegr:"",
     pf:Object.fromEntries(PFL.map(p=>[p.id,"nicht geprüft"])),
@@ -1471,7 +1481,7 @@ async function seed(){
   await mk({betreff:"Verschlüsselungstrojaner auf Fileserver LB-FS02", beschreibung:"Mehrere Dateien nicht mehr lesbar, Erpresserschreiben auf dem Desktop. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-30*H},
     t=>{ t.status="Triage"; t.leitdomaene="A"; t.owner=ownerFor(t); t.s1="nicht betroffen"; t.s2="P2"; t.s3="P1"; t.s4="P4"; t.s5="nicht betroffen"; t.s6="P1";
       t.gef="G 0.39 – Schadprogramme"; t.pf.nis2_de="ja"; t.pf.dsgvo="in Prüfung"; t.pf.kunde_liefer="in Prüfung"; t.pf.oem_daten="ja"; t.pf.anv="ja";
-      t.tisax=true; t.infoklass="C3"; t.objekte="LB-FS02, Domäne PROD"; t.einstufungBegr="C3-Daten betroffen, Meldepflicht NIS-2 wahrscheinlich.";
+      t.tisax=true; t.infoklass="C3"; t.objekte="LB-FS02, Domäne PROD"; t.schaden=180000; t.einstufungBegr="C3-Daten betroffen, Meldepflicht NIS-2 wahrscheinlich.";
       t.nis2={sysbezug:"ja", sysbegr:"", orte:["Leutenbach"], rk:{rk01:"ja",rk02:"ja",rk03:"nein",rk04:"ja",rk05:"nein",rk06:"ja",rk07:"ja",rk08:"nein",rk09:"nein",rk10:"ja",rk11:"nein",rk12:"nein"}, sk:{}, ergebnis:"erheblich", begr:"RK-07 Verschlüsselungsangriff, RK-01/02 Systemausfall mit Lieferwirkung, RK-04 C3-Datenabfluss nicht auszuschließen (fiktiver Testfall).", vieraugen:false};
       ensureNisTask(t,"nis18",NIS18_NAME,"ISB",18); });
   await mk({betreff:"OT-Leitrechner Extrusionslinie 3 ohne Funktion", beschreibung:"Linie 3 steht, Ursache unklar. (Fiktiver Testfall)", standort:"Myjava", kenntnis:now()-6*H},
@@ -1497,7 +1507,7 @@ async function seed(){
   await mk({betreff:"Kunde reklamiert Undichtigkeit an Serienbauteil, Rückrufverdacht", beschreibung:"0-km-Beanstandung OEM, Verdacht auf Chargenfehler. (Fiktiver Testfall)", standort:"Leutenbach", kenntnis:now()-26*H},
     t=>{ t.leitdomaene="H"; t.owner=ownerFor(t); t.status="Triage"; t.s1="nicht betroffen"; t.s2="P3"; t.s3="nicht betroffen"; t.s4="P2"; t.s5="P4"; t.s6="P2";
       t.gef="G-R 1.05 – Produktsicherheits- oder Rückrufereignis"; t.pf.kunde_produkt="ja"; t.pf.zert="in Prüfung"; t.pf.dsgvo="nein"; t.pf.anv="nein"; t.pf.kunde_liefer="in Prüfung"; t.pf.oem_daten="nein";
-      t.fvSystem="CAQ QBD.net"; t.fvNummer="QBD-8D-2026-0451"; t.d8={d1:"QS-Leitung, Produktion, Vertrieb (fiktiv)",d2:"0-km-Beanstandung OEM: Undichtigkeit an Serienbauteil, Verdacht Chargenfehler.",d3:"Chargen gesperrt, Sortieraktion beim Kunden vereinbart.",d4:"",d5:"",d6:"",d7:"",d8:"",status:"offen"}; });
+      t.schaden=150000; t.fvSystem="CAQ QBD.net"; t.fvNummer="QBD-8D-2026-0451"; t.d8={d1:"QS-Leitung, Produktion, Vertrieb (fiktiv)",d2:"0-km-Beanstandung OEM: Undichtigkeit an Serienbauteil, Verdacht Chargenfehler.",d3:"Chargen gesperrt, Sortieraktion beim Kunden vereinbart.",d4:"",d5:"",d6:"",d7:"",d8:"",status:"offen"}; });
   await mk({betreff:"Beschwerde über Führungskraft – Verdacht Mobbing", beschreibung:"Vertrauliche Meldung an HR. (Fiktiver Testfall – fiktive Personen)", standort:"Graz", kenntnis:now()-70*H},
     t=>{ t.leitdomaene="I"; t.owner=ownerFor(t); t.status="In Bearbeitung – Analyse"; t.s1="P3"; t.s2="nicht betroffen"; t.s3="P4"; t.s4="nicht betroffen"; t.s5="nicht betroffen"; t.s6="P3";
       t.gef="G 0.29 – Verstoß gegen Gesetze oder Regelungen"; t.pf.anv="ja"; t.pf.dsgvo="in Prüfung"; t.pf.kunde_liefer="nein"; t.pf.oem_daten="nein"; t.sofort=fmt(now()-69*H)+" Getrennte Anhörungen terminiert (HR, fiktiv)"; });
@@ -2207,6 +2217,8 @@ function viewDetail(id){
        </div>`;
      })()}</div>
     <div><label>${tr("Betroffene Objekte")} ${["A","B"].includes(t.leitdomaene)?'<span class="req">* '+(de?"(CMDB-Pflicht bei A/B)":"(CMDB mandatory for A/B)")+'</span>':""}</label><input type="text" ${ro?"disabled":""} value="${esc(t.objekte)}" onchange="upd('objekte',this.value)"></div>
+    <div><label>${de?"Geschätzter Schaden (EUR)":"Estimated loss (EUR)"} <span class="hint help" title="${de?"Bruttoschaden vor Versicherungsleistung, fortschreibend geschätzt. Grundlage für die Kumulationsprüfungen: NIS-2 RK-09 (zwei Vorfälle gleicher Grundursache in 6 Monaten, kumuliert > 250.000 €) und die 30-Tage-Regel der POL_010.001.":"Gross loss before insurance, running estimate. Basis for the cumulation checks: NIS-2 RK-09 (two incidents with the same root cause within 6 months, cumulatively > €250,000) and the 30-day rule of POL_010.001."}">ⓘ</span></label>
+     <input type="number" min="0" step="1000" ${ro?"disabled":""} value="${t.schaden||""}" placeholder="0" onchange="upd('schaden',parseInt(this.value)||0,'${de?"Geschätzter Schaden (EUR)":"Estimated loss (EUR)"}')"></div>
     <div><label>${tr("Kennzeichen")}</label><div class="flex">
       <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.tisax?"checked":""} ${ro?"disabled":""} onchange="upd('tisax',this.checked,'TISAX')">TISAX</label>
       <label style="display:inline-flex;gap:4px;font-weight:400;margin:0"><input type="checkbox" style="width:auto" ${t.prototyp?"checked":""} ${ro?"disabled":""} onchange="upd('prototyp',this.checked,'${tr("Prototypenbezug")}')">${tr("Prototypenbezug")} ${["C","H"].includes(t.leitdomaene)?'<span class="req">*</span>':""}</label>
@@ -2247,7 +2259,20 @@ function viewDetail(id){
     </tbody></table>
     <h3>${tr("Teil 3 – Kriterien mit Prüfpflicht")}</h3>
     <table><thead><tr><th style="width:70px">ID</th><th>${de?"Prüffrage":"Question"}</th><th style="width:90px">${de?"Ergebnis":"Result"}</th></tr></thead><tbody>
-    ${NIS2_CHECK.map(k=>`<tr><td><b class="help" title="${esc(de?k.hd:k.he)}">${k.id.toUpperCase().replace("RK","RK-")}</b></td><td class="small">${de?k.de:k.en}</td><td>${jn(n.rk[k.id],"updNisRk",k.id)}</td></tr>`).join("")}
+    ${NIS2_CHECK.map(k=>{
+      let extra="";
+      if(k.id==="rk09"){
+        const c9=rk09Check(t);
+        if(!t.schaden&&!c9.cand.some(x=>x.schaden)) extra=`<div class="small muted" style="margin-top:3px">ⓘ ${de?"Kumulationsprüfung: Feld „Geschätzter Schaden (EUR)“ in Abschnitt 2 pflegen — dann prüft das Tool automatisch gegen Vorfälle der letzten 6 Monate am Standort.":"Cumulation check: maintain the “Estimated loss (EUR)” field in section 2 — the tool then checks automatically against incidents of the last 6 months at the site."}</div>`;
+        else if(c9.cand.length){
+          const lst=c9.cand.slice(0,4).map(x=>`<a href="#" onclick="openT('${x.id}');return false">${x.id}</a>${x.gef===t.gef&&t.gef!=="noch nicht bestimmt"?" ⭐":""} (${x.schaden?fmtEur(x.schaden):"–"})`).join(" · ");
+          extra = c9.over
+           ? `<div class="small" style="color:var(--crit);font-weight:700;margin-top:3px">⚠ ${de?"Kumulationsprüfung Standort "+esc(siteLabel(t.standort))+": ":"Cumulation check site "+esc(siteLabel(t.standort))+": "}${c9.cand.length} ${de?"Vorfall/Vorfälle in den letzten 6 Monaten, kumuliert":"incident(s) in the last 6 months, cumulatively"} ${fmtEur(c9.sum)} &gt; 250.000 € — ${de?"RK-09 ist zu bejahen, sofern dieselbe Grundursache vorliegt":"answer RK-09 “yes” if the root cause is the same"} (⭐ = ${de?"gleiche Gefährdung":"same threat"}): ${lst}</div>`
+           : `<div class="small muted" style="margin-top:3px">ⓘ ${de?"Kumulationsprüfung Standort "+esc(siteLabel(t.standort))+": ":"Cumulation check site "+esc(siteLabel(t.standort))+": "}${c9.cand.length} ${de?"Vorfall/Vorfälle in den letzten 6 Monaten, kumuliert":"incident(s) in the last 6 months, cumulatively"} ${fmtEur(c9.sum)} ≤ 250.000 € (${lst})</div>`;
+        }
+      }
+      return `<tr><td><b class="help" title="${esc(de?k.hd:k.he)}">${k.id.toUpperCase().replace("RK","RK-")}</b></td><td class="small">${de?k.de:k.en}${extra}</td><td>${jn(n.rk[k.id],"updNisRk",k.id)}</td></tr>`;
+    }).join("")}
     </tbody></table>
     ${myj?`<h3>${tr("Teil 4 – Standortbezogene Zusatzprüfung Slowakei (Myjava)")}</h3>
     <table><tbody>
@@ -2779,6 +2804,7 @@ function viewGuidance(){
     <li>Slovakia is the <b>only jurisdiction with hard numeric thresholds</b> (Vyhláška NBÚ no. 226/2025): if Myjava is affected, the form highlights the stricter <b>30/60-minute thresholds</b> at RK-01 — a 45-minute outage is reportable in Myjava but not in Leutenbach.</li>
     <li><b>Part 4</b> appears only when Myjava is affected and additionally checks the duties per <b>Sec. 24(5)</b>: significant cyber threats, last-minute averted events (near miss!) and unremedied vulnerabilities of publicly reachable systems. A “yes” automatically creates the <b>NBÚ/JISKB additional task</b> (without undue delay, 24 h).</li>
     <li>Reporting language <b>Slovak</b>, prepared by the Myjava site responsible together with the ISB; the German working version belongs in the ticket as an attachment.</li>
+    <li><b>RK-09 cumulation aid:</b> for question RK-09 (two incidents with the same root cause within six months, cumulatively &gt; €250,000, IR Art. 4) the tool automatically compares the incidents of the last six months at the same site and sums the estimated losses (field “Estimated loss (EUR)” in section 2). If the threshold is exceeded together with the new incident, a warning appears at RK-09 listing the tickets concerned; identical threats are marked ⭐ as an indication of the same root cause. The decision remains with triage — the hint does not replace the root-cause check.</li>
    </ul>
    <p class="small muted">Binding basis: STD_010.002 (relevance assessment and reporting thresholds) — the “how” of reporting is governed by STD_010.001 (portal access, reporting process, deadline monitoring).</p>
   </div></details>
@@ -2974,6 +3000,7 @@ function viewGuidance(){
     <li>Die Slowakei ist die <b>einzige Rechtsordnung mit harten Zahlenwerten</b> (Vyhláška NBÚ č. 226/2025): Ist Myjava betroffen, hebt der Bogen bei RK-01 die verschärften <b>30/60-Minuten-Schwellen</b> hervor — ein 45-Minuten-Ausfall ist in Myjava meldepflichtig, in Leutenbach nicht.</li>
     <li><b>Teil 4</b> erscheint nur bei Betroffenheit Myjavas und prüft zusätzlich die Pflichten nach <b>§ 24 Abs. 5</b>: bedeutende Cyberbedrohung, in letzter Minute abgewendetes Ereignis (Near Miss!) und nicht behobene Schwachstellen öffentlich erreichbarer Systeme. Ein „ja“ erzeugt automatisch die <b>NBÚ/JISKB-Zusatzaufgabe</b> (unverzüglich, 24 h).</li>
     <li>Meldesprache <b>Slowakisch</b>, Meldung durch den Standortverantwortlichen Myjava gemeinsam mit dem ISB; die deutsche Arbeitsfassung gehört als Anlage ins Ticket.</li>
+    <li><b>RK-09-Kumulationshilfe:</b> Für die Prüffrage RK-09 (zwei Vorfälle derselben Grundursache in sechs Monaten, kumuliert &gt; 250.000 €, DVO Art. 4) gleicht das Tool automatisch die Vorfälle der letzten sechs Monate am selben Standort ab und summiert die geschätzten Schadenshöhen (Feld „Geschätzter Schaden (EUR)“ in Abschnitt 2). Wird die Schwelle zusammen mit dem neuen Vorfall überschritten, erscheint an RK-09 ein Warnhinweis mit den betreffenden Tickets; gleiche Gefährdungen sind als Indiz derselben Grundursache mit ⭐ markiert. Die Entscheidung trifft weiterhin die Triage — der Hinweis ersetzt die Grundursachen-Prüfung nicht.</li>
    </ul>
    <p class="small muted">Verbindliche Grundlage: STD_010.002 (Relevanzbewertung und Meldeschwellen) — das „Wie“ der Meldung regelt STD_010.001 (Portalzugang, Meldeprozess, Fristenüberwachung).</p>
   </div></details>
