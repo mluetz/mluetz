@@ -825,7 +825,82 @@ const G_REUTIB_EN = ["Occupational accident or personal injury on site","Health 
    (Format: Gefährdungs-ID → [Primärdomäne, regelmäßig ebenfalls betroffene Domänen]).
    Abweichende Zuordnungen im Einzelfall sind zulässig und zu begründen. */
 const G_PRIM = {"G 0.1":["D","EFABG"],"G 0.2":["D","ABF"],"G 0.3":["D","ABFE"],"G 0.4":["F","ABH"],"G 0.5":["D","EFGI"],"G 0.6":["D","EGI"],"G 0.7":["C","DGI"],"G 0.8":["D","ABFG"],"G 0.9":["A","BGF"],"G 0.10":["D","FBE"],"G 0.11":["G","ADF"],"G 0.12":["B","AF"],"G 0.13":["A","C"],"G 0.14":["A","CJH"],"G 0.15":["A","CJ"],"G 0.16":["C","AJ"],"G 0.17":["A","CJ"],"G 0.18":["A","FGHI"],"G 0.19":["A","CJH"],"G 0.20":["G","AH"],"G 0.21":["A","BH"],"G 0.22":["A","HJ"],"G 0.23":["A","BJ"],"G 0.24":["C","ADF"],"G 0.25":["A","BF"],"G 0.26":["F","ABH"],"G 0.27":["G","AFI"],"G 0.28":["A","B"],"G 0.29":["J","EHG"],"G 0.30":["A","BJ"],"G 0.31":["A","BF"],"G 0.32":["A","JC"],"G 0.33":["I","FGA"],"G 0.34":["C","DEI"],"G 0.35":["J","AIG"],"G 0.36":["A","JG"],"G 0.37":["A","JH"],"G 0.38":["J","AI"],"G 0.39":["A","BFG"],"G 0.40":["A","BG"],"G 0.41":["C","BFH"],"G 0.42":["A","JG"],"G 0.43":["A","BG"],"G 0.44":["C","ADJ"],"G 0.45":["A","HJ"],"G 0.46":["A","HJ"],"G 0.47":["A","BFG"],"G-R 1.01":["E","FDI"],"G-R 1.02":["E","DFI"],"G-R 1.03":["E","DJ"],"G-R 1.04":["H","FGJ"],"G-R 1.05":["H","JGI"],"G-R 1.06":["F","GHB"],"G-R 1.07":["G","FHJ"],"G-R 1.08":["G","HF"],"G-R 1.09":["I","FG"],"G-R 1.10":["I","FGE"],"G-R 1.11":["G","IJ"],"G-R 1.12":["J","IHG"]};
-function gefId(v){ const m=/^(G(?:-R)? [\d.]+) – /.exec(v||""); return m?m[1]:null; }
+function gefId(v){ const m=/^(G(?:-R|-D)? [A-J0-9][\d.]*) – /.exec(v||""); return m?m[1]:null; }
+
+/* ---------- V1.60: REUTIB-Domänenkatalog G-D (für Vorfälle ohne IS-Bezug) ----------
+   Quellenrahmen: GDA/BAuA-Gefährdungsfaktoren (E), Elementar-/Facility-Kategorien (D),
+   IATF/VDA-Fehlerarten (H), BCM-/Supply-Chain-Risiken (G), Compliance-Taxonomie ISO 37301 (J).
+   Status: gekennzeichneter Tool-Vorschlag zur Revision von POL_010.001 Anhang C (V3.01).
+   Format je Eintrag: [ID, DE, EN, regelmäßig ebenfalls betroffene Domänen]. */
+const GD={
+ C:[["C.01","Unbefugter Zutritt oder Einbruch","Unauthorised access or break-in","A"],
+    ["C.02","Diebstahl von Eigentum oder Datenträgern","Theft of property or data media","AJ"],
+    ["C.03","Ausspähung, Fotografieren oder Abhören im Schutz-/Prototypenbereich","Spying, photographing or eavesdropping in protected/prototype areas","AJ"],
+    ["C.04","Sabotage oder Vandalismus an Objekten","Sabotage or vandalism on premises","BD"],
+    ["C.05","Verlust oder Missbrauch von Ausweisen und Schlüsseln","Loss or misuse of badges and keys","A"]],
+ D:[["D.01","Brand oder Explosion","Fire or explosion","BE"],
+    ["D.02","Wasserschaden oder Rohrbruch","Water damage or burst pipe","B"],
+    ["D.03","Naturereignis (Sturm, Hochwasser, Schnee, Erdbeben)","Natural event (storm, flood, snow, earthquake)","BG"],
+    ["D.04","Ausfall von Strom-, Wärme- oder Medienversorgung","Failure of power, heat or media supply","B"],
+    ["D.05","Gebäude- oder Bauteilschaden (Statik, Dach, Tor)","Building or structural damage","F"],
+    ["D.06","Austritt von Gefahrstoffen aus Anlagen","Release of hazardous substances from installations","E"]],
+ E:[["E.01","Mechanische Gefährdung (Quetschen, Schneiden, Anfahren)","Mechanical hazard (crushing, cutting, collision)","F"],
+    ["E.02","Absturz, Sturz oder Stolpern","Fall from height, slip or trip",""],
+    ["E.03","Elektrische Gefährdung","Electrical hazard","DF"],
+    ["E.04","Gefahrstoff-Exposition von Personen","Exposure of persons to hazardous substances","D"],
+    ["E.05","Brand- oder Explosionsgefährdung am Arbeitsplatz","Fire or explosion hazard at the workplace","D"],
+    ["E.06","Ergonomische oder psychische Belastung","Ergonomic or mental stress","I"],
+    ["E.07","Umweltereignis mit Anzeigepflicht","Environmental event subject to notification","DJ"]],
+ F:[["F.01","Maschinen- oder Anlagenausfall (mechanisch)","Machine or equipment breakdown (mechanical)","B"],
+    ["F.02","Werkzeugbruch oder -verschleiß","Tool breakage or wear","H"],
+    ["F.03","Prozessabweichung in der Fertigung","Process deviation in production","H"],
+    ["F.04","Instandhaltungsrückstand oder fehlerhafte Wartung","Maintenance backlog or faulty maintenance",""]],
+ G:[["G.01","Lieferantenausfall oder -insolvenz","Supplier failure or insolvency","H"],
+    ["G.02","Transport- oder Logistikstörung","Transport or logistics disruption",""],
+    ["G.03","Materialengpass oder Qualitätssperre im Zulauf","Material shortage or inbound quality block","H"],
+    ["G.04","Force Majeure in der Lieferkette (Streik, Grenze, Naturereignis)","Force majeure in the supply chain",""],
+    ["G.05","Zoll- oder Exportkontrollproblem","Customs or export-control issue","J"]],
+ H:[["H.01","Sicherheitsrelevanter Produktfehler im Feld","Safety-relevant product defect in the field","GJ"],
+    ["H.02","0-km-Beanstandung mit Serienbezug","Zero-kilometre complaint with series relevance","G"],
+    ["H.03","Interne Qualitätsabweichung mit Sperrung","Internal quality deviation with blocking","F"],
+    ["H.04","Auslieferung nicht konformer Teile","Delivery of non-conforming parts","GJ"],
+    ["H.05","Kennzeichnungs- oder Dokumentationsfehler","Marking or documentation error","J"]],
+ I:[["I.01","Konflikt, Mobbing- oder Diskriminierungsverdacht","Conflict, bullying or suspected discrimination","J"],
+    ["I.02","Plötzlicher Ausfall von Schlüsselpersonal","Sudden loss of key personnel",""],
+    ["I.03","Arbeitszeit- oder arbeitsrechtlicher Verstoß","Working-time or labour-law violation","J"],
+    ["I.04","Innentäter- oder Loyalitätsverdacht (ohne IT-Bezug)","Insider or loyalty suspicion (non-IT)","CJ"]],
+ J:[["J.01","Datenschutzverstoß ohne IT-Bezug (Papier, Fehlversand)","Data-protection breach without IT relevance (paper, misdelivery)","I"],
+    ["J.02","Korruptions- oder Betrugsverdacht","Suspected corruption or fraud","I"],
+    ["J.03","Kartell- oder wettbewerbsrechtlicher Verdacht","Suspected antitrust or competition issue",""],
+    ["J.04","Exportkontroll- oder Sanktionsverstoß","Export-control or sanctions violation","G"],
+    ["J.05","Negative Medien- oder Social-Media-Berichterstattung","Negative media or social-media coverage",""],
+    ["J.06","Behördliches Verfahren oder Durchsuchung","Official proceedings or search",""]]};
+const GD_KEYS=Object.keys(GD);
+for(const d of GD_KEYS) for(const e of GD[d]) G_PRIM["G-D "+e[0]]=[d, e[3]||""];
+/* IS-Bezug: steuert die Katalog-Empfehlung (BSI vs. G-D); Automatik übersteuerbar */
+function isAutoIs(t){ return (["A","B"].includes(t.leitdomaene) || (t.s3&&t.s3!=="nicht betroffen") || (t.nis2&&t.nis2.sysbezug==="ja")) ? "ja":"nein"; }
+function effIs(t){ return t.isBezug||isAutoIs(t); }
+function gefOptions(t){
+  const de=S.lang!=="en";
+  const opt=v=>`<option value="${esc(v)}" ${t.gef===v?"selected":""}>${esc(gefLabel(v))}</option>`;
+  const bsi=G_BSI.map((g,i)=>"G 0."+(i+1)+" – "+g);
+  const gr=G_REUTIB.map((g,i)=>"G-R 1."+String(i+1).padStart(2,"0")+" – "+g);
+  const gdDom=d=>(GD[d]||[]).map(e=>"G-D "+e[0]+" – "+e[1]);
+  const grp=(l,vs)=>vs.length?`<optgroup label="${esc(l)}">${vs.map(opt).join("")}</optgroup>`:"";
+  let out=opt("noch nicht bestimmt");
+  if(effIs(t)==="ja"){
+    out+=grp(de?"BSI G 0 – Informationssicherheit (empfohlen bei IS-Bezug)":"BSI G 0 – information security (recommended for IS relevance)",bsi);
+    out+=grp("REUTIB G-R",gr);
+    for(const d of GD_KEYS) out+=grp((de?"Domänenkatalog G-D ":"Domain catalogue G-D ")+d+" – "+domName(d),gdDom(d));
+  } else {
+    const ld=t.leitdomaene;
+    if(ld&&GD[ld]) out+=grp((de?"Domänenkatalog G-D ":"Domain catalogue G-D ")+ld+" – "+domName(ld)+(de?" (empfohlen)":" (recommended)"),gdDom(ld));
+    out+=grp("REUTIB G-R",gr);
+    for(const d of GD_KEYS) if(d!==ld) out+=grp((de?"Domänenkatalog G-D ":"Domain catalogue G-D ")+d+" – "+domName(d),gdDom(d));
+    out+=grp(de?"BSI G 0 – Informationssicherheit":"BSI G 0 – information security",bsi);
+  }
+  return out;
+}
 function applyPrim(pd){
   const t=T(); if(!t||!canEdit(t)) return;
   upd("leitdomaene", pd, tr("Leitdomäne")+" ("+tr("Empfehlung Anhang C übernommen")+")");
@@ -846,6 +921,7 @@ function gefLabel(v){
   if(v==="noch nicht bestimmt") return "not yet determined";
   let m=v.match(/^G 0\.(\d+) – /); if(m) return "G 0."+m[1]+" – "+(G_BSI_EN[+m[1]-1]||v);
   m=v.match(/^G-R 1\.(\d+) – /); if(m) return "G-R 1."+m[1]+" – "+(G_REUTIB_EN[+m[1]-1]||v);
+  m=v.match(/^G-D ([A-J]\.\d+) – /); if(m){ const e=(GD[m[1][0]]||[]).find(x=>x[0]===m[1]); if(e) return "G-D "+m[1]+" – "+e[2]; }
   return v;
 }
 
@@ -905,7 +981,7 @@ function save(t){
 }
 
 /* ---------- Serveranbindung: zentrale Datenbank, Mehrbenutzerbetrieb (V1.10) ---------- */
-const APP_VERSION="1.50";
+const APP_VERSION="1.60";
 let API=null, REV=0, NET=null, SRVINFO=null;
 function authTok(){ return S.token||""; }
 async function api(p, opts={}, retried){
@@ -1363,7 +1439,7 @@ async function newTicket(o){
     s1:"",s2:"",s3:"",s4:"",s5:"",s6:"",
     herab:"nein", herabStufe:"", herabBegr:"",
     einstufungBegr:"", eskOverride:"",
-    infoklass:"", objekte:"", tisax:false, prototyp:false,
+    infoklass:"", objekte:"", tisax:false, prototyp:false, isBezug:"",
     sofort:"", beweis:false, beweisText:"",
     kenntnisBegr:"",
     pf:Object.fromEntries(PFL.map(p=>[p.id,"nicht geprüft"])),
@@ -1980,7 +2056,6 @@ function viewDetail(id){
   const ro = !canEdit(t);
   const st=effStufe(t), cst=computed(t);
   const abw = t.erstellt-t.kenntnis;
-  const gefOpts = ["noch nicht bestimmt", ...G_BSI.map((g,i)=>"G 0."+(i+1)+" – "+g), ...G_REUTIB.map((g,i)=>"G-R 1."+String(i+1).padStart(2,"0")+" – "+g)];
   const openTasks=t.tasks.filter(x=>!x.done);
   const nd=nextDue(t);
   const slaDue=(!t.erstreaktion&&st&&!["Resolved","Closed"].includes(t.status))?t.kenntnis+SLA_H[st]*3600000+waitExtra(t):null;
@@ -2102,8 +2177,22 @@ function viewDetail(id){
     <div><label>${tr("Informationsklassifizierung")} ${t.s3&&t.s3!=="nicht betroffen"?'<span class="req">*</span>':""}</label>${sel("infoklass",t.infoklass,["","C1","C2","C3","C4"],ro,v=>v===""?tr("– wählen –"):cLabel(v))}</div>
    </div>
    <div class="grid3">
-    <div><label>${tr("Gefährdungsbezug")} <span class="req">*</span> <span class="hint help" title="${de?"Gefährdungskatalog gemäß POL_010.001 V3.00 Anhang C: BSI G 0.1–G 0.47 + REUTIB-Ergänzungen G-R 1.01–1.12. „noch nicht bestimmt“ blockiert den Abschluss.":"Threat catalogue per POL_010.001 V3.00 Annex C: BSI G 0.1–G 0.47 + REUTIB additions G-R 1.01–1.12. “Not yet determined” blocks closure."}">ⓘ</span></label>
-     <select ${ro?"disabled":""} onchange="upd('gef',this.value,'${tr("Gefährdungsbezug")}')">${gefOpts.map(g=>`<option value="${esc(g)}" ${t.gef===g?"selected":""}>${gefLabel(g)}</option>`).join("")}</select>
+    <div><label>${tr("Gefährdungsbezug")} <span class="req">*</span> <span class="hint help" title="${de?"Zweigleisiger Katalog: Bei IS-Bezug BSI G 0.1–G 0.47 (elementare Gefährdungen der Informationssicherheit); ohne IS-Bezug der REUTIB-Domänenkatalog G-D je Leitdomäne (Arbeitssicherheit nach GDA-Faktoren, Produkt, Lieferkette, Compliance …). G-R-Ergänzungen gelten weiterhin. „noch nicht bestimmt“ blockiert den Abschluss. G-D ist ein gekennzeichneter Vorschlag zur Revision von POL_010.001 Anhang C.":"Two-track catalogue: with IS relevance BSI G 0.1–G 0.47 (elementary information-security threats); without IS relevance the REUTIB domain catalogue G-D per lead domain (occupational safety per GDA factors, product, supply chain, compliance …). G-R additions still apply. “Not yet determined” blocks closure. G-D is a marked proposal for revising POL_010.001 Annex C."}">ⓘ</span></label>
+     <div class="flex" style="margin-bottom:4px">
+      <span class="small" style="font-weight:700;color:var(--anthrazit)">${de?"IS-Bezug":"IS relevance"}:</span>
+      <select style="width:auto" ${ro?"disabled":""} onchange="upd('isBezug',this.value,'${de?"Informationssicherheitsbezug":"Information-security relevance"}')">
+       <option value="" ${!t.isBezug?"selected":""}>${de?"automatisch":"automatic"} (${tr(isAutoIs(t))})</option>
+       <option value="ja" ${t.isBezug==="ja"?"selected":""}>${tr("ja")}</option>
+       <option value="nein" ${t.isBezug==="nein"?"selected":""}>${tr("nein")}</option>
+      </select>
+      <span class="hint help" title="${de?"Automatik: ja bei Leitdomäne A/B, bewerteter Dimension S3 (Information und Daten) oder NIS-2-Systembezug „ja“ — manuell übersteuerbar. Steuert, welcher Katalog empfohlen wird.":"Automatic: yes for lead domain A/B, an assessed S3 dimension (information and data) or NIS-2 system involvement “yes” — can be overridden. Controls which catalogue is recommended."}">ⓘ</span>
+     </div>
+     <select ${ro?"disabled":""} onchange="upd('gef',this.value,'${tr("Gefährdungsbezug")}')">${gefOptions(t)}</select>
+     ${(()=>{ if(!t.gef||t.gef==="noch nicht bestimmt") return "";
+       const isBsi=/^G 0\./.test(t.gef), isGd=/^G-D /.test(t.gef);
+       if(effIs(t)==="nein"&&isBsi) return `<div class="small" style="color:var(--warn);margin-top:3px">⚠ ${de?"BSI-Katalog gewählt, obwohl kein IS-Bezug gesetzt ist — bitte prüfen (BSI gilt für Informationssicherheits-Gefährdungen).":"BSI catalogue selected although no IS relevance is set — please check (BSI covers information-security threats)."}</div>`;
+       if(effIs(t)==="ja"&&isGd) return `<div class="small" style="color:var(--warn);margin-top:3px">⚠ ${de?"Domänenkatalog G-D gewählt, obwohl IS-Bezug besteht — bei IS-Gefährdungen bitte den BSI-Katalog verwenden.":"Domain catalogue G-D selected although IS relevance is set — please use the BSI catalogue for IS threats."}</div>`;
+       return ""; })()}
      ${(()=>{ const rec=G_PRIM[gefId(t.gef)]; if(!rec) return "";
        const [pd,nds]=rec;
        const ndsOpen=nds.split("").filter(d=>d!==t.leitdomaene && !(t.nebendomaenen||[]).includes(d));
@@ -2580,8 +2669,8 @@ function viewBerichte(){
    <td class="${m.offen?"":"n0"}">${m.offen||"·"}</td><td class="${m.gesamt?"":"n0"}">${m.gesamt||"·"}</td></tr>`;}).join("")}
   </tbody></table>
   <h2>${de?"Gefährdungstrend":"Threat trend"} <span class="small muted">– ${de?"Häufung gleicher Gefährdungen (Eingang in die Notfallplanprüfung)":"clustering of identical threats (input to contingency plan review)"}</span></h2>
-  ${topGef.length?`<table><thead><tr><th>${de?"Gefährdung":"Threat"}</th><th>${de?"Anzahl":"Count"}</th><th></th></tr></thead><tbody>
-   ${topGef.map(([g,c])=>`<tr><td>${esc(gefLabel(g))}</td><td>${c}</td><td><div style="background:var(--gelb);height:12px;width:${Math.min(100,c*12)}%;min-width:12px;border-radius:3px"></div></td></tr>`).join("")}</tbody></table>`
+  ${topGef.length?`<table><thead><tr><th>${de?"Gefährdung":"Threat"}</th><th>${de?"Katalog":"Catalogue"}</th><th>${de?"Anzahl":"Count"}</th><th></th></tr></thead><tbody>
+   ${topGef.map(([g,c])=>`<tr><td>${esc(gefLabel(g))}</td><td><span class="badge st">${/^G 0\./.test(g)?"BSI":/^G-D/.test(g)?"G-D":"G-R"}</span></td><td>${c}</td><td><div style="background:var(--gelb);height:12px;width:${Math.min(100,c*12)}%;min-width:12px;border-radius:3px"></div></td></tr>`).join("")}</tbody></table>`
    :`<p class="muted small">${de?"Noch keine Gefährdungszuordnungen.":"No threat assignments yet."}</p>`}
   <h2>${de?"Verknüpfungsquote Domäne H":"Linkage rate domain H"}</h2>
   <p>${h.length?(de?`${withFv.length} von ${h.length} Tickets der Domäne H mit Fachvorgangsnummer (${Math.round(100*withFv.length/h.length)} %).`:`${withFv.length} of ${h.length} domain-H tickets carry a business record number (${Math.round(100*withFv.length/h.length)} %).`):(de?"Keine Tickets der Domäne H.":"No domain-H tickets.")}</p>
@@ -2764,6 +2853,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> the quick action opens a selection menu of all domains with hover expertise (who can do what); domains typically also affected per the threat catalogue (POL Annex C) are pre-selected with ⭐. Selected experts become secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
    <p><b>New KPIs:</b> MTTA (time to first response), MTTR (time to resolution), first-contact-resolution rate, CSAT (reporter satisfaction, optional in closure) and the self-help rate.</p>
    <p><b>Timeline overview (reports):</b> the report area contains a multi-year summary — rolling last 5 years, last 2 years and last 12 months with totals, P1–P4, near-miss share and resolution rate — plus the monthly distribution of the current year with the P1/P2 share highlighted in red. In addition, the <b>dynamic timeline</b> shows ten years at a glance with resolution increasing towards today: macro range (10–5 years) year epochs with P1 milestones (🚩) only, meso range (5–1 year) condensed to half-years, micro range (last 12 months) resolved into months — each column with hover details. The time anchor is the time of awareness.</p>
+   <p><b>Two-track threat reference (IS / domain catalogue):</b> the BSI catalogue of elementary threats (G 0.1–G 0.47) applies to incidents with information-security relevance. For all other incidents the REUTIB domain catalogue <b>G-D</b> is available per lead domain (occupational safety per GDA hazard factors, facility/natural events, product/field defects, supply chain, compliance/reputation). The “IS relevance” field in the classification controls the recommendation — automatic: yes for lead domain A/B, an assessed S3 dimension or NIS-2 system involvement, manually overridable; the selection list shows the matching catalogue first, and an off-catalogue choice produces a (non-blocking) review hint. The G-R additions and the primary-domain recommendation remain unchanged. <b>Note:</b> the G-D catalogue is a marked tool proposal for revising POL_010.001 Annex C and becomes binding only with its release.</p>
    <p><b>Deadline monitor (extended):</b> deadlines are grouped per ticket with alternating background, the time remaining ticks live. Responsibility tiles show who has how many deadlines open (and overdue) — a click filters the list to that responsibility. Sorting by due date, criticality (P1 first) or ticket number; quick filters “all / ≥ 75 % / overdue”; KPIs extended by “due in &lt; 24 h” and affected P1/P2 tickets; CSV export of the filtered list.</p>
    <p><b>Ticket numbers (annual scheme):</b> as of V1.50 ticket numbers read IRM-YYYY-NNNN; the running number restarts at 0001 on 1 January of every year (example: first report in 2027 = IRM-2027-0001). Existing tickets were migrated automatically — per year in order of creation; the renaming is documented in each ticket's activity log, and parent-ticket references were carried over.</p>
    <p><b>Monitoring interface:</b> the IRM server accepts automatically generated reports from monitoring systems via <code>POST /api/inbound</code> (subject, description, site, objects); such tickets start in “Open” with source “Monitoring/API”.</p>
@@ -2943,6 +3033,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> Die Schnellaktion öffnet ein Auswahlmenü aller Domänen mit Mouseover-Expertise (wer kann was); regelmäßig mitbetroffene Domänen aus dem Gefährdungskatalog (POL Anhang C) sind mit ⭐ vorausgewählt. Ausgewählte Experten werden Nebendomäne mit Mitwirkungsaufgabe und Beobachterstatus (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
    <p><b>Neue Kennzahlen:</b> MTTA (Zeit bis Erstreaktion), MTTR (Zeit bis Lösung), First-Contact-Resolution-Quote, CSAT (Melder-Zufriedenheit, optional im Abschluss) sowie die Selbsthilfe-Quote.</p>
    <p><b>Zeitliche Übersicht (Berichte):</b> Der Berichtsbereich enthält eine Mehrjahresübersicht — rollierend die letzten 5 Jahre, letzten 2 Jahre und letzten 12 Monate mit Gesamtzahl, P1–P4, Near-Miss-Anteil und Lösungsquote — sowie die Monatsverteilung des laufenden Jahres mit rot hervorgehobenem P1/P2-Anteil. Ergänzend zeigt der <b>dynamische Zeitstrahl</b> zehn Jahre auf einen Blick, mit zur Gegenwart hin zunehmender Auflösung: Makrobereich (10–5 Jahre) nur Jahres-Epochen mit P1-Meilensteinen (🚩), Mesobereich (5–1 Jahr) verdichtet zu Halbjahren, Mikrobereich (letzte 12 Monate) aufgelöst in Monate — jede Säule mit Mouseover-Details. Zeitanker ist die Kenntniserlangung.</p>
+   <p><b>Gefährdungsbezug zweigleisig (IS-/Domänenkatalog):</b> Der BSI-Katalog der elementaren Gefährdungen (G 0.1–G 0.47) gilt für Vorfälle mit Informationssicherheitsbezug. Für alle anderen Vorfälle steht je Leitdomäne der REUTIB-Domänenkatalog <b>G-D</b> bereit (u. a. Arbeitssicherheit nach GDA-Gefährdungsfaktoren, Facility/Elementar, Produkt-/Feldfehler, Lieferkette, Compliance/Reputation). Das Feld „IS-Bezug“ in der Klassifizierung steuert die Empfehlung — Automatik: ja bei Leitdomäne A/B, bewerteter S3-Dimension oder NIS-2-Systembezug, manuell übersteuerbar; die Auswahlliste zeigt zuerst den passenden Katalog, eine katalogfremde Wahl erzeugt einen Prüfhinweis (nicht blockierend). Die G-R-Ergänzungen und die Primärdomänen-Empfehlung gelten unverändert. <b>Hinweis:</b> Der G-D-Katalog ist ein gekennzeichneter Tool-Vorschlag zur Revision von POL_010.001 Anhang C und wird erst mit deren Freigabe verbindlich.</p>
    <p><b>Fristenmonitor (ausgebaut):</b> Die Fristen sind je Ticket gruppiert und abwechselnd hinterlegt, die Restlaufzeit tickt live. Zuständigkeits-Kacheln zeigen, wer wie viele Fristen offen (und überfällig) hat — ein Klick filtert die Liste auf diese Zuständigkeit. Sortierung nach Fälligkeit, Kritikalität (P1 zuerst) oder Ticketnummer; Schnellfilter „alle / ≥ 75 % / überfällig“; Kennzahlen ergänzt um „fällig in &lt; 24 h“ und betroffene P1/P2-Tickets; CSV-Export der gefilterten Liste.</p>
    <p><b>Ticketnummern (Jahresschema):</b> Seit V1.50 lauten die Ticketnummern IRM-JJJJ-NNNN; die laufende Nummer beginnt am 1. Januar jedes Jahres neu bei 0001 (Beispiel: erste Meldung 2027 = IRM-2027-0001). Bestehende Tickets wurden automatisch auf das Schema migriert — je Jahr in der Reihenfolge ihrer Erstellung; die Umbenennung ist im Aktivitätsprotokoll jedes Tickets dokumentiert, Verweise auf Sammeltickets wurden mitgezogen.</p>
    <p><b>Monitoring-Schnittstelle:</b> Der IRM-Server nimmt über <code>POST /api/inbound</code> automatisch erzeugte Meldungen aus Monitoring-Systemen an (Betreff, Beschreibung, Standort, Objekte); solche Tickets starten in „Open“ mit Quelle „Monitoring/API“.</p>
