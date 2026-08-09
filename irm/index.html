@@ -1072,31 +1072,36 @@ function parseDt(v){ return v? new Date(v).getTime() : null; }
 function roleLabel(){ return tr(ROLES[S.role].l) + (S.role==="dombearb" ? " – "+tr("Domäne")+" "+S.roleDom : ""); }
 function log(t, txt){ t.log.unshift({ts:now(), who:(S.user? S.user+" – ":"")+roleLabel(), txt}); }
 
-/* ---------- V1.50: Ticketnummern-Jahresschema IRM-JJJJ-NNNN ---------- */
+/* ---------- Ticketnummern-Jahresschema IRM(T)-JJJJ-NNNN ---------- */
 function ensureSeqY(){
   S.seqY=S.seqY||{};
-  for(const t of S.tickets){ const m=/^IRM-(\d{4})-(\d{4})$/.exec(t.id);
+  for(const t of S.tickets){ const m=/^IRM\(T\)-(\d{4})-(\d{4})$/.exec(t.id);
     if(m){ const y=m[1], n=parseInt(m[2],10); if(!(S.seqY[y]>=n)) S.seqY[y]=n; } }
 }
-/* Einmalige Migration bestehender Tickets vom Altschema IRM-NNNN auf IRM-JJJJ-NNNN.
-   Reihenfolge je Jahr nach Erstellungszeitpunkt; Verweise (Sammelticket) werden mitgezogen;
-   die Umbenennung wird im Aktivitätsprotokoll dokumentiert. */
+/* Einmalige Migration bestehender Tickets auf das Schema IRM(T)-JJJJ-NNNN:
+   IRM-JJJJ-NNNN erhält nur das neue Präfix (Nummer bleibt), Ur-Altschema IRM-NNNN wird
+   je Jahr der Kenntniserlangung in Erstellungsreihenfolge nummeriert. Verweise
+   (Sammelticket) werden mitgezogen; jede Umbenennung wird protokolliert. */
 function migrateIds(){
-  const oldT=S.tickets.filter(t=>/^IRM-\d{4}$/.test(t.id));
-  if(!oldT.length){ ensureSeqY(); return; }
+  const legacy=S.tickets.filter(t=>/^IRM-\d{4}$/.test(t.id));
+  const mid=S.tickets.filter(t=>/^IRM-(\d{4})-(\d{4})$/.test(t.id));
+  if(!legacy.length && !mid.length){ ensureSeqY(); return; }
   ensureSeqY();
-  const byY={};
-  for(const t of oldT){ const y=new Date(t.kenntnis||t.erstellt||now()).getFullYear(); (byY[y]=byY[y]||[]).push(t); }
   const map={};
+  for(const t of mid){ const m=/^IRM-(\d{4})-(\d{4})$/.exec(t.id);
+    map[t.id]="IRM(T)-"+m[1]+"-"+m[2];
+    const y=m[1], n=parseInt(m[2],10); if(!(S.seqY[y]>=n)) S.seqY[y]=n; }
+  const byY={};
+  for(const t of legacy){ const y=new Date(t.kenntnis||t.erstellt||now()).getFullYear(); (byY[y]=byY[y]||[]).push(t); }
   for(const y of Object.keys(byY)){
     byY[y].sort((a,b)=>(a.erstellt||0)-(b.erstellt||0));
     let n=S.seqY[y]||0;
-    for(const t of byY[y]){ n++; map[t.id]="IRM-"+y+"-"+String(n).padStart(4,"0"); }
+    for(const t of byY[y]){ n++; map[t.id]="IRM(T)-"+y+"-"+String(n).padStart(4,"0"); }
     S.seqY[y]=n;
   }
   for(const t of S.tickets){
     if(map[t.id]){ const oldId=t.id; t.id=map[t.id];
-      (t.log=t.log||[]).unshift({ts:now(), who:"System", txt:(S.lang==="en"?"Ticket number migrated to the annual scheme: ":"Ticketnummer auf das Jahresschema migriert: ")+oldId+" → "+t.id}); }
+      (t.log=t.log||[]).unshift({ts:now(), who:"System", txt:(S.lang==="en"?"Ticket number migrated: ":"Ticketnummer migriert: ")+oldId+" → "+t.id}); }
     if(t.parent&&map[t.parent]) t.parent=map[t.parent];
   }
   if(S.detail&&map[S.detail]) S.detail=map[S.detail];
@@ -1438,7 +1443,7 @@ async function newTicket(o){
     }catch(e){ setNet(false); seqN=localSeq(yr); } }
   else seqN=localSeq(yr);
   const t = {
-    id:"IRM-"+yr+"-"+String(seqN).padStart(4,"0"),
+    id:"IRM(T)-"+yr+"-"+String(seqN).padStart(4,"0"),
     erstellt:ts, kenntnis:o.kenntnis||ts,
     betreff:o.betreff||"", beschreibung:o.beschreibung||"", standort:o.standort||"",
     beobachtet:o.beobachtet||null, personen:!!o.personen, nearmiss:!!o.nearmiss,
@@ -1858,7 +1863,7 @@ function bulkSel(id,on){ if(on) BULK.add(id); else BULK.delete(id); render(); }
 function bulkClear(){ BULK.clear(); render(); }
 function bulkAttach(){
   const de=S.lang!=="en";
-  const pid=(prompt(de?"ID des Sammeltickets, dem die Auswahl zugeordnet wird (z. B. IRM-2026-0001):":"ID of the parent ticket for the selection (e.g. IRM-2026-0001):")||"").trim().toUpperCase();
+  const pid=(prompt(de?"ID des Sammeltickets, dem die Auswahl zugeordnet wird (z. B. IRM(T)-2026-0001):":"ID of the parent ticket for the selection (e.g. IRM(T)-2026-0001):")||"").trim().toUpperCase();
   if(!pid) return;
   const pt=S.tickets.find(x=>x.id===pid);
   if(!pt){ alert((de?"Ticket nicht gefunden: ":"Ticket not found: ")+pid); return; }
@@ -2275,7 +2280,7 @@ function viewDetail(id){
     <div><label>${tr("Personen betroffen")}</label><input type="text" disabled value="${t.personen?tr("ja"):tr("nein")}"></div>
     <div><label>${tr("Near Miss")}</label><input type="text" disabled value="${t.nearmiss?tr("ja"):tr("nein")}"></div>
     <div><label>${de?"Sammelticket (übergeordnet)":"Parent ticket (major outage)"} <span class="hint help" title="${de?"Ordnet diese Meldung als Ergänzung einer Sammelstörung zu (Parent/Child). Die Bearbeitung erfolgt im Sammelticket; dieses Ticket bleibt als Meldung nachvollziehbar.":"Files this report as a supplement to a major outage (parent/child). Work happens in the parent; this ticket remains traceable as a report."}">ⓘ</span></label>
-     <input list="tickIds" ${ro?"disabled":""} value="${esc(t.parent||"")}" onchange="upd('parent',this.value.trim().toUpperCase(),'${de?"Sammelticket":"Parent ticket"}')" placeholder="IRM-…">
+     <input list="tickIds" ${ro?"disabled":""} value="${esc(t.parent||"")}" onchange="upd('parent',this.value.trim().toUpperCase(),'${de?"Sammelticket":"Parent ticket"}')" placeholder="IRM(T)-…">
      <datalist id="tickIds">${S.tickets.filter(x=>x.id!==t.id&&x.status!=="Closed").slice(0,60).map(x=>`<option value="${x.id}">`).join("")}</datalist></div>
   </div>
   <label>${tr("Beschreibung")}</label><textarea ${ro?"disabled":""} onchange="upd('beschreibung',this.value)">${esc(t.beschreibung)}</textarea>
@@ -3022,7 +3027,7 @@ function viewGuidance(){
    <p><b>Management report from the ticket:</b> once the analysis is completed (status “remediation” or later) the quick action “Create management report” produces a management-ready summary of the incident: current classification (overall level with the driving damage dimensions, escalation, domains, NIS-2 result, reporting duties, estimated loss), actions so far (immediate actions, causes, playbook/8D progress) and the next action points with due dates, open approvals and the prerequisites of the next status step. The report opens print-ready in its own window (save as PDF via the print function) and can be taken over as a pre-filled e-mail draft to executive management and further recipients with one click; generation is documented in the activity log. Before the analysis is completed the button is greyed out with the note “reporting to executive management and further recipients becomes available once the analysis is completed”.</p>
    <p><b>Two-track threat reference (IS / domain catalogue):</b> the BSI catalogue of elementary threats (G 0.1–G 0.47) applies to incidents with information-security relevance. For all other incidents the REUTIB domain catalogue <b>G-D</b> is available per lead domain (occupational safety per GDA hazard factors, facility/natural events, product/field defects, supply chain, compliance/reputation). The “IS relevance” field in the classification controls the recommendation — automatic: yes for lead domain A/B, an assessed S3 dimension or NIS-2 system involvement, manually overridable; the selection list shows the matching catalogue first, and an off-catalogue choice produces a (non-blocking) review hint. The G-R additions and the primary-domain recommendation remain unchanged. <b>Note:</b> the G-D catalogue is a marked tool proposal for revising POL_010.001 Annex C and becomes binding only with its release.</p>
    <p><b>Deadline monitor (extended):</b> deadlines are grouped per ticket with alternating background, the time remaining ticks live. Responsibility tiles show who has how many deadlines open (and overdue) — a click filters the list to that responsibility. Sorting by due date, criticality (P1 first) or ticket number; quick filters “all / ≥ 75 % / overdue”; KPIs extended by “due in &lt; 24 h” and affected P1/P2 tickets; CSV export of the filtered list.</p>
-   <p><b>Ticket numbers (annual scheme):</b> as of V1.50 ticket numbers read IRM-YYYY-NNNN; the running number restarts at 0001 on 1 January of every year (example: first report in 2027 = IRM-2027-0001). Existing tickets were migrated automatically — per year in order of creation; the renaming is documented in each ticket's activity log, and parent-ticket references were carried over.</p>
+   <p><b>Ticket numbers (annual scheme):</b> ticket numbers read IRM(T)-YYYY-NNNN; the running number restarts at 0001 on 1 January of every year (example: first report in 2027 = IRM(T)-2027-0001). Existing tickets were migrated automatically — per year in order of creation; the renaming is documented in each ticket's activity log, and parent-ticket references were carried over.</p>
    <p><b>Monitoring interface:</b> the IRM server accepts automatically generated reports from monitoring systems via <code>POST /api/inbound</code> (subject, description, site, objects); such tickets start in “Open” with source “Monitoring/API”.</p>
   </div></details>
 
@@ -3219,7 +3224,7 @@ function viewGuidance(){
    <p><b>GL-Bericht aus dem Ticket:</b> Ab abgeschlossener Analyse (Status „In Bearbeitung – Behebung“ oder später) erzeugt die Schnellaktion „GL-Bericht erzeugen“ eine management-taugliche Zusammenfassung des Vorfalls: aktuelle Einstufung (Gesamtstufe mit maßgeblichen Schadensdimensionen, Eskalation, Domänen, NIS-2-Ergebnis, Meldepflichten, geschätzter Schaden), bisherige Maßnahmen (Sofortmaßnahmen, Ursachen, Playbook-/8D-Stand) und die nächsten Action Points mit Fälligkeiten, offenen Genehmigungen und den Voraussetzungen des nächsten Statusschritts. Der Bericht öffnet druckfertig in einem eigenen Fenster (über die Druckfunktion als PDF ablegbar) und lässt sich per Klick als vorbefüllter E-Mail-Entwurf an die Geschäftsleitung und weitere Empfänger übernehmen; die Erzeugung wird im Aktivitätsprotokoll dokumentiert. Vor Abschluss der Analyse ist der Knopf ausgegraut mit dem Hinweis „Berichterstellung an Geschäftsleitung und weitere Empfänger mit Abschluss der Analyse möglich“.</p>
    <p><b>Gefährdungsbezug zweigleisig (IS-/Domänenkatalog):</b> Der BSI-Katalog der elementaren Gefährdungen (G 0.1–G 0.47) gilt für Vorfälle mit Informationssicherheitsbezug. Für alle anderen Vorfälle steht je Leitdomäne der REUTIB-Domänenkatalog <b>G-D</b> bereit (u. a. Arbeitssicherheit nach GDA-Gefährdungsfaktoren, Facility/Elementar, Produkt-/Feldfehler, Lieferkette, Compliance/Reputation). Das Feld „IS-Bezug“ in der Klassifizierung steuert die Empfehlung — Automatik: ja bei Leitdomäne A/B, bewerteter S3-Dimension oder NIS-2-Systembezug, manuell übersteuerbar; die Auswahlliste zeigt zuerst den passenden Katalog, eine katalogfremde Wahl erzeugt einen Prüfhinweis (nicht blockierend). Die G-R-Ergänzungen und die Primärdomänen-Empfehlung gelten unverändert. <b>Hinweis:</b> Der G-D-Katalog ist ein gekennzeichneter Tool-Vorschlag zur Revision von POL_010.001 Anhang C und wird erst mit deren Freigabe verbindlich.</p>
    <p><b>Fristenmonitor (ausgebaut):</b> Die Fristen sind je Ticket gruppiert und abwechselnd hinterlegt, die Restlaufzeit tickt live. Zuständigkeits-Kacheln zeigen, wer wie viele Fristen offen (und überfällig) hat — ein Klick filtert die Liste auf diese Zuständigkeit. Sortierung nach Fälligkeit, Kritikalität (P1 zuerst) oder Ticketnummer; Schnellfilter „alle / ≥ 75 % / überfällig“; Kennzahlen ergänzt um „fällig in &lt; 24 h“ und betroffene P1/P2-Tickets; CSV-Export der gefilterten Liste.</p>
-   <p><b>Ticketnummern (Jahresschema):</b> Seit V1.50 lauten die Ticketnummern IRM-JJJJ-NNNN; die laufende Nummer beginnt am 1. Januar jedes Jahres neu bei 0001 (Beispiel: erste Meldung 2027 = IRM-2027-0001). Bestehende Tickets wurden automatisch auf das Schema migriert — je Jahr in der Reihenfolge ihrer Erstellung; die Umbenennung ist im Aktivitätsprotokoll jedes Tickets dokumentiert, Verweise auf Sammeltickets wurden mitgezogen.</p>
+   <p><b>Ticketnummern (Jahresschema):</b> Die Ticketnummern lauten IRM(T)-JJJJ-NNNN; die laufende Nummer beginnt am 1. Januar jedes Jahres neu bei 0001 (Beispiel: erste Meldung 2027 = IRM(T)-2027-0001). Bestehende Tickets wurden automatisch auf das Schema migriert — je Jahr in der Reihenfolge ihrer Erstellung; die Umbenennung ist im Aktivitätsprotokoll jedes Tickets dokumentiert, Verweise auf Sammeltickets wurden mitgezogen.</p>
    <p><b>Monitoring-Schnittstelle:</b> Der IRM-Server nimmt über <code>POST /api/inbound</code> automatisch erzeugte Meldungen aus Monitoring-Systemen an (Betreff, Beschreibung, Standort, Objekte); solche Tickets starten in „Open“ mit Quelle „Monitoring/API“.</p>
   </div></details>
 
