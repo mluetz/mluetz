@@ -678,13 +678,14 @@ const nisMyjava = t => nisOrte(t).includes("Myjava");
 const fmtEur=n=>Math.round(n).toLocaleString("de-DE")+" €";
 /* RK-09-Kumulationshilfe (DVO Art. 4): Vorfälle der letzten 6 Monate am selben Standort,
    kumulierte Schadenshöhe gegen die 250.000-€-Schwelle; gleiche Gefährdung = Indiz für dieselbe Grundursache. */
-function rk09Check(t){
+function rk09Scan(t, siteOnly){
   const from=(t.kenntnis||now())-183*24*3600000;
-  const cand=S.tickets.filter(x=>x.id!==t.id && (x.kenntnis||0)>=from && (x.kenntnis||0)<=(t.kenntnis||now()) && x.standort===t.standort && x.standort);
+  const cand=S.tickets.filter(x=>x.id!==t.id && (x.kenntnis||0)>=from && (x.kenntnis||0)<=(t.kenntnis||now())
+    && (!siteOnly || (x.standort && x.standort===t.standort)));
   const sum=(t.schaden||0)+cand.reduce((a,x)=>a+(x.schaden||0),0);
-  const sameGef=cand.filter(x=>x.gef&&x.gef!=="noch nicht bestimmt"&&x.gef===t.gef);
-  return {cand, sum, sameGef, over:sum>250000};
+  return {cand, sum, over:sum>250000};
 }
+function rk09Check(t){ return rk09Scan(t,true); }
 function nisAutoErheblich(t){
   const n=nis2(t);
   return NIS2_DIRECT.some(k=>n.rk[k.id]==="ja") || n.sk.sk1==="ja";
@@ -2262,13 +2263,21 @@ function viewDetail(id){
     ${NIS2_CHECK.map(k=>{
       let extra="";
       if(k.id==="rk09"){
-        const c9=rk09Check(t);
-        if(!t.schaden&&!c9.cand.some(x=>x.schaden)) extra=`<div class="small muted" style="margin-top:3px">ⓘ ${de?"Kumulationsprüfung: Feld „Geschätzter Schaden (EUR)“ in Abschnitt 2 pflegen — dann prüft das Tool automatisch gegen Vorfälle der letzten 6 Monate am Standort.":"Cumulation check: maintain the “Estimated loss (EUR)” field in section 2 — the tool then checks automatically against incidents of the last 6 months at the site."}</div>`;
-        else if(c9.cand.length){
-          const lst=c9.cand.slice(0,4).map(x=>`<a href="#" onclick="openT('${x.id}');return false">${x.id}</a>${x.gef===t.gef&&t.gef!=="noch nicht bestimmt"?" ⭐":""} (${x.schaden?fmtEur(x.schaden):"–"})`).join(" · ");
-          extra = c9.over
-           ? `<div class="small" style="color:var(--crit);font-weight:700;margin-top:3px">⚠ ${de?"Kumulationsprüfung Standort "+esc(siteLabel(t.standort))+": ":"Cumulation check site "+esc(siteLabel(t.standort))+": "}${c9.cand.length} ${de?"Vorfall/Vorfälle in den letzten 6 Monaten, kumuliert":"incident(s) in the last 6 months, cumulatively"} ${fmtEur(c9.sum)} &gt; 250.000 € — ${de?"RK-09 ist zu bejahen, sofern dieselbe Grundursache vorliegt":"answer RK-09 “yes” if the root cause is the same"} (⭐ = ${de?"gleiche Gefährdung":"same threat"}): ${lst}</div>`
-           : `<div class="small muted" style="margin-top:3px">ⓘ ${de?"Kumulationsprüfung Standort "+esc(siteLabel(t.standort))+": ":"Cumulation check site "+esc(siteLabel(t.standort))+": "}${c9.cand.length} ${de?"Vorfall/Vorfälle in den letzten 6 Monaten, kumuliert":"incident(s) in the last 6 months, cumulatively"} ${fmtEur(c9.sum)} ≤ 250.000 € (${lst})</div>`;
+        const c9s=rk09Scan(t,true), c9a=rk09Scan(t,false);
+        const mkLst=c=>c.cand.slice(0,4).map(x=>`<a href="#" onclick="openT('${x.id}');return false">${x.id}</a>${x.gef===t.gef&&t.gef!=="noch nicht bestimmt"?" ⭐":""} (${x.schaden?fmtEur(x.schaden):"–"})`).join(" · ")+(c.cand.length>4?" …":"");
+        const line=(c,label)=>{
+          if(!c.cand.length) return "";
+          const mid=`${c.cand.length} ${de?"Vorfall/Vorfälle in den letzten 6 Monaten, kumuliert":"incident(s) in the last 6 months, cumulatively"} ${fmtEur(c.sum)}`;
+          return c.over
+           ? `<div class="small" style="color:var(--crit);font-weight:700;margin-top:3px">⚠ ${label}: ${mid} &gt; 250.000 € — ${de?"RK-09 ist zu bejahen, sofern dieselbe Grundursache vorliegt":"answer RK-09 “yes” if the root cause is the same"} (⭐ = ${de?"gleiche Gefährdung":"same threat"}): ${mkLst(c)}</div>`
+           : `<div class="small muted" style="margin-top:3px">ⓘ ${label}: ${mid} ≤ 250.000 € (${mkLst(c)})</div>`;
+        };
+        if(!t.schaden && !c9a.cand.some(x=>x.schaden))
+          extra=`<div class="small muted" style="margin-top:3px">ⓘ ${de?"Kumulationsprüfung: Feld „Geschätzter Schaden (EUR)“ in Abschnitt 2 pflegen — dann prüft das Tool automatisch je Standort und einrichtungsweit gegen die Vorfälle der letzten 6 Monate.":"Cumulation check: maintain the “Estimated loss (EUR)” field in section 2 — the tool then checks automatically per site and entity-wide against the incidents of the last 6 months."}</div>`;
+        else{
+          extra = line(c9s, de?"Kumulation Standort "+esc(siteLabel(t.standort)||"—"):"Cumulation site "+esc(siteLabel(t.standort)||"—"));
+          if(c9a.cand.length>c9s.cand.length)
+            extra += line(c9a, de?"Kumulation einrichtungsweit (alle Standorte, maßgeblich nach DVO Art. 4)":"Cumulation entity-wide (all sites, decisive per IR Art. 4)");
         }
       }
       return `<tr><td><b class="help" title="${esc(de?k.hd:k.he)}">${k.id.toUpperCase().replace("RK","RK-")}</b></td><td class="small">${de?k.de:k.en}${extra}</td><td>${jn(n.rk[k.id],"updNisRk",k.id)}</td></tr>`;
@@ -2804,7 +2813,7 @@ function viewGuidance(){
     <li>Slovakia is the <b>only jurisdiction with hard numeric thresholds</b> (Vyhláška NBÚ no. 226/2025): if Myjava is affected, the form highlights the stricter <b>30/60-minute thresholds</b> at RK-01 — a 45-minute outage is reportable in Myjava but not in Leutenbach.</li>
     <li><b>Part 4</b> appears only when Myjava is affected and additionally checks the duties per <b>Sec. 24(5)</b>: significant cyber threats, last-minute averted events (near miss!) and unremedied vulnerabilities of publicly reachable systems. A “yes” automatically creates the <b>NBÚ/JISKB additional task</b> (without undue delay, 24 h).</li>
     <li>Reporting language <b>Slovak</b>, prepared by the Myjava site responsible together with the ISB; the German working version belongs in the ticket as an attachment.</li>
-    <li><b>RK-09 cumulation aid:</b> for question RK-09 (two incidents with the same root cause within six months, cumulatively &gt; €250,000, IR Art. 4) the tool automatically compares the incidents of the last six months at the same site and sums the estimated losses (field “Estimated loss (EUR)” in section 2). If the threshold is exceeded together with the new incident, a warning appears at RK-09 listing the tickets concerned; identical threats are marked ⭐ as an indication of the same root cause. The decision remains with triage — the hint does not replace the root-cause check.</li>
+    <li><b>RK-09 cumulation aid:</b> for question RK-09 (two incidents with the same root cause within six months, cumulatively &gt; €250,000, IR Art. 4) the tool automatically compares the incidents of the last six months in two stages — per site and entity-wide across all sites (the latter being decisive per IR Art. 4) — and sums the estimated losses (field “Estimated loss (EUR)” in section 2). If the threshold is exceeded together with the new incident, a warning appears at RK-09 listing the tickets concerned; identical threats are marked ⭐ as an indication of the same root cause. The decision remains with triage — the hint does not replace the root-cause check.</li>
    </ul>
    <p class="small muted">Binding basis: STD_010.002 (relevance assessment and reporting thresholds) — the “how” of reporting is governed by STD_010.001 (portal access, reporting process, deadline monitoring).</p>
   </div></details>
@@ -3000,7 +3009,7 @@ function viewGuidance(){
     <li>Die Slowakei ist die <b>einzige Rechtsordnung mit harten Zahlenwerten</b> (Vyhláška NBÚ č. 226/2025): Ist Myjava betroffen, hebt der Bogen bei RK-01 die verschärften <b>30/60-Minuten-Schwellen</b> hervor — ein 45-Minuten-Ausfall ist in Myjava meldepflichtig, in Leutenbach nicht.</li>
     <li><b>Teil 4</b> erscheint nur bei Betroffenheit Myjavas und prüft zusätzlich die Pflichten nach <b>§ 24 Abs. 5</b>: bedeutende Cyberbedrohung, in letzter Minute abgewendetes Ereignis (Near Miss!) und nicht behobene Schwachstellen öffentlich erreichbarer Systeme. Ein „ja“ erzeugt automatisch die <b>NBÚ/JISKB-Zusatzaufgabe</b> (unverzüglich, 24 h).</li>
     <li>Meldesprache <b>Slowakisch</b>, Meldung durch den Standortverantwortlichen Myjava gemeinsam mit dem ISB; die deutsche Arbeitsfassung gehört als Anlage ins Ticket.</li>
-    <li><b>RK-09-Kumulationshilfe:</b> Für die Prüffrage RK-09 (zwei Vorfälle derselben Grundursache in sechs Monaten, kumuliert &gt; 250.000 €, DVO Art. 4) gleicht das Tool automatisch die Vorfälle der letzten sechs Monate am selben Standort ab und summiert die geschätzten Schadenshöhen (Feld „Geschätzter Schaden (EUR)“ in Abschnitt 2). Wird die Schwelle zusammen mit dem neuen Vorfall überschritten, erscheint an RK-09 ein Warnhinweis mit den betreffenden Tickets; gleiche Gefährdungen sind als Indiz derselben Grundursache mit ⭐ markiert. Die Entscheidung trifft weiterhin die Triage — der Hinweis ersetzt die Grundursachen-Prüfung nicht.</li>
+    <li><b>RK-09-Kumulationshilfe:</b> Für die Prüffrage RK-09 (zwei Vorfälle derselben Grundursache in sechs Monaten, kumuliert &gt; 250.000 €, DVO Art. 4) gleicht das Tool automatisch die Vorfälle der letzten sechs Monate in zwei Stufen ab — je Standort und einrichtungsweit über alle Standorte (Letzteres ist nach DVO Art. 4 maßgeblich) — und summiert die geschätzten Schadenshöhen (Feld „Geschätzter Schaden (EUR)“ in Abschnitt 2). Wird die Schwelle zusammen mit dem neuen Vorfall überschritten, erscheint an RK-09 ein Warnhinweis mit den betreffenden Tickets; gleiche Gefährdungen sind als Indiz derselben Grundursache mit ⭐ markiert. Die Entscheidung trifft weiterhin die Triage — der Hinweis ersetzt die Grundursachen-Prüfung nicht.</li>
    </ul>
    <p class="small muted">Verbindliche Grundlage: STD_010.002 (Relevanzbewertung und Meldeschwellen) — das „Wie“ der Meldung regelt STD_010.001 (Portalzugang, Meldeprozess, Fristenüberwachung).</p>
   </div></details>
