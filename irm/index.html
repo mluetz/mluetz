@@ -1162,6 +1162,13 @@ function checkTransition(t, to){
       if(!t.lessons) M("Lessons Learned","Lessons learned");
       if(!t.risikoRef) M("Referenz Risikoregister","Risk register reference");
     }
+    if(p12 && (t.pf.kunde_produkt==="ja"||t.pf.kunde_liefer==="ja"||t.pf.oem_daten==="ja")){
+      const d8=t.d8||{};
+      const d8core=["d1","d2","d3","d4","d5","d6"].every(k=>(d8[k]||"").trim());
+      if(!t.d8 || !d8core || d8.status!=="abgeschlossen")
+        M("8D-Report abgeschlossen (Pflicht bei P1/P2 mit Kundenbezug: D1–D6 ausgefüllt und als abgeschlossen bestätigt, Abschnitt 5a)",
+          "8D report completed (mandatory for P1/P2 with customer impact: D1–D6 filled in and confirmed completed, section 5a)");
+    }
     if(["F","G","H"].includes(t.leitdomaene)){
       if(!t.fvAbgeschlossen) M("Fachvorgang abgeschlossen (Domäne "+t.leitdomaene+")","Business record completed (domain "+t.leitdomaene+")");
       if(!t.fvNummer) M("Führender Fachvorgang – Nummer","Leading business record – number");
@@ -1615,6 +1622,7 @@ function viewDetail(id){
   const pbSteps=pbKey?PB[pbKey]:[];
   const pbState=t.pb||{};
   const pbDone=pbSteps.filter((_,i)=>pbState[pbKey+":"+i]).length;
+  const d8Req=["P1","P2"].includes(st)&&(t.pf.kunde_produkt==="ja"||t.pf.kunde_liefer==="ja"||t.pf.oem_daten==="ja");
   const qa=[];
   if(!ro&&t.status!=="Closed"){
     if(t.status==="In Bearbeitung – Eindämmung") qa.push(`<button class="acc" style="width:100%;margin:4px 0" onclick="setStatus('In Bearbeitung – Analyse')">✔ ${de?"Eindämmung abgeschlossen → Analyse":"Containment completed → analysis"}</button>`);
@@ -1837,14 +1845,14 @@ function viewDetail(id){
    ${t.wirksamkeit?`<div class="note">${de?"Termin Wirksamkeitsprüfung":"Effectiveness review due"}: <b>${fmt(t.wirksamkeit)}</b> ${de?"(Umsetzung + 6 Monate, Nachverfolgungsaufgabe erzeugt).":"(implementation + 6 months, follow-up task created)."}</div>`:""}
   </div></div>
 
-  <div class="section"><div class="head">${de?"5a · 8D-Report / Ursachenanalyse":"5a · 8D report / root-cause analysis"} ${t.d8?(t.d8.status==="abgeschlossen"?`<span class="badge st" style="color:var(--ok)">✓ ${de?"abgeschlossen":"completed"}</span>`:`<span class="badge e1">${de?"in Arbeit":"in progress"}</span>`):""}</div><div class="body">
+  <div class="section"><div class="head">${de?"5a · 8D-Report / Ursachenanalyse":"5a · 8D report / root-cause analysis"} ${d8Req?`<span class="req">* ${de?"Pflicht bei P1/P2 mit Kundenbezug — blockiert „Closed“":"mandatory for P1/P2 with customer impact — blocks “Closed”"}</span>`:""} ${t.d8?(t.d8.status==="abgeschlossen"?`<span class="badge st" style="color:var(--ok)">✓ ${de?"abgeschlossen":"completed"}</span>`:`<span class="badge e1">${de?"in Arbeit":"in progress"}</span>`):""}</div><div class="body">
   ${t.d8?`
    <p class="small muted">${de?"8D nach Automotive-Standard; die 5-Why-Analyse gehört in D4. Führt die Qualität einen CAQ-8D (QBD.net), gilt dieser als führend — Referenz im Feld „Führender Fachvorgang“ (Abschnitt 4).":"8D per automotive standard; the 5-Why analysis belongs in D4. If quality runs a CAQ 8D (QBD.net), that record is authoritative — reference it in “leading business record” (section 4)."}</p>
    <div class="grid2">
    ${D8F.map(([f,ld,le,phd,phe])=>`<div><label>${de?ld:le}</label><textarea ${ro?"disabled":""} placeholder="${esc(de?phd:phe)}" onchange="upd8('${f}',this.value)">${esc(t.d8[f]||"")}</textarea></div>`).join("")}
    </div>
    <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" ${t.d8.status==="abgeschlossen"?"checked":""} ${ro?"disabled":""} onchange="upd8('status',this.checked?'abgeschlossen':'offen')"> ${de?"8D abgeschlossen (D1–D8 vollständig)":"8D completed (D1–D8 complete)"}</label>`
-  :`<p class="small muted">${de?"Strukturierte Problemlösung nach Automotive-Standard (8D; 5-Why in D4). Empfohlen für Domäne H sowie alle P1/P2 mit Kundenbezug.":"Structured problem solving per automotive standard (8D; 5-Why in D4). Recommended for domain H and all P1/P2 incidents with customer impact."}</p>
+  :`<p class="small muted">${de?"Strukturierte Problemlösung nach Automotive-Standard (8D; 5-Why in D4). <b>Pflicht bei P1/P2 mit Kundenbezug</b> (Produktsicherheit/Rückruf, Kundeninformation Lieferfähigkeit oder OEM-Dateninformation auf „ja“): Ohne abgeschlossenen 8D (D1–D6) ist der Statuswechsel nach „Closed“ blockiert.":"Structured problem solving per automotive standard (8D; 5-Why in D4). <b>Mandatory for P1/P2 with customer impact</b> (product safety/recall, customer delivery information or OEM data information set to “yes”): without a completed 8D (D1–D6) the transition to “Closed” is blocked."}</p>
    ${!ro?`<button class="sec" onclick="init8d()">🛠 ${de?"8D-Report initiieren":"Initiate 8D report"}</button>`:""}`}
   </div></div>
 
@@ -2186,6 +2194,15 @@ function viewGuidance(){
    </tbody></table>
   </div></details>
 
+  <details><summary>10 · Tool support as of V1.30: playbooks, 8D report, SLA displays</summary><div class="dbody">
+   <p><b>Major-incident banner:</b> active P1 incidents are shown on every page as a red banner; a click opens the ticket.</p>
+   <p><b>SLA and deadline countdowns:</b> the ticket list, the ticket sidebar and the reports show the time remaining to the next deadline as a live countdown (second-precise below one hour, overdue in red). The basis remains the response times P1 = 1 h (24/7), P2 = 4 h, P3 = 8 h, P4 = 24 h and the reporting deadlines from the time of awareness.</p>
+   <p><b>Playbooks (ticket section 4a):</b> per lead domain, a checkable checklist guides through the phases identification → containment → eradication → recovery → lessons learned (e.g. domain B: LOTO/people safety, disconnect the OT segment, check for an OEM line stoppage; domain G: EDI emergency communication, special freight; domain H: block batches, assessment per ISO/SAE 21434). Every tick is logged with timestamp and role. The playbook complements the mandatory fields, it does not replace them.</p>
+   <p><b>8D report (ticket section 5a):</b> structured root-cause analysis per automotive standard (D1–D8; 5-Why in D4). <b>Binding: for P1/P2 with customer impact</b> (product safety/recall, customer delivery information or OEM data information set to “yes”) <b>a missing 8D blocks the transition to “Closed”</b> — required are completed fields D1–D6 and the confirmation “8D completed”. If quality runs a CAQ 8D (QBD.net), that record is authoritative and is referenced as the leading business record.</p>
+   <p><b>Comments:</b> the activity log distinguishes internal notes from external updates; both are an immutable part of the evidence trail.</p>
+   <p><b>KPIs:</b> the report dashboard additionally shows MTTR (mean time to first response), SLA breaches and the top 5 most critical open incidents.</p>
+  </div></details>
+
   <div class="note"><b>Binding documents:</b> POL_010.001 V3.00 (policy) · PROC_010.001 V2.10 (process, DE/EN) · STD_010.001 (NIS-2 reporting) · ANL_010.001 (roles, KPIs, evidence). This page is a condensed working aid for tool users, maintained by the ISO.</div>`;
 
   return `<h1>IRM-Guidance – Incident Response in der Praxis</h1>
@@ -2340,6 +2357,15 @@ function viewGuidance(){
    <tr><td>ISB / Vertretung, Administration</td><td>jährlich</td><td>Fristenmonitor, Genehmigungen, Herabstufung, BCM-Übergabe / Konfigurationsreview</td></tr>
    <tr><td>Bereichsübergreifende Übung</td><td>jährlich</td><td>simulierter P1-Incident über mindestens zwei Domänen mit vollständiger Ticketführung</td></tr>
    </tbody></table>
+  </div></details>
+
+  <details><summary>10 · Tool-Unterstützung ab V1.30: Playbooks, 8D-Report, SLA-Anzeigen</summary><div class="dbody">
+   <p><b>Major-Incident-Banner:</b> Aktive P1-Vorfälle werden auf jeder Seite als roter Banner angezeigt; ein Klick öffnet das Ticket.</p>
+   <p><b>SLA- und Frist-Countdowns:</b> Ticketliste, Ticket-Seitenleiste und Berichte zeigen die verbleibende Zeit bis zur nächsten Frist als laufenden Countdown (unter einer Stunde sekundengenau, überfällig rot). Grundlage bleiben die Reaktionszeiten P1 = 1 h (24/7), P2 = 4 h, P3 = 8 h, P4 = 24 h sowie die Meldefristen ab Kenntniserlangung.</p>
+   <p><b>Playbooks (Ticketabschnitt 4a):</b> Je Leitdomäne führt eine abhakbare Checkliste durch die Phasen Identifikation → Eindämmung → Beseitigung → Wiederherstellung → Nachbereitung (z. B. Domäne B: LOTO/Personensicherheit, OT-Segment trennen, Prüfung Bandstillstand beim OEM; Domäne G: EDI-Notfallkommunikation, Sonderfahrten; Domäne H: Chargen sperren, Bewertung nach ISO/SAE 21434). Jeder Haken wird mit Zeitstempel und Rolle protokolliert. Das Playbook ergänzt die Pflichtfelder, ersetzt sie nicht.</p>
+   <p><b>8D-Report (Ticketabschnitt 5a):</b> Strukturierte Ursachenanalyse nach Automotive-Standard (D1–D8; 5-Why in D4). <b>Verbindlich: Bei P1/P2 mit Kundenbezug</b> (Produktsicherheit/Rückruf, Kundeninformation Lieferfähigkeit oder OEM-Dateninformation auf „ja“) <b>blockiert ein fehlender 8D den Statuswechsel nach „Closed“</b> — erforderlich sind ausgefüllte Felder D1–D6 und die Bestätigung „8D abgeschlossen“. Führt die Qualität einen CAQ-8D (QBD.net), gilt dieser als führend und wird als Fachvorgang referenziert.</p>
+   <p><b>Kommentare:</b> Im Aktivitätsprotokoll lassen sich interne Notizen und externe Updates getrennt erfassen; beide sind unveränderlich Teil der Nachweisführung.</p>
+   <p><b>Kennzahlen:</b> Das Berichts-Dashboard zeigt zusätzlich MTTR (mittlere Zeit bis Erstreaktion), SLA-Verletzungen und die Top-5 der kritischsten offenen Vorfälle.</p>
   </div></details>
 
   <div class="note"><b>Verbindliche Dokumente:</b> POL_010.001 V3.00 (Richtlinie) · PROC_010.001 V2.10 (Prozess, DE/EN) · STD_010.001 (NIS-2-Meldung) · ANL_010.001 (Rollen, KPI, Nachweise). Diese Seite ist eine verdichtete Arbeitshilfe für die Tool-Nutzer und wird durch den ISB gepflegt.</div>`;
