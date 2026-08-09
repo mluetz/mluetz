@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* =====================================================================
-   REUTIB IRM-Server V1.30 — zentrale Serverdatenbank für den
+   REUTIB IRM-Server V1.40 — zentrale Serverdatenbank für den
    Mehrbenutzerbetrieb des IRM-Tools (GDL_010.001).
 
    Zero-Dependency: benötigt nur Node.js >= 22 (kein npm install).
@@ -19,6 +19,8 @@
    Endpunkte:  GET  /                    IRM-Anwendung (../index.html)
                GET  /api/health          {ok, version, storage, auth}
                POST /api/seq             atomare Ticketnummern-Vergabe {seq}
+               POST /api/inbound         Monitoring-/API-Eingang {betreff, beschreibung,
+                                         standort, objekte, quelle, kenntnis} -> neues Ticket
                GET  /api/tickets         Gesamtbestand {seq, rev, tickets}
                GET  /api/changes?since=N Änderungen seit Revision N
                PUT  /api/tickets/:id     Ticket anlegen/aktualisieren {ok, rev}
@@ -30,7 +32,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const VERSION = "1.30";
+const VERSION = "1.40";
 const PORT = parseInt(process.env.PORT || "8010", 10);
 const TOKEN = process.env.IRM_TOKEN || "";
 const CORS = process.env.IRM_CORS || "";
@@ -118,6 +120,37 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "POST" && u.pathname === "/api/seq") {
       return send(res, 200, { seq: store.seq() });
+    }
+    /* Monitoring-/Event-Management-Eingang: erzeugt ein vollständiges Ticket im Status Open */
+    if (req.method === "POST" && u.pathname === "/api/inbound") {
+      const body = await readBody(req).catch(() => null);
+      if (!body || !body.betreff) return send(res, 400, { error: "betreff required" });
+      const ts = Date.now();
+      const t = {
+        id: "IRM-" + String(store.seq()).padStart(4, "0"),
+        erstellt: ts, kenntnis: Number(body.kenntnis) || ts,
+        betreff: String(body.betreff).slice(0, 140),
+        beschreibung: String(body.beschreibung || "").slice(0, 4000),
+        standort: String(body.standort || ""), beobachtet: null,
+        personen: false, nearmiss: false,
+        quelle: String(body.quelle || "Monitoring/API"), kanal: "API",
+        status: "Open", leitdomaene: "", nebendomaenen: [], owner: "",
+        domWechsel: "", gefahrBeendet: null, gef: "noch nicht bestimmt", gefWeitere: [],
+        ursache1: "", ursache2: "", s1: "", s2: "", s3: "", s4: "", s5: "", s6: "",
+        herab: "nein", herabStufe: "", herabBegr: "", einstufungBegr: "", eskOverride: "",
+        infoklass: "", objekte: String(body.objekte || ""), tisax: false, prototyp: false,
+        sofort: "", beweis: false, beweisText: "", kenntnisBegr: "",
+        pf: {}, nachweis: "", fvSystem: "", fvNummer: "", fvAbgeschlossen: false,
+        freigabe: false, freigabeIsb: false, freigabeQl: false,
+        abschlussbericht: "", lessons: "", risikoRef: "", wirksamkeit: null, bcmNote: "",
+        pb: {}, d8: null, parent: "", wait: { on: false, since: null, total: 0 },
+        resolvedAt: null, csat: 0, anhaenge: [], beobachter: ["ISB"],
+        tasks: [], approvals: [],
+        log: [{ ts, who: "System (API)", txt: "Ticket über die Monitoring-/API-Schnittstelle angelegt (POST /api/inbound)." }],
+        erstreaktion: null
+      };
+      const rev = store.put(t.id, t);
+      return send(res, 201, { ok: true, id: t.id, rev });
     }
     if (req.method === "GET" && u.pathname === "/api/tickets") {
       return send(res, 200, { seq: store.getSeq(), rev: store.getRev(), tickets: store.all() });

@@ -883,7 +883,7 @@ function save(t){
 }
 
 /* ---------- Serveranbindung: zentrale Datenbank, Mehrbenutzerbetrieb (V1.10) ---------- */
-const APP_VERSION="1.30";
+const APP_VERSION="1.40";
 let API=null, REV=0, NET=null, SRVINFO=null;
 function authTok(){ return S.token||""; }
 async function api(p, opts={}, retried){
@@ -1046,11 +1046,43 @@ const D8F=[
 function nextDue(t){
   if(["Resolved","Closed"].includes(t.status)) return null;
   const c=[]; const stx=effStufe(t);
-  if(!t.erstreaktion && stx) c.push({due:t.kenntnis+SLA_H[stx]*3600000, l:(S.lang==="en"?"Response SLA ":"SLA Erstreaktion ")+stx+" ("+SLA_H[stx]+" h)"});
+  if(!t.erstreaktion && stx) c.push({due:t.kenntnis+SLA_H[stx]*3600000+waitExtra(t), l:(S.lang==="en"?"Response SLA ":"SLA Erstreaktion ")+stx+" ("+SLA_H[stx]+" h)"});
   for(const x of t.tasks) if(!x.done) c.push({due:x.due, l:taskLabel(x.name)});
   if(!c.length) return null;
   return c.sort((a,b)=>a.due-b.due)[0];
 }
+/* ---------- V1.40: Wissensdatenbank (Shift-Left / KCS) ---------- */
+const KB_DEFAULT=[
+ {id:"KB-001",tags:"phishing mail e-mail link anhang absender spam verdächtig",
+  td:"Verdächtige E-Mail / Phishing erkannt – was tun?",te:"Suspicious e-mail / phishing detected – what to do?",
+  sd:"E-Mail mit verdächtigem Link, Anhang oder gefälschtem Absender erhalten.",se:"Received an e-mail with a suspicious link, attachment or spoofed sender.",
+  ld:"Nicht klicken, nichts öffnen, nicht antworten und nicht weiterleiten. Die Mail als Anhang an die IT-Security melden und anschließend löschen. Wurde bereits geklickt oder etwas eingegeben: sofort Passwort ändern und UNBEDINGT einen Incident melden – dann gilt die Selbsthilfe nicht.",
+  le:"Do not click, open, reply or forward. Report the mail as an attachment to IT security, then delete it. If you already clicked or entered data: change your password immediately and ALWAYS report an incident – self-help does not apply then."},
+ {id:"KB-002",tags:"pc drucker rechner langsam neustart monitor einzelplatz störung",
+  td:"Einzelplatz-Störung (PC, Drucker): Selbsthilfe vor der Meldung",te:"Single-workstation issue (PC, printer): self-help before reporting",
+  sd:"Ein einzelner Arbeitsplatz, Drucker oder Bildschirm funktioniert nicht.",se:"A single workstation, printer or screen does not work.",
+  ld:"Neustart durchführen, Kabel/WLAN prüfen, anderes Gerät oder anderen Drucker testen. Funktioniert es danach und sind keine Daten/keine Sicherheit betroffen, ist keine Meldung nötig. Sind mehrere Arbeitsplätze betroffen oder besteht Sicherheitsverdacht: melden.",
+  le:"Restart, check cable/Wi-Fi, try another device or printer. If it works afterwards and no data/security is affected, no report is needed. If several workstations are affected or security is in doubt: report."},
+ {id:"KB-003",tags:"edi abruf oem lieferabruf übertragung schnittstelle asn",
+  td:"EDI-/Lieferabruf-Störung: Sofortcheck",te:"EDI / call-off disruption: immediate check",
+  sd:"EDI-Übertragungen oder OEM-Abrufe kommen nicht an oder gehen nicht raus.",se:"EDI transmissions or OEM call-offs do not arrive or leave.",
+  ld:"Prüfen: Ist die Gegenstelle erreichbar? Wann war die letzte erfolgreiche Übertragung? Sind OEM-Abrufe oder Liefertermine betroffen, SOFORT melden (zeitkritisch, drohender Bandstillstand = P1-Kriterium) und parallel die Disposition informieren.",
+  le:"Check: is the partner reachable? When was the last successful transmission? If OEM call-offs or delivery dates are affected, report IMMEDIATELY (time-critical, imminent line stoppage = P1 criterion) and inform scheduling in parallel."},
+ {id:"KB-004",tags:"passwort konto gesperrt anmeldung login zugang reset",
+  td:"Passwort vergessen / Konto gesperrt",te:"Forgotten password / locked account",
+  sd:"Anmeldung nicht möglich, Konto gesperrt oder Passwort abgelaufen.",se:"Cannot log in, account locked or password expired.",
+  ld:"Über den Self-Service-Reset bzw. den IT-Helpdesk entsperren lassen. Das ist ein Service Request und kein Incident im Sinne des IRM. Ausnahme: Verdacht auf fremde Kontonutzung → sofort als Incident melden.",
+  le:"Use the self-service reset or the IT helpdesk. This is a service request, not an incident in the IRM sense. Exception: suspected account misuse → report as an incident immediately."},
+ {id:"KB-005",tags:"near miss beinahe unfall gefahr situation",
+  td:"Beinaheereignis (Near Miss) – lohnt sich das Melden?",te:"Near miss – is reporting worth it?",
+  sd:"Es ist gerade noch gut gegangen – niemand verletzt, nichts kaputt.",se:"It only just went well – nobody hurt, nothing broken.",
+  ld:"Ja, immer melden: Near-Miss-Meldungen sind ausdrücklich erwünscht (Meldequote-KPI) und ziehen keinerlei Nachteile nach sich. Der eigene Portaleinstieg „Beinaheereignis melden“ genügt – kurze Beschreibung reicht.",
+  le:"Yes, always report: near-miss reports are explicitly encouraged (reporting-rate KPI) and never lead to any disadvantage. The dedicated portal entry “Report a near miss” is enough – a short description suffices."}];
+function kbAll(){ return S.kb&&S.kb.length?S.kb:KB_DEFAULT; }
+function tokWords(s){ return String(s||"").toLowerCase().split(/[^a-zäöüß0-9\-]+/).filter(w=>w.length>3); }
+function kbScore(q,txt){ const qs=new Set(tokWords(q)); if(!qs.size) return 0; let n=0; for(const w of tokWords(txt)) if(qs.has(w)) n++; return n; }
+/* SLA-Pause: verlängert ausschließlich die interne Erstreaktions-SLA, nie gesetzliche Meldefristen */
+function waitExtra(t){ const w=t&&t.wait; if(!w) return 0; return (w.total||0)+(w.on?now()-w.since:0); }
 function fmtCd(ms){
   const neg=ms<0, a=Math.abs(ms);
   if(a<3600000){ const m=Math.floor(a/60000), sx=Math.floor(a%60000/1000);
@@ -1237,6 +1269,7 @@ function needBegruendungAbw(t){ return t.kenntnis && t.erstellt && (t.erstellt -
 /* Nachbereitung (Regeln 17/18) */
 function afterTransition(t, to){
   const st = effStufe(t);
+  if(to==="Resolved" && !t.resolvedAt) t.resolvedAt=now();
   if(to==="Resolved" && ["P1","P2"].includes(st)){
     addOnce(t,"nb1","Post-Incident-Review durchführen","Incident Owner",14*24);
     addOnce(t,"nb2","Abschlussbericht und Risikobewertung erstellen","Incident Owner / ISB",30*24);
@@ -1281,6 +1314,7 @@ async function newTicket(o){
     abschlussbericht:"", lessons:"", risikoRef:"", wirksamkeit:null,
     bcmNote:"",
     pb:{}, d8:null,
+    parent:o.parent||"", wait:{on:false,since:null,total:0}, resolvedAt:null, csat:0,
     anhaenge:(o.anhaenge||[]),
     beobachter:["ISB"], tasks:[], approvals:[], log:[],
     erstreaktion:null
@@ -1428,7 +1462,10 @@ function viewPortal(){
     <div class="card portal danger" onclick="showNotruf()"><h3>🚨 ${de?"Gefahr im Verzug":"Imminent danger"}</h3>
       <p><b>${de?"Kein Formular.":"No form."}</b> ${de?"Bei akuter Gefahr für Personen zuerst die Notrufkette – melden Sie danach.":"In case of acute danger to people use the emergency chain first – report afterwards."}</p></div>
   </div>
-  <div id="formBox"></div>`;
+  <div id="formBox"></div>
+  <h2 style="margin-top:26px">💡 ${de?"Selbsthilfe & Wissensdatenbank":"Self-help & knowledge base"} <span class="small muted">(${kbAll().length} ${de?"Artikel · Shift-Left: erst prüfen, dann melden":"articles · shift-left: check first, then report"})</span></h2>
+  ${kbAll().map(a=>`<details><summary>${esc(de?a.td:a.te)}${a.src?` <span class="small muted">(${de?"aus":"from"} ${a.src})</span>`:""}</summary><div class="dbody"><p class="small muted">${esc(de?a.sd:a.se)}</p><p>${esc(de?a.ld:a.le)}</p></div></details>`).join("")}
+  <p class="small muted">${de?"Wichtig: Informationssicherheits-Vorfälle sind <b>immer</b> zu melden – die Selbsthilfe beschleunigt nur die Störungsbeseitigung, sie ersetzt keine Meldepflicht.":"Important: information-security incidents must <b>always</b> be reported – self-help only speeds up trouble-shooting, it never replaces a reporting duty."}</p>`;
 }
 function showNotruf(){
   const de = S.lang!=="en";
@@ -1465,6 +1502,10 @@ function showForm(nearmiss){
       <span class="small muted">${de?"Keine Klassifizierungsfelder, keine Prioritätsauswahl – die Einstufung erfolgt durch die Triage (GDL Kap. 5.1).":"No classification fields, no priority selection – classification is done by the triage team (GDL ch. 5.1)."}</span>
     </div>
   </div></div>`;
+  window.PORTAL_PARENT="";
+  const kbBd=$("formBox").querySelector(".body");
+  if(kbBd&&!$("kbSugg")){ const sug=document.createElement("div"); sug.id="kbSugg"; kbBd.appendChild(sug); }
+  $("f_betreff").oninput=kbSuggest; $("f_beschr").oninput=kbSuggest;
   $("f_pers").onchange = e=>{ $("f_persHint").innerHTML = e.target.checked ? `<div class="err">${de?"Sind Personen aktuell in Gefahr? Nutzen Sie zuerst die Notrufkette („Gefahr im Verzug“).":"Are people currently in danger? Use the emergency chain first (“Imminent danger”)."}</div>` : ""; };
 }
 async function submitMeldung(nearmiss){
@@ -1479,8 +1520,11 @@ async function submitMeldung(nearmiss){
       atts.push(await readFileAsAtt(f,"meldung"));
     }
   }
-  const t=await newTicket({betreff, beschreibung:beschr, standort, beobachtet:parseDt($("f_beob").value), personen:$("f_pers").checked, quelle:$("f_quelle").value, nearmiss, kanal:"Portal", anhaenge:atts});
+  const t=await newTicket({betreff, beschreibung:beschr, standort, beobachtet:parseDt($("f_beob").value), personen:$("f_pers").checked, quelle:$("f_quelle").value, nearmiss, kanal:"Portal", parent:window.PORTAL_PARENT||"", anhaenge:atts});
   if(atts.length){ log(t,tr("Anlage hinzugefügt:")+" "+atts.map(a=>a.name).join(", ")); save(t); }
+  if(t.parent){ const pt=S.tickets.find(x=>x.id===t.parent);
+    if(pt){ log(t,(S.lang==="en"?"Filed as supplement to parent ticket ":"Als Ergänzungsmeldung erfasst zu Sammelticket ")+t.parent); save(t);
+      log(pt,(S.lang==="en"?"Supplementary report assigned: ":"Ergänzungsmeldung zugeordnet: ")+t.id); save(pt); } }
   const de = S.lang!=="en";
   $("formBox").innerHTML=`<div class="note oklight"><b>${de?"Vielen Dank – Ihre Meldung wurde aufgenommen":"Thank you – your report has been recorded"} (${t.id}).</b><br>
   ${de?"Die Triage übernimmt jetzt die Einordnung.":"The triage team will now classify it."} ${nearmiss?(de?"Die Arbeitssicherheit wurde informiert.":"Occupational safety has been informed."):""} ${de?"Bei Rückfragen meldet sich das IRM-Team.":"The IRM team will contact you if anything is unclear."}</div>`;
@@ -1488,6 +1532,7 @@ async function submitMeldung(nearmiss){
 
 /* ---------- Ticketliste ---------- */
 let F = {q:"",dom:"",st:"",stufe:"",ort:"",view:"table"};
+let BULK = new Set();
 function viewTickets(){
   const de = S.lang!=="en";
   const vis = S.tickets.filter(canSee);
@@ -1510,6 +1555,7 @@ function viewTickets(){
     <div><label>${de?"Ansicht":"View"}</label><div class="flex" style="gap:4px"><button class="${F.view!=="kanban"?"acc":"sec"} mini" onclick="F.view='table';render()">☰ ${de?"Tabelle":"Table"}</button><button class="${F.view==="kanban"?"acc":"sec"} mini" onclick="F.view='kanban';render()">▦ Kanban</button></div></div>
     <div><button class="sec" onclick="exportCsv(S.tickets.filter(canSee))">${tr("CSV-Export")}</button></div>
     <div><button class="sec" onclick="seed()">${tr("Testdaten laden")}</button></div>
+    ${BULK.size?`<div class="flex" style="gap:6px"><span class="badge e1">${BULK.size} ${de?"ausgewählt":"selected"}</span><button class="sec mini" onclick="bulkAttach()">⛓ ${de?"An Sammelticket zuordnen":"Assign to parent ticket"}</button><button class="sec mini" onclick="bulkClear()">✕ ${de?"Auswahl aufheben":"Clear selection"}</button></div>`:""}
   </div>
   ${F.view==="kanban"?(()=>{
     const cols=STATUS.filter(sx=>sx!=="Ausgesetzt – BCM"||list.some(t=>t.status===sx));
@@ -1519,18 +1565,19 @@ function viewTickets(){
        <div class="khead">${tr(sx)}<span class="spacer"></span><span class="badge st">${items.length}</span></div>
        ${items.map(t=>{const s2=effStufe(t); const kd=nextDue(t); const kr=kd?kd.due-now():null;
          return `<div class="kcard ${s2==="P1"?"p1edge":s2==="P2"?"p2edge":""}" draggable="${canEdit(t)}" ondragstart="event.dataTransfer.setData('text/plain','${t.id}')" onclick="openT('${t.id}')">
-          <div class="flex" style="gap:6px"><b>${t.id}</b>${s2?`<span class="badge ${s2.toLowerCase()}" title="${esc(pLabel(s2))}">${s2}</span>`:""}${isProtected(t)?"🔒":""}${t.nearmiss?`<span class="badge st">NM</span>`:""}</div>
+          <div class="flex" style="gap:6px"><b>${t.id}</b>${s2?`<span class="badge ${s2.toLowerCase()}" title="${esc(pLabel(s2))}">${s2}</span>`:""}${isProtected(t)?"🔒":""}${t.nearmiss?`<span class="badge st">NM</span>`:""}${t.wait&&t.wait.on?" ⏸":""}${t.parent?" ⛓":""}</div>
           <div class="small" style="margin:3px 0">${esc(t.betreff.slice(0,70))}</div>
           <div class="small muted">${t.leitdomaene?`<span class="badge dom">${t.leitdomaene}</span> `:""}${siteLabel(t.standort)||""}</div>
           ${kd?`<div class="small" style="margin-top:3px"><span class="amp ${kr<0?"r":kr<12*3600000?"o":"g"}"></span><span class="cd${kr<0?" od":""}" data-due="${kd.due}">${fmtCd(kr)}</span></div>`:""}
          </div>`;}).join("")||`<p class="small muted" style="padding:8px 10px">–</p>`}
       </div>`;}).join("")}</div>
      <p class="small muted">${de?"Karten per Drag & Drop in den nächsten Status ziehen — zulässige Übergänge und blockierende Pflichtprüfungen der GDL gelten unverändert.":"Drag cards to the next status — the permitted transitions and blocking mandatory checks of the GDL still apply."}</p>`;
-  })():list.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${tr("Domäne")}</th><th>${tr("Standort")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Esk.")}</th><th>${tr("Status")}</th><th>${tr("Kenntniserlangung")}</th><th>${de?"Nächste Frist / SLA":"Next deadline / SLA"}</th><th>${tr("Aufgaben offen")}</th></tr></thead><tbody>
+  })():list.length?`<table><thead><tr><th class="noprint" style="width:26px"></th><th>ID</th><th>${tr("Betreff")}</th><th>${tr("Domäne")}</th><th>${tr("Standort")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Esk.")}</th><th>${tr("Status")}</th><th>${tr("Kenntniserlangung")}</th><th>${de?"Nächste Frist / SLA":"Next deadline / SLA"}</th><th>${tr("Aufgaben offen")}</th></tr></thead><tbody>
   ${list.map(t=>{
     const st=effStufe(t), open=t.tasks.filter(x=>!x.done), od=open.filter(x=>x.due<now());
     return `<tr class="click" onclick="openT('${t.id}')">
-     <td><b>${t.id}</b>${isProtected(t)?' <span class="badge lock" title="'+tr("geschützter Bereich")+'">🔒</span>':""}${t.nearmiss?' <span class="badge st">'+tr("Near Miss")+'</span>':""}</td>
+     <td class="noprint" onclick="event.stopPropagation()"><input type="checkbox" style="width:auto" ${BULK.has(t.id)?"checked":""} onchange="bulkSel('${t.id}',this.checked)"></td>
+     <td><b>${t.id}</b>${isProtected(t)?' <span class="badge lock" title="'+tr("geschützter Bereich")+'">🔒</span>':""}${t.nearmiss?' <span class="badge st">'+tr("Near Miss")+'</span>':""}${t.wait&&t.wait.on?' <span class="badge st tip" data-tip="'+(de?"SLA pausiert – Warten auf Rückmeldung":"SLA paused – waiting for feedback")+'">⏸</span>':""}${t.parent?' <span class="badge st tip" data-tip="'+(de?"Ergänzung zu ":"Supplement to ")+t.parent+'">⛓</span>':""}</td>
      <td>${esc(t.betreff)}</td>
      <td>${t.leitdomaene?`<span class="badge dom tip" data-tip="${esc(tr("Leitdomäne"))} ${t.leitdomaene} – ${esc(domName(t.leitdomaene))}">${t.leitdomaene}</span>`:"–"}${(t.nebendomaenen||[]).map(d=>` <span class="badge st tip" data-tip="${esc(tr("Nebendomänen"))}: ${d} – ${esc(domName(d))}">${d}</span>`).join("")}</td>
      <td>${siteLabel(t.standort)}</td>
@@ -1633,6 +1680,92 @@ function addNote(){
   const kind=$("noteKind").value;
   t.log.unshift({ts:now(), who:(S.user?S.user+" – ":"")+roleLabel(), txt, kind});
   save(t); render();
+}
+function kbSuggest(){
+  const box=$("kbSugg"); if(!box) return;
+  const de=S.lang!=="en";
+  const q=(($("f_betreff")||{}).value||"")+" "+(($("f_beschr")||{}).value||"");
+  if(tokWords(q).length<2){ box.innerHTML=""; return; }
+  const arts=kbAll().map(a=>({a, s:kbScore(q,(de?a.td+" "+a.sd:a.te+" "+a.se)+" "+(a.tags||""))})).filter(x=>x.s>0).sort((x,y)=>y.s-x.s).slice(0,3);
+  const dups=S.tickets.filter(t=>!["Resolved","Closed"].includes(t.status)&&!t.nearmiss).map(t=>({t, s:kbScore(q,t.betreff+" "+t.beschreibung)})).filter(x=>x.s>=2).sort((x,y)=>y.s-x.s).slice(0,3);
+  let hh="";
+  if(arts.length){
+    hh+=`<div class="note" style="margin-top:10px"><b>💡 ${de?"Bevor Sie melden – hilft einer dieser Hinweise?":"Before you report – does one of these help?"}</b>
+     ${arts.map(x=>`<details style="margin:6px 0"><summary>${esc(de?x.a.td:x.a.te)}</summary><div class="dbody small">${esc(de?x.a.ld:x.a.le)}</div></details>`).join("")}
+     <button class="sec mini" onclick="deflectOk()">${de?"Hat geholfen – keine Meldung nötig":"That helped – no report needed"}</button>
+     <div class="small muted">${de?"Sicherheitsvorfälle bitte trotzdem immer melden – Selbsthilfe ersetzt die Meldepflicht nicht.":"Please still always report security incidents – self-help does not replace the duty to report."}</div></div>`;
+  }
+  if(dups.length){
+    hh+=`<div class="note" style="margin-top:6px"><b>⛓ ${de?"Ähnliche offene Meldungen – Sammelstörung?":"Similar open reports – major outage?"}</b>
+     ${dups.map(x=>`<div class="small" style="margin:4px 0">${x.t.id} · ${esc(x.t.betreff.slice(0,70))}
+      <button class="sec mini" onclick="pickParent('${x.t.id}')">${window.PORTAL_PARENT===x.t.id?"✓ ":""}${de?"Als Ergänzung zuordnen":"Assign as supplement"}</button></div>`).join("")}
+     ${window.PORTAL_PARENT?`<div class="small" style="color:var(--ok);font-weight:700">✓ ${de?"Ihre Meldung wird als Ergänzung zu":"Your report will be filed as a supplement to"} ${window.PORTAL_PARENT} ${de?"erfasst.":"."}</div>`:""}</div>`;
+  }
+  box.innerHTML=hh;
+}
+function deflectOk(){
+  S.deflect=(S.deflect||0)+1; save();
+  const de=S.lang!=="en";
+  $("formBox").innerHTML=`<div class="note oklight"><b>${de?"Schön, dass die Selbsthilfe geholfen hat!":"Great that self-help solved it!"}</b> ${de?"Es wurde kein Ticket erstellt; die Selbsthilfe-Quote wird als Kennzahl gezählt. Bei Sicherheitsverdacht bitte dennoch melden.":"No ticket was created; the self-help rate is counted as a KPI. If security is involved, please still report."}</div>`;
+}
+function pickParent(id){ window.PORTAL_PARENT = window.PORTAL_PARENT===id ? "" : id; kbSuggest(); }
+function bulkSel(id,on){ if(on) BULK.add(id); else BULK.delete(id); render(); }
+function bulkClear(){ BULK.clear(); render(); }
+function bulkAttach(){
+  const de=S.lang!=="en";
+  const pid=(prompt(de?"ID des Sammeltickets, dem die Auswahl zugeordnet wird (z. B. IRM-0001):":"ID of the parent ticket for the selection (e.g. IRM-0001):")||"").trim().toUpperCase();
+  if(!pid) return;
+  const pt=S.tickets.find(x=>x.id===pid);
+  if(!pt){ alert((de?"Ticket nicht gefunden: ":"Ticket not found: ")+pid); return; }
+  let n=0;
+  for(const id of BULK){ if(id===pid) continue; const t=S.tickets.find(x=>x.id===id); if(!t||!canEdit(t)||t.parent===pid) continue;
+    t.parent=pid; n++;
+    log(t,(de?"Als Ergänzung dem Sammelticket zugeordnet (Massenbearbeitung): ":"Assigned as supplement to parent ticket (bulk edit): ")+pid); save(t);
+  }
+  if(n){ log(pt,(de?"Ergänzungsmeldungen per Massenbearbeitung zugeordnet: ":"Supplementary reports assigned via bulk edit: ")+n); save(pt); }
+  BULK.clear(); render();
+}
+function toggleWait(){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const de=S.lang!=="en";
+  t.wait=t.wait||{on:false,since:null,total:0};
+  if(!t.wait.on){
+    const r=prompt(de?"Grund der Wartezeit (z. B. Rückfrage an den Melder):":"Reason for waiting (e.g. query to the reporter):",""); if(r===null) return;
+    t.wait.on=true; t.wait.since=now(); t.wait.reason=r||"";
+    log(t,(de?"SLA-Pause gestartet (Warten auf Rückmeldung). Gesetzliche Meldefristen laufen unverändert in Kalenderzeit weiter. Grund: ":"SLA pause started (waiting for feedback). Statutory reporting deadlines continue unchanged in calendar time. Reason: ")+(r||"–"));
+  } else {
+    t.wait.total=(t.wait.total||0)+(now()-t.wait.since); t.wait.on=false; t.wait.since=null;
+    log(t,(de?"SLA-Pause beendet. Wartezeit gesamt: ":"SLA pause ended. Total waiting time: ")+fmtRest(t.wait.total));
+  }
+  save(t); render();
+}
+function swarm(){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const de=S.lang!=="en";
+  const inp=prompt(de?"Swarming – Domänen der hinzuzuziehenden Experten (z. B. A,B,G):":"Swarming – domains of the experts to involve (e.g. A,B,G):",""); if(!inp) return;
+  const ds=inp.toUpperCase().split(/[^A-J]+/).filter(d=>DOMKEYS.includes(d)&&d!==t.leitdomaene&&!(t.nebendomaenen||[]).includes(d));
+  if(!ds.length) return;
+  for(const d of ds){
+    t.nebendomaenen=[...new Set([...(t.nebendomaenen||[]),d])];
+    addOnce(t,"neben_"+d,"Mitwirkung Nebendomäne "+d+" – "+DOM[d].n,"Incident Owner "+d,72);
+    if(!t.beobachter.includes("Incident Owner "+d)) t.beobachter.push("Incident Owner "+d);
+    log(t,(de?"Swarming: Experten hinzugezogen (Nebendomäne mit Mitwirkungsaufgabe und Beobachterstatus, Regel 7). ":"Swarming: experts involved (secondary domain with contribution task and watcher status, rule 7). ")+"["+d+"]");
+  }
+  save(t); render();
+}
+function kbFromTicket(){
+  const t=T(); if(!t) return;
+  const de=S.lang!=="en";
+  S.kb=S.kb&&S.kb.length?S.kb:KB_DEFAULT.slice();
+  const sol=t.lessons||t.sofort||t.ursache2||"";
+  if(!sol){ alert(de?"Bitte zuerst Lessons Learned oder Sofortmaßnahmen erfassen – daraus entsteht die Lösung des Artikels.":"Please record lessons learned or immediate actions first – they become the article solution."); return; }
+  S.kb.unshift({id:"KB-"+String(S.kb.length+1).padStart(3,"0"), src:t.id, ts:now(),
+    td:t.betreff, te:t.betreff,
+    sd:(t.beschreibung||"").slice(0,240), se:(t.beschreibung||"").slice(0,240),
+    ld:sol.slice(0,400), le:sol.slice(0,400), tags:(t.gef||"")+" "+(t.leitdomaene||"")});
+  log(t,de?"KB-Artikel aus dem Ticket erzeugt (KCS-Prinzip).":"KB article created from the ticket (KCS principle).");
+  save(t);
+  alert(de?"KB-Artikel angelegt – sichtbar im Portal unter „Selbsthilfe & Wissensdatenbank“.":"KB article created – visible in the portal under “Self-help & knowledge base”.");
 }
 function kanbanDrop(ev,to){
   ev.preventDefault();
@@ -1771,7 +1904,7 @@ function viewDetail(id){
   const gefOpts = ["noch nicht bestimmt", ...G_BSI.map((g,i)=>"G 0."+(i+1)+" – "+g), ...G_REUTIB.map((g,i)=>"G-R 1."+String(i+1).padStart(2,"0")+" – "+g)];
   const openTasks=t.tasks.filter(x=>!x.done);
   const nd=nextDue(t);
-  const slaDue=(!t.erstreaktion&&st&&!["Resolved","Closed"].includes(t.status))?t.kenntnis+SLA_H[st]*3600000:null;
+  const slaDue=(!t.erstreaktion&&st&&!["Resolved","Closed"].includes(t.status))?t.kenntnis+SLA_H[st]*3600000+waitExtra(t):null;
   const pbKey=t.leitdomaene?(PBMAP[t.leitdomaene]||"DEF"):null;
   const pbSteps=pbKey?PB[pbKey]:[];
   const pbState=t.pb||{};
@@ -1782,6 +1915,8 @@ function viewDetail(id){
     if(t.status==="In Bearbeitung – Eindämmung") qa.push(`<button class="acc" style="width:100%;margin:4px 0" onclick="setStatus('In Bearbeitung – Analyse')">✔ ${de?"Eindämmung abgeschlossen → Analyse":"Containment completed → analysis"}</button>`);
     if(!t.d8) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="init8d()">🛠 ${de?"8D-Report initiieren":"Initiate 8D report"}</button>`);
     if(["P1","P2"].includes(st)) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="alarmMail()">✉ ${de?"Alarm-E-Mail erzeugen":"Compose alarm e-mail"}</button>`);
+    if(!["Resolved","Closed"].includes(t.status)) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="toggleWait()">${t.wait&&t.wait.on?"▶ "+(de?"Warten beenden (SLA läuft weiter)":"End waiting (SLA resumes)"):"⏸ "+(de?"Warten auf Rückmeldung (SLA-Pause)":"Waiting for feedback (SLA pause)")}</button>`);
+    if(!["Resolved","Closed"].includes(t.status)) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="swarm()">🐝 ${de?"Swarming – Experten hinzuziehen":"Swarming – involve experts"}</button>`);
     if(pbKey&&pbDone<pbSteps.length) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="document.getElementById('pbsec').scrollIntoView({behavior:'smooth'})">📋 ${de?"Zum Playbook":"Go to playbook"} (${pbDone}/${pbSteps.length})</button>`);
   }
   const side=`<div class="card sidecard">
@@ -1793,10 +1928,13 @@ function viewDetail(id){
    <div class="srow"><b>${de?"Melder":"Reporter"}</b><span>${esc(t.quelle)||"–"}</span></div>
    <div class="srow"><b>Owner</b><span>${esc(t.owner)||"–"}</span></div>
    <div class="srow"><b>${tr("Kenntniserlangung")}</b><span>${fmt(t.kenntnis)}</span></div>
+   ${t.parent?`<div class="srow"><b>${de?"Sammelticket":"Parent"}</b><span><a href="#" onclick="openT('${t.parent}');return false">⛓ ${t.parent}</a></span></div>`:""}
+   ${(()=>{const ch=S.tickets.filter(x=>x.parent===t.id); return ch.length?`<div class="srow"><b>${de?"Ergänzungen":"Children"}</b><span>${ch.slice(0,4).map(c=>`<a href="#" onclick="openT('${c.id}');return false">${c.id}</a>`).join(" ")}${ch.length>4?" +"+(ch.length-4):""}</span></div>`:"";})()}
    <hr>
    <div class="small muted"><b>${de?"SLA Erstreaktion":"Response SLA"}</b>${st?" ("+SLA_H[st]+" h"+(["P1","P2"].includes(st)?", 24/7":"")+")":""}</div>
    ${slaDue?`<div class="cdbox"><span class="cd${slaDue-now()<0?" od":""}" data-due="${slaDue}">${fmtCd(slaDue-now())}</span></div>`
      :t.erstreaktion?`<div style="color:var(--ok);font-weight:700">✓ ${de?"erfüllt":"met"} ${fmt(t.erstreaktion)}</div>`:`<div class="muted">–</div>`}
+   ${t.wait&&t.wait.on?`<div class="small" style="color:var(--warn);font-weight:700">⏸ ${de?"SLA pausiert":"SLA paused"}${t.wait.reason?": "+esc(t.wait.reason):""} <span class="muted" style="font-weight:400">(${de?"Meldefristen laufen weiter":"reporting deadlines keep running"})</span></div>`:waitExtra(t)?`<div class="small muted">⏸ ${de?"bisherige Wartezeit":"waiting time so far"}: ${fmtRest(waitExtra(t))}</div>`:""}
    <div class="small muted" style="margin-top:8px"><b>${de?"Nächste Frist":"Next deadline"}</b></div>
    ${nd?`<div><span class="cd${nd.due-now()<0?" od":""}" data-due="${nd.due}" style="font-weight:700">${fmtCd(nd.due-now())}</span><div class="small muted">${esc(nd.l)}</div></div>`:`<div class="muted">–</div>`}
    <hr>
@@ -1859,6 +1997,9 @@ function viewDetail(id){
     <div><label>${tr("Meldende Person / Quelle")}</label><input type="text" ${ro?"disabled":""} value="${esc(t.quelle)}" onchange="upd('quelle',this.value)"></div>
     <div><label>${tr("Personen betroffen")}</label><input type="text" disabled value="${t.personen?tr("ja"):tr("nein")}"></div>
     <div><label>${tr("Near Miss")}</label><input type="text" disabled value="${t.nearmiss?tr("ja"):tr("nein")}"></div>
+    <div><label>${de?"Sammelticket (übergeordnet)":"Parent ticket (major outage)"} <span class="hint help" title="${de?"Ordnet diese Meldung als Ergänzung einer Sammelstörung zu (Parent/Child). Die Bearbeitung erfolgt im Sammelticket; dieses Ticket bleibt als Meldung nachvollziehbar.":"Files this report as a supplement to a major outage (parent/child). Work happens in the parent; this ticket remains traceable as a report."}">ⓘ</span></label>
+     <input list="tickIds" ${ro?"disabled":""} value="${esc(t.parent||"")}" onchange="upd('parent',this.value.trim().toUpperCase(),'${de?"Sammelticket":"Parent ticket"}')" placeholder="IRM-…">
+     <datalist id="tickIds">${S.tickets.filter(x=>x.id!==t.id&&x.status!=="Closed").slice(0,60).map(x=>`<option value="${x.id}">`).join("")}</datalist></div>
   </div>
   <label>${tr("Beschreibung")}</label><textarea ${ro?"disabled":""} onchange="upd('beschreibung',this.value)">${esc(t.beschreibung)}</textarea>
   ${needBegruendungAbw(t)?`<label>${tr("Begründung der Abweichung Kenntniserlangung / Erstellung")} <span class="req">*</span></label>
@@ -2019,6 +2160,13 @@ function viewDetail(id){
     <div><label>${tr("Abschlussbericht")} ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2, ISMS-TMPL-006a)</span>':""}</label><input type="text" ${ro?"disabled":""} placeholder="${tr("Dateiname / Ablageort der Anlage")}" value="${esc(t.abschlussbericht)}" onchange="upd('abschlussbericht',this.value,'${tr("Abschlussbericht")}')"></div>
     <div><label>${tr("Referenz Risikoregister")} ${["P1","P2"].includes(st)?'<span class="req">*</span>':""}</label><input type="text" ${ro?"disabled":""} value="${esc(t.risikoRef)}" onchange="upd('risikoRef',this.value,'${tr("Referenz Risikoregister")}')"></div>
    </div>
+   <div class="grid2">
+    <div><label>CSAT – ${de?"Zufriedenheit des Melders (optional)":"reporter satisfaction (optional)"} <span class="hint help" title="${de?"Rückmeldung des Melders nach Lösung (1–5). Fließt als Durchschnitt in die Berichte ein.":"Reporter feedback after resolution (1–5). Reported as an average KPI."}">ⓘ</span></label>
+     <select ${ro?"disabled":""} onchange="upd('csat',parseInt(this.value)||0,'CSAT')">${[0,1,2,3,4,5].map(v=>`<option value="${v}" ${(t.csat||0)===v?"selected":""}>${v===0?(de?"– keine Angabe –":"– none –"):"★".repeat(v)+" ("+v+"/5)"}</option>`).join("")}</select></div>
+    <div><label>📚 ${de?"Wissensdatenbank (KCS)":"Knowledge base (KCS)"}</label>
+     ${!ro?`<button class="sec" onclick="kbFromTicket()">${de?"KB-Artikel aus Ticket erzeugen":"Create KB article from ticket"}</button>`:""}
+     <span class="small muted">${de?"überführt Lessons Learned/Sofortmaßnahmen als Selbsthilfe-Artikel in das Portal":"transfers lessons learned/immediate actions into the portal as a self-help article"}</span></div>
+   </div>
    <label>${tr("Lessons Learned")} ${["P1","P2"].includes(st)?'<span class="req">*</span>':""}</label>
    <textarea ${ro?"disabled":""} onchange="upd('lessons',this.value,'${tr("Lessons Learned")}')">${esc(t.lessons)}</textarea>
    ${t.wirksamkeit?`<div class="note">${de?"Termin Wirksamkeitsprüfung":"Effectiveness review due"}: <b>${fmt(t.wirksamkeit)}</b> ${de?"(Umsetzung + 6 Monate, Nachverfolgungsaufgabe erzeugt).":"(implementation + 6 months, follow-up task created)."}</div>`:""}
@@ -2090,7 +2238,7 @@ function viewFristen(){
   for(const t of S.tickets.filter(canSee)){
     const st=effStufe(t);
     if(t.erstreaktion===null && st && !["Resolved","Closed"].includes(t.status)){
-      const due=t.kenntnis+SLA_H[st]*3600000;
+      const due=t.kenntnis+SLA_H[st]*3600000+waitExtra(t);
       rows.push({t, name:tr("Erstreaktion")+" ("+st+", "+SLA_H[st]+" h)", rolle:t.owner||"Triage", due, typ:"SLA"});
     }
     for(const x of t.tasks) if(!x.done && t.status!=="Closed") rows.push({t, name:taskLabel(x.name), rolle:tr(x.rolle), due:x.due, typ:x.origin.startsWith("nb")||x.origin.startsWith("neben")?tr("Aufgabe"):tr("Meldepflicht")});
@@ -2135,9 +2283,15 @@ function viewBerichte(){
   const h=all.filter(t=>t.leitdomaene==="H"); const withFv=h.filter(t=>t.fvNummer);
   const rts=all.filter(t=>t.erstreaktion&&t.kenntnis).map(t=>t.erstreaktion-t.kenntnis);
   const mttr=rts.length?rts.reduce((a,b)=>a+b,0)/rts.length:null;
-  const slaViol=all.filter(t=>{const s=effStufe(t); if(!s) return false; const lim=SLA_H[s]*3600000;
+  const slaViol=all.filter(t=>{const s=effStufe(t); if(!s) return false; const lim=SLA_H[s]*3600000+waitExtra(t);
     return t.erstreaktion? (t.erstreaktion-t.kenntnis)>lim : (!["Resolved","Closed"].includes(t.status) && now()-t.kenntnis>lim);}).length;
   const crit5=open.filter(t=>canSee(t)&&effStufe(t)).sort((a,b)=>(ORD[effStufe(b)]-ORD[effStufe(a)])||(((nextDue(a)||{}).due||Infinity)-((nextDue(b)||{}).due||Infinity))).slice(0,5);
+  const done=all.filter(t=>["Resolved","Closed"].includes(t.status));
+  const rrts=all.filter(t=>t.resolvedAt&&t.kenntnis).map(t=>t.resolvedAt-t.kenntnis);
+  const mttrRes=rrts.length?rrts.reduce((a,b)=>a+b,0)/rrts.length:null;
+  const fcr=done.length?Math.round(100*done.filter(t=>effEsk(t)==="E0"&&!(t.nebendomaenen||[]).length).length/done.length):null;
+  const csats=all.map(t=>t.csat||0).filter(x=>x>0);
+  const csatAvg=csats.length?(csats.reduce((a,b)=>a+b,0)/csats.length):null;
   return `<h1>${de?"Auswertung und Berichte":"Evaluation and reports"}</h1>
   <p class="muted">${de
    ?"Kennzahlen nach Kap. 12 der Prozessbeschreibung. Der geschützte Bereich (Domänen E und I) fließt ausschließlich <b>aggregiert und ohne Personenbezug</b> ein; eine Auswertung nach Bearbeitern oder meldenden Personen ist nicht möglich und wird nicht angeboten (GDL Kap. 4/12)."
@@ -2151,7 +2305,11 @@ function viewBerichte(){
    <div class="kpi"><div class="v">${all.length?Math.round(100*klassOk.length/all.length):0}%</div><div class="l">${de?"Klassifizierungsqualität (vollständig, ohne „nicht geprüft“)":"classification quality (complete, none “not assessed”)"}</div></div>
    <div class="kpi"><div class="v">${nm.length}</div><div class="l">${de?"Beinaheereignisse (Meldequote-KPI)":"near misses (reporting-rate KPI)"}</div></div>
    <div class="kpi"><div class="v">${prot.length}</div><div class="l">${de?"geschützter Bereich (nur aggregiert)":"protected workspace (aggregate only)"}</div></div>
-   <div class="kpi"><div class="v">${mttr!==null?fmtRest(mttr):"–"}</div><div class="l">${de?"MTTR – mittlere Zeit bis Erstreaktion":"MTTR – mean time to respond"}</div></div>
+   <div class="kpi"><div class="v">${mttr!==null?fmtRest(mttr):"–"}</div><div class="l">${de?"MTTA – mittlere Zeit bis Erstreaktion":"MTTA – mean time to acknowledge"}</div></div>
+   <div class="kpi"><div class="v">${mttrRes!==null?fmtRest(mttrRes):"–"}</div><div class="l">${de?"MTTR – mittlere Zeit bis Lösung":"MTTR – mean time to resolve"}</div></div>
+   <div class="kpi"><div class="v">${fcr!==null?fcr+" %":"–"}</div><div class="l">${de?"FCR – ohne Eskalation/Swarming gelöst":"FCR – resolved without escalation/swarming"}</div></div>
+   <div class="kpi"><div class="v">${csatAvg!==null?csatAvg.toFixed(1)+" / 5":"–"}</div><div class="l">${de?"CSAT – Zufriedenheit der Melder":"CSAT – reporter satisfaction"}</div></div>
+   <div class="kpi"><div class="v">${S.deflect||0}</div><div class="l">${de?"Selbsthilfe gelöst ohne Ticket (Shift-Left)":"solved via self-help without a ticket (shift-left)"}</div></div>
    <div class="kpi"><div class="v" style="color:${slaViol?"var(--crit)":"inherit"}">${slaViol}</div><div class="l">${de?"SLA-Verletzungen Erstreaktion":"response-SLA breaches"}</div></div>
   </div>
   ${(()=>{
@@ -2384,6 +2542,15 @@ function viewGuidance(){
    <p><b>Alerting (interim solution without a push gateway):</b> the bell icon in the header enables browser notifications: new P1 incidents and deadline breaches then appear as desktop notifications with a sound — but only while the tool is open in a browser tab. In addition, the quick action “Compose alarm e-mail” creates a pre-filled e-mail draft for the distribution list per GDL ch. 11 for P1/P2 (add recipients per the on-call plan). <b>Limits:</b> neither channel replaces an on-call duty — the telephone alerting chain per GDL ch. 11 remains authoritative; a server-side push/SMS channel will follow with productive server operation (see the IT operations information).</p>
   </div></details>
 
+  <details><summary>11 · Tool support as of V1.40: knowledge base, major outages, SLA pause, swarming</summary><div class="dbody">
+   <p><b>Knowledge base &amp; shift-left:</b> the portal contains a self-help knowledge base. While typing a report, matching articles are suggested (ticket deflection); “That helped – no report needed” counts towards the self-help KPI without creating a ticket. <b>Information-security incidents must still always be reported</b> – self-help never replaces a reporting duty. From resolved tickets, “Create KB article from ticket” (section 5) turns lessons learned into a new article (KCS principle).</p>
+   <p><b>Major outages (parent/child):</b> while reporting, similar open reports are detected and can be assigned as a supplement to a parent ticket; in the ticket the “parent ticket” field, in the list a bulk assignment via checkboxes. Work happens in the parent ticket, each report remains traceable.</p>
+   <p><b>SLA pause “waiting for feedback”:</b> pauses <b>only the internal first-response SLA</b> (logged, with reason and total waiting time). Statutory reporting deadlines (NIS-2, GDPR, …) always continue in calendar time and are never paused.</p>
+   <p><b>Swarming:</b> the quick action involves further domain experts as secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
+   <p><b>New KPIs:</b> MTTA (time to first response), MTTR (time to resolution), first-contact-resolution rate, CSAT (reporter satisfaction, optional in closure) and the self-help rate.</p>
+   <p><b>Monitoring interface:</b> the IRM server accepts automatically generated reports from monitoring systems via <code>POST /api/inbound</code> (subject, description, site, objects); such tickets start in “Open” with source “Monitoring/API”.</p>
+  </div></details>
+
   <div class="note"><b>Binding documents:</b> POL_010.001 V3.00 (policy) · PROC_010.001 V2.10 (process, DE/EN) · STD_010.001 (NIS-2 reporting) · ANL_010.001 (roles, KPIs, evidence). This page is a condensed working aid for tool users, maintained by the ISO.</div>`;
 
   return `<h1>IRM-Guidance – Incident Response in der Praxis</h1>
@@ -2549,6 +2716,15 @@ function viewGuidance(){
    <p><b>Kennzahlen:</b> Das Berichts-Dashboard zeigt zusätzlich MTTR (mittlere Zeit bis Erstreaktion), SLA-Verletzungen und die Top-5 der kritischsten offenen Vorfälle.</p>
    <p><b>Kanban-Ansicht:</b> Die Ticketliste lässt sich über den Umschalter „Tabelle / Kanban“ als Board darstellen (Spalten = Status). Karten können per Drag &amp; Drop in den nächsten Status gezogen werden — die zulässigen Übergänge und blockierenden Pflichtprüfungen der GDL gelten unverändert; unzulässige Züge werden mit Begründung abgewiesen und protokolliert wird wie beim Statuswechsel im Ticket.</p>
    <p><b>Alarmierung (Interimslösung ohne Push-Gateway):</b> Über das Glockensymbol in der Kopfzeile lassen sich Browser-Benachrichtigungen aktivieren: Neue P1-Vorfälle und Fristüberschreitungen erscheinen dann als Desktop-Meldung mit Signalton — allerdings nur, solange das Tool in einem Browser-Tab geöffnet ist. Zusätzlich erzeugt die Schnellaktion „Alarm-E-Mail erzeugen“ bei P1/P2 einen vorbefüllten E-Mail-Entwurf für den Verteiler nach GDL Kap. 11 (Empfänger gemäß Bereitschaftsplan ergänzen). <b>Grenzen:</b> Beide Wege ersetzen keine Rufbereitschaft — die telefonische Alarmierung nach GDL Kap. 11 bleibt führend; ein serverseitiger Push-/SMS-Kanal folgt mit dem produktiven Serverbetrieb (siehe IT-Betriebsinformation).</p>
+  </div></details>
+
+  <details><summary>11 · Tool-Unterstützung ab V1.40: Wissensdatenbank, Sammelstörungen, SLA-Pause, Swarming</summary><div class="dbody">
+   <p><b>Wissensdatenbank &amp; Shift-Left:</b> Das Portal enthält eine Selbsthilfe-Wissensdatenbank. Beim Eintippen einer Meldung werden passende Artikel vorgeschlagen (Ticket-Deflection); „Hat geholfen – keine Meldung nötig“ zählt in die Selbsthilfe-Quote, ohne ein Ticket zu erzeugen. <b>Informationssicherheits-Vorfälle sind trotzdem immer zu melden</b> – die Selbsthilfe ersetzt keine Meldepflicht. Aus gelösten Tickets erzeugt „KB-Artikel aus Ticket erzeugen“ (Abschnitt 5) einen neuen Artikel aus den Lessons Learned (KCS-Prinzip).</p>
+   <p><b>Sammelstörungen (Parent/Child):</b> Beim Melden werden ähnliche offene Meldungen erkannt und können als Ergänzung einem Sammelticket zugeordnet werden; im Ticket dient dazu das Feld „Sammelticket“, in der Liste die Massenzuordnung über Kontrollkästchen. Die Bearbeitung erfolgt im Sammelticket, jede Meldung bleibt nachvollziehbar.</p>
+   <p><b>SLA-Pause „Warten auf Rückmeldung“:</b> pausiert <b>ausschließlich die interne Erstreaktions-SLA</b> (protokolliert, mit Grund und Gesamtwartezeit). Gesetzliche Meldefristen (NIS-2, DSGVO, …) laufen immer in Kalenderzeit weiter und pausieren nie.</p>
+   <p><b>Swarming:</b> Die Schnellaktion zieht weitere Domänen-Experten als Nebendomänen mit Mitwirkungsaufgabe und Beobachterstatus hinzu (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
+   <p><b>Neue Kennzahlen:</b> MTTA (Zeit bis Erstreaktion), MTTR (Zeit bis Lösung), First-Contact-Resolution-Quote, CSAT (Melder-Zufriedenheit, optional im Abschluss) sowie die Selbsthilfe-Quote.</p>
+   <p><b>Monitoring-Schnittstelle:</b> Der IRM-Server nimmt über <code>POST /api/inbound</code> automatisch erzeugte Meldungen aus Monitoring-Systemen an (Betreff, Beschreibung, Standort, Objekte); solche Tickets starten in „Open“ mit Quelle „Monitoring/API“.</p>
   </div></details>
 
   <div class="note"><b>Verbindliche Dokumente:</b> POL_010.001 V3.00 (Richtlinie) · PROC_010.001 V2.10 (Prozess, DE/EN) · STD_010.001 (NIS-2-Meldung) · ANL_010.001 (Rollen, KPI, Nachweise). Diese Seite ist eine verdichtete Arbeitshilfe für die Tool-Nutzer und wird durch den ISB gepflegt.</div>`;
