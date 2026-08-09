@@ -1625,7 +1625,7 @@ function viewTickets(){
          return `<div class="kcard ${s2==="P1"?"p1edge":s2==="P2"?"p2edge":""}" draggable="${canEdit(t)}" ondragstart="event.dataTransfer.setData('text/plain','${t.id}')" onclick="openT('${t.id}')">
           <div class="flex" style="gap:6px"><b>${t.id}</b>${s2?`<span class="badge ${s2.toLowerCase()}" title="${esc(pLabel(s2))}">${s2}</span>`:""}${isProtected(t)?"🔒":""}${t.nearmiss?`<span class="badge st">NM</span>`:""}${t.wait&&t.wait.on?" ⏸":""}${t.parent?" ⛓":""}</div>
           <div class="small" style="margin:3px 0">${esc(t.betreff.slice(0,70))}</div>
-          <div class="small muted">${t.leitdomaene?`<span class="badge dom">${t.leitdomaene}</span> `:""}${siteLabel(t.standort)||""}</div>
+          <div class="small muted">${t.leitdomaene?`<span class="badge dom tip" data-tip="${esc(tr("Leitdomäne"))} ${t.leitdomaene} – ${esc(domName(t.leitdomaene))}${DOM[t.leitdomaene].prot?" 🔒":""}">${t.leitdomaene}</span> `:""}${siteLabel(t.standort)||""}</div>
           ${kd?`<div class="small" style="margin-top:3px"><span class="amp ${kr<0?"r":kr<12*3600000?"o":"g"}"></span><span class="cd${kr<0?" od":""}" data-due="${kd.due}">${fmtCd(kr)}</span></div>`:""}
          </div>`;}).join("")||`<p class="small muted" style="padding:8px 10px">–</p>`}
       </div>`;}).join("")}</div>
@@ -2005,7 +2005,7 @@ function viewDetail(id){
    <div class="srow"><b>${tr("Standort")}</b><span>${siteLabel(t.standort)||"–"}</span></div>
    <div class="srow"><b>${de?"Asset / Objekt":"Asset"}</b><span>${esc(t.objekte)||"–"}</span></div>
    <div class="srow"><b>${de?"Melder":"Reporter"}</b><span>${esc(t.quelle)||"–"}</span></div>
-   <div class="srow"><b>Owner</b><span>${esc(t.owner)||"–"}</span></div>
+   <div class="srow"><b>Owner</b><span>${t.owner?fmRoleHtml(t.owner):"–"}</span></div>
    <div class="srow"><b>${tr("Kenntniserlangung")}</b><span>${fmt(t.kenntnis)}</span></div>
    ${t.parent?`<div class="srow"><b>${de?"Sammelticket":"Parent"}</b><span><a href="#" onclick="openT('${t.parent}');return false">⛓ ${t.parent}</a></span></div>`:""}
    ${(()=>{const ch=S.tickets.filter(x=>x.parent===t.id); return ch.length?`<div class="srow"><b>${de?"Ergänzungen":"Children"}</b><span>${ch.slice(0,4).map(c=>`<a href="#" onclick="openT('${c.id}');return false">${c.id}</a>`).join(" ")}${ch.length>4?" +"+(ch.length-4):""}</span></div>`:"";})()}
@@ -2267,7 +2267,7 @@ function viewDetail(id){
    ${t.tasks.slice().sort((a,b)=>a.due-b.due).map(x=>{
      const rest=x.due-now();
      return `<tr class="taskrow ${x.done?"done":""}"><td><input type="checkbox" style="width:auto" ${x.done?"checked":""} ${ro?"disabled":""} onchange="taskDone('${x.id}')"></td>
-     <td>${esc(taskLabel(x.name))}</td><td class="small">${tr(x.rolle)}</td><td class="small">${fmt(x.due)}</td>
+     <td>${esc(taskLabel(x.name))}</td><td class="small">${fmRoleHtml(tr(x.rolle))}</td><td class="small">${fmt(x.due)}</td>
      <td>${x.done?`<span class="small muted">${tr("erledigt")} ${fmt(x.doneTs)}</span>`:`<span class="amp ${rest<0?"r":rest<12*3600000?"o":"g"}"></span>${fmtRest(rest)}`}</td></tr>`;
    }).join("")}</tbody></table>`:`<p class="muted small">${tr("Keine Aufgaben. Meldeaufgaben entstehen automatisch, sobald eine Meldepflicht auf „ja“ gesetzt wird.")}</p>`}
    ${t.approvals.length?`<h3>${tr("Genehmigungen")}</h3><table><thead><tr><th>${tr("Vorgang")}</th><th>${tr("Genehmigt durch")}</th><th>${tr("Status")}</th><th class="noprint">${tr("Aktion")}</th></tr></thead><tbody>
@@ -2312,6 +2312,12 @@ function toggleNeben(d, on){
 
 /* ---------- Fristenmonitor ---------- */
 let FM={rolle:"",amp:"",sort:"due"};
+function fmRoleHtml(k){
+  const m=/Incident Owner ([A-J])\b/.exec(k||"");
+  if(!m) return esc(k);
+  const d=m[1];
+  return `<span class="tip" data-tip="${esc((S.lang==="en"?"Domain ":"Domäne ")+d+" – "+domName(d)+(DOM[d].prot?" 🔒":""))}">${esc(k)}</span>`;
+}
 function fmRolle(i){ const k=(FM._resp||[])[i]; if(k===undefined) return; FM.rolle=FM.rolle===k?"":k; render(); }
 function exportFristenCsv(){
   const rows=FM._rows||[]; const de=S.lang!=="en";
@@ -2370,7 +2376,7 @@ function viewFristen(){
   <h2 style="margin-top:14px">${de?"Zuständigkeiten":"Responsibilities"} <span class="small muted">– ${de?"wer hat wie viele Fristen offen · Klick filtert die Liste":"open deadlines per responsibility · click filters the list"}</span></h2>
   <div class="flex noprint" style="margin:6px 0 12px;align-items:stretch">
    <div class="rcard ${FM.rolle===""?"on":""}" onclick="FM.rolle='';render()"><b>${de?"Alle":"All"}</b><span class="small">${rows.length} ${de?"Fristen":"deadlines"}</span></div>
-   ${resp.map(([k,v],i)=>`<div class="rcard ${FM.rolle===k?"on":""}" onclick="fmRolle(${i})"><b>${esc(k)}</b><span class="small">${v.n} ${de?"offen":"open"}${v.od?` · <b style="color:var(--crit)">${v.od} ${tr("überfällig")}</b>`:""}</span></div>`).join("")}
+   ${resp.map(([k,v],i)=>`<div class="rcard ${FM.rolle===k?"on":""}" onclick="fmRolle(${i})"><b>${fmRoleHtml(k)}</b><span class="small">${v.n} ${de?"offen":"open"}${v.od?` · <b style="color:var(--crit)">${v.od} ${tr("überfällig")}</b>`:""}</span></div>`).join("")}
   </div>
   <div class="flex noprint" style="margin:0 0 8px">
    <b class="small" style="color:var(--anthrazit)">${de?"Sortierung":"Sort"}:</b>
@@ -2390,7 +2396,7 @@ function viewFristen(){
      <td><span class="amp ${amp}"></span></td>
      <td>${ri===0?`<b>${g.t.id}</b><div class="small muted">${esc(g.t.betreff.slice(0,38))}${g.rows.length>1?` · ${g.rows.length} ${de?"Fristen":"deadlines"}`:""}</div>`:`<span class="muted" style="padding-left:6px">↳</span>`}</td>
      <td>${ri===0?(g.st?`<span class="badge ${g.st.toLowerCase()}" title="${esc(pLabel(g.st))}">${g.st}</span>`:"–"):""}</td>
-     <td>${esc(r.name)}</td><td class="small">${r.typ}</td><td class="small">${esc(r.rolle)}</td>
+     <td>${esc(r.name)}</td><td class="small">${r.typ}</td><td class="small">${fmRoleHtml(r.rolle)}</td>
      <td class="small">${fmt(r.due)}</td>
      <td><span class="cd${rest<0?" od":""}" data-due="${r.due}">${fmtCd(rest)}</span></td></tr>`;
   }).join("")).join("")}</tbody></table>`:`<div class="note">${tr("Keine offenen Fristen im sichtbaren Bereich.")}${FM.rolle||FM.amp?` <button class="sec mini" onclick="FM.rolle='';FM.amp='';render()">${de?"Filter zurücksetzen":"Reset filters"}</button>`:""}</div>`}`;
@@ -2565,7 +2571,7 @@ function viewBerichte(){
   <h2>${de?"Top 5 – kritischste offene Vorfälle":"Top 5 – most critical open incidents"}</h2>
   ${crit5.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Domäne")}</th><th>${tr("Status")}</th><th>${de?"Nächste Frist":"Next deadline"}</th></tr></thead><tbody>
   ${crit5.map(t=>{const nd=nextDue(t);const s=effStufe(t);
-    return `<tr class="click" onclick="openT('${t.id}')"><td><b>${t.id}</b></td><td>${esc(t.betreff)}</td><td><span class="badge ${s.toLowerCase()}" title="${esc(pLabel(s))}">${s}</span></td><td>${t.leitdomaene||"–"}</td><td class="small">${tr(t.status)}</td><td class="small">${nd?`<span class="cd${nd.due-now()<0?" od":""}" data-due="${nd.due}">${fmtCd(nd.due-now())}</span>`:"–"}</td></tr>`;}).join("")}</tbody></table>`
+    return `<tr class="click" onclick="openT('${t.id}')"><td><b>${t.id}</b></td><td>${esc(t.betreff)}</td><td><span class="badge ${s.toLowerCase()}" title="${esc(pLabel(s))}">${s}</span></td><td>${t.leitdomaene?`<span class="badge dom tip" data-tip="${esc(domName(t.leitdomaene))}${DOM[t.leitdomaene].prot?" 🔒":""}">${t.leitdomaene}</span>`:"–"}</td><td class="small">${tr(t.status)}</td><td class="small">${nd?`<span class="cd${nd.due-now()<0?" od":""}" data-due="${nd.due}">${fmtCd(nd.due-now())}</span>`:"–"}</td></tr>`;}).join("")}</tbody></table>`
   :`<p class="muted small">${de?"Keine offenen klassifizierten Vorfälle.":"No open classified incidents."}</p>`}
   <h2>${de?"Lagebild Domänen":"Domain overview"} <span class="small muted">– ${de?"offene/gesamt je Domäne und Verteilung der Gesamtstufen":"open/total per domain and distribution of overall levels"}</span></h2>
   <table class="matrix"><thead><tr><th>${tr("Domäne")}</th><th>${de?"Bezeichnung":"Name"}</th>${["P1","P2","P3","P4"].map(x=>`<th class="tip" data-tip="${esc(pLabel(x))}">${x}</th>`).join("")}<th>${tr("offen")}</th><th>${de?"gesamt":"total"}</th></tr></thead><tbody>
