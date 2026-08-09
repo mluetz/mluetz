@@ -2353,6 +2353,46 @@ function viewBerichte(){
      </div>
     </div>`;
   })()}
+  ${(()=>{
+    const anchor=t=>t.kenntnis||t.erstellt;
+    const YRMS=365.25*24*3600000;
+    const spans=[[de?"Letzte 5 Jahre":"Last 5 years",5*YRMS],[de?"Letzte 2 Jahre":"Last 2 years",2*YRMS],[de?"Letzte 12 Monate":"Last 12 months",YRMS]];
+    const rows=spans.map(([l,ms])=>{
+      const list=all.filter(t=>anchor(t)>=now()-ms);
+      const c={l, n:list.length, P1:0,P2:0,P3:0,P4:0, nm:0, done:0};
+      for(const t of list){ const sx=effStufe(t); if(sx)c[sx]++; if(t.nearmiss)c.nm++; if(["Resolved","Closed"].includes(t.status))c.done++; }
+      return c;
+    });
+    const Y=new Date().getFullYear();
+    const mCnt=Array.from({length:12},()=>({n:0,p12:0,nm:0}));
+    for(const t of all){ const d=new Date(anchor(t)); if(d.getFullYear()!==Y) continue;
+      const m=mCnt[d.getMonth()]; m.n++; if(["P1","P2"].includes(effStufe(t))) m.p12++; if(t.nearmiss) m.nm++; }
+    const maxM=Math.max(1,...mCnt.map(x=>x.n));
+    const mNames=Array.from({length:12},(_,i)=>new Date(Y,i,1).toLocaleString(S.lang==="en"?"en-GB":"de-DE",{month:"short"}));
+    const curM=new Date().getMonth();
+    return `<h2>${de?"Zeitliche Übersicht":"Timeline overview"} <span class="small muted">– ${de?"Mehrjahresvergleich (rollierend ab heute) und Monatsverteilung des laufenden Jahres · Zeitanker: Kenntniserlangung":"multi-year comparison (rolling from today) and monthly distribution of the current year · time anchor: awareness"}</span></h2>
+    <div class="grid2">
+     <div class="card"><h3>${de?"Mehrjahresübersicht":"Multi-year summary"}</h3>
+      <table><thead><tr><th>${de?"Zeitraum":"Period"}</th><th>${de?"Gesamt":"Total"}</th>${["P1","P2","P3","P4"].map(x=>`<th class="tip" data-tip="${esc(pLabel(x))}">${x}</th>`).join("")}<th>NM</th><th>${de?"gelöst":"resolved"}</th></tr></thead><tbody>
+      ${rows.map(c=>`<tr><td><b>${c.l}</b></td><td>${c.n||"·"}</td>${["P1","P2","P3","P4"].map(x=>`<td class="${c[x]?"":"n0"}">${c[x]||"·"}</td>`).join("")}<td class="${c.nm?"":"n0"}">${c.nm||"·"}</td><td>${c.n?c.done+" ("+Math.round(100*c.done/c.n)+" %)":"·"}</td></tr>`).join("")}
+      </tbody></table>
+      <p class="small muted">${de?"Rollierende Zeiträume ab heute; NM = Beinaheereignisse. Datengrundlage: alle Tickets inkl. geschütztem Bereich (nur aggregiert, GDL Kap. 4/12).":"Rolling periods from today; NM = near misses. Based on all tickets incl. the protected workspace (aggregate only, GDL ch. 4/12)."}</p>
+     </div>
+     <div class="card"><h3>${de?"Laufendes Jahr":"Current year"} ${Y} – ${de?"Meldungen je Monat":"reports per month"}</h3>
+      <div style="display:flex;align-items:flex-end;gap:5px;height:118px;padding-top:8px">
+      ${mCnt.map((m,i)=>`<div class="tip" data-tip="${mNames[i]} ${Y}: ${m.n} ${de?"gesamt":"total"} · ${m.p12} P1/P2 · ${m.nm} Near Miss" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;text-align:center">
+        <div class="small" style="font-weight:700">${m.n||""}</div>
+        <div style="display:flex;flex-direction:column-reverse">
+         <div style="background:${i===curM?"var(--gelb)":"var(--grau)"};height:${Math.round(82*(m.n-m.p12)/maxM)}px;border-radius:${m.p12?"0":"3px 3px 0 0"};min-height:${m.n-m.p12?3:0}px"></div>
+         <div style="background:var(--crit);height:${Math.round(82*m.p12/maxM)}px;border-radius:3px 3px 0 0;min-height:${m.p12?3:0}px"></div>
+        </div>
+       </div>`).join("")}
+      </div>
+      <div class="small muted" style="display:flex;gap:5px">${mNames.map((n,i)=>`<span style="flex:1;text-align:center;${i===curM?"font-weight:700;color:var(--fg)":""}">${n}</span>`).join("")}</div>
+      <div class="flex small" style="margin-top:6px"><span class="amp r"></span>${de?"Anteil P1/P2":"share P1/P2"} &nbsp;<span class="amp" style="background:var(--grau)"></span>${de?"übrige Meldungen":"other reports"} &nbsp;<span class="amp y"></span>${de?"aktueller Monat":"current month"}</div>
+     </div>
+    </div>`;
+  })()}
   <h2>${de?"Top 5 – kritischste offene Vorfälle":"Top 5 – most critical open incidents"}</h2>
   ${crit5.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Domäne")}</th><th>${tr("Status")}</th><th>${de?"Nächste Frist":"Next deadline"}</th></tr></thead><tbody>
   ${crit5.map(t=>{const nd=nextDue(t);const s=effStufe(t);
@@ -2548,6 +2588,7 @@ function viewGuidance(){
    <p><b>SLA pause “waiting for feedback”:</b> pauses <b>only the internal first-response SLA</b> (logged, with reason and total waiting time). Statutory reporting deadlines (NIS-2, GDPR, …) always continue in calendar time and are never paused.</p>
    <p><b>Swarming:</b> the quick action involves further domain experts as secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
    <p><b>New KPIs:</b> MTTA (time to first response), MTTR (time to resolution), first-contact-resolution rate, CSAT (reporter satisfaction, optional in closure) and the self-help rate.</p>
+   <p><b>Timeline overview (reports):</b> the report area contains a multi-year summary — rolling last 5 years, last 2 years and last 12 months with totals, P1–P4, near-miss share and resolution rate — plus the monthly distribution of the current year with the P1/P2 share highlighted in red. The time anchor is the time of awareness.</p>
    <p><b>Monitoring interface:</b> the IRM server accepts automatically generated reports from monitoring systems via <code>POST /api/inbound</code> (subject, description, site, objects); such tickets start in “Open” with source “Monitoring/API”.</p>
   </div></details>
 
@@ -2724,6 +2765,7 @@ function viewGuidance(){
    <p><b>SLA-Pause „Warten auf Rückmeldung“:</b> pausiert <b>ausschließlich die interne Erstreaktions-SLA</b> (protokolliert, mit Grund und Gesamtwartezeit). Gesetzliche Meldefristen (NIS-2, DSGVO, …) laufen immer in Kalenderzeit weiter und pausieren nie.</p>
    <p><b>Swarming:</b> Die Schnellaktion zieht weitere Domänen-Experten als Nebendomänen mit Mitwirkungsaufgabe und Beobachterstatus hinzu (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
    <p><b>Neue Kennzahlen:</b> MTTA (Zeit bis Erstreaktion), MTTR (Zeit bis Lösung), First-Contact-Resolution-Quote, CSAT (Melder-Zufriedenheit, optional im Abschluss) sowie die Selbsthilfe-Quote.</p>
+   <p><b>Zeitliche Übersicht (Berichte):</b> Der Berichtsbereich enthält eine Mehrjahresübersicht — rollierend die letzten 5 Jahre, letzten 2 Jahre und letzten 12 Monate mit Gesamtzahl, P1–P4, Near-Miss-Anteil und Lösungsquote — sowie die Monatsverteilung des laufenden Jahres mit rot hervorgehobenem P1/P2-Anteil. Zeitanker ist die Kenntniserlangung.</p>
    <p><b>Monitoring-Schnittstelle:</b> Der IRM-Server nimmt über <code>POST /api/inbound</code> automatisch erzeugte Meldungen aus Monitoring-Systemen an (Betreff, Beschreibung, Standort, Objekte); solche Tickets starten in „Open“ mit Quelle „Monitoring/API“.</p>
   </div></details>
 
