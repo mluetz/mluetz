@@ -170,6 +170,21 @@ th.tip{position:sticky;cursor:help}
 .kcard:hover{border-color:var(--anthrazit)}
 .kcard.p1edge{border-left:4px solid var(--crit)}
 .kcard.p2edge{border-left:4px solid var(--warn)}
+.tlwrap{display:flex;align-items:flex-end;gap:0;overflow-x:auto;padding:4px 0}
+.tlzone{display:flex;flex-direction:column;flex:none}
+.tlbars{display:flex;align-items:flex-end;gap:3px}
+.tlsep{width:2px;background:var(--gelb);margin:0 8px;align-self:stretch;flex:none}
+.tlb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:26px}
+.tlflag{font-size:10px;height:14px;line-height:14px}
+.tlcol{width:16px;border-radius:3px 3px 0 0;background:var(--grau)}
+.tllbl{font-size:9.5px;color:var(--grau);margin-top:3px;white-space:nowrap}
+.tlcap{font-size:10.5px;font-weight:700;color:var(--anthrazit);margin-top:6px;text-align:center;border-top:1px solid var(--line);padding-top:3px}
+.swgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.swchip{position:relative;border:1px solid var(--line);border-radius:6px;padding:7px 10px;display:flex;gap:7px;align-items:center;cursor:pointer;font-weight:400;margin:0}
+.swchip:hover{background:var(--hellgrau)}
+.swchip.rec{border-color:var(--gelb);background:var(--soft)}
+.swchip.tip:hover::after{bottom:auto;top:calc(100% + 7px)}
+.swchip.tip:hover::before{bottom:auto;top:calc(100% + 2px);border-top-color:transparent;border-bottom-color:#3E3E3E}
 .log .lg-int{border-left:3px solid var(--grau);padding-left:6px}
 .log .lg-ext{border-left:3px solid var(--gelb);padding-left:6px}
 @media print{header,nav,.noprint{display:none}.detgrid{display:block}.detside,.detright{position:static;max-height:none}}
@@ -1739,11 +1754,32 @@ function toggleWait(){
   }
   save(t); render();
 }
+const DOM_EXPERT_DE={A:"IT-Security, Netzwerk, Server, Forensik",B:"SPS/OT, Leitrechner, Produktions-IT, Fernwartung",C:"Werkschutz, Zutrittskontrolle, Prototypenschutz",D:"Facility, Brandschutz, Gebäudetechnik, Versorgung",E:"Fachkraft für Arbeitssicherheit, Arbeitsmedizin, Umwelt",F:"Instandhaltung, Werkzeugbau, Fertigungsplanung",G:"Disposition, Einkauf, Logistik, EDI-Betrieb",H:"Qualität, Produktsicherheit, CAQ/8D, Product Security",I:"Personal, Organisation, Arbeitnehmervertretung",J:"Recht, Datenschutz, Compliance, Unternehmenskommunikation"};
+const DOM_EXPERT_EN={A:"IT security, network, servers, forensics",B:"PLC/OT, line servers, production IT, remote maintenance",C:"Plant security, access control, prototype protection",D:"Facility, fire protection, building services, supply",E:"Safety officer, occupational medicine, environment",F:"Maintenance, tool shop, production planning",G:"Scheduling, purchasing, logistics, EDI operations",H:"Quality, product safety, CAQ/8D, product security",I:"HR, organisation, employee representation",J:"Legal, data protection, compliance, corporate communications"};
 function swarm(){
   const t=T(); if(!t||!canEdit(t)) return;
   const de=S.lang!=="en";
-  const inp=prompt(de?"Swarming – Domänen der hinzuzuziehenden Experten (z. B. A,B,G):":"Swarming – domains of the experts to involve (e.g. A,B,G):",""); if(!inp) return;
-  const ds=inp.toUpperCase().split(/[^A-J]+/).filter(d=>DOMKEYS.includes(d)&&d!==t.leitdomaene&&!(t.nebendomaenen||[]).includes(d));
+  const EXP=de?DOM_EXPERT_DE:DOM_EXPERT_EN;
+  const rec=((G_PRIM[gefId(t.gef)]||[])[1])||"";
+  const avail=DOMKEYS.filter(d=>d!==t.leitdomaene&&!(t.nebendomaenen||[]).includes(d));
+  if(!avail.length){ alert(de?"Alle Domänen sind bereits eingebunden.":"All domains are already involved."); return; }
+  $("dlgBody").innerHTML=`<h2 style="margin-top:0">🐝 ${de?"Swarming – Experten hinzuziehen":"Swarming – involve experts"}</h2>
+  <p class="small muted">${de?"Ausgewählte Domänen werden Nebendomäne mit Mitwirkungsaufgabe (72 h) und Beobachterstatus (Regel 7). Mouseover zeigt die Expertise; mit ⭐ vorausgewählt, was laut Gefährdungskatalog (POL Anhang C) regelmäßig mitbetroffen ist.":"Selected domains become secondary domains with a contribution task (72 h) and watcher status (rule 7). Hover shows the expertise; ⭐ pre-selects what is typically also affected per the threat catalogue (POL Annex C)."}</p>
+  <div class="swgrid">
+  ${avail.map(d=>{const isRec=rec.includes(d);
+    return `<label class="swchip${isRec?" rec":""} tip w" data-tip="${esc(d+" – "+domName(d)+(DOM[d].prot?(de?" · geschützter Bereich":" · protected workspace"):"")+" — "+(de?"Expertise: ":"Expertise: ")+EXP[d]+(isRec?(de?" · Empfehlung aus dem Gefährdungsbezug":" · recommended from the threat reference"):""))}">
+     <input type="checkbox" class="swsel" value="${d}" ${isRec?"checked":""} style="width:auto">
+     <span><b>${d}</b> <span class="small">${domName(d)}</span>${DOM[d].prot?" 🔒":""}${isRec?" ⭐":""}</span></label>`;}).join("")}
+  </div>
+  <div class="flex" style="margin-top:14px"><button class="acc" onclick="swarmApply()">🐝 ${de?"Experten hinzuziehen":"Involve experts"}</button>
+  <button class="sec" onclick="$('dlg').close()">${tr("Schließen")}</button></div>`;
+  $("dlg").showModal();
+}
+function swarmApply(){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const de=S.lang!=="en";
+  const ds=[...document.querySelectorAll("#dlgBody .swsel:checked")].map(x=>x.value);
+  $("dlg").close();
   if(!ds.length) return;
   for(const d of ds){
     t.nebendomaenen=[...new Set([...(t.nebendomaenen||[]),d])];
@@ -2370,7 +2406,43 @@ function viewBerichte(){
     const maxM=Math.max(1,...mCnt.map(x=>x.n));
     const mNames=Array.from({length:12},(_,i)=>new Date(Y,i,1).toLocaleString(S.lang==="en"?"en-GB":"de-DE",{month:"short"}));
     const curM=new Date().getMonth();
+    /* Dynamischer Zeitstrahl: Makro (10–5 J., Jahre) → Meso (5–1 J., Halbjahre) → Mikro (12 Monate) */
+    const M0=new Date().getMonth();
+    const loc=S.lang==="en"?"en-GB":"de-DE";
+    const microStart=new Date(Y,M0-11,1).getTime();
+    const zMacro=[],zMeso=[],zMicro=[];
+    for(let y=Y-10;y<=Y-6;y++) zMacro.push({label:"’"+String(y).slice(2), full:String(y), from:new Date(y,0,1).getTime(), to:new Date(y+1,0,1).getTime()});
+    for(let y=Y-5;y<=Y;y++) for(let hh=0;hh<2;hh++){
+      const f=new Date(y,hh*6,1).getTime(), t2=new Date(y,hh*6+6,1).getTime();
+      if(f>=microStart) continue;
+      zMeso.push({label:"H"+(hh+1)+"’"+String(y).slice(2), full:(de?(hh?"2. Halbjahr ":"1. Halbjahr "):(hh?"H2 ":"H1 "))+y, from:f, to:Math.min(t2,microStart)});
+    }
+    for(let i=11;i>=0;i--){ const d0=new Date(Y,M0-i,1), d1=new Date(Y,M0-i+1,1);
+      zMicro.push({label:d0.toLocaleString(loc,{month:"short"}), full:d0.toLocaleString(loc,{month:"long",year:"numeric"}), from:d0.getTime(), to:d1.getTime(), cur:i===0}); }
+    const tlAll=[...zMacro,...zMeso,...zMicro];
+    for(const bkt of tlAll){ bkt.n=0; bkt.p1=0; bkt.p12=0; bkt.ms=[]; }
+    for(const tt of all){ const ts=anchor(tt); const bkt=tlAll.find(b=>ts>=b.from&&ts<b.to); if(!bkt) continue;
+      bkt.n++; const sx=effStufe(tt);
+      if(sx==="P1"){ bkt.p1++; bkt.p12++; if(bkt.ms.length<2) bkt.ms.unshift("🚩 P1: "+tt.betreff.slice(0,55)); }
+      else if(sx==="P2"){ bkt.p12++; if(bkt.ms.length<2) bkt.ms.push("P2: "+tt.betreff.slice(0,55)); } }
+    const tlMax=Math.max(1,...tlAll.map(b=>b.n));
+    const tlBar=(b)=>{ const hh=b.n?Math.max(4,Math.round(60*b.n/tlMax)):2;
+      const col=b.p1?"var(--crit)":b.p12?"var(--warn)":b.cur?"var(--gelb)":b.n?"var(--grau)":"var(--line)";
+      const tip=b.full+": "+b.n+" "+(de?"Meldungen":"reports")+(b.p12?" · "+b.p12+" P1/P2":"")+(b.ms.length?" — "+(de?"Meilensteine":"milestones")+": "+b.ms.join(" · "):"");
+      return `<div class="tlb tip w" data-tip="${esc(tip)}"><div class="tlflag">${b.p1?"🚩":""}</div><div class="small" style="font-weight:700;font-size:10px">${b.n||""}</div><div class="tlcol" style="height:${hh}px;background:${col}"></div><div class="tllbl">${b.label}</div></div>`; };
+    const tlZone=(bs,cap)=>`<div class="tlzone"><div class="tlbars">${bs.map(tlBar).join("")}</div><div class="tlcap">${cap}</div></div>`;
     return `<h2>${de?"Zeitliche Übersicht":"Timeline overview"} <span class="small muted">– ${de?"Mehrjahresvergleich (rollierend ab heute) und Monatsverteilung des laufenden Jahres · Zeitanker: Kenntniserlangung":"multi-year comparison (rolling from today) and monthly distribution of the current year · time anchor: awareness"}</span></h2>
+    <div class="card" style="margin:10px 0 14px">
+     <h3>${de?"Dynamischer Zeitstrahl – 10 Jahre":"Dynamic timeline – 10 years"} <span class="small muted">${de?"(Auflösung verdichtet sich zur Gegenwart: Jahre → Halbjahre → Monate; 🚩 = P1-Meilenstein, Mouseover zeigt Details)":"(resolution increases towards today: years → half-years → months; 🚩 = P1 milestone, hover for details)"}</span></h3>
+     <div class="tlwrap">
+      ${tlZone(zMacro,de?"Makro – Epochen (Jahre)":"Macro – epochs (years)")}
+      <div class="tlsep"></div>
+      ${tlZone(zMeso,de?"Meso – Halbjahre":"Meso – half-years")}
+      <div class="tlsep"></div>
+      ${tlZone(zMicro,de?"Mikro – Monate":"Micro – months")}
+     </div>
+     <div class="flex small" style="margin-top:6px"><span class="amp r"></span>${de?"P1 enthalten":"contains P1"} <span class="amp o"></span>${de?"P2 enthalten":"contains P2"} <span class="amp" style="background:var(--grau)"></span>${de?"Meldungen":"reports"} <span class="amp y"></span>${de?"aktueller Monat":"current month"}</div>
+    </div>
     <div class="grid2">
      <div class="card"><h3>${de?"Mehrjahresübersicht":"Multi-year summary"}</h3>
       <table><thead><tr><th>${de?"Zeitraum":"Period"}</th><th>${de?"Gesamt":"Total"}</th>${["P1","P2","P3","P4"].map(x=>`<th class="tip" data-tip="${esc(pLabel(x))}">${x}</th>`).join("")}<th>NM</th><th>${de?"gelöst":"resolved"}</th></tr></thead><tbody>
@@ -2586,9 +2658,9 @@ function viewGuidance(){
    <p><b>Knowledge base &amp; shift-left:</b> the portal contains a self-help knowledge base. While typing a report, matching articles are suggested (ticket deflection); “That helped – no report needed” counts towards the self-help KPI without creating a ticket. <b>Information-security incidents must still always be reported</b> – self-help never replaces a reporting duty. From resolved tickets, “Create KB article from ticket” (section 5) turns lessons learned into a new article (KCS principle).</p>
    <p><b>Major outages (parent/child):</b> while reporting, similar open reports are detected and can be assigned as a supplement to a parent ticket; in the ticket the “parent ticket” field, in the list a bulk assignment via checkboxes. Work happens in the parent ticket, each report remains traceable.</p>
    <p><b>SLA pause “waiting for feedback”:</b> pauses <b>only the internal first-response SLA</b> (logged, with reason and total waiting time). Statutory reporting deadlines (NIS-2, GDPR, …) always continue in calendar time and are never paused.</p>
-   <p><b>Swarming:</b> the quick action involves further domain experts as secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
+   <p><b>Swarming:</b> the quick action opens a selection menu of all domains with hover expertise (who can do what); domains typically also affected per the threat catalogue (POL Annex C) are pre-selected with ⭐. Selected experts become secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
    <p><b>New KPIs:</b> MTTA (time to first response), MTTR (time to resolution), first-contact-resolution rate, CSAT (reporter satisfaction, optional in closure) and the self-help rate.</p>
-   <p><b>Timeline overview (reports):</b> the report area contains a multi-year summary — rolling last 5 years, last 2 years and last 12 months with totals, P1–P4, near-miss share and resolution rate — plus the monthly distribution of the current year with the P1/P2 share highlighted in red. The time anchor is the time of awareness.</p>
+   <p><b>Timeline overview (reports):</b> the report area contains a multi-year summary — rolling last 5 years, last 2 years and last 12 months with totals, P1–P4, near-miss share and resolution rate — plus the monthly distribution of the current year with the P1/P2 share highlighted in red. In addition, the <b>dynamic timeline</b> shows ten years at a glance with resolution increasing towards today: macro range (10–5 years) year epochs with P1 milestones (🚩) only, meso range (5–1 year) condensed to half-years, micro range (last 12 months) resolved into months — each column with hover details. The time anchor is the time of awareness.</p>
    <p><b>Monitoring interface:</b> the IRM server accepts automatically generated reports from monitoring systems via <code>POST /api/inbound</code> (subject, description, site, objects); such tickets start in “Open” with source “Monitoring/API”.</p>
   </div></details>
 
@@ -2763,9 +2835,9 @@ function viewGuidance(){
    <p><b>Wissensdatenbank &amp; Shift-Left:</b> Das Portal enthält eine Selbsthilfe-Wissensdatenbank. Beim Eintippen einer Meldung werden passende Artikel vorgeschlagen (Ticket-Deflection); „Hat geholfen – keine Meldung nötig“ zählt in die Selbsthilfe-Quote, ohne ein Ticket zu erzeugen. <b>Informationssicherheits-Vorfälle sind trotzdem immer zu melden</b> – die Selbsthilfe ersetzt keine Meldepflicht. Aus gelösten Tickets erzeugt „KB-Artikel aus Ticket erzeugen“ (Abschnitt 5) einen neuen Artikel aus den Lessons Learned (KCS-Prinzip).</p>
    <p><b>Sammelstörungen (Parent/Child):</b> Beim Melden werden ähnliche offene Meldungen erkannt und können als Ergänzung einem Sammelticket zugeordnet werden; im Ticket dient dazu das Feld „Sammelticket“, in der Liste die Massenzuordnung über Kontrollkästchen. Die Bearbeitung erfolgt im Sammelticket, jede Meldung bleibt nachvollziehbar.</p>
    <p><b>SLA-Pause „Warten auf Rückmeldung“:</b> pausiert <b>ausschließlich die interne Erstreaktions-SLA</b> (protokolliert, mit Grund und Gesamtwartezeit). Gesetzliche Meldefristen (NIS-2, DSGVO, …) laufen immer in Kalenderzeit weiter und pausieren nie.</p>
-   <p><b>Swarming:</b> Die Schnellaktion zieht weitere Domänen-Experten als Nebendomänen mit Mitwirkungsaufgabe und Beobachterstatus hinzu (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
+   <p><b>Swarming:</b> Die Schnellaktion öffnet ein Auswahlmenü aller Domänen mit Mouseover-Expertise (wer kann was); regelmäßig mitbetroffene Domänen aus dem Gefährdungskatalog (POL Anhang C) sind mit ⭐ vorausgewählt. Ausgewählte Experten werden Nebendomäne mit Mitwirkungsaufgabe und Beobachterstatus (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
    <p><b>Neue Kennzahlen:</b> MTTA (Zeit bis Erstreaktion), MTTR (Zeit bis Lösung), First-Contact-Resolution-Quote, CSAT (Melder-Zufriedenheit, optional im Abschluss) sowie die Selbsthilfe-Quote.</p>
-   <p><b>Zeitliche Übersicht (Berichte):</b> Der Berichtsbereich enthält eine Mehrjahresübersicht — rollierend die letzten 5 Jahre, letzten 2 Jahre und letzten 12 Monate mit Gesamtzahl, P1–P4, Near-Miss-Anteil und Lösungsquote — sowie die Monatsverteilung des laufenden Jahres mit rot hervorgehobenem P1/P2-Anteil. Zeitanker ist die Kenntniserlangung.</p>
+   <p><b>Zeitliche Übersicht (Berichte):</b> Der Berichtsbereich enthält eine Mehrjahresübersicht — rollierend die letzten 5 Jahre, letzten 2 Jahre und letzten 12 Monate mit Gesamtzahl, P1–P4, Near-Miss-Anteil und Lösungsquote — sowie die Monatsverteilung des laufenden Jahres mit rot hervorgehobenem P1/P2-Anteil. Ergänzend zeigt der <b>dynamische Zeitstrahl</b> zehn Jahre auf einen Blick, mit zur Gegenwart hin zunehmender Auflösung: Makrobereich (10–5 Jahre) nur Jahres-Epochen mit P1-Meilensteinen (🚩), Mesobereich (5–1 Jahr) verdichtet zu Halbjahren, Mikrobereich (letzte 12 Monate) aufgelöst in Monate — jede Säule mit Mouseover-Details. Zeitanker ist die Kenntniserlangung.</p>
    <p><b>Monitoring-Schnittstelle:</b> Der IRM-Server nimmt über <code>POST /api/inbound</code> automatisch erzeugte Meldungen aus Monitoring-Systemen an (Betreff, Beschreibung, Standort, Objekte); solche Tickets starten in „Open“ mit Quelle „Monitoring/API“.</p>
   </div></details>
 
