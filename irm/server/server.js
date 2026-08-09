@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* =====================================================================
-   REUTIB IRM-Server V1.40 — zentrale Serverdatenbank für den
+   REUTIB IRM-Server V1.50 — zentrale Serverdatenbank für den
    Mehrbenutzerbetrieb des IRM-Tools (GDL_010.001).
 
    Zero-Dependency: benötigt nur Node.js >= 22 (kein npm install).
@@ -18,7 +18,9 @@
 
    Endpunkte:  GET  /                    IRM-Anwendung (../index.html)
                GET  /api/health          {ok, version, storage, auth}
-               POST /api/seq             atomare Ticketnummern-Vergabe {seq}
+               POST /api/seq             atomare Ticketnummern-Vergabe je Jahr
+                                         Body {year} -> {seq, year}; Schema IRM-JJJJ-NNNN,
+                                         Neustart bei 0001 am 1. Januar
                POST /api/inbound         Monitoring-/API-Eingang {betreff, beschreibung,
                                          standort, objekte, quelle, kenntnis} -> neues Ticket
                GET  /api/tickets         Gesamtbestand {seq, rev, tickets}
@@ -32,7 +34,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const VERSION = "1.40";
+const VERSION = "1.50";
 const PORT = parseInt(process.env.PORT || "8010", 10);
 const TOKEN = process.env.IRM_TOKEN || "";
 const CORS = process.env.IRM_CORS || "";
@@ -51,9 +53,10 @@ function initSqlite() {
   const upsert = db.prepare("INSERT INTO tickets(id,rev,json) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET rev=excluded.rev, json=excluded.json");
   return {
     kind: "sqlite",
-    seq() { const n = meta("seq", 0) + 1; setMeta.run("seq", String(n)); return n; },
-    bumpSeqTo(n) { if (n > meta("seq", 0)) setMeta.run("seq", String(n)); },
-    getSeq() { return meta("seq", 0); },
+    seqYear(y) { const k = "seq:" + y; const n = meta(k, 0) + 1; setMeta.run(k, String(n)); return n; },
+    bumpYearTo(y, n) { const k = "seq:" + y; if (n > meta(k, 0)) setMeta.run(k, String(n)); },
+    seqAll() { return Object.fromEntries(db.prepare("SELECT k,v FROM meta WHERE k LIKE 'seq:%'").all().map(r => [r.k.slice(4), parseInt(r.v, 10)])); },
+    del(id) { db.prepare("DELETE FROM tickets WHERE id=?").run(id); }, /* nur für die ID-Migration (Umbenennung, kein Löschrecht) */
     getRev() { return meta("rev", 0); },
     put(id, json) { const rev = meta("rev", 0) + 1; setMeta.run("rev", String(rev)); upsert.run(id, rev, JSON.stringify(json)); return rev; },
     all() { return db.prepare("SELECT json FROM tickets").all().map(r => JSON.parse(r.json)); },
@@ -64,12 +67,14 @@ function initJson() {
   const file = process.env.IRM_DB || path.join(__dirname, "irm-data.json");
   let d = { seq: 0, rev: 0, tickets: {} };
   try { d = JSON.parse(fs.readFileSync(file, "utf8")); } catch (e) { /* neue Datei */ }
+  d.sy = d.sy || {};
   const flush = () => fs.writeFileSync(file, JSON.stringify(d));
   return {
     kind: "json-file",
-    seq() { d.seq++; flush(); return d.seq; },
-    bumpSeqTo(n) { if (n > d.seq) { d.seq = n; flush(); } },
-    getSeq() { return d.seq; },
+    seqYear(y) { d.sy[y] = (d.sy[y] || 0) + 1; flush(); return d.sy[y]; },
+    bumpYearTo(y, n) { if (n > (d.sy[y] || 0)) { d.sy[y] = n; flush(); } },
+    seqAll() { return { ...d.sy }; },
+    del(id) { delete d.tickets[id]; flush(); }, /* nur für die ID-Migration (Umbenennung, kein Löschrecht) */
     getRev() { return d.rev; },
     put(id, json) { d.rev++; d.tickets[id] = { rev: d.rev, json }; flush(); return d.rev; },
     all() { return Object.values(d.tickets).map(t => t.json); },
@@ -77,6 +82,37 @@ function initJson() {
   };
 }
 try { store = initSqlite(); } catch (e) { store = initJson(); }
+
+/* Einmalige Migration: Altschema IRM-NNNN -> Jahresschema IRM-JJJJ-NNNN.
+   Reine Umbenennung (kein Löschrecht berührt): Inhalt bleibt vollständig erhalten,
+   Sammelticket-Verweise werden mitgezogen, die Umbenennung wird protokolliert. */
+(function migrateIds() {
+  const all = store.all();
+  const pad = n => String(n).padStart(4, "0");
+  for (const t of all) { const m = /^IRM-(\d{4})-(\d{4})$/.exec(t.id); if (m) store.bumpYearTo(m[1], parseInt(m[2], 10)); }
+  const oldT = all.filter(t => /^IRM-\d{4}$/.test(t.id));
+  if (!oldT.length) return;
+  const byY = {};
+  for (const t of oldT) { const y = new Date(t.kenntnis || t.erstellt || Date.now()).getFullYear(); (byY[y] = byY[y] || []).push(t); }
+  const map = {};
+  const sy = store.seqAll();
+  for (const y of Object.keys(byY)) {
+    byY[y].sort((a, b) => (a.erstellt || 0) - (b.erstellt || 0));
+    let n = sy[y] || 0;
+    for (const t of byY[y]) { n++; map[t.id] = "IRM-" + y + "-" + pad(n); }
+    store.bumpYearTo(y, n);
+  }
+  for (const t of all) {
+    const oldId = t.id; let changed = false;
+    if (map[t.id]) {
+      t.id = map[t.id]; changed = true;
+      (t.log = t.log || []).unshift({ ts: Date.now(), who: "System", txt: "Ticketnummer auf das Jahresschema migriert: " + oldId + " → " + t.id });
+    }
+    if (t.parent && map[t.parent]) { t.parent = map[t.parent]; changed = true; }
+    if (changed) { store.put(t.id, t); if (map[oldId] && oldId !== t.id) store.del(oldId); }
+  }
+  console.log("ID-Migration: " + oldT.length + " Ticketnummern auf das Jahresschema IRM-JJJJ-NNNN migriert.");
+})();
 
 /* ---------- HTTP ---------- */
 const INDEX = path.join(__dirname, "..", "index.html");
@@ -119,15 +155,18 @@ const server = http.createServer(async (req, res) => {
     if (!authorized(req)) return send(res, 401, { error: "unauthorized" });
 
     if (req.method === "POST" && u.pathname === "/api/seq") {
-      return send(res, 200, { seq: store.seq() });
+      const body = await readBody(req).catch(() => ({}));
+      const y = parseInt(body && body.year, 10) || new Date().getFullYear();
+      return send(res, 200, { seq: store.seqYear(y), year: y });
     }
     /* Monitoring-/Event-Management-Eingang: erzeugt ein vollständiges Ticket im Status Open */
     if (req.method === "POST" && u.pathname === "/api/inbound") {
       const body = await readBody(req).catch(() => null);
       if (!body || !body.betreff) return send(res, 400, { error: "betreff required" });
       const ts = Date.now();
+      const yrIn = new Date(Number(body.kenntnis) || ts).getFullYear();
       const t = {
-        id: "IRM-" + String(store.seq()).padStart(4, "0"),
+        id: "IRM-" + yrIn + "-" + String(store.seqYear(yrIn)).padStart(4, "0"),
         erstellt: ts, kenntnis: Number(body.kenntnis) || ts,
         betreff: String(body.betreff).slice(0, 140),
         beschreibung: String(body.beschreibung || "").slice(0, 4000),
@@ -153,18 +192,18 @@ const server = http.createServer(async (req, res) => {
       return send(res, 201, { ok: true, id: t.id, rev });
     }
     if (req.method === "GET" && u.pathname === "/api/tickets") {
-      return send(res, 200, { seq: store.getSeq(), rev: store.getRev(), tickets: store.all() });
+      return send(res, 200, { seq: 0, seqY: store.seqAll(), rev: store.getRev(), tickets: store.all() });
     }
     if (req.method === "GET" && u.pathname === "/api/changes") {
       const since = parseInt(u.searchParams.get("since") || "0", 10) || 0;
-      return send(res, 200, { seq: store.getSeq(), rev: store.getRev(), tickets: store.since(since) });
+      return send(res, 200, { seq: 0, seqY: store.seqAll(), rev: store.getRev(), tickets: store.since(since) });
     }
     const mPut = u.pathname.match(/^\/api\/tickets\/([A-Za-z0-9\-]+)$/);
     if (req.method === "PUT" && mPut) {
       const body = await readBody(req);
       if (!body || body.id !== mPut[1]) return send(res, 400, { error: "id mismatch" });
-      const mSeq = /^IRM-(\d+)$/.exec(body.id);
-      if (mSeq) store.bumpSeqTo(parseInt(mSeq[1], 10));
+      const mSeq = /^IRM-(\d{4})-(\d{4})$/.exec(body.id);
+      if (mSeq) store.bumpYearTo(mSeq[1], parseInt(mSeq[2], 10));
       const rev = store.put(body.id, body);
       return send(res, 200, { ok: true, rev });
     }

@@ -5,7 +5,7 @@ Dieses Repository enthält zwei in sich geschlossene HTML-Anwendungen für die R
 | Anwendung | Pfad | Zweck |
 |---|---|---|
 | **TISAX AL3 Finding-Register** | `index.html` (geschützte Eingangsseite, DE/EN) | Stage-Review-Findings mit VDA-ISA-6.0.3-Control-Verknüpfung |
-| **IRM-Tool V1.40 (Incident Response Management)** | `irm/index.html` + `irm/server/` | Lauffähige Referenz der Umsetzungsempfehlung GDL_010.001 (Freshservice-IRM), mehrbenutzerfähig mit Serverdatenbank |
+| **IRM-Tool V1.50 (Incident Response Management)** | `irm/index.html` + `irm/server/` | Lauffähige Referenz der Umsetzungsempfehlung GDL_010.001 (Freshservice-IRM), mehrbenutzerfähig mit Serverdatenbank |
 
 ## IRM-Prototyp (`irm/`)
 
