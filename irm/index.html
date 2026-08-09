@@ -124,6 +124,10 @@ tr:nth-child(even) td{background:var(--soft)}
 .scon{flex:none;height:2px;background:var(--line);width:22px;margin-top:13px}
 .scon.done{background:var(--anthrazit)}
 .tip.w:hover::after{white-space:normal;width:280px;max-width:72vw;line-height:1.4}
+.mfield{outline:2px solid #E8A013 !important;outline-offset:1px;background:#FFF6DF !important;border-radius:4px}
+:root[data-theme=dark] .mfield{background:#4a3a12 !important}
+label.mfield{outline-offset:2px;padding:1px 4px}
+.section>.head.mfield{outline-offset:-2px}
 .log{font-size:12.5px;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--soft)}
 .log div{padding:2px 0;border-bottom:1px dotted var(--line)}
 .taskrow.done{opacity:.55;text-decoration:line-through}
@@ -1365,71 +1369,73 @@ function checkTransition(t, to){
   const miss = [];
   const st = effStufe(t);
   const p12 = ["P1","P2"].includes(st);
-  const M = (de,en)=>miss.push(S.lang==="en"?en:de);
+  const keys=[];
+  const M=(de,en,key)=>{ miss.push(S.lang==="en"?en:de); if(key) keys.push(key); };
   if(t.status==="Open" && to==="Triage"){
-    if(!t.kenntnis) M("Kenntniserlangung","Time of awareness");
-    if(!t.standort) M("Standort","Site");
+    if(!t.kenntnis) M("Kenntniserlangung","Time of awareness","upd('kenntnis'");
+    if(!t.standort) M("Standort","Site","upd('standort'");
   }
   if(t.status==="Triage" && to!=="Triage"){
-    if(!t.leitdomaene) M("Leitdomäne","Lead domain");
-    if(!t.owner) M("Incident Owner","Incident owner");
-    for(const [k,l] of SDIM) if(!t[k]) miss.push(tr(l));
+    if(!t.leitdomaene) M("Leitdomäne","Lead domain","upd('leitdomaene'");
+    if(!t.owner) M("Incident Owner","Incident owner","upd('owner'");
+    for(const [k,l] of SDIM) if(!t[k]){ miss.push(tr(l)); keys.push("upd('"+k+"'"); }
     for(const p of PFL){ if(p.opt) continue;
       if(p.app(t) && (!t.pf[p.id] || t.pf[p.id]==="nicht geprüft"))
-        M("Meldepflicht „"+p.l+"“ (steht auf „nicht geprüft“)","Reporting duty “"+tr(p.l)+"” (still “not assessed”)");
+        M("Meldepflicht „"+p.l+"“ (steht auf „nicht geprüft“)","Reporting duty “"+tr(p.l)+"” (still “not assessed”)","updPf('"+p.id+"'");
     }
-    if(needBegruendungAbw(t) && !t.kenntnisBegr) M("Begründung der Abweichung Kenntniserlangung/Erstellung (> 1 h)","Justification of the gap between awareness and creation (> 1 h)");
+    if(needBegruendungAbw(t) && !t.kenntnisBegr) M("Begründung der Abweichung Kenntniserlangung/Erstellung (> 1 h)","Justification of the gap between awareness and creation (> 1 h)","upd('kenntnisBegr'");
     const nx=t.nis2||{};
-    if(!nx.sysbezug || nx.sysbezug==="nicht geprüft") M("NIS-2-Relevanzbewertung: Systembezug (steht auf „nicht geprüft“)","NIS-2 relevance: system involvement (still “not assessed”)");
-    if(nx.sysbezug==="nein" && !nx.sysbegr) M("NIS-2-Relevanzbewertung: Begründung fehlender Systembezug","NIS-2 relevance: justification of missing system involvement");
+    if(!nx.sysbezug || nx.sysbezug==="nicht geprüft") M("NIS-2-Relevanzbewertung: Systembezug (steht auf „nicht geprüft“)","NIS-2 relevance: system involvement (still “not assessed”)","updNisF('sysbezug'");
+    if(nx.sysbezug==="nein" && !nx.sysbegr) M("NIS-2-Relevanzbewertung: Begründung fehlender Systembezug","NIS-2 relevance: justification of missing system involvement","updNisF('sysbegr'");
     if(nx.sysbezug==="ja"){
-      for(const k of NIS2_DIRECT) if(!nx.rk || !nx.rk[k.id]) M("NIS-2-Prüfbogen Teil 2: "+k.id.toUpperCase().replace("RK","RK-")+" unbeantwortet","NIS-2 form part 2: "+k.id.toUpperCase().replace("RK","RK-")+" unanswered");
+      for(const k of NIS2_DIRECT) if(!nx.rk || !nx.rk[k.id]) M("NIS-2-Prüfbogen Teil 2: "+k.id.toUpperCase().replace("RK","RK-")+" unbeantwortet","NIS-2 form part 2: "+k.id.toUpperCase().replace("RK","RK-")+" unanswered","updNisRk('"+k.id+"'");
     }
   }
   if(t.status==="In Bearbeitung – Eindämmung" && to==="In Bearbeitung – Analyse"){
-    if(!t.sofort) M("Sofortmaßnahmen (Protokoll)","Immediate actions (log)");
-    if(p12 && !t.beweis) M("Beweissicherung erfolgt (Pflicht bei P1/P2)","Evidence secured (mandatory for P1/P2)");
+    if(!t.sofort) M("Sofortmaßnahmen (Protokoll)","Immediate actions (log)","upd('sofort'");
+    if(p12 && !t.beweis) M("Beweissicherung erfolgt (Pflicht bei P1/P2)","Evidence secured (mandatory for P1/P2)","upd('beweis'");
   }
   if(t.status==="In Bearbeitung – Analyse" && to==="In Bearbeitung – Behebung"){
-    if(!t.gef || t.gef==="noch nicht bestimmt") M("Gefährdungsbezug (steht auf „noch nicht bestimmt“)","Threat reference (still “not yet determined”)");
-    if(p12 && !t.ursache1) M("Unmittelbare Ursache (Pflicht bei P1/P2)","Immediate cause (mandatory for P1/P2)");
-    if(p12 && !t.ursache2) M("Systemursache (Pflicht bei P1/P2)","Root cause (mandatory for P1/P2)");
+    if(!t.gef || t.gef==="noch nicht bestimmt") M("Gefährdungsbezug (steht auf „noch nicht bestimmt“)","Threat reference (still “not yet determined”)","upd('gef'");
+    if(p12 && !t.ursache1) M("Unmittelbare Ursache (Pflicht bei P1/P2)","Immediate cause (mandatory for P1/P2)","upd('ursache1'");
+    if(p12 && !t.ursache2) M("Systemursache (Pflicht bei P1/P2)","Root cause (mandatory for P1/P2)","upd('ursache2'");
   }
   if(t.status==="Verifikation und Freigabe" && to==="Resolved"){
-    if(!t.freigabe) M("Freigabe der Wiederaufnahme","Release for resumption");
-    if(p12 && !t.freigabeIsb) M("Bestätigung des ISB (Pflicht bei P1/P2)","ISB confirmation (mandatory for P1/P2)");
-    if(t.pf.kunde_produkt==="ja" && !t.freigabeQl) M("Bestätigung der Qualitätsleitung (Produktbezug)","Quality management confirmation (product-related)");
+    if(!t.freigabe) M("Freigabe der Wiederaufnahme","Release for resumption","upd('freigabe'");
+    if(p12 && !t.freigabeIsb) M("Bestätigung des ISB (Pflicht bei P1/P2)","ISB confirmation (mandatory for P1/P2)","upd('freigabeIsb'");
+    if(t.pf.kunde_produkt==="ja" && !t.freigabeQl) M("Bestätigung der Qualitätsleitung (Produktbezug)","Quality management confirmation (product-related)","upd('freigabeQl'");
   }
   if(to==="Closed"){
     if(p12){
-      if(!t.abschlussbericht && !hasAtt(t,"abschluss")) M("Abschlussbericht (Anlage, ISMS-TMPL-006a)","Final report (attachment, ISMS-TMPL-006a)");
-      if(!t.lessons) M("Lessons Learned","Lessons learned");
-      if(!t.risikoRef) M("Referenz Risikoregister","Risk register reference");
+      if(!t.abschlussbericht && !hasAtt(t,"abschluss")) M("Abschlussbericht (Anlage, ISMS-TMPL-006a)","Final report (attachment, ISMS-TMPL-006a)","upd('abschlussbericht'");
+      if(!t.lessons) M("Lessons Learned","Lessons learned","upd('lessons'");
+      if(!t.risikoRef) M("Referenz Risikoregister","Risk register reference","upd('risikoRef'");
     }
     if(p12 && (t.pf.kunde_produkt==="ja"||t.pf.kunde_liefer==="ja"||t.pf.oem_daten==="ja")){
       const d8=t.d8||{};
       const d8core=["d1","d2","d3","d4","d5","d6"].every(k=>(d8[k]||"").trim());
       if(!t.d8 || !d8core || d8.status!=="abgeschlossen")
         M("8D-Report abgeschlossen (Pflicht bei P1/P2 mit Kundenbezug: D1–D6 ausgefüllt und als abgeschlossen bestätigt, Abschnitt 5a)",
-          "8D report completed (mandatory for P1/P2 with customer impact: D1–D6 filled in and confirmed completed, section 5a)");
+          "8D report completed (mandatory for P1/P2 with customer impact: D1–D6 filled in and confirmed completed, section 5a)","@d8");
     }
     if(["F","G","H"].includes(t.leitdomaene)){
-      if(!t.fvAbgeschlossen) M("Fachvorgang abgeschlossen (Domäne "+t.leitdomaene+")","Business record completed (domain "+t.leitdomaene+")");
-      if(!t.fvNummer) M("Führender Fachvorgang – Nummer","Leading business record – number");
+      if(!t.fvAbgeschlossen) M("Fachvorgang abgeschlossen (Domäne "+t.leitdomaene+")","Business record completed (domain "+t.leitdomaene+")","upd('fvAbgeschlossen'");
+      if(!t.fvNummer) M("Führender Fachvorgang – Nummer","Leading business record – number","upd('fvNummer'");
     }
-    if(t.gef==="noch nicht bestimmt"||!t.gef) M("Gefährdungsbezug","Threat reference");
+    if(t.gef==="noch nicht bestimmt"||!t.gef) M("Gefährdungsbezug","Threat reference","upd('gef'");
     const nc=t.nis2||{};
     if(nc.sysbezug==="ja"){
-      for(const k of NIS2_CHECK) if(!nc.rk || !nc.rk[k.id]) M("NIS-2-Prüfbogen Teil 3: "+k.id.toUpperCase().replace("RK","RK-")+" unbeantwortet","NIS-2 form part 3: "+k.id.toUpperCase().replace("RK","RK-")+" unanswered");
-      if(nisMyjava(t)) for(const k of NIS2_SK) if(!nc.sk || !nc.sk[k.id]) M("NIS-2-Prüfbogen Teil 4 (Slowakei): Frage unbeantwortet","NIS-2 form part 4 (Slovakia): question unanswered");
-      if(!nc.ergebnis || nc.ergebnis==="offen") M("NIS-2-Relevanzbewertung: Gesamtergebnis","NIS-2 relevance: overall result");
-      if(nc.ergebnis && nc.ergebnis!=="offen" && !nc.begr) M("NIS-2-Relevanzbewertung: Tragende Begründung","NIS-2 relevance: supporting justification");
-      if(nc.ergebnis==="nicht erheblich" && p12 && !nc.vieraugen) M("NIS-2-Verneinung bei P1/P2: Vier-Augen-Bestätigung des Incident Owners","NIS-2 negation for P1/P2: four-eyes confirmation of the incident owner");
+      for(const k of NIS2_CHECK) if(!nc.rk || !nc.rk[k.id]) M("NIS-2-Prüfbogen Teil 3: "+k.id.toUpperCase().replace("RK","RK-")+" unbeantwortet","NIS-2 form part 3: "+k.id.toUpperCase().replace("RK","RK-")+" unanswered","updNisRk('"+k.id+"'");
+      if(nisMyjava(t)) for(const k of NIS2_SK) if(!nc.sk || !nc.sk[k.id]) M("NIS-2-Prüfbogen Teil 4 (Slowakei): Frage unbeantwortet","NIS-2 form part 4 (Slovakia): question unanswered","updNisSk('"+k.id+"'");
+      if(!nc.ergebnis || nc.ergebnis==="offen") M("NIS-2-Relevanzbewertung: Gesamtergebnis","NIS-2 relevance: overall result","updNisF('ergebnis'");
+      if(nc.ergebnis && nc.ergebnis!=="offen" && !nc.begr) M("NIS-2-Relevanzbewertung: Tragende Begründung","NIS-2 relevance: supporting justification","updNisF('begr'");
+      if(nc.ergebnis==="nicht erheblich" && p12 && !nc.vieraugen) M("NIS-2-Verneinung bei P1/P2: Vier-Augen-Bestätigung des Incident Owners","NIS-2 negation for P1/P2: four-eyes confirmation of the incident owner","updNisF('vieraugen'");
     }
   }
   if(to==="Ausgesetzt – BCM"){
-    if(!t.bcmNote) M("Übergabeprotokoll BCM (Notiz)","BCM hand-over record (note)");
+    if(!t.bcmNote) M("Übergabeprotokoll BCM (Notiz)","BCM hand-over record (note)","upd('bcmNote'");
   }
+  miss.keys=keys;
   return miss;
 }
 function needBegruendungAbw(t){ return t.kenntnis && t.erstellt && (t.erstellt - t.kenntnis) > 3600000; }
@@ -1608,7 +1614,7 @@ function render(){
     .map(([k,l])=>`<button class="${S.tab===k?"active":""}" onclick="nav('${k}')">${tr(l)}</button>`).join("");
   const m=$("main");
   if(S.role==="melder" && S.tab!=="portal") S.tab="portal";
-  if(S.detail){ m.innerHTML = viewDetail(S.detail); return; }
+  if(S.detail){ m.innerHTML = viewDetail(S.detail); markMissing(); return; }
   switch(S.tab){
     case "portal": m.innerHTML=viewPortal(); break;
     case "tickets": m.innerHTML=viewTickets(); break;
@@ -1961,6 +1967,23 @@ function kbFromTicket(){
   alert(de?"KB-Artikel angelegt – sichtbar im Portal unter „Selbsthilfe & Wissensdatenbank“.":"KB article created – visible in the portal under “Self-help & knowledge base”.");
 }
 /* ---------- GL-Bericht: management-taugliche Zusammenfassung ab Analyse-Abschluss ---------- */
+/* Amber-Markierung: hebt genau die Felder hervor, die für den nächsten Statusschritt noch fehlen */
+function markMissing(){
+  const t=T(); if(!t||!canEdit(t)) return;
+  const nx=allowedNext(t); if(!nx.length) return;
+  const miss=checkTransition(t,nx[0]);
+  const keys=miss.keys||[];
+  const main=document.querySelector('.detmain'); if(!main||!keys.length) return;
+  for(const k of keys){
+    if(k==="@d8"){ const hd=[...main.querySelectorAll('.section > .head')].find(x=>x.textContent.includes('5a ·')); if(hd) hd.classList.add('mfield'); continue; }
+    [...main.querySelectorAll('[onchange]')].forEach(el=>{
+      if((el.getAttribute('onchange')||"").startsWith(k)){
+        el.classList.add('mfield');
+        if(el.type==="checkbox"){ const lab=el.closest('label'); if(lab) lab.classList.add('mfield'); }
+      }
+    });
+  }
+}
 function glReady(t){
   const M=STATUS.filter(x=>x!=="Ausgesetzt – BCM");
   return M.indexOf(t.status)>M.indexOf("In Bearbeitung – Analyse");
@@ -2285,6 +2308,10 @@ function viewDetail(id){
         return `<span class="tip w" data-tip="${esc(tipN)}"><button class="${blocked?"sec":"acc"}" onclick="setStatus('${sx}')">${blocked?"⚠ ":"→ "}${tr(sx)}</button></span>`;}).join("")
        ||'<span class="muted small">'+tr("keiner möglich")+'</span>'}
       ${t.status==="Closed"&&S.role==="isb"?'<span class="small muted">'+tr("(Wiedereröffnung: ISB-Recht)")+'</span>':""}
+      ${(()=>{ if(!nxt.length) return "";
+        const m0=checkTransition(t,nxt[0]);
+        return m0.length?`<span class="small" style="color:#b0790c;font-weight:700">◼ ${de?"amber hinterlegt: "+m0.length+" Pflichtangabe(n) für „"+tr(nxt[0])+"“ noch offen":"amber highlighted: "+m0.length+" mandatory item(s) still open for “"+tr(nxt[0])+"”"}</span>`:"";
+      })()}
     </div>`:""}
     </div>`;
   })()}
@@ -3046,6 +3073,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> the quick action opens a selection menu of all domains with hover expertise (who can do what); domains typically also affected per the threat catalogue (POL Annex C) are pre-selected with ⭐. Selected experts become secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
    <p><b>New KPIs:</b> MTTA (time to first response), MTTR (time to resolution), first-contact-resolution rate, CSAT (reporter satisfaction, optional in closure) and the self-help rate.</p>
    <p><b>Timeline overview (reports):</b> the report area contains a multi-year summary — the five and two completed calendar years before the current year (with year labels, e.g. 2021–2025) plus the last 12 months including the current year, each with totals, P1–P4, near-miss share and resolution rate — plus the monthly distribution of the current year with the P1/P2 share highlighted in red. In addition, the <b>dynamic timeline</b> shows ten years at a glance with resolution increasing towards today: macro range (10–5 years) year epochs with P1 milestones (🚩) only, meso range (5–1 year) condensed to half-years, micro range (last 12 months) resolved into months — each column with hover details. The time anchor is the time of awareness.</p>
+   <p><b>Amber highlighting of mandatory fields:</b> in the ticket, exactly those fields still required for the next status step are highlighted in amber — from time of awareness through the S dimensions and reporting duties to the NIS-2 questions and closure fields. The highlighting updates with every input; a line below the “next steps” buttons states the number of open mandatory items. This shows where something still needs to be filled in before clicking — the blocking check itself remains unchanged.</p>
    <p><b>Management report from the ticket:</b> once the analysis is completed (status “remediation” or later) the quick action “Create management report” produces a management-ready summary of the incident: current classification (overall level with the driving damage dimensions, escalation, domains, NIS-2 result, reporting duties, estimated loss), actions so far (immediate actions, causes, playbook/8D progress) and the next action points with due dates, open approvals and the prerequisites of the next status step. The report opens print-ready in its own window (save as PDF via the print function) and can be taken over as a pre-filled e-mail draft to executive management and further recipients with one click; generation is documented in the activity log. Before the analysis is completed the button is greyed out with the note “reporting to executive management and further recipients becomes available once the analysis is completed”.</p>
    <p><b>Two-track threat reference (IS / domain catalogue):</b> the BSI catalogue of elementary threats (G 0.1–G 0.47) applies to incidents with information-security relevance. For all other incidents the REUTIB domain catalogue <b>G-D</b> is available per lead domain (occupational safety per GDA hazard factors, facility/natural events, product/field defects, supply chain, compliance/reputation). The “IS relevance” field in the classification controls the recommendation — automatic: yes for lead domain A/B, an assessed S3 dimension or NIS-2 system involvement, manually overridable; the selection list shows the matching catalogue first, and an off-catalogue choice produces a (non-blocking) review hint. The G-R additions and the primary-domain recommendation remain unchanged. <b>Note:</b> the G-D catalogue is a marked tool proposal for revising POL_010.001 Annex C and becomes binding only with its release.</p>
    <p><b>Deadline monitor (extended):</b> deadlines are grouped per ticket with alternating background, the time remaining ticks live. Responsibility tiles show who has how many deadlines open (and overdue) — a click filters the list to that responsibility. Sorting by due date, criticality (P1 first) or ticket number; quick filters “all / ≥ 75 % / overdue”; KPIs extended by “due in &lt; 24 h” and affected P1/P2 tickets; CSV export of the filtered list.</p>
@@ -3243,6 +3271,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> Die Schnellaktion öffnet ein Auswahlmenü aller Domänen mit Mouseover-Expertise (wer kann was); regelmäßig mitbetroffene Domänen aus dem Gefährdungskatalog (POL Anhang C) sind mit ⭐ vorausgewählt. Ausgewählte Experten werden Nebendomäne mit Mitwirkungsaufgabe und Beobachterstatus (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
    <p><b>Neue Kennzahlen:</b> MTTA (Zeit bis Erstreaktion), MTTR (Zeit bis Lösung), First-Contact-Resolution-Quote, CSAT (Melder-Zufriedenheit, optional im Abschluss) sowie die Selbsthilfe-Quote.</p>
    <p><b>Zeitliche Übersicht (Berichte):</b> Der Berichtsbereich enthält eine Mehrjahresübersicht — die fünf bzw. zwei abgeschlossenen Kalenderjahre vor dem laufenden Jahr (mit Jahreszahlen, z. B. 2021–2025) sowie die letzten 12 Monate inklusive laufendem Jahr, jeweils mit Gesamtzahl, P1–P4, Near-Miss-Anteil und Lösungsquote — sowie die Monatsverteilung des laufenden Jahres mit rot hervorgehobenem P1/P2-Anteil. Ergänzend zeigt der <b>dynamische Zeitstrahl</b> zehn Jahre auf einen Blick, mit zur Gegenwart hin zunehmender Auflösung: Makrobereich (10–5 Jahre) nur Jahres-Epochen mit P1-Meilensteinen (🚩), Mesobereich (5–1 Jahr) verdichtet zu Halbjahren, Mikrobereich (letzte 12 Monate) aufgelöst in Monate — jede Säule mit Mouseover-Details. Zeitanker ist die Kenntniserlangung.</p>
+   <p><b>Amber-Markierung der Pflichtfelder:</b> Im Ticket sind genau die Felder amber hinterlegt, die für den nächsten Statusschritt noch fehlen — von der Kenntniserlangung über die S-Dimensionen und Meldepflichten bis zu den NIS-2-Prüffragen und Abschlussfeldern. Die Markierung aktualisiert sich bei jeder Eingabe; eine Zeile unter den „Nächste Schritte“-Knöpfen nennt die Anzahl der offenen Pflichtangaben. So ist vor dem Klick sichtbar, wo noch etwas auszufüllen ist — die Blockprüfung selbst bleibt unverändert.</p>
    <p><b>GL-Bericht aus dem Ticket:</b> Ab abgeschlossener Analyse (Status „In Bearbeitung – Behebung“ oder später) erzeugt die Schnellaktion „GL-Bericht erzeugen“ eine management-taugliche Zusammenfassung des Vorfalls: aktuelle Einstufung (Gesamtstufe mit maßgeblichen Schadensdimensionen, Eskalation, Domänen, NIS-2-Ergebnis, Meldepflichten, geschätzter Schaden), bisherige Maßnahmen (Sofortmaßnahmen, Ursachen, Playbook-/8D-Stand) und die nächsten Action Points mit Fälligkeiten, offenen Genehmigungen und den Voraussetzungen des nächsten Statusschritts. Der Bericht öffnet druckfertig in einem eigenen Fenster (über die Druckfunktion als PDF ablegbar) und lässt sich per Klick als vorbefüllter E-Mail-Entwurf an die Geschäftsleitung und weitere Empfänger übernehmen; die Erzeugung wird im Aktivitätsprotokoll dokumentiert. Vor Abschluss der Analyse ist der Knopf ausgegraut mit dem Hinweis „Berichterstellung an Geschäftsleitung und weitere Empfänger mit Abschluss der Analyse möglich“.</p>
    <p><b>Gefährdungsbezug zweigleisig (IS-/Domänenkatalog):</b> Der BSI-Katalog der elementaren Gefährdungen (G 0.1–G 0.47) gilt für Vorfälle mit Informationssicherheitsbezug. Für alle anderen Vorfälle steht je Leitdomäne der REUTIB-Domänenkatalog <b>G-D</b> bereit (u. a. Arbeitssicherheit nach GDA-Gefährdungsfaktoren, Facility/Elementar, Produkt-/Feldfehler, Lieferkette, Compliance/Reputation). Das Feld „IS-Bezug“ in der Klassifizierung steuert die Empfehlung — Automatik: ja bei Leitdomäne A/B, bewerteter S3-Dimension oder NIS-2-Systembezug, manuell übersteuerbar; die Auswahlliste zeigt zuerst den passenden Katalog, eine katalogfremde Wahl erzeugt einen Prüfhinweis (nicht blockierend). Die G-R-Ergänzungen und die Primärdomänen-Empfehlung gelten unverändert. <b>Hinweis:</b> Der G-D-Katalog ist ein gekennzeichneter Tool-Vorschlag zur Revision von POL_010.001 Anhang C und wird erst mit deren Freigabe verbindlich.</p>
    <p><b>Fristenmonitor (ausgebaut):</b> Die Fristen sind je Ticket gruppiert und abwechselnd hinterlegt, die Restlaufzeit tickt live. Zuständigkeits-Kacheln zeigen, wer wie viele Fristen offen (und überfällig) hat — ein Klick filtert die Liste auf diese Zuständigkeit. Sortierung nach Fälligkeit, Kritikalität (P1 zuerst) oder Ticketnummer; Schnellfilter „alle / ≥ 75 % / überfällig“; Kennzahlen ergänzt um „fällig in &lt; 24 h“ und betroffene P1/P2-Tickets; CSV-Export der gefilterten Liste.</p>
