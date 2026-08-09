@@ -1933,6 +1933,115 @@ function kbFromTicket(){
   save(t);
   alert(de?"KB-Artikel angelegt – sichtbar im Portal unter „Selbsthilfe & Wissensdatenbank“.":"KB article created – visible in the portal under “Self-help & knowledge base”.");
 }
+/* ---------- GL-Bericht: management-taugliche Zusammenfassung ab Analyse-Abschluss ---------- */
+function glReady(t){
+  const M=STATUS.filter(x=>x!=="Ausgesetzt – BCM");
+  return M.indexOf(t.status)>M.indexOf("In Bearbeitung – Analyse");
+}
+function glReport(){
+  const t=T(); if(!t) return;
+  const de=S.lang!=="en";
+  if(!glReady(t)){ alert(de?"Berichterstellung an Geschäftsleitung und weitere Empfänger ist erst mit Abschluss der Analyse möglich.":"Reporting to executive management and further recipients becomes available once the analysis is completed."); return; }
+  const st=effStufe(t);
+  const maxOrd=Math.max(0,...SDIM.map(([k])=>ORD[t[k]]||0));
+  const drivers=maxOrd>0?SDIM.filter(([k])=>(ORD[t[k]]||0)===maxOrd).map(([k,l])=>tr(l)+" = "+t[k]).join(", "):"—";
+  const nowS=fmt(now());
+  const pbKey=t.leitdomaene?(PBMAP[t.leitdomaene]||"DEF"):null;
+  const pbSteps=pbKey?PB[pbKey]:[]; const pbDone=pbSteps.filter((_,i)=>(t.pb||{})[pbKey+":"+i]).length;
+  const openTasks=t.tasks.filter(x=>!x.done).sort((a,b)=>a.due-b.due);
+  const openAppr=t.approvals.filter(a=>a.state==="offen");
+  const nxt=allowedNext(t).map(sx=>({sx,miss:checkTransition(t,sx)}));
+  const n2=t.nis2||{};
+  const meld=PFL.filter(p=>t.pf[p.id]==="ja");
+  const meldPruef=PFL.filter(p=>t.pf[p.id]==="in Prüfung");
+  const MSTAT=STATUS.filter(x=>x!=="Ausgesetzt – BCM");
+  const stepNo=Math.max(1,MSTAT.indexOf(t.status)+1);
+  const sub=(de?"[IRM] GL-Bericht ":"[IRM] Management report ")+(st||"")+" – "+t.id+" – "+t.betreff;
+  const L=[];
+  L.push((de?"BERICHT AN DIE GESCHÄFTSLEITUNG":"MANAGEMENT REPORT")+" – "+t.id);
+  L.push(t.betreff);
+  L.push((de?"Stand: ":"As of: ")+nowS);
+  L.push("");
+  L.push("Status: "+tr(t.status)+" ("+stepNo+"/"+MSTAT.length+")");
+  L.push((de?"Gesamtstufe: ":"Level: ")+(st?pLabel(st):"—")+" · "+(de?"Eskalation: ":"Escalation: ")+effEsk(t));
+  L.push((de?"Leitdomäne: ":"Lead domain: ")+(t.leitdomaene?t.leitdomaene+" – "+domName(t.leitdomaene):"—")+" · "+(de?"Standort: ":"Site: ")+(siteLabel(t.standort)||"—"));
+  L.push((de?"Gefährdung: ":"Threat: ")+gefLabel(t.gef));
+  L.push("NIS-2: "+(n2.ergebnis?tr(n2.ergebnis):(de?"offen":"open"))+(meld.length?" · "+(de?"Meldungen „ja“: ":"reports “yes”: ")+meld.map(p=>tr(p.l)).join("; "):""));
+  if(t.schaden) L.push((de?"Geschätzter Schaden: ":"Estimated loss: ")+fmtEur(t.schaden));
+  L.push("");
+  L.push(de?"WO WIR STEHEN:":"WHERE WE STAND:");
+  if(t.sofort) L.push("- "+(de?"Sofortmaßnahmen: ":"Immediate actions: ")+t.sofort.slice(0,200));
+  if(t.ursache1) L.push("- "+(de?"Unmittelbare Ursache: ":"Immediate cause: ")+t.ursache1.slice(0,200));
+  if(t.ursache2) L.push("- "+(de?"Systemursache: ":"Root cause: ")+t.ursache2.slice(0,200));
+  if(pbKey) L.push("- Playbook: "+pbDone+"/"+pbSteps.length);
+  if(t.d8) L.push("- 8D: "+(t.d8.status==="abgeschlossen"?(de?"abgeschlossen":"completed"):(de?"in Arbeit":"in progress")));
+  L.push("");
+  L.push(de?"NÄCHSTE SCHRITTE:":"NEXT STEPS:");
+  openTasks.slice(0,6).forEach(x=>L.push("- "+taskLabel(x.name)+" ("+(de?"fällig ":"due ")+fmt(x.due)+(x.due<now()?(de?", ÜBERFÄLLIG":", OVERDUE"):"")+")"));
+  nxt.forEach(x=>L.push("- "+(de?"Statusschritt → ":"Status step → ")+tr(x.sx)+(x.miss.length?(de?" — offen: ":" — missing: ")+x.miss.slice(0,3).join("; "):(de?" — Voraussetzungen erfüllt":" — prerequisites met"))));
+  L.push("");
+  L.push((de?"Vertraulich – nur für den internen Gebrauch. Erzeugt aus dem Reutter-Group IRM-Tool V":"Confidential – internal use only. Generated from the Reutter-Group IRM tool V")+APP_VERSION);
+  const txt=L.join("\n");
+  const mail="mailto:?subject="+encodeURIComponent(sub)+"&body="+encodeURIComponent(txt);
+  const li=a=>a.length?"<ul>"+a.map(x=>"<li>"+x+"</li>").join("")+"</ul>":"<p>—</p>";
+  const row=(k,v)=>`<tr><th>${k}</th><td>${v}</td></tr>`;
+  const html=`<!DOCTYPE html><html lang="${de?"de":"en"}"><head><meta charset="utf-8"><title>${esc(sub)}</title>
+  <style>
+   body{font-family:"Roboto Condensed","Arial Narrow",Arial,sans-serif;color:#000;margin:34px;font-size:14px;line-height:1.45}
+   h1{font-size:20px;margin:0 0 2px}
+   h2{font-size:15px;color:#3E3E3E;border-bottom:2px solid #FED22C;padding-bottom:3px;margin:20px 0 8px}
+   .meta{color:#5A5859;font-size:12px;margin-bottom:14px}
+   table{border-collapse:collapse;width:100%;margin:6px 0}
+   th,td{border:1px solid #bbb;padding:5px 8px;text-align:left;vertical-align:top;font-size:13px}
+   th{background:#3E3E3E;color:#fff;width:235px;font-weight:700}
+   ul{margin:4px 0 8px 18px;padding:0} li{margin:2px 0}
+   .warn{color:#8a1f1f;font-weight:700} .ok{color:#1b6e1b;font-weight:700}
+   .toolbar{position:sticky;top:0;background:#F0F0F0;border:1px solid #ccc;border-radius:6px;padding:8px 10px;margin-bottom:16px;display:flex;gap:8px}
+   .toolbar button,.toolbar a{font-family:inherit;font-size:13px;font-weight:700;padding:7px 12px;border:1px solid #3E3E3E;border-radius:4px;background:#FED22C;color:#000;text-decoration:none;cursor:pointer}
+   .foot{margin-top:22px;border-top:1px solid #999;padding-top:6px;color:#5A5859;font-size:11px}
+   @media print{.toolbar{display:none}}
+  </style></head><body>
+  <div class="toolbar">
+   <button onclick="window.print()">🖨 ${de?"Drucken / Als PDF speichern":"Print / save as PDF"}</button>
+   <a href="${esc(mail)}">✉ ${de?"Als E-Mail-Entwurf öffnen":"Open as e-mail draft"}</a>
+  </div>
+  <h1>${de?"Bericht an die Geschäftsleitung":"Report to executive management"} – ${t.id}</h1>
+  <div class="meta">${esc(t.betreff)} · ${de?"Berichtsstand":"Report as of"}: ${nowS} · ${de?"Ersteller":"Author"}: ${esc((S.user?S.user+" – ":"")+roleLabel())} · ${de?"Vertraulich – nur für den internen Gebrauch":"Confidential – internal use only"}</div>
+  <h2>1 · ${de?"Aktuelle Einstufung":"Current classification"}</h2>
+  <table>
+   ${row(de?"Status / Prozessschritt":"Status / process step", esc(tr(t.status))+" ("+(de?"Schritt":"step")+" "+stepNo+"/"+MSTAT.length+")")}
+   ${row(de?"Gesamtstufe":"Overall level",(st?esc(pLabel(st)):"—")+(drivers!=="—"?" — "+(de?"maßgeblich":"driven by")+": "+esc(drivers):""))}
+   ${row(de?"Eskalationsstufe":"Escalation level",esc(eLabel(effEsk(t))))}
+   ${row(de?"Leitdomäne / Nebendomänen":"Lead / secondary domains",(t.leitdomaene?t.leitdomaene+" – "+esc(domName(t.leitdomaene)):"—")+((t.nebendomaenen||[]).length?" · "+t.nebendomaenen.join(", "):""))}
+   ${row(tr("Standort"),esc(siteLabel(t.standort))||"—")}
+   ${row(de?"Gefährdungsbezug":"Threat reference",esc(gefLabel(t.gef)))}
+   ${row(de?"IS-Bezug / Informationsklassifizierung":"IS relevance / information class",tr(effIs(t))+(t.infoklass?" · "+esc(cLabel(t.infoklass)):""))}
+   ${row("NIS-2",n2.ergebnis?esc(tr(n2.ergebnis)):(de?"offen/nicht geprüft":"open/not assessed"))}
+   ${row(de?"Meldepflichten":"Reporting duties",(meld.length?("„ja“: "+meld.map(p=>esc(tr(p.l))).join("; ")):(de?"keine bejaht":"none confirmed"))+(meldPruef.length?" · "+(de?"in Prüfung: ":"under review: ")+meldPruef.map(p=>esc(tr(p.l))).join("; "):""))}
+   ${row(de?"Geschätzter Schaden":"Estimated loss",t.schaden?fmtEur(t.schaden):"—")}
+   ${row(de?"Kenntniserlangung / Erstreaktion":"Awareness / first response",fmt(t.kenntnis)+" / "+(t.erstreaktion?fmt(t.erstreaktion):(de?"ausstehend":"pending")))}
+  </table>
+  <h2>2 · ${de?"Wo wir stehen – bisherige Maßnahmen":"Where we stand – actions so far"}</h2>
+  ${li([
+    t.sofort?(de?"Sofortmaßnahmen: ":"Immediate actions: ")+esc(t.sofort):null,
+    t.beweis?(de?"Beweissicherung erfolgt":"Evidence secured")+(t.beweisText?": "+esc(t.beweisText):""):null,
+    t.ursache1?(de?"Unmittelbare Ursache: ":"Immediate cause: ")+esc(t.ursache1):null,
+    t.ursache2?(de?"Systemursache: ":"Root cause: ")+esc(t.ursache2):null,
+    pbKey?("Playbook: "+pbDone+"/"+pbSteps.length+" "+(de?"Schritte erledigt":"steps done")):null,
+    t.d8?("8D-Report: "+(t.d8.status==="abgeschlossen"?(de?"abgeschlossen":"completed"):(de?"in Arbeit":"in progress"))):null,
+    (t.wait&&waitExtra(t))?(de?"Wartezeit (SLA-Pause) bisher: ":"Waiting time (SLA pause) so far: ")+fmtRest(waitExtra(t)):null
+  ].filter(Boolean))}
+  <h2>3 · ${de?"Nächste Schritte (Action Points)":"Next steps (action points)"}</h2>
+  ${li(openTasks.slice(0,8).map(x=>esc(taskLabel(x.name))+" — "+esc(tr(x.rolle))+", "+(de?"fällig ":"due ")+fmt(x.due)+(x.due<now()?` <span class="warn">(${de?"überfällig":"overdue"})</span>`:"")))}
+  ${openAppr.length?`<p><b>${de?"Offene Genehmigungen:":"Open approvals:"}</b></p>`+li(openAppr.map(a=>esc(a.l)+" ("+esc(tr(a.by))+")")):""}
+  ${nxt.length?`<p><b>${de?"Nächster Statusschritt:":"Next status step:"}</b></p>`+li(nxt.map(x=>esc(tr(x.sx))+(x.miss.length?" — "+(de?"noch offen: ":"still missing: ")+x.miss.slice(0,4).map(m=>esc(m)).join("; ")+(x.miss.length>4?" …":""):` <span class="ok">(${de?"Voraussetzungen erfüllt":"prerequisites met"})</span>`))):""}
+  <div class="foot">${de?"Automatisch erzeugt aus dem Reutter-Group IRM-Tool V":"Automatically generated from the Reutter-Group IRM tool V"}${APP_VERSION} · ${t.id} · ${nowS} · ${de?"Vertraulich – nur für den internen Gebrauch der Reutter-Group.":"Confidential – for internal use of the Reutter-Group only."}</div>
+  </body></html>`;
+  const w=window.open("","_blank","width=920,height=1000");
+  if(!w){ alert(de?"Popup blockiert – bitte Popups für diese Seite erlauben.":"Popup blocked – please allow popups for this page."); return; }
+  w.document.write(html); w.document.close();
+  if(canEdit(t)){ log(t,(de?"GL-Bericht erzeugt (Status: ":"Management report generated (status: ")+tr(t.status)+", "+(st||"—")+")."); save(t); }
+}
 function kanbanDrop(ev,to){
   ev.preventDefault();
   const id=ev.dataTransfer.getData("text/plain"); if(!id) return;
@@ -2084,6 +2193,9 @@ function viewDetail(id){
     if(!["Resolved","Closed"].includes(t.status)) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="swarm()">🐝 ${de?"Swarming – Experten hinzuziehen":"Swarming – involve experts"}</button>`);
     if(pbKey&&pbDone<pbSteps.length) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="document.getElementById('pbsec').scrollIntoView({behavior:'smooth'})">📋 ${de?"Zum Playbook":"Go to playbook"} (${pbDone}/${pbSteps.length})</button>`);
   }
+  qa.push(glReady(t)
+    ? `<button class="acc" style="width:100%;margin:4px 0" onclick="glReport()">📄 ${de?"GL-Bericht erzeugen":"Create management report"}</button>`
+    : `<span class="tip w" style="display:block" data-tip="${esc(de?"Berichterstellung an Geschäftsleitung und weitere Empfänger mit Abschluss der Analyse möglich.":"Reporting to executive management and further recipients becomes available once the analysis is completed.")}"><button class="sec" disabled style="width:100%;margin:4px 0">📄 ${de?"GL-Bericht (ab Analyse-Abschluss)":"Management report (after analysis)"}</button></span>`);
   const side=`<div class="card sidecard">
    <div style="font-size:18px;font-weight:700">${t.id}</div>
    <div class="flex" style="margin:6px 0">${st?`<span class="badge ${st.toLowerCase()}" title="${esc(pLabel(st))}">${st}</span>`:'<span class="badge pn">–</span>'}<span class="badge ${effEsk(t).toLowerCase()}" title="${esc(eLabel(effEsk(t)))}">${effEsk(t)}</span><span class="badge st">${tr(t.status)}</span></div>
@@ -2907,6 +3019,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> the quick action opens a selection menu of all domains with hover expertise (who can do what); domains typically also affected per the threat catalogue (POL Annex C) are pre-selected with ⭐. Selected experts become secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
    <p><b>New KPIs:</b> MTTA (time to first response), MTTR (time to resolution), first-contact-resolution rate, CSAT (reporter satisfaction, optional in closure) and the self-help rate.</p>
    <p><b>Timeline overview (reports):</b> the report area contains a multi-year summary — the five and two completed calendar years before the current year (with year labels, e.g. 2021–2025) plus the last 12 months including the current year, each with totals, P1–P4, near-miss share and resolution rate — plus the monthly distribution of the current year with the P1/P2 share highlighted in red. In addition, the <b>dynamic timeline</b> shows ten years at a glance with resolution increasing towards today: macro range (10–5 years) year epochs with P1 milestones (🚩) only, meso range (5–1 year) condensed to half-years, micro range (last 12 months) resolved into months — each column with hover details. The time anchor is the time of awareness.</p>
+   <p><b>Management report from the ticket:</b> once the analysis is completed (status “remediation” or later) the quick action “Create management report” produces a management-ready summary of the incident: current classification (overall level with the driving damage dimensions, escalation, domains, NIS-2 result, reporting duties, estimated loss), actions so far (immediate actions, causes, playbook/8D progress) and the next action points with due dates, open approvals and the prerequisites of the next status step. The report opens print-ready in its own window (save as PDF via the print function) and can be taken over as a pre-filled e-mail draft to executive management and further recipients with one click; generation is documented in the activity log. Before the analysis is completed the button is greyed out with the note “reporting to executive management and further recipients becomes available once the analysis is completed”.</p>
    <p><b>Two-track threat reference (IS / domain catalogue):</b> the BSI catalogue of elementary threats (G 0.1–G 0.47) applies to incidents with information-security relevance. For all other incidents the REUTIB domain catalogue <b>G-D</b> is available per lead domain (occupational safety per GDA hazard factors, facility/natural events, product/field defects, supply chain, compliance/reputation). The “IS relevance” field in the classification controls the recommendation — automatic: yes for lead domain A/B, an assessed S3 dimension or NIS-2 system involvement, manually overridable; the selection list shows the matching catalogue first, and an off-catalogue choice produces a (non-blocking) review hint. The G-R additions and the primary-domain recommendation remain unchanged. <b>Note:</b> the G-D catalogue is a marked tool proposal for revising POL_010.001 Annex C and becomes binding only with its release.</p>
    <p><b>Deadline monitor (extended):</b> deadlines are grouped per ticket with alternating background, the time remaining ticks live. Responsibility tiles show who has how many deadlines open (and overdue) — a click filters the list to that responsibility. Sorting by due date, criticality (P1 first) or ticket number; quick filters “all / ≥ 75 % / overdue”; KPIs extended by “due in &lt; 24 h” and affected P1/P2 tickets; CSV export of the filtered list.</p>
    <p><b>Ticket numbers (annual scheme):</b> as of V1.50 ticket numbers read IRM-YYYY-NNNN; the running number restarts at 0001 on 1 January of every year (example: first report in 2027 = IRM-2027-0001). Existing tickets were migrated automatically — per year in order of creation; the renaming is documented in each ticket's activity log, and parent-ticket references were carried over.</p>
@@ -3103,6 +3216,7 @@ function viewGuidance(){
    <p><b>Swarming:</b> Die Schnellaktion öffnet ein Auswahlmenü aller Domänen mit Mouseover-Expertise (wer kann was); regelmäßig mitbetroffene Domänen aus dem Gefährdungskatalog (POL Anhang C) sind mit ⭐ vorausgewählt. Ausgewählte Experten werden Nebendomäne mit Mitwirkungsaufgabe und Beobachterstatus (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
    <p><b>Neue Kennzahlen:</b> MTTA (Zeit bis Erstreaktion), MTTR (Zeit bis Lösung), First-Contact-Resolution-Quote, CSAT (Melder-Zufriedenheit, optional im Abschluss) sowie die Selbsthilfe-Quote.</p>
    <p><b>Zeitliche Übersicht (Berichte):</b> Der Berichtsbereich enthält eine Mehrjahresübersicht — die fünf bzw. zwei abgeschlossenen Kalenderjahre vor dem laufenden Jahr (mit Jahreszahlen, z. B. 2021–2025) sowie die letzten 12 Monate inklusive laufendem Jahr, jeweils mit Gesamtzahl, P1–P4, Near-Miss-Anteil und Lösungsquote — sowie die Monatsverteilung des laufenden Jahres mit rot hervorgehobenem P1/P2-Anteil. Ergänzend zeigt der <b>dynamische Zeitstrahl</b> zehn Jahre auf einen Blick, mit zur Gegenwart hin zunehmender Auflösung: Makrobereich (10–5 Jahre) nur Jahres-Epochen mit P1-Meilensteinen (🚩), Mesobereich (5–1 Jahr) verdichtet zu Halbjahren, Mikrobereich (letzte 12 Monate) aufgelöst in Monate — jede Säule mit Mouseover-Details. Zeitanker ist die Kenntniserlangung.</p>
+   <p><b>GL-Bericht aus dem Ticket:</b> Ab abgeschlossener Analyse (Status „In Bearbeitung – Behebung“ oder später) erzeugt die Schnellaktion „GL-Bericht erzeugen“ eine management-taugliche Zusammenfassung des Vorfalls: aktuelle Einstufung (Gesamtstufe mit maßgeblichen Schadensdimensionen, Eskalation, Domänen, NIS-2-Ergebnis, Meldepflichten, geschätzter Schaden), bisherige Maßnahmen (Sofortmaßnahmen, Ursachen, Playbook-/8D-Stand) und die nächsten Action Points mit Fälligkeiten, offenen Genehmigungen und den Voraussetzungen des nächsten Statusschritts. Der Bericht öffnet druckfertig in einem eigenen Fenster (über die Druckfunktion als PDF ablegbar) und lässt sich per Klick als vorbefüllter E-Mail-Entwurf an die Geschäftsleitung und weitere Empfänger übernehmen; die Erzeugung wird im Aktivitätsprotokoll dokumentiert. Vor Abschluss der Analyse ist der Knopf ausgegraut mit dem Hinweis „Berichterstellung an Geschäftsleitung und weitere Empfänger mit Abschluss der Analyse möglich“.</p>
    <p><b>Gefährdungsbezug zweigleisig (IS-/Domänenkatalog):</b> Der BSI-Katalog der elementaren Gefährdungen (G 0.1–G 0.47) gilt für Vorfälle mit Informationssicherheitsbezug. Für alle anderen Vorfälle steht je Leitdomäne der REUTIB-Domänenkatalog <b>G-D</b> bereit (u. a. Arbeitssicherheit nach GDA-Gefährdungsfaktoren, Facility/Elementar, Produkt-/Feldfehler, Lieferkette, Compliance/Reputation). Das Feld „IS-Bezug“ in der Klassifizierung steuert die Empfehlung — Automatik: ja bei Leitdomäne A/B, bewerteter S3-Dimension oder NIS-2-Systembezug, manuell übersteuerbar; die Auswahlliste zeigt zuerst den passenden Katalog, eine katalogfremde Wahl erzeugt einen Prüfhinweis (nicht blockierend). Die G-R-Ergänzungen und die Primärdomänen-Empfehlung gelten unverändert. <b>Hinweis:</b> Der G-D-Katalog ist ein gekennzeichneter Tool-Vorschlag zur Revision von POL_010.001 Anhang C und wird erst mit deren Freigabe verbindlich.</p>
    <p><b>Fristenmonitor (ausgebaut):</b> Die Fristen sind je Ticket gruppiert und abwechselnd hinterlegt, die Restlaufzeit tickt live. Zuständigkeits-Kacheln zeigen, wer wie viele Fristen offen (und überfällig) hat — ein Klick filtert die Liste auf diese Zuständigkeit. Sortierung nach Fälligkeit, Kritikalität (P1 zuerst) oder Ticketnummer; Schnellfilter „alle / ≥ 75 % / überfällig“; Kennzahlen ergänzt um „fällig in &lt; 24 h“ und betroffene P1/P2-Tickets; CSV-Export der gefilterten Liste.</p>
    <p><b>Ticketnummern (Jahresschema):</b> Seit V1.50 lauten die Ticketnummern IRM-JJJJ-NNNN; die laufende Nummer beginnt am 1. Januar jedes Jahres neu bei 0001 (Beispiel: erste Meldung 2027 = IRM-2027-0001). Bestehende Tickets wurden automatisch auf das Schema migriert — je Jahr in der Reihenfolge ihrer Erstellung; die Umbenennung ist im Aktivitätsprotokoll jedes Tickets dokumentiert, Verweise auf Sammeltickets wurden mitgezogen.</p>
