@@ -151,6 +151,14 @@ th.tip{position:sticky;cursor:help}
 .pbstep.done>span{opacity:.6;text-decoration:line-through}
 .pbbar{height:8px;background:var(--bg);border:1px solid var(--line);border-radius:4px;overflow:hidden;flex:1;max-width:200px}
 .pbbar>div{height:100%;background:var(--ok)}
+.kanban{display:flex;gap:10px;overflow-x:auto;align-items:flex-start;padding-bottom:8px}
+.kcol{min-width:225px;flex:1 0 225px;background:var(--hellgrau);border:1px solid var(--line);border-radius:8px}
+.kcol>.khead{padding:8px 10px;font-weight:700;font-size:12.5px;color:var(--anthrazit);border-bottom:1px solid var(--line);display:flex;gap:6px;align-items:center}
+.kcol.dragover{outline:2px dashed var(--gelb);outline-offset:-2px}
+.kcard{background:var(--bg);border:1px solid var(--line);border-radius:6px;margin:8px;padding:8px 10px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.kcard:hover{border-color:var(--anthrazit)}
+.kcard.p1edge{border-left:4px solid var(--crit)}
+.kcard.p2edge{border-left:4px solid var(--warn)}
 .log .lg-int{border-left:3px solid var(--grau);padding-left:6px}
 .log .lg-ext{border-left:3px solid var(--gelb);padding-left:6px}
 @media print{header,nav,.noprint{display:none}.detgrid{display:block}.detside,.detright{position:static;max-height:none}}
@@ -264,6 +272,7 @@ body.locked>header,body.locked>nav,body.locked>main,body.locked>footer,body.lock
     <button class="langbtn mini" id="btnDe" onclick="setLang('de')">DE</button>
     <button class="langbtn mini" id="btnEn" onclick="setLang('en')">EN</button>
     <button class="sec mini" id="btnTheme" onclick="toggleTheme()" title="Hell/Dunkel – Light/Dark">🌓</button>
+    <button class="langbtn mini" id="btnBell" onclick="toggleNotify()">🔕</button>
     <button class="sec mini" onclick="logoutIrm()" title="Abmelden / Sign out">🔒</button>
     <button class="sec mini" id="btnExp" onclick="exportJson()"></button>
     <button class="sec mini" id="btnImp" onclick="document.getElementById('impFile').click()"></button>
@@ -1343,6 +1352,7 @@ function render(){
   $("btnImp").textContent = tr("Stand laden");
   $("btnDe").className = "langbtn mini"+(S.lang==="de"?" on":"");
   $("btnEn").className = "langbtn mini"+(S.lang==="en"?" on":"");
+  const bb=$("btnBell"); if(bb){ bb.textContent=S.notify?"🔔":"🔕"; bb.className="langbtn mini"+(S.notify?" on":""); bb.title=S.lang==="en"?"Alarm notifications (browser): new P1 incidents and deadline breaches while the tool is open":"Alarm-Benachrichtigungen (Browser): neue P1-Vorfälle und Fristüberschreitungen, solange das Tool geöffnet ist"; }
   $("dlgClose").textContent = tr("Schließen");
   $("foot").innerHTML = (S.lang==="en"
    ? "Reutter-Group IRM Tool V"+APP_VERSION+" – Incident Response Management tool in line with the contractual and statutory requirements for incident response management. Confidential – internal use only. "
@@ -1442,7 +1452,7 @@ async function submitMeldung(nearmiss){
 }
 
 /* ---------- Ticketliste ---------- */
-let F = {q:"",dom:"",st:"",stufe:"",ort:""};
+let F = {q:"",dom:"",st:"",stufe:"",ort:"",view:"table"};
 function viewTickets(){
   const de = S.lang!=="en";
   const vis = S.tickets.filter(canSee);
@@ -1462,10 +1472,26 @@ function viewTickets(){
     <div><label>${tr("Status")}</label><select onchange="F.st=this.value;render()"><option value="">${tr("alle")}</option>${STATUS.map(s=>`<option value="${s}" ${F.st===s?"selected":""}>${tr(s)}</option>`).join("")}</select></div>
     <div><label>${tr("Gesamtstufe")}</label><select onchange="F.stufe=this.value;render()"><option value="">${tr("alle")}</option>${["P1","P2","P3","P4"].map(p=>`<option value="${p}" ${F.stufe===p?"selected":""}>${pLabel(p)}</option>`).join("")}</select></div>
     <div><label>${tr("Standort")}</label><select onchange="F.ort=this.value;render()"><option value="">${tr("alle")}</option>${STANDORTE.map(s=>`<option value="${s}" ${F.ort===s?"selected":""}>${siteLabel(s)}</option>`).join("")}</select></div>
+    <div><label>${de?"Ansicht":"View"}</label><div class="flex" style="gap:4px"><button class="${F.view!=="kanban"?"acc":"sec"} mini" onclick="F.view='table';render()">☰ ${de?"Tabelle":"Table"}</button><button class="${F.view==="kanban"?"acc":"sec"} mini" onclick="F.view='kanban';render()">▦ Kanban</button></div></div>
     <div><button class="sec" onclick="exportCsv(S.tickets.filter(canSee))">${tr("CSV-Export")}</button></div>
     <div><button class="sec" onclick="seed()">${tr("Testdaten laden")}</button></div>
   </div>
-  ${list.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${tr("Domäne")}</th><th>${tr("Standort")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Esk.")}</th><th>${tr("Status")}</th><th>${tr("Kenntniserlangung")}</th><th>${de?"Nächste Frist / SLA":"Next deadline / SLA"}</th><th>${tr("Aufgaben offen")}</th></tr></thead><tbody>
+  ${F.view==="kanban"?(()=>{
+    const cols=STATUS.filter(sx=>sx!=="Ausgesetzt – BCM"||list.some(t=>t.status===sx));
+    return `<div class="kanban">${cols.map(sx=>{
+      const items=list.filter(t=>t.status===sx);
+      return `<div class="kcol" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="this.classList.remove('dragover');kanbanDrop(event,'${sx}')">
+       <div class="khead">${tr(sx)}<span class="spacer"></span><span class="badge st">${items.length}</span></div>
+       ${items.map(t=>{const s2=effStufe(t); const kd=nextDue(t); const kr=kd?kd.due-now():null;
+         return `<div class="kcard ${s2==="P1"?"p1edge":s2==="P2"?"p2edge":""}" draggable="${canEdit(t)}" ondragstart="event.dataTransfer.setData('text/plain','${t.id}')" onclick="openT('${t.id}')">
+          <div class="flex" style="gap:6px"><b>${t.id}</b>${s2?`<span class="badge ${s2.toLowerCase()}" title="${esc(pLabel(s2))}">${s2}</span>`:""}${isProtected(t)?"🔒":""}${t.nearmiss?`<span class="badge st">NM</span>`:""}</div>
+          <div class="small" style="margin:3px 0">${esc(t.betreff.slice(0,70))}</div>
+          <div class="small muted">${t.leitdomaene?`<span class="badge dom">${t.leitdomaene}</span> `:""}${siteLabel(t.standort)||""}</div>
+          ${kd?`<div class="small" style="margin-top:3px"><span class="amp ${kr<0?"r":kr<12*3600000?"o":"g"}"></span><span class="cd${kr<0?" od":""}" data-due="${kd.due}">${fmtCd(kr)}</span></div>`:""}
+         </div>`;}).join("")||`<p class="small muted" style="padding:8px 10px">–</p>`}
+      </div>`;}).join("")}</div>
+     <p class="small muted">${de?"Karten per Drag & Drop in den nächsten Status ziehen — zulässige Übergänge und blockierende Pflichtprüfungen der GDL gelten unverändert.":"Drag cards to the next status — the permitted transitions and blocking mandatory checks of the GDL still apply."}</p>`;
+  })():list.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${tr("Domäne")}</th><th>${tr("Standort")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Esk.")}</th><th>${tr("Status")}</th><th>${tr("Kenntniserlangung")}</th><th>${de?"Nächste Frist / SLA":"Next deadline / SLA"}</th><th>${tr("Aufgaben offen")}</th></tr></thead><tbody>
   ${list.map(t=>{
     const st=effStufe(t), open=t.tasks.filter(x=>!x.done), od=open.filter(x=>x.due<now());
     return `<tr class="click" onclick="openT('${t.id}')">
@@ -1573,6 +1599,99 @@ function addNote(){
   t.log.unshift({ts:now(), who:(S.user?S.user+" – ":"")+roleLabel(), txt, kind});
   save(t); render();
 }
+function kanbanDrop(ev,to){
+  ev.preventDefault();
+  const id=ev.dataTransfer.getData("text/plain"); if(!id) return;
+  const t=S.tickets.find(x=>x.id===id); if(!t||!canEdit(t)) return;
+  if(t.status===to) return;
+  if(t.status==="Closed" && S.role!=="isb"){ alert(tr("Wiedereröffnung nur durch den ISB.")); return; }
+  if(!allowedNext(t).includes(to)){
+    alert((S.lang==="en"?"Transition not permitted: ":"Statuswechsel nicht zulässig: ")+tr(t.status)+" → "+tr(to)
+      +" ("+(S.lang==="en"?"permitted":"zulässig")+": "+(allowedNext(t).map(x=>tr(x)).join(", ")||"–")+")");
+    return;
+  }
+  const miss=checkTransition(t,to);
+  if(miss.length){
+    const de=S.lang!=="en";
+    $("dlgBody").innerHTML=`<h2 style="margin-top:0">${tr("Statuswechsel nicht möglich")}</h2>
+    <div class="err">${de?`Der Wechsel von „${t.id}“ nach „${tr(to)}“ ist blockiert. Folgende Pflichtangaben fehlen:`:`The transition of “${t.id}” to “${tr(to)}” is blocked. The following mandatory entries are missing:`}</div>
+    <ul>${miss.map(m=>`<li><b>${esc(m)}</b></li>`).join("")}</ul>`;
+    $("dlg").showModal(); return;
+  }
+  const from=t.status; t.status=to;
+  if(!t.erstreaktion && from==="Open"){ t.erstreaktion=now(); log(t,tr("Erstreaktion dokumentiert (Übernahme durch die Triage).")); }
+  log(t,tr("Statuswechsel:")+" "+tr(from)+" → "+tr(to)+" (Kanban)");
+  afterTransition(t,to);
+  save(t); render();
+}
+
+/* ---------- Interims-Alarmierung: Browser-Benachrichtigungen + Alarm-E-Mail ---------- */
+async function toggleNotify(){
+  const de=S.lang!=="en";
+  if(!S.notify){
+    if(!("Notification" in window)){ alert(de?"Dieser Browser unterstützt keine Desktop-Benachrichtigungen.":"This browser does not support desktop notifications."); return; }
+    let perm=Notification.permission;
+    if(perm==="default") perm=await Notification.requestPermission();
+    if(perm!=="granted"){ alert(de?"Benachrichtigungen wurden im Browser nicht erlaubt.":"Notifications were not allowed in the browser."); return; }
+    S.notify=true;
+    baselineAlarms();
+    try{ new Notification("REUTIB IRM",{body:de?"Alarm-Benachrichtigungen aktiv: neue P1-Vorfälle und Fristüberschreitungen werden gemeldet, solange das Tool geöffnet ist.":"Alarm notifications active: new P1 incidents and deadline breaches are reported while the tool is open."}); }catch(e){}
+  } else { S.notify=false; }
+  save(); render();
+}
+function baselineAlarms(){
+  S.alarmSeen={p1:{},od:{}};
+  for(const t of S.tickets){
+    if(effStufe(t)==="P1"&&!["Resolved","Closed"].includes(t.status)) S.alarmSeen.p1[t.id]=1;
+    for(const x of t.tasks) if(!x.done&&x.due<now()) S.alarmSeen.od[x.id]=1;
+  }
+}
+function watchAlarms(){
+  if(!S.notify||document.body.classList.contains("locked")) return;
+  if(!("Notification" in window)||Notification.permission!=="granted") return;
+  S.alarmSeen=S.alarmSeen||{p1:{},od:{}};
+  const de=S.lang!=="en"; let changed=false;
+  for(const t of S.tickets.filter(canSee)){
+    if(effStufe(t)==="P1"&&!["Resolved","Closed"].includes(t.status)&&!S.alarmSeen.p1[t.id]){
+      S.alarmSeen.p1[t.id]=1; changed=true;
+      try{ new Notification("🚨 MAJOR INCIDENT P1 – "+t.id,{body:t.betreff.slice(0,120)+"\n"+(de?"Reaktionszeit 1 h (24/7) – GDL Kap. 11":"Response time 1 h (24/7) – GDL ch. 11"),tag:"irm-p1-"+t.id}); }catch(e){}
+      beep();
+    }
+    if(t.status!=="Closed") for(const x of t.tasks){
+      if(!x.done&&x.due<now()&&!S.alarmSeen.od[x.id]){
+        S.alarmSeen.od[x.id]=1; changed=true;
+        try{ new Notification("⏰ "+(de?"Frist überschritten":"Deadline breached")+" – "+t.id,{body:taskLabel(x.name).slice(0,120),tag:"irm-od-"+x.id}); }catch(e){}
+      }
+    }
+  }
+  if(changed) save();
+}
+setInterval(watchAlarms, 30000);
+function beep(){
+  try{ const c=new (window.AudioContext||window.webkitAudioContext)();
+    const o=c.createOscillator(), g=c.createGain();
+    o.connect(g); g.connect(c.destination); o.frequency.value=880; g.gain.value=0.08;
+    o.start(); setTimeout(()=>{ o.stop(); c.close(); },350);
+  }catch(e){}
+}
+function alarmMail(){
+  const t=T(); if(!t) return;
+  const de=S.lang!=="en"; const st=effStufe(t);
+  const sub="[IRM] "+(st||"")+" – "+t.id+" – "+t.betreff;
+  const nd=nextDue(t);
+  const body=(de?"Alarmierung gemäß GDL Kap. 11 (Verteiler: ISB, Vertretung, Incident Owner"+(st==="P1"?", Geschäftsleitung":"")+")":"Alert per GDL ch. 11 (distribution: ISO, deputy, incident owner"+(st==="P1"?", executive management":"")+")")
+   +"\n\nTicket: "+t.id
+   +"\n"+(de?"Betreff":"Subject")+": "+t.betreff
+   +"\n"+(de?"Gesamtstufe":"Overall level")+": "+(st||"–")+" · "+(de?"Eskalation":"Escalation")+": "+effEsk(t)
+   +"\n"+(de?"Leitdomäne":"Lead domain")+": "+(t.leitdomaene||"–")+" · "+(de?"Standort":"Site")+": "+(t.standort||"–")
+   +"\nStatus: "+tr(t.status)
+   +"\n"+(de?"Kenntniserlangung":"Awareness")+": "+fmt(t.kenntnis)
+   +(nd?"\n"+(de?"Nächste Frist":"Next deadline")+": "+fmt(nd.due)+" ("+nd.l+")":"")
+   +"\n\n"+(de?"Hinweis: Empfänger gemäß Bereitschaftsplan ergänzen; außerhalb der Betriebszeit zusätzlich Anruf/SMS.":"Note: add recipients per the on-call plan; outside business hours additionally call/SMS.");
+  location.href="mailto:?subject="+encodeURIComponent(sub)+"&body="+encodeURIComponent(body);
+  log(t,de?"Alarm-E-Mail-Entwurf erzeugt (mailto, Verteiler GDL Kap. 11).":"Alarm e-mail draft created (mailto, distribution per GDL ch. 11).");
+  save(t);
+}
 function editBetreff(){
   const t=T(); if(!t||!canEdit(t)) return;
   const v=prompt(tr("Neue Meldebezeichnung:"), t.betreff);
@@ -1627,6 +1746,7 @@ function viewDetail(id){
   if(!ro&&t.status!=="Closed"){
     if(t.status==="In Bearbeitung – Eindämmung") qa.push(`<button class="acc" style="width:100%;margin:4px 0" onclick="setStatus('In Bearbeitung – Analyse')">✔ ${de?"Eindämmung abgeschlossen → Analyse":"Containment completed → analysis"}</button>`);
     if(!t.d8) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="init8d()">🛠 ${de?"8D-Report initiieren":"Initiate 8D report"}</button>`);
+    if(["P1","P2"].includes(st)) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="alarmMail()">✉ ${de?"Alarm-E-Mail erzeugen":"Compose alarm e-mail"}</button>`);
     if(pbKey&&pbDone<pbSteps.length) qa.push(`<button class="sec" style="width:100%;margin:4px 0" onclick="document.getElementById('pbsec').scrollIntoView({behavior:'smooth'})">📋 ${de?"Zum Playbook":"Go to playbook"} (${pbDone}/${pbSteps.length})</button>`);
   }
   const side=`<div class="card sidecard">
@@ -2201,6 +2321,8 @@ function viewGuidance(){
    <p><b>8D report (ticket section 5a):</b> structured root-cause analysis per automotive standard (D1–D8; 5-Why in D4). <b>Binding: for P1/P2 with customer impact</b> (product safety/recall, customer delivery information or OEM data information set to “yes”) <b>a missing 8D blocks the transition to “Closed”</b> — required are completed fields D1–D6 and the confirmation “8D completed”. If quality runs a CAQ 8D (QBD.net), that record is authoritative and is referenced as the leading business record.</p>
    <p><b>Comments:</b> the activity log distinguishes internal notes from external updates; both are an immutable part of the evidence trail.</p>
    <p><b>KPIs:</b> the report dashboard additionally shows MTTR (mean time to first response), SLA breaches and the top 5 most critical open incidents.</p>
+   <p><b>Kanban view:</b> the ticket list can be switched between table (queue) and a Kanban board (columns = status) via the “Table / Kanban” toggle. Cards can be dragged to the next status — the permitted transitions and blocking mandatory checks of the GDL still apply; impermissible moves are rejected with a reason, and moves are logged like any status change in the ticket.</p>
+   <p><b>Alerting (interim solution without a push gateway):</b> the bell icon in the header enables browser notifications: new P1 incidents and deadline breaches then appear as desktop notifications with a sound — but only while the tool is open in a browser tab. In addition, the quick action “Compose alarm e-mail” creates a pre-filled e-mail draft for the distribution list per GDL ch. 11 for P1/P2 (add recipients per the on-call plan). <b>Limits:</b> neither channel replaces an on-call duty — the telephone alerting chain per GDL ch. 11 remains authoritative; a server-side push/SMS channel will follow with productive server operation (see the IT operations information).</p>
   </div></details>
 
   <div class="note"><b>Binding documents:</b> POL_010.001 V3.00 (policy) · PROC_010.001 V2.10 (process, DE/EN) · STD_010.001 (NIS-2 reporting) · ANL_010.001 (roles, KPIs, evidence). This page is a condensed working aid for tool users, maintained by the ISO.</div>`;
@@ -2366,6 +2488,8 @@ function viewGuidance(){
    <p><b>8D-Report (Ticketabschnitt 5a):</b> Strukturierte Ursachenanalyse nach Automotive-Standard (D1–D8; 5-Why in D4). <b>Verbindlich: Bei P1/P2 mit Kundenbezug</b> (Produktsicherheit/Rückruf, Kundeninformation Lieferfähigkeit oder OEM-Dateninformation auf „ja“) <b>blockiert ein fehlender 8D den Statuswechsel nach „Closed“</b> — erforderlich sind ausgefüllte Felder D1–D6 und die Bestätigung „8D abgeschlossen“. Führt die Qualität einen CAQ-8D (QBD.net), gilt dieser als führend und wird als Fachvorgang referenziert.</p>
    <p><b>Kommentare:</b> Im Aktivitätsprotokoll lassen sich interne Notizen und externe Updates getrennt erfassen; beide sind unveränderlich Teil der Nachweisführung.</p>
    <p><b>Kennzahlen:</b> Das Berichts-Dashboard zeigt zusätzlich MTTR (mittlere Zeit bis Erstreaktion), SLA-Verletzungen und die Top-5 der kritischsten offenen Vorfälle.</p>
+   <p><b>Kanban-Ansicht:</b> Die Ticketliste lässt sich über den Umschalter „Tabelle / Kanban“ als Board darstellen (Spalten = Status). Karten können per Drag &amp; Drop in den nächsten Status gezogen werden — die zulässigen Übergänge und blockierenden Pflichtprüfungen der GDL gelten unverändert; unzulässige Züge werden mit Begründung abgewiesen und protokolliert wird wie beim Statuswechsel im Ticket.</p>
+   <p><b>Alarmierung (Interimslösung ohne Push-Gateway):</b> Über das Glockensymbol in der Kopfzeile lassen sich Browser-Benachrichtigungen aktivieren: Neue P1-Vorfälle und Fristüberschreitungen erscheinen dann als Desktop-Meldung mit Signalton — allerdings nur, solange das Tool in einem Browser-Tab geöffnet ist. Zusätzlich erzeugt die Schnellaktion „Alarm-E-Mail erzeugen“ bei P1/P2 einen vorbefüllten E-Mail-Entwurf für den Verteiler nach GDL Kap. 11 (Empfänger gemäß Bereitschaftsplan ergänzen). <b>Grenzen:</b> Beide Wege ersetzen keine Rufbereitschaft — die telefonische Alarmierung nach GDL Kap. 11 bleibt führend; ein serverseitiger Push-/SMS-Kanal folgt mit dem produktiven Serverbetrieb (siehe IT-Betriebsinformation).</p>
   </div></details>
 
   <div class="note"><b>Verbindliche Dokumente:</b> POL_010.001 V3.00 (Richtlinie) · PROC_010.001 V2.10 (Prozess, DE/EN) · STD_010.001 (NIS-2-Meldung) · ANL_010.001 (Rollen, KPI, Nachweise). Diese Seite ist eine verdichtete Arbeitshilfe für die Tool-Nutzer und wird durch den ISB gepflegt.</div>`;
