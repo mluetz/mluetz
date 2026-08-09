@@ -110,9 +110,20 @@ tr:nth-child(even) td{background:var(--soft)}
 .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .filter{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:10px 0}
 .filter>div{min-width:140px}
-.statusflow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center}
-.statusflow .chip{padding:5px 10px;border-radius:14px;border:1px solid var(--line);font-size:12.5px;background:var(--bg)}
-.statusflow .chip.cur{background:var(--gelb);border-color:var(--gelb);font-weight:700;color:#000}
+.prochead{border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:10px 14px;margin:10px 0}
+.stepper{display:flex;align-items:flex-start;overflow-x:auto;padding:6px 0 2px}
+.step{display:flex;flex:none}
+.snode{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:80px;text-align:center}
+.sdot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;border:2px solid var(--line);background:var(--bg);color:var(--grau)}
+.step.done .sdot{background:var(--anthrazit);border-color:var(--anthrazit);color:#fff}
+.step.cur .sdot{background:var(--gelb);border-color:var(--gelb);color:#000;box-shadow:0 0 0 4px rgba(254,210,44,.35)}
+.step.next .sdot{border-color:var(--gelb);border-style:dashed;color:var(--fg)}
+.slbl{font-size:11.5px;font-weight:700;color:var(--grau);max-width:92px;line-height:1.2}
+.step.cur .slbl{color:var(--fg)}
+.step.done .slbl{color:var(--anthrazit)}
+.scon{flex:none;height:2px;background:var(--line);width:22px;margin-top:13px}
+.scon.done{background:var(--anthrazit)}
+.tip.w:hover::after{white-space:normal;width:280px;max-width:72vw;line-height:1.4}
 .log{font-size:12.5px;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--soft)}
 .log div{padding:2px 0;border-bottom:1px dotted var(--line)}
 .taskrow.done{opacity:.55;text-decoration:line-through}
@@ -829,6 +840,30 @@ const ROLES = {
 
 /* ---------- Statusmodell ---------- */
 const STATUS = ["Open","Triage","In Bearbeitung – Eindämmung","In Bearbeitung – Analyse","In Bearbeitung – Behebung","Verifikation und Freigabe","Resolved","Ausgesetzt – BCM","Closed"];
+const STATUS_SHORT_DE={"Open":"Open","Triage":"Triage","In Bearbeitung – Eindämmung":"Eindämmung","In Bearbeitung – Analyse":"Analyse","In Bearbeitung – Behebung":"Behebung","Verifikation und Freigabe":"Verifikation","Resolved":"Resolved","Ausgesetzt – BCM":"BCM","Closed":"Closed"};
+const STATUS_SHORT_EN={"Open":"Open","Triage":"Triage","In Bearbeitung – Eindämmung":"Containment","In Bearbeitung – Analyse":"Analysis","In Bearbeitung – Behebung":"Remediation","Verifikation und Freigabe":"Verification","Resolved":"Resolved","Ausgesetzt – BCM":"BCM","Closed":"Closed"};
+const STATUS_HELP_DE={
+ "Open":"Meldung eingegangen, noch nicht übernommen. Weiter nach Triage: Kenntniserlangung und Standort müssen erfasst sein.",
+ "Triage":"Einordnung durch die Triage: Leitdomäne, Schadensdimensionen S1–S6, Meldepflichten-Check und NIS-2-Relevanzbewertung. Erst wenn vollständig, ist der Wechsel in die Eindämmung möglich (P4 auch direkt nach Resolved).",
+ "In Bearbeitung – Eindämmung":"Sofortmaßnahmen begrenzen den Schaden. Austritt erfordert das dokumentierte Sofortmaßnahmen-Protokoll; bei P1/P2 zusätzlich die Beweissicherung.",
+ "In Bearbeitung – Analyse":"Ursachenermittlung. Austritt erfordert den Gefährdungsbezug; bei P1/P2 zusätzlich unmittelbare Ursache und Systemursache.",
+ "In Bearbeitung – Behebung":"Maßnahmen umsetzen und deren Wirkung prüfen; anschließend Verifikation und Freigabe.",
+ "Verifikation und Freigabe":"Freigabe der Wiederaufnahme; bei P1/P2 Bestätigung des ISB, bei Produktbezug zusätzlich die Qualitätsleitung.",
+ "Resolved":"Fachlich gelöst. Nachbereitung läuft: Post-Incident-Review und Abschlussbericht (P1/P2) werden als Aufgaben erzeugt.",
+ "Ausgesetzt – BCM":"Bearbeitung ausgesetzt, Übergabe an das Business Continuity Management (Übergabeprotokoll ist Pflicht). Meldeaufgaben laufen weiter; Rückkehr in die Bearbeitung ist möglich.",
+ "Closed":"Formeller Abschluss: Gefährdungsbezug, Fachvorgang (Domänen F/G/H), bei P1/P2 Abschlussbericht, Lessons Learned, Risikoregister und ggf. 8D-Report (Kundenbezug). Wiedereröffnung nur durch den ISB."};
+const STATUS_HELP_EN={
+ "Open":"Report received, not yet taken over. To triage: time of awareness and site must be recorded.",
+ "Triage":"Classification by the triage team: lead domain, damage dimensions S1–S6, reporting-duty check and NIS-2 relevance assessment. Only when complete can the ticket move to containment (P4 also directly to Resolved).",
+ "In Bearbeitung – Eindämmung":"Immediate actions limit the damage. Leaving requires the documented immediate-actions log; for P1/P2 additionally the evidence preservation.",
+ "In Bearbeitung – Analyse":"Root-cause investigation. Leaving requires the threat reference; for P1/P2 additionally the immediate cause and the system cause.",
+ "In Bearbeitung – Behebung":"Implement the measures and verify their effect; then verification and release.",
+ "Verifikation und Freigabe":"Release for resumption; for P1/P2 the ISB confirmation, for product relevance additionally quality management.",
+ "Resolved":"Technically resolved. Follow-up runs: post-incident review and final report (P1/P2) are created as tasks.",
+ "Ausgesetzt – BCM":"Processing suspended, hand-over to business continuity management (hand-over record is mandatory). Notification tasks continue; return to processing is possible.",
+ "Closed":"Formal closure: threat reference, business record (domains F/G/H), for P1/P2 final report, lessons learned, risk register and if applicable the 8D report (customer impact). Re-opening by the ISB only."};
+function stShort(sx){ return (S.lang==="en"?STATUS_SHORT_EN:STATUS_SHORT_DE)[sx]||tr(sx); }
+function stHelp(sx){ return (S.lang==="en"?STATUS_HELP_EN:STATUS_HELP_DE)[sx]||""; }
 
 /* ---------- State ---------- */
 const LSKEY = "reutib-irm-v1";
@@ -1775,18 +1810,42 @@ function viewDetail(id){
     ${S.role==="isb"&&t.eskOverride!=="E3"&&t.status!=="Closed"?`<button class="sec" onclick="setE3()">${tr("E3 / BCM-Übergabe")}</button>`:""}
   </div>
   <h1>${t.id} · ${esc(t.betreff)} ${isProtected(t)?'<span class="badge lock">🔒 '+tr("geschützter Bereich")+'</span>':""}${t.tisax?' <span class="badge st">'+tr("TISAX-relevant")+'</span>':""}</h1>
-  <div class="flex">
-    ${st?`<span class="badge ${st.toLowerCase()}">${tr("Gesamtstufe")} ${pLabel(st)}</span>`:'<span class="badge pn">'+tr("noch nicht klassifiziert")+'</span>'}
-    <span class="badge ${effEsk(t).toLowerCase()}" title="${esc(eLabel(effEsk(t)))}">${tr("Eskalation")} ${effEsk(t)}</span>
-    <span class="badge st">${tr(t.status)}</span>
-    ${t.leitdomaene?`<span class="badge dom">${tr("Leitdomäne")} ${t.leitdomaene} – ${domName(t.leitdomaene)}</span>`:""}
-    ${t.herab==="beantragt"?`<span class="badge st">${tr("Herabstufung beantragt")} → ${t.herabStufe}</span>`:""}
-    ${t.herab==="genehmigt"?`<span class="badge st">${tr("Herabstufung genehmigt")} (${de?"berechnet":"calculated"}: ${cst.stufe})</span>`:""}
-  </div>
-  <div class="statusflow">${STATUS.filter(s=>s!=="Ausgesetzt – BCM"||t.status===s).map(s=>`<span class="chip ${t.status===s?"cur":""}">${tr(s)}</span>`).join("<span class='muted'>→</span>")}</div>
-  ${!ro?`<div class="flex noprint"><b class="small" style="color:var(--anthrazit)">${tr("Statuswechsel:")}</b>
-    ${allowedNext(t).map(s=>`<button class="acc" onclick="setStatus('${s}')">→ ${tr(s)}</button>`).join("")||'<span class="muted small">'+tr("keiner möglich")+'</span>'}
-    ${t.status==="Closed"&&S.role==="isb"?'<span class="small muted">'+tr("(Wiedereröffnung: ISB-Recht)")+'</span>':""}</div>`:""}
+  ${(()=>{
+    const maxOrd=Math.max(0,...SDIM.map(([k])=>ORD[t[k]]||0));
+    const drivers=maxOrd>0?SDIM.filter(([k])=>(ORD[t[k]]||0)===maxOrd).map(([k,l])=>tr(l)+" = "+t[k]).join(" · "):"";
+    const stTip=(de?"Berechnet nach dem Höchstwertprinzip aus S1–S6 (GDL Kap. 6.3). Maßgeblich: ":"Calculated by the maximum principle from S1–S6 (GDL ch. 6.3). Driven by: ")+(drivers||(de?"noch keine Bewertung":"no assessment yet"))+(t.herab==="genehmigt"?(de?" — Herabstufung durch den ISB genehmigt (berechnet: "+cst.stufe+")":" — downgrade approved by the ISB (calculated: "+cst.stufe+")"):"");
+    const eskTip=(de?"Regel: P1 → E2 (Incident Response Team), P2 → E1, sonst E0; externe Meldepflicht ≤ 24 h erzwingt E2; E3 (BCM) setzt nur der ISB.":"Rule: P1 → E2 (incident response team), P2 → E1, otherwise E0; an external reporting duty ≤ 24 h forces E2; E3 (BCM) is set by the ISB only.");
+    const MAIN=STATUS.filter(x=>x!=="Ausgesetzt – BCM");
+    const curIdx=MAIN.indexOf(t.status);
+    const nxt=allowedNext(t);
+    const bcmShow=t.status==="Ausgesetzt – BCM"||nxt.includes("Ausgesetzt – BCM");
+    return `<div class="prochead">
+    <div class="flex">
+      ${st?`<span class="badge ${st.toLowerCase()} tip w" data-tip="${esc(stTip)}">${tr("Gesamtstufe")} ${pLabel(st)}</span>`:`<span class="badge pn tip w" data-tip="${esc(de?"Die Gesamtstufe entsteht aus der Bewertung der Schadensdimensionen S1–S6 in Abschnitt 2.":"The overall level results from assessing the damage dimensions S1–S6 in section 2.")}">${tr("noch nicht klassifiziert")}</span>`}
+      <span class="badge ${effEsk(t).toLowerCase()} tip w" data-tip="${esc(eskTip)}">${tr("Eskalation")} ${eLabel(effEsk(t))}</span>
+      ${t.leitdomaene?`<span class="badge dom tip w" data-tip="${esc((de?"Steuert Arbeitsbereich, Zuständigkeit und Meldepflichten. ":"Controls workspace, responsibility and reporting duties. ")+(t.owner?"Owner: "+t.owner+". ":"")+(isProtected(t)?(de?"Geschützter Bereich – eingeschränkte Sichtbarkeit.":"Protected workspace – restricted visibility."):""))}">${tr("Leitdomäne")} ${t.leitdomaene} – ${domName(t.leitdomaene)}</span>`:""}
+      ${t.herab==="beantragt"?`<span class="badge st tip w" data-tip="${esc(de?"Bis zur Entscheidung des ISB bleiben Gesamtstufe, Priorität und Reaktionszeit unverändert (GDL Kap. 10.3).":"Until the ISB decides, level, priority and response time remain unchanged (GDL ch. 10.3).")}">${tr("Herabstufung beantragt")} → ${t.herabStufe}</span>`:""}
+      ${t.herab==="genehmigt"?`<span class="badge st">${tr("Herabstufung genehmigt")} (${de?"berechnet":"calculated"}: ${cst.stufe})</span>`:""}
+    </div>
+    <div class="stepper">
+      ${MAIN.map((sx,i)=>{
+        const cls=i===curIdx?"cur":(curIdx>=0&&i<curIdx)?"done":nxt.includes(sx)?"next":"";
+        const tipTxt=(i===curIdx?(de?"AKTUELLER STATUS. ":"CURRENT STATUS. "):cls==="done"?(de?"Durchlaufen. ":"Completed. "):nxt.includes(sx)?(de?"Möglicher nächster Schritt. ":"Possible next step. "):"")+stHelp(sx);
+        return (i?`<div class="scon${curIdx>=0&&i<=curIdx?" done":""}"></div>`:"")+
+        `<div class="step ${cls}"><span class="tip w snode" data-tip="${esc(tipTxt)}"><span class="sdot">${cls==="done"?"✓":i+1}</span><span class="slbl">${stShort(sx)}</span></span></div>`;
+      }).join("")}
+      ${bcmShow?`<div class="scon"></div><div class="step ${t.status==="Ausgesetzt – BCM"?"cur":"next"}"><span class="tip w snode" data-tip="${esc((t.status==="Ausgesetzt – BCM"?(de?"AKTUELLER STATUS. ":"CURRENT STATUS. "):(de?"Möglicher nächster Schritt. ":"Possible next step. "))+stHelp("Ausgesetzt – BCM"))}"><span class="sdot">⏸</span><span class="slbl">BCM</span></span></div>`:""}
+    </div>
+    ${!ro?`<div class="flex noprint" style="margin-top:4px"><b class="small" style="color:var(--anthrazit)">${de?"Nächste Schritte":"Next steps"}:</b>
+      ${nxt.map(sx=>{const miss=checkTransition(t,sx); const blocked=miss.length>0;
+        const tipN=blocked?(de?"Blockiert — es fehlen: ":"Blocked — missing: ")+miss.slice(0,5).join(" · ")+(miss.length>5?" …":"")
+          :(de?"Alle Pflichtangaben erfüllt — Klick führt den Statuswechsel aus.":"All mandatory entries present — click performs the transition.");
+        return `<span class="tip w" data-tip="${esc(tipN)}"><button class="${blocked?"sec":"acc"}" onclick="setStatus('${sx}')">${blocked?"⚠ ":"→ "}${tr(sx)}</button></span>`;}).join("")
+       ||'<span class="muted small">'+tr("keiner möglich")+'</span>'}
+      ${t.status==="Closed"&&S.role==="isb"?'<span class="small muted">'+tr("(Wiedereröffnung: ISB-Recht)")+'</span>':""}
+    </div>`:""}
+    </div>`;
+  })()}
 
   ${st==="P1"?`<div class="err">${de?"P1: Benachrichtigung an ISB, Vertretung, Incident Owner und Geschäftsleitung (E-Mail + mobil; außerhalb der Betriebszeit zusätzlich Anruf/SMS – GDL Kap. 11). Reaktionszeit 1 h, Kalender 24/7.":"P1: notification to ISB, deputy, incident owner and executive management (e-mail + mobile; outside business hours additionally call/SMS – GDL ch. 11). Response time 1 h, 24/7 calendar."}</div>`:""}
   ${needBegruendungAbw(t)&&!t.kenntnisBegr?`<div class="err">${de?`Zwischen Kenntniserlangung und Ticketerstellung liegen ${fmtRest(abw).replace(tr("überfällig seit "),"")} (&gt; 1 h): Begründung der Abweichung ist Pflicht${abw>4*3600000?" – Abweichung &gt; 4 h (E-Mail-/Telefonkanal, GDL Kap. 5.3)":""}.`:`There are ${fmtRest(abw).replace(tr("überfällig seit "),"")} between awareness and ticket creation (&gt; 1 h): a justification is mandatory${abw>4*3600000?" – gap &gt; 4 h (e-mail/phone channel, GDL ch. 5.3)":""}.`}</div>`:""}
