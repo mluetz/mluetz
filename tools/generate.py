@@ -24,7 +24,7 @@ import openpyxl
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SRC = ROOT / "data" / "TISAX_Finding_Register_v3_M_N_O.xlsx"
 TEMPLATE = ROOT / "tools" / "template.html"
-OUT_HTML = ROOT / "index.html"
+OUT_HTML = ROOT / "app" / "register-de.html"
 OUT_JSON = ROOT / "data" / "findings.json"
 SHEET = "TISAX Finding Register"
 
@@ -147,6 +147,7 @@ def main():
     data = extract(src)
     OUT_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
 
+    OUT_HTML.parent.mkdir(exist_ok=True)
     tpl = TEMPLATE.read_text(encoding="utf-8")
     if "/*__DATA__*/" not in tpl:
         raise SystemExit("Template-Platzhalter /*__DATA__*/ fehlt.")
