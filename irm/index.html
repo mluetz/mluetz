@@ -574,6 +574,22 @@ const PDESC={P1:"Kritisch",P2:"Hoch",P3:"Mittel",P4:"Niedrig"};
 const EDESC={E0:"Regelbetrieb",E1:"Koordinierte Bearbeitung",E2:"Incident Response Team",E3:"Übergabe an das BCM"};
 const CDESC={C1:"öffentlich",C2:"intern",C3:"vertraulich",C4:"streng vertraulich"};
 function pLabel(v){ return PDESC[v]? v+" – "+tr(PDESC[v]) : tr(v); }
+const ETIP_DE={E0:"Bearbeitung im Regelprozess der Leitdomäne, keine besondere Eskalation.",
+ E1:"Koordinierte Bearbeitung: Der ISB koordiniert domänenübergreifend, erweiterte Berichtspflicht (ab Gesamtstufe P2).",
+ E2:"Incident Response Team einberufen: bei Gesamtstufe P1 oder einer externen Meldepflicht mit Frist ≤ 24 h.",
+ E3:"Übergabe an das Business Continuity Management: setzt nur der ISB mit Übergabeprotokoll; Genehmigung der Geschäftsleitung, Meldeaufgaben laufen weiter."};
+const ETIP_EN={E0:"Handled in the lead domain's standard process, no special escalation.",
+ E1:"Coordinated handling: the ISO coordinates across domains, extended reporting duty (from overall level P2).",
+ E2:"Incident response team convened: for overall level P1 or an external reporting duty with a deadline ≤ 24 h.",
+ E3:"Hand-over to business continuity management: set by the ISO only with a hand-over record; executive-management approval, notification tasks continue."};
+function pTip(v){ if(!PDESC[v]) return tr(v);
+  const de=S.lang!=="en";
+  return v+" – "+tr(PDESC[v])+" · "+(de?"Reaktionszeit ":"response time ")+SLA_H[v]+" h "
+   +(["P1","P2"].includes(v)?"(24/7)":(de?"(Standortkalender)":"(site calendar)"))
+   +(v==="P1"?(de?" · Benachrichtigung bis zur Geschäftsleitung, Beweissicherung Pflicht":" · notification up to executive management, evidence preservation mandatory")
+     :v==="P2"?(de?" · ISB-Koordination, Beweissicherung Pflicht":" · ISO coordination, evidence preservation mandatory"):"");
+}
+function eTip(v){ return v+" – "+tr(EDESC[v])+": "+((S.lang==="en"?ETIP_EN:ETIP_DE)[v]||""); }
 function eLabel(v){ return EDESC[v]? v+" – "+tr(EDESC[v]) : v; }
 function cLabel(v){ return CDESC[v]? v+" – "+tr(CDESC[v]) : v; }
 
@@ -1721,7 +1737,7 @@ function viewTickets(){
        <div class="khead">${tr(sx)}<span class="spacer"></span><span class="badge st">${items.length}</span></div>
        ${items.map(t=>{const s2=effStufe(t); const kd=nextDue(t); const kr=kd?kd.due-now():null;
          return `<div class="kcard ${s2==="P1"?"p1edge":s2==="P2"?"p2edge":""}" draggable="${canEdit(t)}" ondragstart="event.dataTransfer.setData('text/plain','${t.id}')" onclick="openT('${t.id}')">
-          <div class="flex" style="gap:6px"><b>${t.id}</b>${s2?`<span class="badge ${s2.toLowerCase()}" title="${esc(pLabel(s2))}">${s2}</span>`:""}${isProtected(t)?"🔒":""}${t.nearmiss?`<span class="badge st">NM</span>`:""}${t.wait&&t.wait.on?" ⏸":""}${t.parent?" ⛓":""}</div>
+          <div class="flex" style="gap:6px"><b>${t.id}</b>${s2?`<span class="badge ${s2.toLowerCase()} tip w" data-tip="${esc(pTip(s2))}">${s2}</span>`:""}${isProtected(t)?"🔒":""}${t.nearmiss?`<span class="badge st">NM</span>`:""}${t.wait&&t.wait.on?" ⏸":""}${t.parent?" ⛓":""}</div>
           <div class="small" style="margin:3px 0">${esc(t.betreff.slice(0,70))}</div>
           <div class="small muted">${t.leitdomaene?`<span class="badge dom tip" data-tip="${esc(tr("Leitdomäne"))} ${t.leitdomaene} – ${esc(domName(t.leitdomaene))}${DOM[t.leitdomaene].prot?" 🔒":""}">${t.leitdomaene}</span> `:""}${siteLabel(t.standort)||""}</div>
           ${kd?`<div class="small" style="margin-top:3px"><span class="amp ${kr<0?"r":kr<12*3600000?"o":"g"}"></span><span class="cd${kr<0?" od":""}" data-due="${kd.due}">${fmtCd(kr)}</span></div>`:""}
@@ -1737,8 +1753,8 @@ function viewTickets(){
      <td>${esc(t.betreff)}</td>
      <td>${t.leitdomaene?`<span class="badge dom tip" data-tip="${esc(tr("Leitdomäne"))} ${t.leitdomaene} – ${esc(domName(t.leitdomaene))}">${t.leitdomaene}</span>`:"–"}${(t.nebendomaenen||[]).map(d=>` <span class="badge st tip" data-tip="${esc(tr("Nebendomänen"))}: ${d} – ${esc(domName(d))}">${d}</span>`).join("")}</td>
      <td>${siteLabel(t.standort)}</td>
-     <td>${st?`<span class="badge ${st.toLowerCase()}" title="${esc(pLabel(st))}">${st}</span>`:'<span class="badge pn">'+tr("offen")+'</span>'}${t.herab==="beantragt"?' <span class="badge st" title="'+tr("Herabstufung beantragt")+'">↓?</span>':""}</td>
-     <td><span class="badge ${effEsk(t).toLowerCase()}" title="${esc(eLabel(effEsk(t)))}">${effEsk(t)}</span></td>
+     <td>${st?`<span class="badge ${st.toLowerCase()} tip w" data-tip="${esc(pTip(st))}">${st}</span>`:'<span class="badge pn">'+tr("offen")+'</span>'}${t.herab==="beantragt"?' <span class="badge st" title="'+tr("Herabstufung beantragt")+'">↓?</span>':""}</td>
+     <td><span class="badge ${effEsk(t).toLowerCase()} tip w" data-tip="${esc(eTip(effEsk(t)))}">${effEsk(t)}</span></td>
      <td><span class="badge st">${tr(t.status)}</span></td>
      <td class="small">${fmt(t.kenntnis)}</td>
      <td>${(()=>{const nd=nextDue(t); if(!nd) return "–"; const r=nd.due-now();
@@ -2641,7 +2657,7 @@ function viewFristen(){
     return `<tr class="click tg${gi%2}" onclick="openT('${g.t.id}')">
      <td><span class="amp ${amp}"></span></td>
      <td>${ri===0?`<b>${g.t.id}</b><div class="small muted">${esc(g.t.betreff.slice(0,38))}${g.rows.length>1?` · ${g.rows.length} ${de?"Fristen":"deadlines"}`:""}</div>`:`<span class="muted" style="padding-left:6px">↳</span>`}</td>
-     <td>${ri===0?(g.st?`<span class="badge ${g.st.toLowerCase()}" title="${esc(pLabel(g.st))}">${g.st}</span>`:"–"):""}</td>
+     <td>${ri===0?(g.st?`<span class="badge ${g.st.toLowerCase()} tip w" data-tip="${esc(pTip(g.st))}">${g.st}</span>`:"–"):""}</td>
      <td>${esc(r.name)}</td><td class="small">${r.typ}</td><td class="small">${fmRoleHtml(r.rolle)}</td>
      <td class="small">${fmt(r.due)}</td>
      <td><span class="cd${rest<0?" od":""}" data-due="${r.due}">${fmtCd(rest)}</span></td></tr>`;
@@ -2821,7 +2837,7 @@ function viewBerichte(){
   <h2>${de?"Top 5 – kritischste offene Vorfälle":"Top 5 – most critical open incidents"}</h2>
   ${crit5.length?`<table><thead><tr><th>ID</th><th>${tr("Betreff")}</th><th>${de?"Stufe":"Level"}</th><th>${tr("Domäne")}</th><th>${tr("Status")}</th><th>${de?"Nächste Frist":"Next deadline"}</th></tr></thead><tbody>
   ${crit5.map(t=>{const nd=nextDue(t);const s=effStufe(t);
-    return `<tr class="click" onclick="openT('${t.id}')"><td><b>${t.id}</b></td><td>${esc(t.betreff)}</td><td><span class="badge ${s.toLowerCase()}" title="${esc(pLabel(s))}">${s}</span></td><td>${t.leitdomaene?`<span class="badge dom tip" data-tip="${esc(domName(t.leitdomaene))}${DOM[t.leitdomaene].prot?" 🔒":""}">${t.leitdomaene}</span>`:"–"}</td><td class="small">${tr(t.status)}</td><td class="small">${nd?`<span class="cd${nd.due-now()<0?" od":""}" data-due="${nd.due}">${fmtCd(nd.due-now())}</span>`:"–"}</td></tr>`;}).join("")}</tbody></table>`
+    return `<tr class="click" onclick="openT('${t.id}')"><td><b>${t.id}</b></td><td>${esc(t.betreff)}</td><td><span class="badge ${s.toLowerCase()} tip w" data-tip="${esc(pTip(s))}">${s}</span></td><td>${t.leitdomaene?`<span class="badge dom tip" data-tip="${esc(domName(t.leitdomaene))}${DOM[t.leitdomaene].prot?" 🔒":""}">${t.leitdomaene}</span>`:"–"}</td><td class="small">${tr(t.status)}</td><td class="small">${nd?`<span class="cd${nd.due-now()<0?" od":""}" data-due="${nd.due}">${fmtCd(nd.due-now())}</span>`:"–"}</td></tr>`;}).join("")}</tbody></table>`
   :`<p class="muted small">${de?"Keine offenen klassifizierten Vorfälle.":"No open classified incidents."}</p>`}
   <h2>${de?"Lagebild Domänen":"Domain overview"} <span class="small muted">– ${de?"offene/gesamt je Domäne und Verteilung der Gesamtstufen":"open/total per domain and distribution of overall levels"}</span></h2>
   <table class="matrix"><thead><tr><th>${tr("Domäne")}</th><th>${de?"Bezeichnung":"Name"}</th>${["P1","P2","P3","P4"].map(x=>`<th class="tip" data-tip="${esc(pLabel(x))}">${x}</th>`).join("")}<th>${tr("offen")}</th><th>${de?"gesamt":"total"}</th></tr></thead><tbody>
