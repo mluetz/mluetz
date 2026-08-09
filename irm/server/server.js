@@ -177,7 +177,7 @@ const server = http.createServer(async (req, res) => {
         domWechsel: "", gefahrBeendet: null, gef: "noch nicht bestimmt", gefWeitere: [],
         ursache1: "", ursache2: "", s1: "", s2: "", s3: "", s4: "", s5: "", s6: "",
         herab: "nein", herabStufe: "", herabBegr: "", einstufungBegr: "", eskOverride: "",
-        infoklass: "", objekte: String(body.objekte || ""), tisax: false, prototyp: false,
+        infoklass: "", objekte: String(body.objekte || ""), tisax: false, prototyp: false, isBezug: "", schaden: 0,
         sofort: "", beweis: false, beweisText: "", kenntnisBegr: "",
         pf: {}, nachweis: "", fvSystem: "", fvNummer: "", fvAbgeschlossen: false,
         freigabe: false, freigabeIsb: false, freigabeQl: false,
