@@ -2563,7 +2563,7 @@ function viewDetail(id){
    </div>
    <div class="grid2">
     <div><label>${tr("Unmittelbare Ursache")} ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label><textarea ${ro?"disabled":""} onchange="upd('ursache1',this.value,'${tr("Unmittelbare Ursache")}')">${esc(t.ursache1)}</textarea></div>
-    <div><label>${tr("Systemursache")} ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label><textarea ${ro?"disabled":""} onchange="upd('ursache2',this.value,'${tr("Systemursache")}')">${esc(t.ursache2)}</textarea></div>
+    <div><label>${tr("Systemursache")} (${de?"Schwäche System, Prozess oder Organisation":"weakness in system, process or organisation"}) ${["P1","P2"].includes(st)?'<span class="req">* (P1/P2)</span>':""}</label><textarea ${ro?"disabled":""} onchange="upd('ursache2',this.value,'${tr("Systemursache")}')">${esc(t.ursache2)}</textarea></div>
    </div>
    <label>${tr("Übergabeprotokoll BCM")} <span class="hint">${tr("(Pflicht für „Ausgesetzt – BCM“ und E3)")}</span></label>
    <textarea ${ro?"disabled":""} onchange="upd('bcmNote',this.value,'${tr("Übergabeprotokoll BCM")}')">${esc(t.bcmNote)}</textarea>
