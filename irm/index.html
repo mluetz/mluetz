@@ -1248,7 +1248,17 @@ const KB_DEFAULT=[
   sd:"Es ist gerade noch gut gegangen – niemand verletzt, nichts kaputt.",se:"It only just went well – nobody hurt, nothing broken.",
   ld:"Ja, immer melden: Near-Miss-Meldungen sind ausdrücklich erwünscht (Meldequote-KPI) und ziehen keinerlei Nachteile nach sich. Der eigene Portaleinstieg „Beinaheereignis melden“ genügt – kurze Beschreibung reicht.",
   le:"Yes, always report: near-miss reports are explicitly encouraged (reporting-rate KPI) and never lead to any disadvantage. The dedicated portal entry “Report a near miss” is enough – a short description suffices."}];
-function kbAll(){ return S.kb&&S.kb.length?S.kb:KB_DEFAULT; }
+function kbAll(){ return Array.isArray(S.kb)?S.kb:KB_DEFAULT; }
+/* ISB darf KB-Artikel im Portal löschen (Pflege der Wissensdatenbank) */
+function kbDel(i){
+  if(S.role!=="isb") return;
+  const de=S.lang!=="en";
+  const list=kbAll(); const a=list[i]; if(!a) return;
+  if(!confirm((de?"KB-Artikel endgültig löschen?\n\n":"Delete KB article permanently?\n\n")+(de?a.td:a.te))) return;
+  if(!Array.isArray(S.kb)) S.kb=KB_DEFAULT.slice();
+  S.kb.splice(i,1);
+  save(); render();
+}
 function tokWords(s){ return String(s||"").toLowerCase().split(/[^a-zäöüß0-9\-]+/).filter(w=>w.length>3); }
 function kbScore(q,txt){ const qs=new Set(tokWords(q)); if(!qs.size) return 0; let n=0; for(const w of tokWords(txt)) if(qs.has(w)) n++; return n; }
 /* SLA-Pause: verlängert ausschließlich die interne Erstreaktions-SLA, nie gesetzliche Meldefristen */
@@ -1642,7 +1652,7 @@ function viewPortal(){
   </div>
   <div id="formBox"></div>
   <h2 style="margin-top:26px">💡 ${de?"Selbsthilfe & Wissensdatenbank":"Self-help & knowledge base"} <span class="small muted">(${kbAll().length} ${de?"Artikel · Shift-Left: erst prüfen, dann melden":"articles · shift-left: check first, then report"})</span></h2>
-  ${kbAll().map(a=>`<details><summary>${esc(de?a.td:a.te)}${a.src?` <span class="small muted">(${de?"aus":"from"} ${a.src})</span>`:""}</summary><div class="dbody"><p class="small muted">${esc(de?a.sd:a.se)}</p><p>${esc(de?a.ld:a.le)}</p></div></details>`).join("")}
+  ${kbAll().map((a,i)=>`<details><summary>${esc(de?a.td:a.te)}${a.src?` <span class="small muted">(${de?"aus":"from"} ${a.src})</span>`:""}${S.role==="isb"?` <button class="sec" style="float:right;padding:1px 8px;font-size:12px" title="${de?"Artikel löschen (nur ISB)":"Delete article (ISB only)"}" onclick="event.preventDefault();event.stopPropagation();kbDel(${i})">🗑</button>`:""}</summary><div class="dbody"><p class="small muted">${esc(de?a.sd:a.se)}</p><p>${esc(de?a.ld:a.le)}</p></div></details>`).join("")||`<p class="small muted">${de?"Zurzeit keine Selbsthilfe-Artikel vorhanden.":"No self-help articles available at the moment."}</p>`}
   <p class="small muted">${de?"Wichtig: Informationssicherheits-Vorfälle sind <b>immer</b> zu melden – die Selbsthilfe beschleunigt nur die Störungsbeseitigung, sie ersetzt keine Meldepflicht.":"Important: information-security incidents must <b>always</b> be reported – self-help only speeds up trouble-shooting, it never replaces a reporting duty."}</p>`;
 }
 function showNotruf(){
@@ -1955,7 +1965,7 @@ function swarmApply(){
 function kbFromTicket(){
   const t=T(); if(!t) return;
   const de=S.lang!=="en";
-  S.kb=S.kb&&S.kb.length?S.kb:KB_DEFAULT.slice();
+  if(!Array.isArray(S.kb)) S.kb=KB_DEFAULT.slice();
   const sol=t.lessons||t.sofort||t.ursache2||"";
   if(!sol){ alert(de?"Bitte zuerst Lessons Learned oder Sofortmaßnahmen erfassen – daraus entsteht die Lösung des Artikels.":"Please record lessons learned or immediate actions first – they become the article solution."); return; }
   S.kb.unshift({id:"KB-"+String(S.kb.length+1).padStart(3,"0"), src:t.id, ts:now(),
@@ -3125,7 +3135,7 @@ function viewGuidance(){
   </div></details>
 
   <details><summary>11 · Tool support as of V1.40: knowledge base, major outages, SLA pause, swarming</summary><div class="dbody">
-   <p><b>Knowledge base &amp; shift-left:</b> the portal contains a self-help knowledge base. While typing a report, matching articles are suggested (ticket deflection); “That helped – no report needed” counts towards the self-help KPI without creating a ticket. <b>Information-security incidents must still always be reported</b> – self-help never replaces a reporting duty. From resolved tickets, “Create KB article from ticket” (section 5) turns lessons learned into a new article (KCS principle).</p>
+   <p><b>Knowledge base &amp; shift-left:</b> the portal contains a self-help knowledge base. While typing a report, matching articles are suggested (ticket deflection); “That helped – no report needed” counts towards the self-help KPI without creating a ticket. <b>Information-security incidents must still always be reported</b> – self-help never replaces a reporting duty. From resolved tickets, “Create KB article from ticket” (section 5) turns lessons learned into a new article (KCS principle). Curation is owned by the ISO (ISB): in the ISB role every article in the portal shows a delete button (🗑) that permanently removes outdated or surplus articles after a confirmation prompt – including the built-in default articles; an emptied knowledge base stays empty and is not refilled automatically.</p>
    <p><b>Major outages (parent/child):</b> while reporting, similar open reports are detected and can be assigned as a supplement to a parent ticket; in the ticket the “parent ticket” field, in the list a bulk assignment via checkboxes. Work happens in the parent ticket, each report remains traceable.</p>
    <p><b>SLA pause “waiting for feedback”:</b> pauses <b>only the internal first-response SLA</b> (logged, with reason and total waiting time). Statutory reporting deadlines (NIS-2, GDPR, …) always continue in calendar time and are never paused.</p>
    <p><b>Swarming:</b> the quick action opens a selection menu of all domains with hover expertise (who can do what); domains typically also affected per the threat catalogue (POL Annex C) are pre-selected with ⭐. Selected experts become secondary domains with a contribution task and watcher status (rule 7) – collaborative work in the ticket instead of rigid support levels.</p>
@@ -3323,7 +3333,7 @@ function viewGuidance(){
   </div></details>
 
   <details><summary>11 · Tool-Unterstützung ab V1.40: Wissensdatenbank, Sammelstörungen, SLA-Pause, Swarming</summary><div class="dbody">
-   <p><b>Wissensdatenbank &amp; Shift-Left:</b> Das Portal enthält eine Selbsthilfe-Wissensdatenbank. Beim Eintippen einer Meldung werden passende Artikel vorgeschlagen (Ticket-Deflection); „Hat geholfen – keine Meldung nötig“ zählt in die Selbsthilfe-Quote, ohne ein Ticket zu erzeugen. <b>Informationssicherheits-Vorfälle sind trotzdem immer zu melden</b> – die Selbsthilfe ersetzt keine Meldepflicht. Aus gelösten Tickets erzeugt „KB-Artikel aus Ticket erzeugen“ (Abschnitt 5) einen neuen Artikel aus den Lessons Learned (KCS-Prinzip).</p>
+   <p><b>Wissensdatenbank &amp; Shift-Left:</b> Das Portal enthält eine Selbsthilfe-Wissensdatenbank. Beim Eintippen einer Meldung werden passende Artikel vorgeschlagen (Ticket-Deflection); „Hat geholfen – keine Meldung nötig“ zählt in die Selbsthilfe-Quote, ohne ein Ticket zu erzeugen. <b>Informationssicherheits-Vorfälle sind trotzdem immer zu melden</b> – die Selbsthilfe ersetzt keine Meldepflicht. Aus gelösten Tickets erzeugt „KB-Artikel aus Ticket erzeugen“ (Abschnitt 5) einen neuen Artikel aus den Lessons Learned (KCS-Prinzip). Die Pflege liegt beim ISB: In der Rolle ISB erscheint im Portal an jedem Artikel ein Löschknopf (🗑), mit dem veraltete oder überzählige Artikel nach Sicherheitsabfrage endgültig entfernt werden können – auch die mitgelieferten Standardartikel; eine geleerte Wissensdatenbank bleibt leer und wird nicht automatisch wieder aufgefüllt.</p>
    <p><b>Sammelstörungen (Parent/Child):</b> Beim Melden werden ähnliche offene Meldungen erkannt und können als Ergänzung einem Sammelticket zugeordnet werden; im Ticket dient dazu das Feld „Sammelticket“, in der Liste die Massenzuordnung über Kontrollkästchen. Die Bearbeitung erfolgt im Sammelticket, jede Meldung bleibt nachvollziehbar.</p>
    <p><b>SLA-Pause „Warten auf Rückmeldung“:</b> pausiert <b>ausschließlich die interne Erstreaktions-SLA</b> (protokolliert, mit Grund und Gesamtwartezeit). Gesetzliche Meldefristen (NIS-2, DSGVO, …) laufen immer in Kalenderzeit weiter und pausieren nie.</p>
    <p><b>Swarming:</b> Die Schnellaktion öffnet ein Auswahlmenü aller Domänen mit Mouseover-Expertise (wer kann was); regelmäßig mitbetroffene Domänen aus dem Gefährdungskatalog (POL Anhang C) sind mit ⭐ vorausgewählt. Ausgewählte Experten werden Nebendomäne mit Mitwirkungsaufgabe und Beobachterstatus (Regel 7) – kollaborative Bearbeitung im Ticket statt starrer Support-Level.</p>
