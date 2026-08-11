@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VDA ISA Self-Assessment — REUTIB (Reutter-Group)</title>
+<style>
+:root{
+  --ground:#f6f8fb; --surface:#ffffff; --surface-2:#eef2f7; --ink:#182231; --ink-2:#4a586b;
+  --ink-3:#7d8a9c; --border:#dbe2ec; --border-strong:#c3cddb; --accent:#2f5f95; --accent-soft:#e7eef7;
+  --shadow:0 1px 2px rgba(20,34,54,.05),0 4px 14px rgba(20,34,54,.05);
+  --gap:#b07d00; --crit:#b3261e; --ok:#3f7a4b; --na:#4a6a8f;
+  --radius:11px; --maxw:1240px;
+  --fs-serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --fs-ui:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#0e131b; --surface:#161d28; --surface-2:#1e2836; --ink:#e7ecf4; --ink-2:#a9b6c8;
+    --ink-3:#76859a; --border:#28323f; --border-strong:#39465a; --accent:#5b9bd8; --accent-soft:#1b2a3c;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+    --gap:#e3b64b; --crit:#f0736a; --ok:#69b078; --na:#8bb0d8;
+  }
+}
+:root[data-theme="light"]{
+  --ground:#f6f8fb; --surface:#ffffff; --surface-2:#eef2f7; --ink:#182231; --ink-2:#4a586b;
+  --ink-3:#7d8a9c; --border:#dbe2ec; --border-strong:#c3cddb; --accent:#2f5f95; --accent-soft:#e7eef7;
+  --shadow:0 1px 2px rgba(20,34,54,.05),0 4px 14px rgba(20,34,54,.05);
+  --gap:#b07d00; --crit:#b3261e; --ok:#3f7a4b; --na:#4a6a8f;
+}
+:root[data-theme="dark"]{
+  --ground:#0e131b; --surface:#161d28; --surface-2:#1e2836; --ink:#e7ecf4; --ink-2:#a9b6c8;
+  --ink-3:#76859a; --border:#28323f; --border-strong:#39465a; --accent:#5b9bd8; --accent-soft:#1b2a3c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.28);
+  --gap:#e3b64b; --crit:#f0736a; --ok:#69b078; --na:#8bb0d8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--fs-ui);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+a{color:var(--accent)}
+h1,h2,h3{margin:0;text-wrap:balance;font-family:var(--fs-serif);font-weight:600;letter-spacing:-.01em}
+
+header.mast{background:linear-gradient(180deg,var(--surface),var(--ground));border-bottom:1px solid var(--border)}
+.mast-inner{padding:22px 0 14px}
+.eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1.title{font-size:26px;margin:4px 0 6px;line-height:1.15}
+.sub{color:var(--ink-2);font-size:13.5px;max-width:78ch}
+.scope-row{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:12px;align-items:center}
+.scope{font-size:12px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border);
+  border-radius:99px;padding:3px 10px;white-space:nowrap}
+.scope b{color:var(--ink)}
+.mast-actions{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+button,.btn{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.small{font-size:12px;padding:4px 9px}
+
+nav.tabs{position:sticky;top:0;z-index:30;background:var(--ground);border-bottom:1px solid var(--border)}
+.tabs-inner{display:flex;gap:2px;overflow-x:auto}
+.tab{font-size:13.5px;padding:10px 14px;border:0;background:none;color:var(--ink-2);cursor:pointer;
+  border-bottom:2px solid transparent;white-space:nowrap;border-radius:0}
+.tab.active{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.tab:hover{color:var(--ink)}
+
+main{padding:20px 0 60px}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 18px;margin-bottom:16px}
+.card h2{font-size:18px;margin-bottom:10px}
+.grid{display:grid;gap:14px}
+@media(min-width:900px){.grid.cols-2{grid-template-columns:1fr 1fr}.grid.kpi{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:899px){.grid.kpi{grid-template-columns:repeat(2,1fr)}}
+
+.kpi-tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;box-shadow:var(--shadow)}
+.kpi-label{font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.kpi-value{font-size:30px;font-weight:700;font-family:var(--fs-serif);margin-top:2px}
+.kpi-note{font-size:12px;color:var(--ink-2)}
+.kpi-value.ok{color:var(--ok)} .kpi-value.warn{color:var(--gap)} .kpi-value.crit{color:var(--crit)}
+.meter{height:6px;background:var(--surface-2);border-radius:99px;margin-top:8px;overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);
+  text-align:left;padding:7px 8px;border-bottom:1px solid var(--border-strong)}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl tr.chapter-row td{font-weight:600;background:var(--surface-2)}
+.tbl tr.clickable{cursor:pointer}
+.tbl tr.clickable:hover td{background:var(--accent-soft)}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl-scroll{overflow-x:auto}
+
+.pill{display:inline-block;font-size:11.5px;font-weight:600;border-radius:99px;padding:1px 9px;white-space:nowrap}
+.pill.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.pill.gap{background:color-mix(in srgb,var(--gap) 16%,transparent);color:var(--gap)}
+.pill.crit{background:color-mix(in srgb,var(--crit) 14%,transparent);color:var(--crit)}
+.pill.na{background:color-mix(in srgb,var(--na) 15%,transparent);color:var(--na)}
+.pill.open{background:var(--surface-2);color:var(--ink-3)}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:41px;z-index:20;
+  background:var(--ground);padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:14px}
+.toolbar input[type=search],.toolbar select,.meta-form input,.meta-form select{
+  font:inherit;font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--ink)}
+.toolbar input[type=search]{min-width:220px;flex:1 1 220px}
+.count-note{font-size:12px;color:var(--ink-3);margin-left:auto;white-space:nowrap}
+
+.chap-head{margin:22px 0 8px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.chap-head h2{font-size:17px}
+.chap-head .avg{font-size:12.5px;color:var(--ink-2)}
+.sub-head{font-size:13px;font-weight:600;color:var(--ink-2);margin:14px 0 6px}
+
+.ctl{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border-strong);
+  border-radius:10px;box-shadow:var(--shadow);margin-bottom:10px}
+.ctl.ok{border-left-color:var(--ok)} .ctl.gap{border-left-color:var(--gap)}
+.ctl.crit{border-left-color:var(--crit)} .ctl.na{border-left-color:var(--na)}
+.ctl-head{display:flex;gap:10px;align-items:center;padding:10px 14px;cursor:pointer;flex-wrap:wrap}
+.ctl-no{font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent);white-space:nowrap}
+.ctl-q{flex:1 1 300px;font-size:14px}
+.ctl-meta{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap}
+.ctl-prog{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+select.mat{font:inherit;font-size:13px;padding:4px 8px;border-radius:8px;border:1px solid var(--border-strong);
+  background:var(--surface);color:var(--ink);font-weight:600}
+.ctl-body{display:none;border-top:1px solid var(--border);padding:14px 16px}
+.ctl.open .ctl-body{display:block}
+.objective{font-size:13.5px;color:var(--ink-2);border-left:3px solid var(--accent);
+  background:var(--accent-soft);border-radius:0 8px 8px 0;padding:8px 12px;margin-bottom:12px}
+.req-block{margin-bottom:12px}
+.req-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:5px}
+.req-title.must{color:var(--crit)} .req-title.should{color:var(--gap)}
+.req-item{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13.5px}
+.req-item input{margin-top:3px;accent-color:var(--accent)}
+.req-item.checked>label{color:var(--ink-3)}
+.req-subs{margin:2px 0 0 26px;padding:0;font-size:13px;color:var(--ink-2)}
+.req-subs li{margin:2px 0;list-style:"– "}
+.ctl-form{display:grid;gap:10px;margin-top:14px}
+@media(min-width:900px){.ctl-form{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:3px}
+.field textarea,.field input{width:100%;font:inherit;font-size:13.5px;padding:7px 10px;border-radius:8px;
+  border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);resize:vertical}
+.field textarea{min-height:64px}
+.field.na-reason{grid-column:1/-1;display:none}
+.ctl.na .field.na-reason{display:block}
+.field.na-reason textarea{border-color:var(--na)}
+details.acc{border:1px solid var(--border);border-radius:8px;margin-top:8px;background:var(--surface-2)}
+details.acc summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink-2);padding:7px 12px}
+details.acc .acc-body{padding:2px 14px 12px;font-size:13px;color:var(--ink-2);white-space:pre-wrap}
+
+.chart-wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.chart-box{flex:0 1 460px;min-width:300px}
+.chart-legend{display:flex;gap:16px;font-size:12.5px;color:var(--ink-2);margin-top:6px}
+.chart-legend .sw{display:inline-block;width:18px;height:0;border-top:2.5px solid var(--accent);vertical-align:middle;margin-right:5px}
+.chart-legend .sw.target{border-top-style:dashed;border-top-color:var(--ink-3)}
+.chart-table{flex:1 1 320px}
+canvas#radar{width:100%;height:auto}
+
+.meta-form{display:grid;gap:12px}
+@media(min-width:800px){.meta-form{grid-template-columns:1fr 1fr}}
+.meta-form .field.wide{grid-column:1/-1}
+.check-row{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;align-items:center}
+.check-row label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.check-row input{accent-color:var(--accent)}
+.savenote{font-size:12px;color:var(--ink-3)}
+.notice{font-size:12.5px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;margin-top:10px}
+.footer{border-top:1px solid var(--border);margin-top:30px;padding:16px 0 30px;font-size:12px;color:var(--ink-3)}
+.footer p{max-width:100ch}
+
+#printReport{display:none}
+@media print{
+  body{background:#fff;color:#000;font-size:11.5pt}
+  header.mast,nav.tabs,main,.footer{display:none!important}
+  #printReport{display:block;padding:0 6mm}
+  #printReport h1{font-size:19pt;margin-bottom:2mm}
+  #printReport h2{font-size:14pt;margin:7mm 0 2.5mm;page-break-after:avoid}
+  #printReport table{width:100%;border-collapse:collapse;font-size:9.5pt}
+  #printReport th,#printReport td{border:0.3pt solid #999;padding:3.5pt 5pt;text-align:left;vertical-align:top}
+  #printReport th{background:#eee}
+  #printReport .pmeta td{border:0;padding:1.5pt 8pt 1.5pt 0}
+  #printReport img{max-width:110mm}
+  #printReport .small{font-size:8.5pt;color:#444}
+  tr{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="mast"><div class="wrap mast-inner">
+  <div class="eyebrow">REUTIB · ISMS-Werkzeuge</div>
+  <h1 class="title">VDA ISA Self-Assessment</h1>
+  <p class="sub">Reifegrad-Selbstbewertung nach dem VDA-ISA-Prüfkatalog (TISAX). Alle Eingaben bleiben
+  ausschließlich in diesem Browser (localStorage) — kein Server, keine Übertragung. Stand über
+  „Sichern / Laden“ als JSON-Datei übertragen.</p>
+  <div class="scope-row">
+    <span class="scope">Katalog <b id="chipVersion"></b> (EN)</span>
+    <span class="scope">Ziel-Reifegrad <b>3,0</b> (mit Kappung)</span>
+    <span class="scope" id="chipScopeCount"></span>
+    <span class="scope" id="chipProgress"></span>
+    <div class="mast-actions">
+      <button class="small" id="btnTheme" title="Hell-/Dunkelmodus">🌓</button>
+      <button class="small" id="btnSave">Stand sichern</button>
+      <button class="small" id="btnLoad">Stand laden</button>
+      <button class="small" id="btnPrint">Bericht drucken</button>
+    </div>
+  </div>
+</div></header>
+
+<nav class="tabs"><div class="wrap tabs-inner">
+  <button class="tab active" data-tab="dash">Dashboard</button>
+  <button class="tab" data-tab="assess">Assessment</button>
+  <button class="tab" data-tab="gaps">Gap-Analyse</button>
+  <button class="tab" data-tab="setup">Scope &amp; Export</button>
+  <button class="tab" data-tab="doc">Dokumentation</button>
+</div></nav>
+
+<main class="wrap">
+  <section class="panel active" id="panel-dash"></section>
+  <section class="panel" id="panel-assess">
+    <div class="toolbar">
+      <input type="search" id="fSearch" placeholder="Suche: Control-Nr., Frage, Anforderung …">
+      <select id="fModule"></select>
+      <select id="fChapter"></select>
+      <select id="fStatus">
+        <option value="">Status: alle</option>
+        <option value="open">offen (unbewertet)</option>
+        <option value="rated">bewertet</option>
+        <option value="below">unter Ziel (&lt; 3)</option>
+        <option value="ok">Ziel erreicht (≥ 3)</option>
+        <option value="na">n.a.</option>
+      </select>
+      <button class="small" id="btnExpand">Alle öffnen</button>
+      <button class="small" id="btnCollapse">Alle schließen</button>
+      <span class="count-note" id="fCount"></span>
+    </div>
+    <div id="assessList"></div>
+  </section>
+  <section class="panel" id="panel-gaps"></section>
+  <section class="panel" id="panel-setup"></section>
+  <section class="panel" id="panel-doc"></section>
+</main>
+
+<div class="wrap footer" id="footerAttr"></div>
+<div id="printReport"></div>
+<input type="file" id="fileInput" accept="application/json" style="display:none">
+
+<script>
+"use strict";
+const CATALOG = /*__DATA__*/;
+
+/* ---------- Zustand ---------- */
+const LS_KEY = "reutib-isa6-assessment-v1";
+const LS_THEME = "reutib-isa6-theme";
+const TARGET = 3;
+const REQ_LABELS = {
+  must:  "Anforderungen (muss)",
+  should:"Anforderungen (sollte)",
+  high:  "Zusätzliche Anforderungen bei hohem Schutzbedarf",
+  veryHigh:"Zusätzliche Anforderungen bei sehr hohem Schutzbedarf",
+  vehicles:"Zusätzliche Anforderungen für schutzbedürftige Fahrzeuge",
+  sga:   "Zusätzliche Anforderungen für Simplified Group Assessments (SGA)"
+};
+const MODULE_NAMES = {}; CATALOG.modules.forEach(m=>MODULE_NAMES[m.id]=m.name);
+
+function defaultState(){
+  return {
+    v:1, savedAt:null,
+    meta:{company:"Reutter Group GmbH", scopeId:"S9WC6X", location:"", date:"", creator:"",
+          protection:"veryHigh", sga:false, modules:{IS:true, PP:false, DP:false}},
+    controls:{}
+  };
+}
+let state = defaultState();
+try{
+  const raw = localStorage.getItem(LS_KEY);
+  if(raw){ const s = JSON.parse(raw); if(s && s.v===1){ state = Object.assign(defaultState(), s);
+    state.meta = Object.assign(defaultState().meta, s.meta||{});
+    state.meta.modules = Object.assign({IS:true,PP:false,DP:false}, (s.meta||{}).modules||{}); } }
+}catch(e){ console.warn("Zustand nicht lesbar:", e); }
+
+let saveTimer=null;
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer=setTimeout(persist, 400); }
+function persist(){
+  state.savedAt = new Date().toISOString();
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ console.warn(e); }
+  const el=document.getElementById("saveInfo");
+  if(el) el.textContent = "Automatisch gespeichert: " + fmtDateTime(state.savedAt);
+  updateHeaderChips();
+}
+function A(id){ if(!state.controls[id]) state.controls[id]={m:"",naR:"",impl:"",ref:"",act:"",dept:"",chk:{}}; return state.controls[id]; }
+
+/* ---------- Katalog-Hilfen ---------- */
+function activeModules(){ return CATALOG.modules.filter(m=>state.meta.modules[m.id]); }
+function controlsOf(mod){
+  const out=[];
+  mod.chapters.forEach(ch=>ch.subs.forEach(sub=>sub.controls.forEach(id=>out.push(CATALOG.controls[id]))));
+  return out;
+}
+function allActiveControls(){ return activeModules().flatMap(controlsOf); }
+function maturity(id){ const a=state.controls[id]; if(!a) return ""; return a.m; }
+function isRated(id){ const m=maturity(id); return m==="na" || (m!=="" && m!=null); }
+function cutback(m){ return Math.min(TARGET, m); }
+function statusOf(id){
+  const m=maturity(id);
+  if(m==="na") return "na";
+  if(m===""||m==null) return "open";
+  return m>=TARGET ? "ok" : (m<=1 ? "crit" : "gap");
+}
+function avg(nums){ return nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : null; }
+function ratedValues(ids, useCutback){
+  const vals=[];
+  ids.forEach(id=>{ const m=maturity(id); if(typeof m==="number") vals.push(useCutback?cutback(m):m); });
+  return vals;
+}
+function overallScore(){ return avg(ratedValues(allActiveControls().map(c=>c.id), true)); }
+function chapterIds(mod, ch){ return ch.subs.flatMap(s=>s.controls); }
+
+/* ---------- Format ---------- */
+function fmtScore(x){ return x==null ? "–" : x.toFixed(2).replace(".", ","); }
+function fmtDateTime(iso){ if(!iso) return "–"; const d=new Date(iso);
+  return d.toLocaleDateString("de-DE")+" "+d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); }
+function esc(s){ return String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function matLabel(m){ return m==="na" ? "n.a." : (m===""||m==null ? "–" : String(m)); }
+
+/* ---------- Kopfzeile ---------- */
+function updateHeaderChips(){
+  const all=allActiveControls();
+  const rated=all.filter(c=>isRated(c.id)).length;
+  document.getElementById("chipVersion").textContent = "VDA ISA " + CATALOG.version;
+  document.getElementById("chipScopeCount").innerHTML =
+    "<b>"+all.length+"</b> Controls im Scope ("+activeModules().map(m=>m.id).join(" + ")+")";
+  const s=overallScore();
+  document.getElementById("chipProgress").innerHTML =
+    "bewertet <b>"+rated+"/"+all.length+"</b> · Ergebnis <b>"+fmtScore(s)+"</b>";
+}
+
+/* ---------- Dashboard ---------- */
+function renderDash(){
+  const el=document.getElementById("panel-dash");
+  const all=allActiveControls();
+  const ids=all.map(c=>c.id);
+  const rated=ids.filter(isRated);
+  const naCount=ids.filter(id=>maturity(id)==="na").length;
+  const below=ids.filter(id=>{const m=maturity(id);return typeof m==="number"&&m<TARGET;}).length;
+  const score=overallScore();
+  const noCut=avg(ratedValues(ids,false));
+  const pct=ids.length?Math.round(rated.length/ids.length*100):0;
+  const scoreCls = score==null?"":(score>=2.7?"ok":(score>=2?"warn":"crit"));
+
+  let chapterRows="";
+  activeModules().forEach(mod=>{
+    mod.chapters.forEach(ch=>{
+      const cids=chapterIds(mod,ch);
+      const r=cids.filter(isRated).length;
+      const a=avg(ratedValues(cids,false)), ac=avg(ratedValues(cids,true));
+      const b=cids.filter(id=>{const m=maturity(id);return typeof m==="number"&&m<TARGET;}).length;
+      chapterRows+=`<tr class="chapter-row clickable" data-chapter="${mod.id}:${ch.no}"><td>${ch.no}</td>
+        <td>${esc(ch.title)}</td><td class="num">${r}/${cids.length}</td>
+        <td class="num">${fmtScore(a)}</td><td class="num">${fmtScore(ac)}</td>
+        <td class="num">${b?`<span class="pill gap">${b}</span>`:"0"}</td></tr>`;
+      ch.subs.forEach(sub=>{
+        if(!sub.controls.length) return;
+        const sr=sub.controls.filter(isRated).length;
+        const sa=avg(ratedValues(sub.controls,false));
+        const sb=sub.controls.filter(id=>{const m=maturity(id);return typeof m==="number"&&m<TARGET;}).length;
+        chapterRows+=`<tr class="clickable" data-chapter="${mod.id}:${ch.no}"><td></td>
+          <td style="padding-left:22px">${sub.no}${sub.title?" · "+esc(sub.title):""}</td>
+          <td class="num">${sr}/${sub.controls.length}</td><td class="num">${fmtScore(sa)}</td>
+          <td class="num"></td><td class="num">${sb||""}</td></tr>`;
+      });
+    });
+  });
+
+  el.innerHTML = `
+  <div class="grid kpi">
+    <div class="kpi-tile"><div class="kpi-label">Ergebnis (mit Kappung)</div>
+      <div class="kpi-value ${scoreCls}">${fmtScore(score)}</div>
+      <div class="kpi-note">Ziel 3,00 · ohne Kappung ${fmtScore(noCut)}</div></div>
+    <div class="kpi-tile"><div class="kpi-label">Fortschritt</div>
+      <div class="kpi-value">${rated.length}<span style="font-size:16px;color:var(--ink-3)">/${ids.length}</span></div>
+      <div class="kpi-note">Controls bewertet (${pct} %)</div><div class="meter"><i style="width:${pct}%"></i></div></div>
+    <div class="kpi-tile"><div class="kpi-label">Unter Ziel (&lt; 3)</div>
+      <div class="kpi-value ${below? "warn":"ok"}">${below}</div>
+      <div class="kpi-note">Controls mit Handlungsbedarf → Gap-Analyse</div></div>
+    <div class="kpi-tile"><div class="kpi-label">Nicht anwendbar</div>
+      <div class="kpi-value">${naCount}</div>
+      <div class="kpi-note">n.a. erfordert Begründung (Audit!)</div></div>
+  </div>
+  <div class="card">
+    <h2>Reifegrad je Kapitel</h2>
+    <div class="chart-wrap">
+      <div class="chart-box">
+        <canvas id="radar" width="460" height="400"></canvas>
+        <div class="chart-legend">
+          <span><span class="sw"></span>Ist (Ø ohne Kappung)</span>
+          <span><span class="sw target"></span>Ziel-Reifegrad 3,0</span>
+        </div>
+      </div>
+      <div class="chart-table tbl-scroll">
+        <table class="tbl">
+          <thead><tr><th>Nr.</th><th>Kapitel</th><th class="num">Bewertet</th>
+            <th class="num">Ø Ist</th><th class="num">Ø Kappung</th><th class="num">&lt; Ziel</th></tr></thead>
+          <tbody>${chapterRows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+  el.querySelectorAll("tr.clickable").forEach(tr=>tr.addEventListener("click",()=>{
+    const [mid,ch]=tr.dataset.chapter.split(":");
+    document.getElementById("fModule").value=mid;
+    document.getElementById("fChapter").value=""; fillChapterFilter();
+    document.getElementById("fChapter").value=mid+":"+ch;
+    switchTab("assess"); renderAssess();
+  }));
+  drawRadar();
+}
+
+/* Radar: Ist vs. Ziel je Kapitel (Canvas, themenfähig) */
+function radarData(){
+  const axes=[];
+  activeModules().forEach(mod=>mod.chapters.forEach(ch=>{
+    axes.push({label:ch.no, name:ch.title, value:avg(ratedValues(chapterIds(mod,ch),false))});
+  }));
+  return axes;
+}
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function drawRadar(){
+  const cv=document.getElementById("radar"); if(!cv) return;
+  const axes=radarData(); const n=axes.length; if(!n) return;
+  const dpr=window.devicePixelRatio||1;
+  const cssW=Math.min(460, cv.parentElement.clientWidth||460), cssH=Math.round(cssW*0.87);
+  cv.style.width=cssW+"px"; cv.style.height=cssH+"px";
+  cv.width=cssW*dpr; cv.height=cssH*dpr;
+  const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const cx=cssW/2, cy=cssH/2+4, R=Math.min(cssW,cssH)/2-34;
+  const ink3=cssVar("--ink-3"), border=cssVar("--border-strong"), accent=cssVar("--accent");
+  const ang=i=>-Math.PI/2 + i*2*Math.PI/n;
+  const pt=(i,v)=>[cx+Math.cos(ang(i))*R*v/5, cy+Math.sin(ang(i))*R*v/5];
+  ctx.clearRect(0,0,cssW,cssH);
+  ctx.lineWidth=1; ctx.strokeStyle=border; ctx.globalAlpha=.7;
+  for(let ring=1; ring<=5; ring++){
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){ const [x,y]=pt(i%n,ring); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    ctx.stroke();
+  }
+  for(let i=0;i<n;i++){ const [x,y]=pt(i,5); ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke(); }
+  ctx.globalAlpha=1;
+  ctx.fillStyle=ink3; ctx.font="10.5px "+getComputedStyle(document.body).fontFamily;
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  for(let ring=1; ring<=5; ring++){ ctx.fillText(String(ring), cx+3+ (R*ring/5)*Math.cos(-Math.PI/2+0.13), cy+(R*ring/5)*Math.sin(-Math.PI/2+0.13)); }
+  // Ziel-Polygon (gestrichelt, neutral)
+  ctx.setLineDash([5,4]); ctx.strokeStyle=ink3; ctx.lineWidth=1.6;
+  ctx.beginPath();
+  for(let i=0;i<=n;i++){ const [x,y]=pt(i%n,TARGET); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+  ctx.stroke(); ctx.setLineDash([]);
+  // Ist-Polygon — unbewertete Kapitel (null) bleiben Lücken statt falscher Nullwerte
+  const vals=axes.map(a=>a.value);
+  const allRated=vals.every(v=>v!=null);
+  ctx.strokeStyle=accent; ctx.lineWidth=2;
+  if(allRated){
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){ const [x,y]=pt(i%n,vals[i%n]); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    ctx.closePath();
+    ctx.fillStyle=accent; ctx.globalAlpha=.14; ctx.fill(); ctx.globalAlpha=1;
+    ctx.stroke();
+  }else{
+    for(let i=0;i<n;i++){
+      const a=vals[i], b=vals[(i+1)%n];
+      if(a==null||b==null) continue;
+      const [x1,y1]=pt(i,a), [x2,y2]=pt((i+1)%n,b);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    }
+  }
+  for(let i=0;i<n;i++){
+    if(vals[i]==null) continue;
+    const [x,y]=pt(i,vals[i]);
+    ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fillStyle=accent; ctx.fill();
+  }
+  // Achsen-Beschriftung: Kapitel-Nr. + Wert
+  ctx.fillStyle=cssVar("--ink");
+  ctx.font="600 12px "+getComputedStyle(document.body).fontFamily;
+  for(let i=0;i<n;i++){
+    const [x,y]=pt(i,5.55);
+    const v=vals[i];
+    ctx.fillText(axes[i].label, x, y-6);
+    ctx.font="10.5px "+getComputedStyle(document.body).fontFamily; ctx.fillStyle=ink3;
+    ctx.fillText(v==null?"–":fmtScore(v), x, y+7);
+    ctx.font="600 12px "+getComputedStyle(document.body).fontFamily; ctx.fillStyle=cssVar("--ink");
+  }
+}
+
+/* ---------- Assessment ---------- */
+const expanded=new Set();
+function fillModuleFilter(){
+  const sel=document.getElementById("fModule");
+  sel.innerHTML='<option value="">Modul: alle aktiven</option>'+
+    activeModules().map(m=>`<option value="${m.id}">${m.id} · ${esc(m.name)}</option>`).join("");
+}
+function fillChapterFilter(){
+  const sel=document.getElementById("fChapter");
+  const mid=document.getElementById("fModule").value;
+  let opts='<option value="">Kapitel: alle</option>';
+  activeModules().forEach(m=>{
+    if(mid && m.id!==mid) return;
+    m.chapters.forEach(ch=>opts+=`<option value="${m.id}:${ch.no}">${ch.no} ${esc(ch.title)}</option>`);
+  });
+  sel.innerHTML=opts;
+}
+function reqVisible(key){
+  const p=state.meta.protection;
+  if(key==="high") return p==="high"||p==="veryHigh";
+  if(key==="veryHigh") return p==="veryHigh";
+  if(key==="sga") return !!state.meta.sga;
+  return true;
+}
+function mustProgress(c){
+  const a=state.controls[c.id];
+  const items=(c.req.must||[]);
+  if(!items.length) return null;
+  let done=0;
+  items.forEach((_,i)=>{ if(a&&a.chk&&a.chk["must."+i]) done++; });
+  return [done, items.length];
+}
+function matSelect(id){
+  const m=maturity(id);
+  const opt=(v,l)=>`<option value="${v}" ${String(m)===String(v)&&m!==""?"selected":""}>${l}</option>`;
+  return `<select class="mat" data-mat="${id}" title="Reifegrad">
+    <option value="" ${m===""?"selected":""}>– Reifegrad</option>
+    ${[0,1,2,3,4,5].map(v=>opt(v, v+" · "+(CATALOG.maturity[v]?.name||v))).join("")}
+    ${opt("na","n.a.")}
+  </select>`;
+}
+function reqBlock(c, key){
+  const items=c.req[key]; if(!items||!reqVisible(key)) return "";
+  const a=state.controls[c.id];
+  const rows=items.map((it,i)=>{
+    const k=key+"."+i, checked=a&&a.chk&&a.chk[k];
+    return `<div class="req-item ${checked?"checked":""}">
+      <input type="checkbox" id="chk-${c.id}-${k}" data-chk="${c.id}|${k}" ${checked?"checked":""}>
+      <label for="chk-${c.id}-${k}">${esc(it.t)}${
+        it.s.length?`<ul class="req-subs">${it.s.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`:""
+      }</label></div>`;
+  }).join("");
+  return `<div class="req-block"><div class="req-title ${key}">${REQ_LABELS[key]||key}</div>${rows}</div>`;
+}
+function accBlock(title, text){
+  return text?`<details class="acc"><summary>${title}</summary><div class="acc-body">${esc(text)}</div></details>`:"";
+}
+function ctlCard(c){
+  const a=A(c.id);
+  const st=statusOf(c.id);
+  const open=expanded.has(c.id);
+  const prog=mustProgress(c);
+  const stPill={open:'<span class="pill open">offen</span>', ok:'<span class="pill ok">Ziel erreicht</span>',
+    gap:'<span class="pill gap">unter Ziel</span>', crit:'<span class="pill crit">unter Ziel</span>',
+    na:'<span class="pill na">n.a.</span>'}[st];
+  let body="";
+  if(open){
+    const ex=c.examples||{};
+    const exText=[ex.normal&&("Normaler Schutzbedarf:\n"+ex.normal), ex.high&&("Hoher Schutzbedarf:\n"+ex.high),
+      ex.veryHigh&&("Sehr hoher Schutzbedarf:\n"+ex.veryHigh)].filter(Boolean).join("\n\n");
+    body=`<div class="ctl-body">
+      ${c.objective?`<div class="objective">${esc(c.objective)}</div>`:""}
+      ${["must","should","high","veryHigh","vehicles","sga"].map(k=>reqBlock(c,k)).join("")}
+      <div class="ctl-form">
+        <div class="field na-reason"><label>Begründung „nicht anwendbar“ (Pflicht bei n.a.)</label>
+          <textarea data-field="${c.id}|naR" placeholder="Warum ist dieses Control im Scope nicht anwendbar?">${esc(a.naR)}</textarea></div>
+        <div class="field"><label>Umsetzungsbeschreibung (Ist-Zustand)</label>
+          <textarea data-field="${c.id}|impl">${esc(a.impl)}</textarea></div>
+        <div class="field"><label>Referenzdokumentation (Richtlinien, Nachweise)</label>
+          <textarea data-field="${c.id}|ref">${esc(a.ref)}</textarea></div>
+        <div class="field"><label>Maßnahmen / Empfehlungen</label>
+          <textarea data-field="${c.id}|act">${esc(a.act)}</textarea></div>
+        <div class="field"><label>Verantwortlich (Bereich / Person)</label>
+          <input data-field="${c.id}|dept" value="${esc(a.dept)}"></div>
+      </div>
+      ${accBlock("Referenzen zu anderen Standards (ISO 27001, IEC 62443, NIST …)", c.refStd)}
+      ${accBlock("Umsetzungshinweise (BSI, NIST …)", c.refGuide)}
+      ${accBlock("Weitere Informationen", c.info)}
+      ${accBlock("Beispiele nach Schutzbedarf", exText)}
+      ${accBlock("Mögliche Fragen im Audit", c.questions)}
+      ${accBlock("Mögliche Nachweise", c.evidence)}
+    </div>`;
+  }
+  return `<article class="ctl ${st} ${open?"open":""}" id="ctl-${c.id.replace(/\./g,"-")}" data-ctl="${c.id}">
+    <div class="ctl-head" data-toggle="${c.id}">
+      <span class="ctl-no">${c.id}</span>
+      <span class="ctl-q">${esc(c.question)}</span>
+      <span class="ctl-meta">
+        ${prog?`<span class="ctl-prog">muss ${prog[0]}/${prog[1]}</span>`:""}
+        ${stPill}
+        ${matSelect(c.id)}
+      </span>
+    </div>${body}</article>`;
+}
+function filteredControls(){
+  const q=(document.getElementById("fSearch").value||"").toLowerCase().trim();
+  const mid=document.getElementById("fModule").value;
+  const chv=document.getElementById("fChapter").value;
+  const stf=document.getElementById("fStatus").value;
+  const out=[];
+  activeModules().forEach(mod=>{
+    if(mid && mod.id!==mid) return;
+    mod.chapters.forEach(ch=>{
+      if(chv && chv!==mod.id+":"+ch.no) return;
+      ch.subs.forEach(sub=>sub.controls.forEach(id=>{
+        const c=CATALOG.controls[id];
+        if(stf){
+          const st=statusOf(id);
+          if(stf==="open"&&st!=="open") return;
+          if(stf==="rated"&&st==="open") return;
+          if(stf==="below"&&!(st==="gap"||st==="crit")) return;
+          if(stf==="ok"&&st!=="ok") return;
+          if(stf==="na"&&st!=="na") return;
+        }
+        if(q){
+          const hay=(c.id+" "+c.question+" "+(c.objective||"")+" "+
+            Object.values(c.req).flat().map(i=>i.t+" "+i.s.join(" ")).join(" ")).toLowerCase();
+          if(!hay.includes(q)) return;
+        }
+        out.push({mod,ch,sub,c});
+      }));
+    });
+  });
+  return out;
+}
+function renderAssess(){
+  const list=document.getElementById("assessList");
+  const rows=filteredControls();
+  document.getElementById("fCount").textContent=rows.length+" Controls";
+  let html="", lastCh=null, lastSub=null;
+  rows.forEach(({mod,ch,sub,c})=>{
+    const chKey=mod.id+":"+ch.no;
+    if(chKey!==lastCh){
+      const a=avg(ratedValues(chapterIds(mod,ch),false));
+      html+=`<div class="chap-head"><h2>${ch.no} ${esc(ch.title)}</h2>
+        <span class="avg">Ø Ist ${fmtScore(a)} · Ziel 3,0 · Modul ${mod.id}</span></div>`;
+      lastCh=chKey; lastSub=null;
+    }
+    if(sub.no!==lastSub && (sub.title||ch.subs.length>1)){
+      html+=`<div class="sub-head">${sub.no}${sub.title?" · "+esc(sub.title):""}</div>`;
+      lastSub=sub.no;
+    }
+    html+=ctlCard(c);
+  });
+  list.innerHTML=html||'<p style="color:var(--ink-3)">Keine Controls für die aktuelle Filterung.</p>';
+}
+function refreshCard(id){
+  const el=document.querySelector(`[data-ctl="${CSS.escape(id)}"]`); if(!el) return;
+  el.outerHTML=ctlCard(CATALOG.controls[id]);
+}
+
+/* ---------- Gap-Analyse ---------- */
+function gapRows(){
+  return allActiveControls()
+    .map(c=>({c, m:maturity(c.id)}))
+    .filter(x=>typeof x.m==="number" && x.m<TARGET)
+    .sort((a,b)=>a.m-b.m || a.c.id.localeCompare(b.c.id));
+}
+function renderGaps(){
+  const el=document.getElementById("panel-gaps");
+  const rows=gapRows();
+  const open=allActiveControls().filter(c=>statusOf(c.id)==="open").length;
+  const naNoReason=allActiveControls().filter(c=>maturity(c.id)==="na" && !(state.controls[c.id]?.naR||"").trim());
+  let html=`<div class="card"><h2>Gap-Analyse — Controls unter Ziel-Reifegrad 3</h2>
+    <p style="font-size:13px;color:var(--ink-2)">${rows.length} Controls unter Ziel · ${open} noch unbewertet${
+      naNoReason.length?` · <span class="pill crit">${naNoReason.length} n.a. ohne Begründung</span>`:""}</p>
+    <div class="tbl-scroll"><table class="tbl"><thead><tr>
+      <th>Control</th><th>Frage</th><th class="num">Ist</th><th class="num">Ziel</th><th class="num">Δ</th>
+      <th>Maßnahmen</th><th>Verantwortlich</th></tr></thead><tbody>`;
+  rows.forEach(({c,m})=>{
+    const a=state.controls[c.id]||{};
+    html+=`<tr class="clickable" data-goto="${c.id}">
+      <td class="num" style="text-align:left"><b>${c.id}</b></td><td>${esc(c.question)}</td>
+      <td class="num"><span class="pill ${m<=1?"crit":"gap"}">${m}</span></td>
+      <td class="num">3</td><td class="num">${(TARGET-m)}</td>
+      <td>${esc(a.act||"")}</td><td>${esc(a.dept||"")}</td></tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+  if(naNoReason.length){
+    html+=`<div class="card"><h2>n.a.-Controls ohne Begründung</h2>
+      <p style="font-size:13px;color:var(--ink-2)">Im TISAX-Assessment muss jede n.a.-Einstufung begründet sein.</p>
+      ${naNoReason.map(c=>`<div class="req-item"><span class="pill na">${c.id}</span>&nbsp;${esc(c.question)}</div>`).join("")}</div>`;
+  }
+  el.innerHTML=html;
+  el.querySelectorAll("tr.clickable").forEach(tr=>tr.addEventListener("click",()=>gotoControl(tr.dataset.goto)));
+}
+function gotoControl(id){
+  switchTab("assess");
+  document.getElementById("fSearch").value=""; document.getElementById("fStatus").value="";
+  document.getElementById("fModule").value=""; fillChapterFilter();
+  expanded.add(id); renderAssess();
+  const el=document.getElementById("ctl-"+id.replace(/\./g,"-"));
+  if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+/* ---------- Scope & Export ---------- */
+function renderSetup(){
+  const el=document.getElementById("panel-setup");
+  const m=state.meta;
+  el.innerHTML=`
+  <div class="card"><h2>Assessment-Stammdaten</h2>
+    <div class="meta-form">
+      <div class="field"><label>Unternehmen / Organisation</label><input data-meta="company" value="${esc(m.company)}"></div>
+      <div class="field"><label>TISAX-Scope-ID</label><input data-meta="scopeId" value="${esc(m.scopeId)}"></div>
+      <div class="field"><label>Standort(e) im Scope</label><input data-meta="location" value="${esc(m.location)}" placeholder="z. B. Leutenbach; Graz; Myjava …"></div>
+      <div class="field"><label>Datum des Assessments</label><input type="date" data-meta="date" value="${esc(m.date)}"></div>
+      <div class="field"><label>Ersteller</label><input data-meta="creator" value="${esc(m.creator)}"></div>
+      <div class="field"><label>Schutzbedarf (Anzeige der Zusatzanforderungen)</label>
+        <select data-meta="protection">
+          <option value="normal" ${m.protection==="normal"?"selected":""}>normal</option>
+          <option value="high" ${m.protection==="high"?"selected":""}>hoch (AL 2)</option>
+          <option value="veryHigh" ${m.protection==="veryHigh"?"selected":""}>sehr hoch (AL 3)</option>
+        </select></div>
+      <div class="field wide"><label>Module im Scope</label>
+        <div class="check-row">
+          ${CATALOG.modules.map(mod=>`<label><input type="checkbox" data-module="${mod.id}" ${m.modules[mod.id]?"checked":""}> ${mod.id} · ${esc(mod.name)}</label>`).join("")}
+          <label style="margin-left:14px"><input type="checkbox" data-meta-check="sga" ${m.sga?"checked":""}> SGA-Anforderungen anzeigen</label>
+        </div>
+        <div class="notice">Nicht aktivierte Module fließen weder in Anzeige noch Ergebnis ein.
+        Für das REUTIB-AL3-Assessment (Labels Vertraulichkeit + Verfügbarkeit „sehr hoch“) ist nur
+        „Informationssicherheit“ erforderlich; Prototypenschutz/Datenschutz nur bei entsprechenden Labels.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card"><h2>Sichern, Laden, Export</h2>
+    <div class="check-row" style="gap:10px">
+      <button class="primary" id="btnSave2">Stand sichern (JSON)</button>
+      <button id="btnLoad2">Stand laden (JSON)</button>
+      <button id="btnCsvAll">CSV: alle Ergebnisse</button>
+      <button id="btnCsvGaps">CSV: Gap-Liste</button>
+      <button id="btnPrint2">Bericht drucken / PDF</button>
+      <button id="btnReset" style="color:var(--crit)">Alles zurücksetzen …</button>
+    </div>
+    <p class="savenote" id="saveInfo">Automatisch gespeichert: ${fmtDateTime(state.savedAt)}</p>
+    <div class="notice">Alle Daten liegen ausschließlich im localStorage dieses Browsers.
+    Die JSON-Sicherung enthält Stammdaten, Bewertungen, Checklisten und Notizen und kann auf einem
+    anderen Gerät (oder je Standort als eigene Datei) wieder geladen werden. Der Druckbericht nutzt
+    die Druckfunktion des Browsers — dort „Als PDF speichern“ wählen.</div>
+  </div>`;
+}
+
+/* ---------- Dokumentation ---------- */
+function renderDoc(){
+  const el=document.getElementById("panel-doc");
+  const rows=CATALOG.maturity.map(l=>`<tr><td class="num" style="text-align:left"><b>${l.level}</b></td>
+    <td><b>${esc(l.name)}</b></td><td>${esc(l.principle)}${
+      l.definition?`<details class="acc" style="margin-top:6px"><summary>Definition (SPICE)</summary><div class="acc-body">${esc(l.definition)}</div></details>`:""
+    }</td></tr>`).join("");
+  el.innerHTML=`
+  <div class="card"><h2>Reifegradmodell (VDA ISA)</h2>
+    <div class="tbl-scroll"><table class="tbl">
+      <thead><tr><th>Stufe</th><th>Name</th><th>Prinzip</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="notice">TISAX-Ziel je Control ist Reifegrad 3 („Established“). Für das Gesamtergebnis
+    werden Werte über 3 auf 3 gekappt („Result with cutback“) — Übererfüllung verbessert das Ergebnis
+    nicht. n.a.-Controls werden aus der Berechnung ausgenommen und müssen begründet sein.</div>
+  </div>
+  <div class="card"><h2>Arbeitsweise des Tools</h2>
+    <ul style="font-size:13.5px;color:var(--ink-2);margin:0;padding-left:20px">
+      <li><b>Assessment:</b> je Control Reifegrad 0–5 oder n.a. wählen; Muss-/Sollte-Anforderungen als
+        Checkliste abhaken; Umsetzungsbeschreibung, Referenzdokumentation und Maßnahmen dokumentieren.</li>
+      <li><b>Schutzbedarf:</b> Die Auswahl unter „Scope &amp; Export“ blendet die Zusatzanforderungen für
+        hohen/sehr hohen Schutzbedarf ein (REUTIB: sehr hoch).</li>
+      <li><b>Scoring:</b> identisch zum offiziellen ENX-Excel — Kapitel-Durchschnitte ohne Kappung,
+        Gesamtergebnis mit Kappung auf 3, n.a. ausgenommen, unbewertete Controls zählen nicht mit.</li>
+      <li><b>Datenhaltung:</b> localStorage im Browser; Übertragung/Backup über JSON sichern/laden.
+        Ein Stand je Standort = eine JSON-Datei.</li>
+      <li><b>Katalog-Update:</b> neue ENX-Excel nach <code>data/</code>, dann
+        <code>python3 tools/isa_convert.py</code> — die App wird neu generiert.</li>
+    </ul>
+  </div>
+  <div class="card"><h2>Quelle &amp; Lizenz</h2>
+    <p style="font-size:13px;color:var(--ink-2)">${esc(CATALOG.attribution)}
+    Quelle: <a href="https://www.enx.com/en-US/TISAX/" rel="noopener">ENX Association</a>, Datei
+    <code>${esc(CATALOG.source)}</code>. Lizenz:
+    <a href="https://creativecommons.org/licenses/by-nd/4.0/" rel="noopener">CC BY-ND 4.0</a>.</p>
+    <p style="font-size:13px;color:var(--ink-2)">Diese Anwendung ist eine <b>technische Konvertierung</b>
+    der Katalogtexte in ein anderes Anzeigeformat (Excel → HTML/JSON) mit unveränderten Inhalten der
+    Anforderungen. Sie ist <b>keine von ENX/VDA freigegebene oder geprüfte Fassung</b>; maßgeblich für
+    TISAX-Assessments ist ausschließlich das Original-Excel der ENX Association. TISAX® und VDA ISA
+    sind eingetragene Marken der ENX Association bzw. des VDA.</p>
+  </div>`;
+}
+
+/* ---------- Druckbericht ---------- */
+function buildPrintReport(){
+  const el=document.getElementById("printReport");
+  const m=state.meta;
+  const all=allActiveControls(); const ids=all.map(c=>c.id);
+  const rated=ids.filter(isRated).length;
+  const score=overallScore(), noCut=avg(ratedValues(ids,false));
+  const gaps=gapRows();
+  let chapterRows="";
+  activeModules().forEach(mod=>mod.chapters.forEach(ch=>{
+    const cids=chapterIds(mod,ch);
+    chapterRows+=`<tr><td>${ch.no}</td><td>${esc(ch.title)}</td>
+      <td>${cids.filter(isRated).length}/${cids.length}</td>
+      <td>${fmtScore(avg(ratedValues(cids,false)))}</td>
+      <td>${fmtScore(avg(ratedValues(cids,true)))}</td></tr>`;
+  }));
+  let ctlRows="";
+  all.forEach(c=>{
+    const a=state.controls[c.id]||{}; const mv=maturity(c.id);
+    ctlRows+=`<tr><td><b>${c.id}</b></td><td>${esc(c.question)}${
+      mv==="na"&&a.naR?`<div class="small">n.a.: ${esc(a.naR)}</div>`:""}${
+      a.impl?`<div class="small">Umsetzung: ${esc(a.impl)}</div>`:""}</td>
+      <td>${matLabel(mv)}</td><td>${typeof mv==="number"?fmtScore(cutback(mv)):""}</td>
+      <td>${esc(a.act||"")}</td><td>${esc(a.dept||"")}</td></tr>`;
+  });
+  const radarImg=(()=>{ try{ const cv=document.getElementById("radar");
+    return cv?`<img src="${cv.toDataURL("image/png")}" alt="Reifegrad-Diagramm">`:""; }catch(e){ return ""; } })();
+  el.innerHTML=`
+    <h1>VDA ISA ${esc(CATALOG.version)} — Self-Assessment-Bericht</h1>
+    <table class="pmeta"><tr><td><b>Unternehmen:</b> ${esc(m.company)}</td><td><b>Scope-ID:</b> ${esc(m.scopeId)}</td></tr>
+    <tr><td><b>Standort(e):</b> ${esc(m.location||"–")}</td><td><b>Datum:</b> ${esc(m.date||"–")}</td></tr>
+    <tr><td><b>Ersteller:</b> ${esc(m.creator||"–")}</td><td><b>Schutzbedarf:</b> ${
+      ({normal:"normal",high:"hoch",veryHigh:"sehr hoch"})[m.protection]||m.protection} · Module: ${activeModules().map(x=>x.id).join(", ")}</td></tr>
+    <tr><td><b>Ergebnis (mit Kappung):</b> ${fmtScore(score)} / 3,00</td>
+    <td><b>Bewertet:</b> ${rated}/${ids.length} · ohne Kappung ${fmtScore(noCut)}</td></tr></table>
+    <h2>Reifegrad je Kapitel</h2>
+    ${radarImg}
+    <table><thead><tr><th>Nr.</th><th>Kapitel</th><th>Bewertet</th><th>Ø Ist</th><th>Ø mit Kappung</th></tr></thead>
+    <tbody>${chapterRows}</tbody></table>
+    <h2>Gap-Liste (Controls unter Ziel-Reifegrad 3)</h2>
+    ${gaps.length?`<table><thead><tr><th>Control</th><th>Frage</th><th>Ist</th><th>Maßnahmen</th><th>Verantwortlich</th></tr></thead>
+      <tbody>${gaps.map(({c,m:g})=>`<tr><td><b>${c.id}</b></td><td>${esc(c.question)}</td><td>${g}</td>
+      <td>${esc((state.controls[c.id]||{}).act||"")}</td><td>${esc((state.controls[c.id]||{}).dept||"")}</td></tr>`).join("")}</tbody></table>`
+      :"<p>Keine bewerteten Controls unter Ziel.</p>"}
+    <h2>Alle Controls</h2>
+    <table><thead><tr><th>Control</th><th>Frage / Dokumentation</th><th>Ist</th><th>Kappung</th><th>Maßnahmen</th><th>Verantw.</th></tr></thead>
+    <tbody>${ctlRows}</tbody></table>
+    <p class="small">${esc(CATALOG.attribution)} — Technische Konvertierung, keine von ENX/VDA freigegebene Fassung.
+    Erstellt mit dem REUTIB-ISA-Tool am ${new Date().toLocaleDateString("de-DE")}.</p>`;
+}
+
+/* ---------- Export / Import ---------- */
+function download(name, text, type){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type:type||"application/octet-stream"}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+}
+function exportJson(){
+  persist();
+  const name=`ISA${CATALOG.version.split(".")[0]}-Assessment_${(state.meta.scopeId||"scope").replace(/\W+/g,"")}_${(state.meta.location||"").replace(/\W+/g,"") || "alle"}_${new Date().toISOString().slice(0,10)}.json`;
+  download(name, JSON.stringify({tool:"reutib-isa-assessment", catalog:CATALOG.version, exported:new Date().toISOString(), state}, null, 1), "application/json");
+}
+function importJson(file){
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const d=JSON.parse(rd.result);
+      const s=d.state||d;
+      if(!s||!s.controls) throw new Error("Kein gültiger Assessment-Stand");
+      if(d.catalog && d.catalog!==CATALOG.version &&
+        !confirm(`Die Datei stammt aus Katalog ${d.catalog}, geladen ist ${CATALOG.version}. Trotzdem laden?`)) return;
+      state=Object.assign(defaultState(), s);
+      state.meta=Object.assign(defaultState().meta, s.meta||{});
+      state.meta.modules=Object.assign({IS:true,PP:false,DP:false}, (s.meta||{}).modules||{});
+      persist(); renderAll();
+    }catch(e){ alert("Datei konnte nicht geladen werden: "+e.message); }
+  };
+  rd.readAsText(file);
+}
+function csvEscape(v){ v=String(v??""); return '"'+v.replace(/"/g,'""')+'"'; }
+function exportCsv(gapsOnly){
+  const sep=";";
+  const head=["Control","Modul","Kapitel","Frage","Reifegrad","Kappung","Status","n.a.-Begründung",
+    "Muss erfüllt","Umsetzungsbeschreibung","Referenzdokumentation","Maßnahmen","Verantwortlich"];
+  const lines=[head.join(sep)];
+  allActiveControls().forEach(c=>{
+    const m=maturity(c.id);
+    if(gapsOnly && !(typeof m==="number" && m<TARGET)) return;
+    const a=state.controls[c.id]||{};
+    const prog=mustProgress(c);
+    lines.push([c.id, c.module, c.chapter, c.question, matLabel(m),
+      typeof m==="number"?fmtScore(cutback(m)):"",
+      {open:"offen",ok:"Ziel erreicht",gap:"unter Ziel",crit:"unter Ziel",na:"n.a."}[statusOf(c.id)],
+      a.naR||"", prog?prog[0]+"/"+prog[1]:"", a.impl||"", a.ref||"", a.act||"", a.dept||""
+    ].map(csvEscape).join(sep));
+  });
+  const name=`ISA-${gapsOnly?"Gaps":"Ergebnisse"}_${(state.meta.scopeId||"scope").replace(/\W+/g,"")}_${new Date().toISOString().slice(0,10)}.csv`;
+  download(name, "﻿"+lines.join("\r\n"), "text/csv;charset=utf-8");
+}
+
+/* ---------- Navigation & Events ---------- */
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===name));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active", p.id==="panel-"+name));
+  if(name==="dash") renderDash();
+  if(name==="gaps") renderGaps();
+  if(name==="setup") renderSetup();
+  if(name==="doc") renderDoc();
+}
+function renderAll(){
+  fillModuleFilter(); fillChapterFilter();
+  updateHeaderChips(); renderDash(); renderAssess(); renderSetup();
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.tab)));
+
+document.getElementById("panel-assess").addEventListener("click",e=>{
+  const head=e.target.closest("[data-toggle]");
+  if(head && !e.target.closest("select,input,textarea,button,a,label")){
+    const id=head.dataset.toggle;
+    expanded.has(id)?expanded.delete(id):expanded.add(id);
+    refreshCard(id);
+  }
+});
+document.getElementById("panel-assess").addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.mat){
+    const id=t.dataset.mat, v=t.value;
+    A(id).m = v==="" ? "" : (v==="na" ? "na" : Number(v));
+    scheduleSave(); refreshCard(id); updateHeaderChips();
+  }else if(t.dataset.chk){
+    const [id,k]=t.dataset.chk.split("|");
+    A(id).chk[k]=t.checked; if(!t.checked) delete A(id).chk[k];
+    t.closest(".req-item").classList.toggle("checked", t.checked);
+    scheduleSave();
+    const el=document.querySelector(`[data-ctl="${CSS.escape(id)}"] .ctl-prog`);
+    const prog=mustProgress(CATALOG.controls[id]);
+    if(el&&prog) el.textContent="muss "+prog[0]+"/"+prog[1];
+  }
+});
+document.getElementById("panel-assess").addEventListener("input",e=>{
+  const t=e.target;
+  if(t.dataset.field){
+    const [id,f]=t.dataset.field.split("|");
+    A(id)[f]=t.value; scheduleSave();
+  }
+});
+["fSearch","fModule","fChapter","fStatus"].forEach(id=>{
+  document.getElementById(id).addEventListener(id==="fSearch"?"input":"change",()=>{
+    if(id==="fModule") fillChapterFilter();
+    renderAssess();
+  });
+});
+document.getElementById("btnExpand").addEventListener("click",()=>{
+  filteredControls().forEach(({c})=>expanded.add(c.id)); renderAssess();
+});
+document.getElementById("btnCollapse").addEventListener("click",()=>{ expanded.clear(); renderAssess(); });
+
+document.getElementById("panel-setup").addEventListener("input",e=>{
+  const t=e.target;
+  if(t.dataset.meta){
+    state.meta[t.dataset.meta]=t.value; scheduleSave();
+    if(t.dataset.meta==="protection") renderAssess();
+  }
+});
+document.getElementById("panel-setup").addEventListener("change",e=>{
+  const t=e.target;
+  if(t.dataset.module){
+    state.meta.modules[t.dataset.module]=t.checked;
+    if(!Object.values(state.meta.modules).some(Boolean)){ t.checked=true; state.meta.modules[t.dataset.module]=true;
+      alert("Mindestens ein Modul muss aktiv sein."); return; }
+    scheduleSave(); renderAll(); renderSetup();
+  }else if(t.dataset.metaCheck){
+    state.meta[t.dataset.metaCheck]=t.checked; scheduleSave(); renderAssess();
+  }
+});
+document.getElementById("panel-setup").addEventListener("click",e=>{
+  const id=e.target.id;
+  if(id==="btnSave2") exportJson();
+  if(id==="btnLoad2") document.getElementById("fileInput").click();
+  if(id==="btnCsvAll") exportCsv(false);
+  if(id==="btnCsvGaps") exportCsv(true);
+  if(id==="btnPrint2") doPrint();
+  if(id==="btnReset"){
+    if(confirm("Wirklich ALLE Bewertungen, Notizen und Stammdaten unwiderruflich zurücksetzen?")){
+      state=defaultState(); persist(); renderAll();
+    }
+  }
+});
+document.getElementById("btnSave").addEventListener("click", exportJson);
+document.getElementById("btnLoad").addEventListener("click",()=>document.getElementById("fileInput").click());
+document.getElementById("fileInput").addEventListener("change",e=>{
+  if(e.target.files[0]) importJson(e.target.files[0]); e.target.value="";
+});
+function doPrint(){ renderDash(); buildPrintReport(); window.print(); }
+document.getElementById("btnPrint").addEventListener("click", doPrint);
+window.addEventListener("beforeprint", buildPrintReport);
+
+/* Theme */
+(function(){
+  const saved=localStorage.getItem(LS_THEME);
+  if(saved) document.documentElement.dataset.theme=saved;
+  document.getElementById("btnTheme").addEventListener("click",()=>{
+    const cur=document.documentElement.dataset.theme ||
+      (matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+    const next=cur==="dark"?"light":"dark";
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem(LS_THEME,next);
+    drawRadar();
+  });
+})();
+window.addEventListener("resize",()=>{ if(document.getElementById("panel-dash").classList.contains("active")) drawRadar(); });
+
+/* Fußzeile */
+document.getElementById("footerAttr").innerHTML=
+  `<p>${esc(CATALOG.attribution)} — technische Konvertierung des Original-Excels
+  (<code>${esc(CATALOG.source)}</code>), keine von ENX/VDA freigegebene Fassung.
+  Alle Assessment-Daten verbleiben lokal in diesem Browser. REUTIB-internes Arbeitswerkzeug,
+  ersetzt kein offizielles TISAX-Assessment.</p>`;
+
+renderAll();
+</script>
+</body>
+</html>
