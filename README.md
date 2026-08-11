@@ -1,11 +1,54 @@
-# REUTIB ISMS-Tools — Finding-Register & IRM-Prototyp
+# REUTIB ISMS-Tools — Finding-Register, IRM-Prototyp & ISA-Assessment
 
-Dieses Repository enthält zwei in sich geschlossene HTML-Anwendungen für die Reutter-Group (REUTIB):
+Dieses Repository enthält drei in sich geschlossene HTML-Anwendungen für die Reutter-Group (REUTIB):
 
 | Anwendung | Pfad | Zweck |
 |---|---|---|
 | **TISAX AL3 Finding-Register** | `index.html` (geschützte Eingangsseite, DE/EN) | Stage-Review-Findings mit VDA-ISA-6.0.3-Control-Verknüpfung |
 | **IRM-Tool V1.60 (Incident Response Management)** | `irm/index.html` + `irm/server/` | Lauffähige Referenz der Umsetzungsempfehlung GDL_010.001 (Freshservice-IRM), mehrbenutzerfähig mit Serverdatenbank |
+| **VDA ISA Self-Assessment** | `isa/index.html` | Reifegrad-Selbstbewertung nach VDA ISA 6.0.3 (alle 80 Controls: IS/PP/DP), Scoring wie im ENX-Excel, Gap-Analyse, Druckbericht |
+
+## VDA ISA Self-Assessment (`isa/`)
+
+Interaktive Selbstbewertung nach dem offiziellen **VDA-ISA-Prüfkatalog 6.0.3 (EN)** der
+ENX Association — als Arbeitsalternative zum ENX-Excel, u. a. für die AL3-Vorbereitung
+(Nachweisphase, Standort-Assessments). Alle Bewertungsdaten bleiben **ausschließlich im
+Browser** (localStorage); Übertragung/Backup über JSON-Dateien („Stand sichern / laden“,
+z. B. eine Datei je Standort).
+
+**Funktionen:**
+
+- Alle **80 Controls** der drei Module *Informationssicherheit* (46), *Prototypenschutz* (22)
+  und *Datenschutz* (12); Module einzeln zuschaltbar (REUTIB-AL3: nur IS erforderlich).
+- Je Control: **Reifegrad 0–5 oder n.a.** (mit Pflicht-Begründung), Muss-/Sollte-Anforderungen
+  als **abhakbare Checkliste**, Zusatzanforderungen je Schutzbedarf (hoch/sehr hoch) und SGA,
+  Felder für Umsetzungsbeschreibung, Referenzdokumentation, Maßnahmen und Verantwortliche,
+  dazu Referenzen (ISO 27001, IEC 62443, NIST), BSI-Umsetzungshinweise, Beispiel-Fragen
+  und -Nachweise aus dem Katalog.
+- **Scoring identisch zum ENX-Excel:** Ziel-Reifegrad 3,0, Gesamtergebnis mit Kappung
+  („Result with cutback“), Kapitel-Durchschnitte ohne Kappung, n.a. ausgenommen.
+- **Dashboard** mit Spider-Chart (Ist vs. Ziel je Kapitel), KPI-Kacheln und Kapiteltabelle;
+  **Gap-Analyse** (Controls unter Ziel, n.a. ohne Begründung); **CSV-Export** (Ergebnisse,
+  Gap-Liste) und **Druckbericht** (über den Browser als PDF speicherbar).
+- Hell-/Dunkelmodus, responsiv, komplett offline lauffähig (eine einzige HTML-Datei).
+
+**Daten pflegen / Katalog-Update:** Quelle ist das offizielle ENX-Excel in `data/`
+(`ISA6_EN_6.0.3.xlsx`, Download: <https://enx.com/isa6-en.xlsx>). Bei einer neuen
+Katalogversion die neue Datei nach `data/` legen und neu generieren — **nie direkt**
+in `isa/index.html` editieren:
+
+```bash
+pip install openpyxl
+python3 tools/isa_convert.py            # erzeugt data/isa_catalog.json + isa/index.html
+```
+
+**Lizenz-Hinweis:** Die Katalogtexte stammen aus dem VDA ISA 6.0.3, © ENX Association /
+Verband der Automobilindustrie e. V. (VDA), lizenziert unter
+[CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/). Die App ist eine
+**technische Konvertierung** (Excel → HTML/JSON) mit inhaltlich unveränderten
+Anforderungstexten und **keine von ENX/VDA freigegebene Fassung** — maßgeblich für
+TISAX-Assessments ist ausschließlich das Original-Excel. TISAX® ist eine eingetragene
+Marke der ENX Association.
 
 ## IRM-Prototyp (`irm/`)
 
@@ -93,8 +136,9 @@ des Tabs oder Klick auf **„Sperren"**.
 
 - **Lokal:** `index.html` herunterladen, im Browser öffnen, anmelden (funktioniert offline).
 - **Über GitHub Pages:** nach Aktivierung erreichbar unter `https://<user>.github.io/<repo>/`.
-  Der Workflow veröffentlicht **ausschließlich die Eingangsseite** — die Klartext-Apps (`app/`),
-  die Excel-Quelle und die JSON-Daten (`data/`) werden nicht mit deployt.
+  Der Workflow veröffentlicht **nur die Eingangsseite sowie `irm/` und `isa/`** — die
+  Klartext-Register (`app/`), die Excel-Quellen und die JSON-Daten (`data/`) werden nicht
+  mit deployt.
 
 **Mehrere Benutzer / Zugangsdaten ändern:** `python3 tools/encrypt.py` erneut ausführen — es
 fragt beliebig viele Benutzer interaktiv ab (leerer Benutzername beendet die Eingabe; alternativ
@@ -154,12 +198,16 @@ erscheint der deutsche Originaltext auf der englischen Seite.
 ## Struktur
 
 ```
-index.html                                  ← geschützte Eingangsseite mit verschlüsselten Apps (generiert; einzige veröffentlichte Datei)
+index.html                                  ← geschützte Eingangsseite mit verschlüsselten Apps (generiert)
+isa/
+  index.html                                 ← VDA ISA Self-Assessment (generiert aus Vorlage + Katalog-JSON)
 app/
   register-de.html                           ← deutsche Anwendung, Klartext (generiert, nur intern)
   register-en.html                           ← englische Anwendung, Klartext (generiert, nur intern)
 data/
   TISAX_Finding_Register_v3_M_N_O.xlsx       ← Quell-Register (Spalten M/N/O integriert)
+  ISA6_EN_6.0.3.xlsx                         ← offizieller VDA-ISA-Prüfkatalog (ENX-Original, CC BY-ND 4.0)
+  isa_catalog.json                           ← extrahierter ISA-Katalog (generiert)
   findings.json                              ← extrahierte, angereicherte Daten (generiert)
   findings_en.json                           ← englische Daten (generiert)
   translations_en.json                       ← Übersetzungs-Overlay der Freitexte (gepflegt)
@@ -169,5 +217,7 @@ tools/
   template.html                              ← gemeinsame HTML-/JS-Vorlage mit Platzhalter /*__DATA__*/
   login_template.html                        ← Eingangsseite (Login + Entschlüsselung im Browser)
   encrypt.py                                 ← AES-256-GCM-Verschlüsselung -> index.html (Zugangsdaten nie gespeichert)
-.github/workflows/pages.yml                  ← Auto-Deploy nach GitHub Pages (nur index.html)
+  isa_convert.py                             ← ISA-Katalog-Konverter (ENX-Excel -> JSON -> isa/index.html)
+  isa_template.html                          ← HTML-/JS-Vorlage des ISA-Assessments (Platzhalter /*__DATA__*/)
+.github/workflows/pages.yml                  ← Auto-Deploy nach GitHub Pages (index.html, irm/, isa/)
 ```
