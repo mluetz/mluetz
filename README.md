@@ -96,9 +96,12 @@ des Tabs oder Klick auf **„Sperren"**.
   Der Workflow veröffentlicht **ausschließlich die Eingangsseite** — die Klartext-Apps (`app/`),
   die Excel-Quelle und die JSON-Daten (`data/`) werden nicht mit deployt.
 
-**Zugangsdaten ändern:** `python3 tools/encrypt.py` erneut ausführen (fragt Benutzer + Passwort
-interaktiv ab, alternativ Umgebungsvariablen `VAULT_USER`/`VAULT_PASS`), neue `index.html`
-committen. Salt und Schlüssel werden dabei neu erzeugt.
+**Mehrere Benutzer / Zugangsdaten ändern:** `python3 tools/encrypt.py` erneut ausführen — es
+fragt beliebig viele Benutzer interaktiv ab (leerer Benutzername beendet die Eingabe; alternativ
+`VAULT_CREDS="user1:pass1;user2:pass2"`), dann die neue `index.html` committen. Intern gilt ein
+Envelope-Schema: ein zufälliger Inhaltsschlüssel verschlüsselt die Inhalte, je Benutzer ein
+Keyslot (eigener Salt, PBKDF2-KEK, AES-GCM-wrapped) — es werden weder Passwörter noch
+Benutzernamen gespeichert. Benutzer entfernen = ohne diesen Benutzer neu ausführen.
 
 ### GitHub Pages aktivieren
 Repository → **Settings → Pages → Build and deployment → Source: „GitHub Actions"**.

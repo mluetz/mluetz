@@ -103,13 +103,22 @@ const SK="reutib-vault-k1";
 const lang=(new URLSearchParams(location.search).get("lang")==="en")?"en":"de";
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 
-async function deriveKey(user,pass){
+/* Envelope-Schema: je Benutzer ein Keyslot; der Login probiert alle Slots durch,
+   bis einer den Inhaltsschluessel (CEK) freigibt. */
+async function unlockKey(user,pass){
   const mat=await crypto.subtle.importKey("raw",
     new TextEncoder().encode(user.trim().toLowerCase()+"\u0000"+pass),
     "PBKDF2",false,["deriveKey"]);
-  return crypto.subtle.deriveKey(
-    {name:"PBKDF2",salt:b64d(VAULT.salt),iterations:VAULT.iter,hash:"SHA-256"},
-    mat,{name:"AES-GCM",length:256},true,["decrypt"]);
+  for(const s of VAULT.slots){
+    try{
+      const kek=await crypto.subtle.deriveKey(
+        {name:"PBKDF2",salt:b64d(s.salt),iterations:VAULT.iter,hash:"SHA-256"},
+        mat,{name:"AES-GCM",length:256},false,["decrypt"]);
+      const cekRaw=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(s.nonce)},kek,b64d(s.wrapped));
+      return crypto.subtle.importKey("raw",cekRaw,{name:"AES-GCM"},true,["decrypt"]);
+    }catch(e){}
+  }
+  throw new Error("auth");
 }
 
 async function openLang(key,lg){
@@ -140,7 +149,7 @@ document.getElementById("loginForm").addEventListener("submit",async ev=>{
         card=document.querySelector(".card");
   err.classList.remove("show"); btn.disabled=true;
   try{
-    const key=await deriveKey(document.getElementById("u").value,document.getElementById("p").value);
+    const key=await unlockKey(document.getElementById("u").value,document.getElementById("p").value);
     await openLang(key,lang);
     sessionStorage.setItem(SK,JSON.stringify(await crypto.subtle.exportKey("jwk",key)));
   }catch(e){
