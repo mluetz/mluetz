@@ -485,11 +485,16 @@ function tr(s){ return S.lang==="en" ? (EN[s]!==undefined?EN[s]:s) : s; }
 /* ---------- Zugangsschutz (Eingangsseite) ----------
    Zugangsdaten liegen NICHT im Klartext vor, sondern als gesalzener
    PBKDF2-SHA-256-Hash über "benutzer:passwort" (310.000 Iterationen).
-   Rotation: in der Browser-Konsole genLoginHash("benutzer","passwort")
-   aufrufen und die ausgegebene LOGIN-Konstante hier ersetzen.
+   Mehrbenutzerfähig: je Zugang ein eigener Salt+Hash-Eintrag in LOGINS.
+   Neuen Zugang anlegen / Passwort rotieren: in der Browser-Konsole
+   genLoginHash("benutzer","passwort") aufrufen und den ausgegebenen
+   Eintrag in LOGINS ergänzen bzw. den alten ersetzen.
    Hinweis: clientseitiger Zugangsschutz einer statischen Seite ist eine
    Zugangshürde, kein Ersatz für Server-Authentifizierung (Entra ID). */
-const LOGIN = {salt:"e960fd6013ab60f6bd3bf2d90694d500", iter:310000, hash:"63f8ec5183d29af293b9692b6be9cb13e3b00acf3f6c5075959f90086b69de46"};
+const LOGINS = [
+ {salt:"e960fd6013ab60f6bd3bf2d90694d500", iter:310000, hash:"63f8ec5183d29af293b9692b6be9cb13e3b00acf3f6c5075959f90086b69de46"},
+ {salt:"b6f6058b2383171e4747fe1237daffa7", iter:310000, hash:"03d1a433063bb04de46a21ab07bd7454a66e2fccaed90512d06416d285052697"}
+];
 async function pbkdf2Hex(user, pass, saltHex, iter){
   const enc=new TextEncoder();
   const key=await crypto.subtle.importKey("raw", enc.encode(user+":"+pass), "PBKDF2", false, ["deriveBits"]);
@@ -500,7 +505,7 @@ async function pbkdf2Hex(user, pass, saltHex, iter){
 async function genLoginHash(user, pass){
   const saltHex=[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,"0")).join("");
   const hash=await pbkdf2Hex(user, pass, saltHex, 310000);
-  const out='const LOGIN = {salt:"'+saltHex+'", iter:310000, hash:"'+hash+'"};';
+  const out='{salt:"'+saltHex+'", iter:310000, hash:"'+hash+'"},  // neuen Eintrag in LOGINS ergänzen';
   console.log(out); return out;
 }
 function irmUnlock(){
@@ -513,8 +518,10 @@ async function tryLogin(){
   const pw=document.getElementById("loginPass").value;
   const btn=document.querySelector("#loginCard button"); btn.disabled=true;
   try{
-    const h=await pbkdf2Hex(u, pw, LOGIN.salt, LOGIN.iter);
-    if(h===LOGIN.hash){ sessionStorage.setItem("irmAuth", LOGIN.hash); irmUnlock(); return; }
+    for(const acc of LOGINS){
+      const h=await pbkdf2Hex(u, pw, acc.salt, acc.iter);
+      if(h===acc.hash){ sessionStorage.setItem("irmAuth", acc.hash); irmUnlock(); return; }
+    }
   }catch(e){}
   await new Promise(r=>setTimeout(r,600));
   btn.disabled=false;
@@ -524,7 +531,7 @@ async function tryLogin(){
   document.getElementById("loginPass").value=""; document.getElementById("loginPass").focus();
 }
 function initLogin(){
-  if(sessionStorage.getItem("irmAuth")===LOGIN.hash){ irmUnlock(); return; }
+  if(LOGINS.some(a=>sessionStorage.getItem("irmAuth")===a.hash)){ irmUnlock(); return; }
 }
 
 /* ---------- Stammdaten ---------- */
