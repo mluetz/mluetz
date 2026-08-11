@@ -44,16 +44,39 @@ ITERATIONS = 600_000
 b64 = lambda b: base64.b64encode(b).decode()
 
 
-def main():
-    user = os.environ.get("VAULT_USER") or input("Benutzer: ")
-    pw = os.environ.get("VAULT_PASS") or getpass.getpass("Passwort: ")
-    if not user.strip() or not pw:
-        sys.exit("Benutzer und Passwort dürfen nicht leer sein.")
+def get_credentials():
+    """Zugangsdaten mehrerer Benutzer: VAULT_CREDS="user1:pass1;user2:pass2"
+    (Passwörter dürfen ':' enthalten, nur ';' ist Trenner) oder interaktive
+    Abfrage — leerer Benutzername beendet die Eingabe."""
+    env = os.environ.get("VAULT_CREDS")
+    if not env and os.environ.get("VAULT_USER"):
+        env = os.environ["VAULT_USER"] + ":" + os.environ.get("VAULT_PASS", "")
+    creds = []
+    if env:
+        for item in env.split(";"):
+            user, _, pw = item.partition(":")
+            creds.append((user.strip(), pw))
+    else:
+        while True:
+            user = input(f"Benutzer {len(creds) + 1} (leer = fertig): ").strip()
+            if not user:
+                break
+            creds.append((user, getpass.getpass(f"Passwort für {user}: ")))
+    creds = [(u, p) for u, p in creds if u and p]
+    if not creds:
+        sys.exit("Mindestens ein Benutzer mit Passwort wird benötigt.")
+    return creds
 
-    salt = secrets.token_bytes(16)
-    key = hashlib.pbkdf2_hmac(
-        "sha256", (user.strip().lower() + "\x00" + pw).encode("utf-8"), salt, ITERATIONS, 32)
-    aes = AESGCM(key)
+
+def main():
+    creds = get_credentials()
+
+    # Envelope-Schema: ein zufälliger Inhaltsschlüssel (CEK) verschlüsselt die
+    # Inhalte; je Benutzer wird der CEK mit einem per PBKDF2 abgeleiteten
+    # Schlüssel (KEK, eigener Salt) eingewickelt. Benutzernamen werden nicht
+    # gespeichert — der Login probiert alle Slots durch.
+    cek = secrets.token_bytes(32)
+    aes = AESGCM(cek)
 
     payloads = {}
     for lang, path in APPS.items():
@@ -63,14 +86,24 @@ def main():
         nonce = secrets.token_bytes(12)
         payloads[lang] = {"nonce": b64(nonce), "ct": b64(aes.encrypt(nonce, data, None))}
 
-    vault = {"v": 1, "iter": ITERATIONS, "salt": b64(salt), "payloads": payloads}
+    slots = []
+    for user, pw in creds:
+        salt = secrets.token_bytes(16)
+        kek = hashlib.pbkdf2_hmac(
+            "sha256", (user.lower() + "\x00" + pw).encode("utf-8"), salt, ITERATIONS, 32)
+        nonce = secrets.token_bytes(12)
+        slots.append({"salt": b64(salt), "nonce": b64(nonce),
+                      "wrapped": b64(AESGCM(kek).encrypt(nonce, cek, None))})
+
+    vault = {"v": 2, "iter": ITERATIONS, "slots": slots, "payloads": payloads}
     tpl = TEMPLATE.read_text(encoding="utf-8")
     if "/*__VAULT__*/" not in tpl:
         sys.exit("Template-Platzhalter /*__VAULT__*/ fehlt.")
     OUT.write_text(tpl.replace("/*__VAULT__*/", json.dumps(vault, separators=(",", ":"))),
                    encoding="utf-8")
+    users = ", ".join(u.lower() for u, _ in creds)
     print(f"OK · index.html ({OUT.stat().st_size // 1024} KB) — "
-          f"AES-256-GCM, PBKDF2 {ITERATIONS:,} Iterationen, Benutzer '{user.strip().lower()}'")
+          f"AES-256-GCM, PBKDF2 {ITERATIONS:,} Iterationen, {len(creds)} Benutzer ({users})")
 
 
 if __name__ == "__main__":
