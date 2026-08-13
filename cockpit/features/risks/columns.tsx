@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { AlertTriangle, Clock } from "lucide-react";
 import { Badge, riskClassVariant } from "@/components/ui/badge";
@@ -10,7 +11,15 @@ export const riskColumns: ColumnDef<RiskRow>[] = [
   {
     accessorKey: "riskId",
     header: "Risk ID",
-    cell: ({ row }) => <span className="font-mono text-xs">{row.original.riskId}</span>,
+    cell: ({ row }) => (
+      <Link
+        href={`/risks/${row.original.id}`}
+        className="font-mono text-xs text-primary hover:underline"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {row.original.riskId}
+      </Link>
+    ),
   },
   {
     accessorKey: "title",

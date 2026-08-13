@@ -7,6 +7,11 @@ export default defineConfig({
   use: {
     baseURL: process.env.APP_BASE_URL ?? "http://localhost:3000",
     trace: "retain-on-failure",
+    // In Umgebungen mit vorinstalliertem Chromium (PLAYWRIGHT_CHROMIUM_PATH)
+    // wird dieser Browser genutzt statt eines Downloads.
+    ...(process.env.PLAYWRIGHT_CHROMIUM_PATH
+      ? { launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } }
+      : {}),
   },
   webServer: {
     command: "npm run dev",

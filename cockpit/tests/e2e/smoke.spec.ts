@@ -36,7 +36,7 @@ test("ICT Risk Manager: Dashboard, Risk Register und Detailseite", async ({ page
 
   // Detailseite eines Risikos öffnen
   await page.goto("/risks");
-  await page.getByText("RISK-2026-0001").first().click();
+  await page.getByRole("link", { name: "RISK-2026-0001" }).click();
   await expect(page.getByText("Inherent Risk")).toBeVisible();
   await expect(page.getByRole("tab", { name: /Bewertung/ })).toBeVisible();
 });
@@ -61,7 +61,7 @@ test("Runbooks sind gelistet und Runbook-Detail zeigt Schritte", async ({ page }
 test("Management: Reports erreichbar, Entscheidungsvorlage rendert", async ({ page }) => {
   await login(page, "management@demo.example");
   await page.goto("/reports");
-  await expect(page.getByRole("heading", { name: /Reports/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Reports", exact: true })).toBeVisible();
   await page.goto("/reports/DECISION_PAPER");
   await expect(page.getByText(/Stichtag/)).toBeVisible();
 });
