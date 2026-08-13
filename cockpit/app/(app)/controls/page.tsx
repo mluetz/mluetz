@@ -18,6 +18,7 @@ interface Search {
   automation?: string;
   effectiveness?: string;
   testOverdue?: string;
+  weak?: string;
 }
 
 export default async function ControlsPage({ searchParams }: { searchParams: Promise<Search> }) {
@@ -29,6 +30,9 @@ export default async function ControlsPage({ searchParams }: { searchParams: Pro
       ...(sp.type ? { controlType: sp.type } : {}),
       ...(sp.automation ? { automation: sp.automation } : {}),
       ...(sp.effectiveness ? { operatingEffectiveness: sp.effectiveness } : {}),
+      ...(sp.weak === "1"
+        ? { operatingEffectiveness: { in: ["INEFFECTIVE", "PARTIALLY_EFFECTIVE"] } }
+        : {}),
     },
     include: {
       owner: { select: { name: true } },

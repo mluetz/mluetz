@@ -1,0 +1,8 @@
+# Verpflichtende Reviews: Jede Änderung benötigt die Freigabe des Repo-Owners.
+* @mluetz
+
+# Cockpit-spezifisch (Sicherheits- und Methodik-kritische Pfade)
+/cockpit/lib/authz*.ts @mluetz
+/cockpit/lib/domain/ @mluetz
+/cockpit/prisma/ @mluetz
+/.github/workflows/ @mluetz

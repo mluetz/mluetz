@@ -12,7 +12,6 @@ import {
   RISK_STATUS,
   RISK_TRANSITIONS,
   TREATMENT_STRATEGY,
-  type RiskClass,
   type RiskStatus,
 } from "@/lib/domain/enums";
 import { PageHeader } from "@/components/page-header";

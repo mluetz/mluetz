@@ -6,7 +6,6 @@ import { getSessionUser } from "@/lib/auth/session";
 import { getRiskRows } from "@/features/risks/queries";
 import { formatDate, toCsv } from "@/lib/utils";
 import {
-  ACCEPTANCE_STATUS,
   COMPLIANCE_STATUS,
   FRAMEWORKS,
   RISK_STATUS,

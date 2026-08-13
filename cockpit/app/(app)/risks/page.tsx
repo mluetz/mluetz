@@ -4,8 +4,6 @@ import { requirePermission } from "@/lib/authz";
 import { hasPermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getRiskRows } from "@/features/risks/queries";
-import { riskColumns } from "@/features/risks/columns";
-import { DataTable } from "@/components/data-table";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Select, Label } from "@/components/ui/input";
@@ -58,7 +56,7 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
         }
       />
 
-      <form method="GET" className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-5">
+      <form method="GET" className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4">
         <div>
           <Label htmlFor="f-status">Status</Label>
           <Select id="f-status" name="status" defaultValue={sp.status ?? ""}>
@@ -90,27 +88,6 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
                 {v}
               </option>
             ))}
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="f-special">Sonderfilter</Label>
-          <Select
-            id="f-special"
-            name={
-              sp.aboveAppetite === "1"
-                ? "aboveAppetite"
-                : sp.overdueReview === "1"
-                  ? "overdueReview"
-                  : sp.noOwner === "1"
-                    ? "noOwner"
-                    : sp.noAssessment === "1"
-                      ? "noAssessment"
-                      : "aboveAppetite"
-            }
-            defaultValue=""
-          >
-            <option value="">–</option>
-            <option value="1">aktiv</option>
           </Select>
         </div>
         <div className="flex items-end gap-2">

@@ -1,0 +1,74 @@
+name: Cockpit CI
+
+on:
+  push:
+    branches: ["main", "develop", "claude/**", "feature/**", "fix/**", "release/**"]
+    paths: ["cockpit/**", ".github/workflows/cockpit-ci.yml"]
+  pull_request:
+    paths: ["cockpit/**", ".github/workflows/cockpit-ci.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: cockpit
+
+env:
+  DATABASE_URL: "file:./dev.db"
+  SESSION_SECRET: "ci-only-secret-value-for-tests-0123456789abcdef"
+  AUTH_DEMO_LOGIN: "true"
+
+jobs:
+  build-and-test:
+    name: Install · Typecheck · Lint · Test · Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cockpit/package-lock.json
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Prisma generate + Schema push (SQLite)
+        run: npx prisma db push
+      - name: Seed (Integrationsprüfung der Demo-Daten)
+        run: npx tsx prisma/seed.ts
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit Tests
+        run: npm test
+      - name: Production Build
+        run: npm run build
+
+  e2e:
+    name: End-to-End (Playwright)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cockpit/package-lock.json
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Prisma + Seed
+        run: npx prisma db push && npx tsx prisma/seed.ts
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run E2E
+        run: npx playwright test
+        env:
+          CI: "true"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: cockpit/playwright-report/
+          retention-days: 7
