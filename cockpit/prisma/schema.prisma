@@ -1,0 +1,780 @@
+// =====================================================================
+// ICT & Third Party Risk Management Cockpit – Datenmodell
+// ---------------------------------------------------------------------
+// Provider: SQLite für die lokale Entwicklung. Für Produktion auf
+// "postgresql" umstellen (DATABASE_URL anpassen) – das Schema ist
+// bewusst Postgres-kompatibel gehalten.
+//
+// Hinweis zu Enums: SQLite unterstützt keine Prisma-Enums. Alle
+// Statuswerte sind daher Strings; die gültigen Wertemengen sind zentral
+// in lib/domain/enums.ts definiert und werden serverseitig per Zod
+// validiert (siehe ADR-0002).
+// =====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------
+// Identität, Rollen, Berechtigungen (RBAC)
+// ------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  active       Boolean  @default(true)
+  locale       String   @default("de")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  roles              UserRole[]
+  ownedRisks         Risk[]              @relation("RiskOwner")
+  createdRisks       Risk[]              @relation("RiskCreator")
+  assessments        RiskAssessment[]
+  ownedControls      Control[]
+  controlTests       ControlAssessment[]
+  ownedActions       Action[]
+  tpBusinessOwner    ThirdParty[]        @relation("TpBusinessOwner")
+  tpContractOwner    ThirdParty[]        @relation("TpContractOwner")
+  ownedEvidence      Evidence[]          @relation("EvidenceOwner")
+  reviewedEvidence   Evidence[]          @relation("EvidenceReviewer")
+  complianceOwner    ComplianceMapping[] @relation("ComplianceOwner")
+  complianceReviewer ComplianceMapping[] @relation("ComplianceReviewer")
+  acceptanceRequests RiskAcceptance[]    @relation("AcceptanceRequester")
+  acceptanceApprover RiskAcceptance[]    @relation("AcceptanceApprover")
+  runbookExecutions  RunbookExecution[]
+  stepResults        RunbookStepResult[]
+  playbookExecutions PlaybookExecution[]
+  approvalsRequested Approval[]          @relation("ApprovalRequester")
+  approvalsDecided   Approval[]          @relation("ApprovalDecider")
+  comments           Comment[]
+  notifications      Notification[]
+  reports            Report[]
+  auditLogs          AuditLog[]
+  savedFilters       SavedFilter[]
+  ownedAssets        Asset[]
+}
+
+model Role {
+  id          String @id @default(cuid())
+  key         String @unique // z. B. "ICT_RISK_MANAGER"
+  name        String
+  description String
+
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String @id @default(cuid())
+  key         String @unique // z. B. "risk:write"
+  description String
+
+  roles RolePermission[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+// ------------------------------------------------------------------
+// Stammdaten / Organisation
+// ------------------------------------------------------------------
+
+model OrganizationalUnit {
+  id       String  @id @default(cuid())
+  name     String
+  kind     String // COMPANY | BUSINESS_UNIT
+  parentId String?
+  parent   OrganizationalUnit?  @relation("OuHierarchy", fields: [parentId], references: [id])
+  children OrganizationalUnit[] @relation("OuHierarchy")
+
+  risks             Risk[]
+  businessProcesses BusinessProcess[]
+}
+
+model Location {
+  id      String @id @default(cuid())
+  name    String
+  country String
+
+  risks  Risk[]
+  assets Asset[]
+}
+
+model BusinessProcess {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  criticality String // LOW | MEDIUM | HIGH | CRITICAL
+  ouId        String?
+  ou          OrganizationalUnit? @relation(fields: [ouId], references: [id])
+
+  risks    Risk[]
+  controls Control[]
+}
+
+model CriticalFunction {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  isCritical  Boolean @default(true) // kritisch oder "wichtig" i. S. v. DORA
+
+  risks        Risk[]
+  ictServices  IctService[]
+  thirdParties ThirdParty[]
+}
+
+model Asset {
+  id             String  @id @default(cuid())
+  name           String
+  assetType      String // APPLICATION | INFRASTRUCTURE | DATA | DEVICE | FACILITY
+  classification String // PUBLIC | INTERNAL | CONFIDENTIAL | STRICTLY_CONFIDENTIAL
+  ownerId        String?
+  owner          User?     @relation(fields: [ownerId], references: [id])
+  locationId     String?
+  location       Location? @relation(fields: [locationId], references: [id])
+
+  risks    Risk[]
+  controls Control[]
+}
+
+model IctService {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  category    String // z. B. CLOUD_HOSTING, NETWORK, SAAS, DATA_CENTER …
+  providerId  String?
+  provider    ThirdParty? @relation(fields: [providerId], references: [id])
+
+  criticalFunctions CriticalFunction[]
+  risks             Risk[]
+  thirdPartyLinks   ThirdPartyService[]
+}
+
+// ------------------------------------------------------------------
+// Risiko
+// ------------------------------------------------------------------
+
+model RiskCategory {
+  id                String @id @default(cuid())
+  key               String @unique
+  name              String
+  description       String
+  appetiteThreshold Int // Residual-Score, ab dem der Risikoappetit überschritten ist
+
+  risks Risk[]
+}
+
+model Risk {
+  id                String    @id @default(cuid())
+  riskId            String    @unique // fachliche ID, z. B. RISK-2026-0001
+  title             String
+  description       String
+  cause             String
+  riskEvent         String
+  impactDescription String
+  threat            String
+  vulnerability     String
+  existingControls  String // narrative Beschreibung; strukturierte Zuordnung über RiskControl
+  status            String    @default("DRAFT")
+  treatmentStrategy String? // AVOID | REDUCE | TRANSFER | ACCEPT
+  targetScore       Int? // Zielrisiko
+  appetiteOverride  Int? // überschreibt Kategorie-Appetit, falls gesetzt
+  dueDate           DateTime?
+  nextReviewDate    DateTime?
+  approvalStatus    String    @default("NOT_SUBMITTED")
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  categoryId  String
+  category    RiskCategory        @relation(fields: [categoryId], references: [id])
+  riskOwnerId String?
+  riskOwner   User?               @relation("RiskOwner", fields: [riskOwnerId], references: [id])
+  createdById String
+  createdBy   User                @relation("RiskCreator", fields: [createdById], references: [id])
+  ouId        String?
+  ou          OrganizationalUnit? @relation(fields: [ouId], references: [id])
+  locationId  String?
+  location    Location?           @relation(fields: [locationId], references: [id])
+
+  assets             Asset[]
+  processes          BusinessProcess[]
+  ictServices        IctService[]
+  criticalFunctions  CriticalFunction[]
+  thirdParties       ThirdParty[]
+  regulatoryRequirements RegulatoryRequirement[]
+  controls           RiskControl[]
+  assessments        RiskAssessment[]
+  acceptances        RiskAcceptance[]
+  actions            Action[]
+  evidence           Evidence[]
+  comments           Comment[]
+  approvals          Approval[]
+  qualityReviews     QualityReview[]
+  playbookExecutions PlaybookExecution[]
+
+  @@index([status])
+  @@index([categoryId])
+}
+
+model RiskAssessment {
+  id                   String   @id @default(cuid())
+  riskId               String
+  risk                 Risk     @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  assessorId           String
+  assessor             User     @relation(fields: [assessorId], references: [id])
+  assessedAt           DateTime @default(now())
+  likelihood           Int // 1–5
+  impact               Int // 1–5 (maßgebliche Auswirkung über alle Dimensionen)
+  controlEffectiveness Int // 0 | 25 | 50 | 75 | 100 (Prozent)
+  inherentScore        Int // berechnet: likelihood × impact
+  residualScore        Int // berechnet, siehe lib/domain/risk-calc.ts
+  justification        String
+  isCurrent            Boolean  @default(true)
+
+  dimensionScores ImpactDimensionScore[]
+}
+
+model ImpactDimensionScore {
+  id           String         @id @default(cuid())
+  assessmentId String
+  assessment   RiskAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  dimension    String // CONFIDENTIALITY | INTEGRITY | AVAILABILITY | AUTHENTICITY | FINANCIAL | REGULATORY | CUSTOMER | REPUTATION | BUSINESS_INTERRUPTION | DATA_PROTECTION | CRITICAL_FUNCTION
+  score        Int // 1–5
+
+  @@unique([assessmentId, dimension])
+}
+
+model RiskAcceptance {
+  id                    String    @id @default(cuid())
+  riskId                String
+  risk                  Risk      @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  requestedById         String
+  requestedBy           User      @relation("AcceptanceRequester", fields: [requestedById], references: [id])
+  justification         String
+  compensatingControls  String
+  status                String    @default("REQUESTED") // REQUESTED | IN_REVIEW | APPROVED | REJECTED | EXPIRED | TERMINATED
+  approvedById          String?
+  approvedBy            User?     @relation("AcceptanceApprover", fields: [approvedById], references: [id])
+  approvedAt            DateTime?
+  validUntil            DateTime?
+  nextReviewDate        DateTime?
+  createdAt             DateTime  @default(now())
+}
+
+model QualityReview {
+  id             String    @id @default(cuid())
+  riskId         String
+  risk           Risk      @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  reviewerId     String
+  reviewerName   String
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  outcome        String    @default("IN_PROGRESS") // IN_PROGRESS | APPROVED | RETURNED | REJECTED
+  qualityScore   Int? // 0–100 %
+  comments       String?
+  rejectionReason String?
+
+  checklistItems QualityChecklistItem[]
+}
+
+model QualityChecklistItem {
+  id        String        @id @default(cuid())
+  reviewId  String
+  review    QualityReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  criterion String
+  fulfilled Boolean?
+  comment   String?
+  sortOrder Int
+}
+
+// ------------------------------------------------------------------
+// Kontrollen
+// ------------------------------------------------------------------
+
+model Control {
+  id                     String    @id @default(cuid())
+  controlId              String    @unique // z. B. CTL-001
+  name                   String
+  objective              String
+  description            String
+  controlType            String // PREVENTIVE | DETECTIVE | CORRECTIVE
+  automation             String // MANUAL | SEMI_AUTOMATED | AUTOMATED
+  frequency              String // CONTINUOUS | DAILY | WEEKLY | MONTHLY | QUARTERLY | ANNUALLY | EVENT_DRIVEN
+  ownerId                String?
+  owner                  User?     @relation(fields: [ownerId], references: [id])
+  designEffectiveness    String    @default("NOT_TESTED") // NOT_TESTED | INEFFECTIVE | PARTIALLY_EFFECTIVE | LARGELY_EFFECTIVE | EFFECTIVE
+  operatingEffectiveness String    @default("NOT_TESTED")
+  nextTestDate           DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  risks                  RiskControl[]
+  assessments            ControlAssessment[]
+  assets                 Asset[]
+  processes              BusinessProcess[]
+  regulatoryRequirements RegulatoryRequirement[]
+  evidence               Evidence[]
+  comments               Comment[]
+  playbookExecutions     PlaybookExecution[]
+}
+
+model RiskControl {
+  riskId    String
+  controlId String
+  risk      Risk    @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  control   Control @relation(fields: [controlId], references: [id], onDelete: Cascade)
+
+  @@id([riskId, controlId])
+}
+
+model ControlAssessment {
+  id                     String   @id @default(cuid())
+  controlId              String
+  control                Control  @relation(fields: [controlId], references: [id], onDelete: Cascade)
+  testedById             String
+  testedBy               User     @relation(fields: [testedById], references: [id])
+  testDate               DateTime @default(now())
+  testResult             String // PASSED | PASSED_WITH_FINDINGS | FAILED
+  designEffectiveness    String
+  operatingEffectiveness String
+  findings               String?
+  evidenceNote           String?
+}
+
+// ------------------------------------------------------------------
+// Maßnahmen
+// ------------------------------------------------------------------
+
+model Action {
+  id                    String    @id @default(cuid())
+  actionId              String    @unique // z. B. ACT-0001
+  riskId                String
+  risk                  Risk      @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String
+  ownerId               String?
+  owner                 User?     @relation(fields: [ownerId], references: [id])
+  priority              String // LOW | MEDIUM | HIGH | CRITICAL
+  startDate             DateTime?
+  dueDate               DateTime?
+  status                String    @default("PLANNED")
+  progress              Int       @default(0) // 0–100 %
+  expectedRiskReduction String?
+  budget                String?
+  dependencies          String?
+  evidenceNote          String?
+  validationStatus      String    @default("NOT_VALIDATED") // NOT_VALIDATED | VALIDATED | REJECTED
+  effectivenessCheck    String?
+  escalationLevel       Int       @default(0) // 0 = keine, 1 = Teamleitung, 2 = Bereich, 3 = Management
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  comments  Comment[]
+  approvals Approval[]
+
+  @@index([status])
+}
+
+// ------------------------------------------------------------------
+// Third Party Risk Management
+// ------------------------------------------------------------------
+
+model ThirdParty {
+  id                       String    @id @default(cuid())
+  tpId                     String    @unique // z. B. TP-001
+  name                     String
+  providedService          String
+  businessOwnerId          String?
+  businessOwner            User?     @relation("TpBusinessOwner", fields: [businessOwnerId], references: [id])
+  contractOwnerId          String?
+  contractOwner            User?     @relation("TpContractOwner", fields: [contractOwnerId], references: [id])
+  registeredCountry        String
+  serviceLocations         String
+  dataLocations            String
+  informationTypes         String // Art der verarbeiteten Informationen
+  supportsCriticalFunction Boolean   @default(false)
+  ictServiceCategory       String
+  criticality              String    @default("NOT_ASSESSED") // NOT_ASSESSED | LOW | MEDIUM | HIGH | CRITICAL
+  inherentRiskScore        Int?
+  residualRiskScore        Int?
+  dueDiligenceStatus       String    @default("NOT_STARTED") // NOT_STARTED | IN_PROGRESS | COMPLETED | OVERDUE
+  assessmentDate           DateTime?
+  nextReviewDate           DateTime?
+  status                   String    @default("SCREENING") // Workflow, siehe enums.ts
+  concentrationRisk        Boolean   @default(false)
+  substitutability         String    @default("NOT_ASSESSED") // EASY | DIFFICULT | HARDLY_SUBSTITUTABLE | NOT_ASSESSED
+  auditRights              Boolean   @default(false)
+  incidentReporting        Boolean   @default(false)
+  openFindings             String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  services               ThirdPartyService[]
+  subcontractors         Subcontractor[]
+  contracts              Contract[]
+  exitStrategy           ExitStrategy?
+  providedIctServices    IctService[]
+  risks                  Risk[]
+  criticalFunctions      CriticalFunction[]
+  regulatoryRequirements RegulatoryRequirement[]
+  evidence               Evidence[]
+  comments               Comment[]
+  approvals              Approval[]
+  playbookExecutions     PlaybookExecution[]
+
+  @@index([status])
+  @@index([criticality])
+}
+
+model ThirdPartyService {
+  id           String      @id @default(cuid())
+  thirdPartyId String
+  thirdParty   ThirdParty  @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  name         String
+  description  String
+  ictServiceId String?
+  ictService   IctService? @relation(fields: [ictServiceId], references: [id])
+}
+
+model Subcontractor {
+  id           String     @id @default(cuid())
+  thirdPartyId String
+  thirdParty   ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  name         String
+  country      String
+  service      String
+  critical     Boolean    @default(false)
+}
+
+model Contract {
+  id                    String    @id @default(cuid())
+  thirdPartyId          String
+  thirdParty            ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  title                 String
+  startDate             DateTime
+  endDate               DateTime?
+  noticePeriodDays      Int?
+  auditRights           Boolean   @default(false)
+  accessRights          Boolean   @default(false)
+  incidentReporting     Boolean   @default(false)
+  notes                 String?
+}
+
+model ExitStrategy {
+  id               String     @id @default(cuid())
+  thirdPartyId     String     @unique
+  thirdParty       ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  strategySummary  String
+  exitPlanExists   Boolean    @default(false)
+  lastTestDate     DateTime?
+  testResult       String? // PASSED | PASSED_WITH_FINDINGS | FAILED
+  substituteOptions String?
+  status           String     @default("MISSING") // MISSING | DRAFT | APPROVED | TESTED | OUTDATED
+}
+
+// ------------------------------------------------------------------
+// Evidence (Metadaten- und Linkregister, keine Dokumentenablage)
+// ------------------------------------------------------------------
+
+model Evidence {
+  id             String    @id @default(cuid())
+  evidenceId     String    @unique // z. B. EV-001
+  title          String
+  docType        String // POLICY | REPORT | CERTIFICATE | TEST_RESULT | CONTRACT | SCREENSHOT | OTHER
+  ownerId        String?
+  owner          User?     @relation("EvidenceOwner", fields: [ownerId], references: [id])
+  link           String // Speicherort / freigegebener Link (kein Upload)
+  riskId         String?
+  risk           Risk?     @relation(fields: [riskId], references: [id])
+  controlId      String?
+  control        Control?  @relation(fields: [controlId], references: [id])
+  thirdPartyId   String?
+  thirdParty     ThirdParty? @relation(fields: [thirdPartyId], references: [id])
+  validUntil     DateTime?
+  classification String    @default("INTERNAL")
+  reviewerId     String?
+  reviewer       User?     @relation("EvidenceReviewer", fields: [reviewerId], references: [id])
+  reviewStatus   String    @default("NOT_REVIEWED") // NOT_REVIEWED | REVIEWED | EXPIRED | REJECTED
+  version        String    @default("1.0")
+  contentHash    String? // optionales Integritätsmerkmal
+  createdAt      DateTime  @default(now())
+
+  complianceMappings ComplianceMapping[]
+}
+
+// ------------------------------------------------------------------
+// Regulatorik
+// ------------------------------------------------------------------
+
+model RegulatoryRequirement {
+  id          String @id @default(cuid())
+  refId       String @unique // z. B. DORA-ICT-01
+  framework   String // DORA | DORA_RTS | EBA_ICT | EBA_OUTSOURCING | ISO27001 | ISO27005 | NIST_CSF | NIS2 | INTERNAL
+  reference   String // Kapitel-/Control-Referenz
+  title       String
+  description String
+
+  risks        Risk[]
+  controls     Control[]
+  thirdParties ThirdParty[]
+  mappings     ComplianceMapping[]
+}
+
+model ComplianceMapping {
+  id             String    @id @default(cuid())
+  requirementId  String
+  requirement    RegulatoryRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  status         String    @default("NOT_ASSESSED") // 9 Stufen, siehe enums.ts – KEIN automatisches Compliance-Urteil
+  justification  String
+  ownerId        String?
+  owner          User?     @relation("ComplianceOwner", fields: [ownerId], references: [id])
+  assessedAt     DateTime  @default(now())
+  evidenceId     String?
+  evidence       Evidence? @relation(fields: [evidenceId], references: [id])
+  reviewerId     String?
+  reviewer       User?     @relation("ComplianceReviewer", fields: [reviewerId], references: [id])
+  nextReviewDate DateTime?
+}
+
+// ------------------------------------------------------------------
+// Runbooks & Playbooks
+// ------------------------------------------------------------------
+
+model Runbook {
+  id              String @id @default(cuid())
+  code            String @unique // RB-01 …
+  title           String
+  purpose         String
+  scope           String
+  triggerText     String
+  prerequisites   String
+  input           String
+  rolesText       String
+  sla             String
+  escalationRules String
+  output          String
+  kpi             String
+  controlPoints   String
+  reviewCycle     String
+  version         String @default("1.0")
+  approvalStatus  String @default("APPROVED")
+  lessonsLearned  String @default("")
+
+  steps      RunbookStep[]
+  executions RunbookExecution[]
+}
+
+model RunbookStep {
+  id               String  @id @default(cuid())
+  runbookId        String
+  runbook          Runbook @relation(fields: [runbookId], references: [id], onDelete: Cascade)
+  sortOrder        Int
+  title            String
+  description      String
+  responsibleRole  String
+  isDecisionPoint  Boolean @default(false)
+  requiredEvidence String?
+
+  results RunbookStepResult[]
+}
+
+model RunbookExecution {
+  id          String    @id @default(cuid())
+  runbookId   String
+  runbook     Runbook   @relation(fields: [runbookId], references: [id], onDelete: Cascade)
+  startedById String
+  startedBy   User      @relation(fields: [startedById], references: [id])
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  status      String    @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | ABORTED
+  contextNote String?
+
+  stepResults RunbookStepResult[]
+}
+
+model RunbookStepResult {
+  id            String           @id @default(cuid())
+  executionId   String
+  execution     RunbookExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  stepId        String
+  step          RunbookStep      @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  status        String           @default("OPEN") // OPEN | DONE | SKIPPED | BLOCKED
+  comment       String?
+  completedById String?
+  completedBy   User?            @relation(fields: [completedById], references: [id])
+  completedAt   DateTime?
+
+  @@unique([executionId, stepId])
+}
+
+model Playbook {
+  id                 String @id @default(cuid())
+  code               String @unique // PB-01 …
+  scenario           String
+  objective          String
+  activationCriteria String
+  severityGuidance   String
+  rolesRaci          String
+  initialAssessment  String
+  immediateActions   String
+  riskAnalysis       String
+  decisionTree       String
+  communication      String
+  regulatoryCheck    String
+  measures           String
+  evidenceRequired   String
+  closureCriteria    String
+  lessonsLearned     String @default("")
+  postEventReview    String
+
+  executions PlaybookExecution[]
+}
+
+model PlaybookExecution {
+  id           String    @id @default(cuid())
+  playbookId   String
+  playbook     Playbook  @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  startedById  String
+  startedBy    User      @relation(fields: [startedById], references: [id])
+  startedAt    DateTime  @default(now())
+  closedAt     DateTime?
+  status       String    @default("ACTIVE") // ACTIVE | CLOSED | ABORTED
+  severity     String // LOW | MEDIUM | HIGH | CRITICAL
+  notes        String?
+  riskId       String?
+  risk         Risk?       @relation(fields: [riskId], references: [id])
+  controlId    String?
+  control      Control?    @relation(fields: [controlId], references: [id])
+  thirdPartyId String?
+  thirdParty   ThirdParty? @relation(fields: [thirdPartyId], references: [id])
+}
+
+// ------------------------------------------------------------------
+// Querschnitt: Freigaben, Kommentare, Benachrichtigungen, Reports
+// ------------------------------------------------------------------
+
+model Approval {
+  id            String    @id @default(cuid())
+  approvalType  String // RISK_ASSESSMENT | RISK_ACCEPTANCE | ACTION | THIRD_PARTY | CLOSURE
+  status        String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  requestedById String
+  requestedBy   User      @relation("ApprovalRequester", fields: [requestedById], references: [id])
+  decidedById   String?
+  decidedBy     User?     @relation("ApprovalDecider", fields: [decidedById], references: [id])
+  decidedAt     DateTime?
+  comment       String?
+  createdAt     DateTime  @default(now())
+
+  riskId       String?
+  risk         Risk?       @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  actionId     String?
+  action       Action?     @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  thirdPartyId String?
+  thirdParty   ThirdParty? @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id])
+  body         String
+  createdAt    DateTime @default(now())
+
+  riskId       String?
+  risk         Risk?       @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  actionId     String?
+  action       Action?     @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  controlId    String?
+  control      Control?    @relation(fields: [controlId], references: [id], onDelete: Cascade)
+  thirdPartyId String?
+  thirdParty   ThirdParty? @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Report {
+  id            String   @id @default(cuid())
+  reportType    String // EXECUTIVE_SUMMARY | TOP_RISKS | ABOVE_APPETITE | OVERDUE_ACTIONS | ACCEPTANCES | TPRM_OVERVIEW | DORA_READINESS | CONTROL_EFFECTIVENESS | QUALITY_REVIEW | TREND | DECISION_PAPER
+  title         String
+  createdById   String
+  createdBy     User     @relation(fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  effectiveDate DateTime // Stichtag
+  filters       String // serialisierte Filterparameter (Snapshot, bewusst als Text)
+  format        String // HTML | CSV | XLSX | PDF
+}
+
+// ------------------------------------------------------------------
+// Audit Trail (append-only; keine Update-/Delete-Pfade in der App)
+// ------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  userEmail  String // redundant gespeichert, damit der Eintrag auch nach Nutzerlöschung lesbar bleibt
+  action     String // z. B. LOGIN, LOGIN_FAILED, CREATE, UPDATE, STATUS_CHANGE, APPROVE, REJECT, EXPORT …
+  entityType String
+  entityId   String
+  field      String?
+  oldValue   String?
+  newValue   String?
+  comment    String?
+
+  @@index([entityType, entityId])
+  @@index([timestamp])
+}
+
+// ------------------------------------------------------------------
+// Einstellungen & gespeicherte Filter
+// ------------------------------------------------------------------
+
+model AppSetting {
+  key         String @id // z. B. "risk.threshold.low.max" = "4"
+  value       String
+  description String
+}
+
+model SavedFilter {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  page      String // z. B. "risks"
+  query     String // Query-String der gespeicherten Filteransicht
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design-Tokens (shadcn-kompatibles Schema, ADR-0004).
+ * Zurückhaltendes Banking-/GRC-Farbschema; Risikofarben werden nie als
+ * einziges Unterscheidungsmerkmal verwendet (immer Text-Label daneben).
+ */
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 28% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 14%;
+    --primary: 215 60% 25%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 214 20% 92%;
+    --secondary-foreground: 215 28% 20%;
+    --muted: 214 18% 94%;
+    --muted-foreground: 215 12% 42%;
+    --accent: 213 45% 90%;
+    --accent-foreground: 215 40% 22%;
+    --destructive: 0 65% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 16% 86%;
+    --input: 214 16% 82%;
+    --ring: 215 60% 35%;
+    --radius: 0.5rem;
+    --risk-low: 145 55% 34%;
+    --risk-medium: 40 85% 40%;
+    --risk-high: 24 85% 44%;
+    --risk-critical: 0 65% 42%;
+  }
+
+  .dark {
+    --background: 217 30% 10%;
+    --foreground: 213 20% 92%;
+    --card: 217 28% 14%;
+    --card-foreground: 213 20% 92%;
+    --primary: 213 55% 62%;
+    --primary-foreground: 217 30% 10%;
+    --secondary: 217 22% 20%;
+    --secondary-foreground: 213 20% 88%;
+    --muted: 217 22% 18%;
+    --muted-foreground: 214 12% 62%;
+    --accent: 216 30% 24%;
+    --accent-foreground: 213 25% 90%;
+    --destructive: 0 60% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 18% 24%;
+    --input: 217 18% 28%;
+    --ring: 213 55% 55%;
+    --risk-low: 145 45% 42%;
+    --risk-medium: 40 75% 50%;
+    --risk-high: 24 80% 54%;
+    --risk-critical: 0 65% 55%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+}
