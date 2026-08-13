@@ -39,8 +39,10 @@ export function residualRisk(
   if (effectivenessPercent < 0 || effectivenessPercent > 100)
     throw new RangeError(`effectiveness out of range: ${effectivenessPercent}`);
   const e = effectivenessPercent / 100;
-  const residual = Math.round(inherent * (1 - e * mitigationCap));
-  return Math.max(1, residual);
+  // Fließkomma-stabil runden (z. B. 20 × 0,325 = 6.4999… → 6.5 → 7),
+  // damit das Ergebnis exakt der dokumentierten Methodik entspricht.
+  const raw = Number((inherent * (1 - e * mitigationCap)).toFixed(6));
+  return Math.max(1, Math.round(raw));
 }
 
 export function classify(

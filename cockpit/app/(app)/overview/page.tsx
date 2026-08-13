@@ -99,7 +99,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         <KpiTile label="Offene Risikoakzeptanzen" value={k.openAcceptances} href="/reports/ACCEPTANCES" warn={k.openAcceptances > 0} />
         <KpiTile label="Kontrollen mit Schwächen" value={k.weakControls} href="/controls?weak=1" warn={k.weakControls > 0} />
         <KpiTile label="Kritische Drittparteien" value={k.criticalThirdParties} href="/third-parties?critical=1" />
-        <KpiTile label="Auslaufende Verträge (180 T.)" value={k.expiringContracts} href="/third-parties?expiring=1" warn={k.expiringContracts > 0} />
+        <KpiTile label="Auslaufende Verträge (180 T.)" value={k.expiringContracts} href="/third-parties?expiringContracts=1" warn={k.expiringContracts > 0} />
         <KpiTile label="Risiken ohne Owner" value={k.risksWithoutOwner} href="/risks?noOwner=1" warn={k.risksWithoutOwner > 0} />
         <KpiTile label="Ohne aktuelle Bewertung" value={k.risksWithoutAssessment} href="/risks?noAssessment=1" warn={k.risksWithoutAssessment > 0} />
       </div>
