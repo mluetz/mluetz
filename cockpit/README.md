@@ -93,6 +93,18 @@ npm run test:e2e    # Playwright (Login, RBAC, Kernnavigation) – benötigt See
 
 ## Docker
 
+**Einfachster Betrieb (ein Container, SQLite, Demo-Daten automatisch)** – z. B.
+für ein Synology NAS, Schritt-für-Schritt-Anleitung:
+[docs/operations/synology.md](docs/operations/synology.md):
+
+```bash
+echo "SESSION_SECRET=$(head -c 48 /dev/urandom | base64)" > .env
+docker compose -f docker-compose.synology.yml up -d --build
+# → http://<host>:3000 – Demo-Datenbank wird beim ersten Start angelegt
+```
+
+**Produktionsprofil mit PostgreSQL:**
+
 ```bash
 # Voraussetzung: .env mit SESSION_SECRET und POSTGRES_PASSWORD;
 # prisma/schema.prisma Provider auf "postgresql" stellen
