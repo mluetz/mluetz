@@ -1,0 +1,31 @@
+# ============================================================
+# ICT & TPRM Cockpit – Synology NAS (Container Manager, DSM 7)
+# ------------------------------------------------------------
+# Ein-Container-Betrieb mit SQLite in einem Docker-Volume.
+# Die Demo-Datenbank wird beim ersten Start automatisch angelegt.
+#
+# Vorbereitung (einmalig): im selben Ordner eine Datei ".env" mit
+#   SESSION_SECRET=<zufälliger Wert, mind. 32 Zeichen>
+# anlegen. Anleitung: docs/operations/synology.md
+#
+# Aufruf danach: http://<NAS-IP>:3000  (z. B. http://192.168.178.97:3000)
+# ============================================================
+
+services:
+  cockpit:
+    build: .
+    image: ict-tprm-cockpit:latest
+    container_name: ict-tprm-cockpit
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "file:/data/cockpit.db"
+      SESSION_SECRET: "${SESSION_SECRET:?SESSION_SECRET in .env setzen (mind. 32 Zeichen)}"
+      AUTH_DEMO_LOGIN: "${AUTH_DEMO_LOGIN:-true}"
+      APP_BASE_URL: "${APP_BASE_URL:-http://192.168.178.97:3000}"
+    volumes:
+      - cockpit-data:/data
+    restart: unless-stopped
+
+volumes:
+  cockpit-data:

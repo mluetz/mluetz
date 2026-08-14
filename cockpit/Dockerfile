@@ -15,9 +15,12 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # Dummy-Werte nur für den Build (werden zur Laufzeit überschrieben)
-ENV DATABASE_URL="file:./build.db" \
+ENV DATABASE_URL="file:/app/prisma/seed-template.db" \
     SESSION_SECRET="build-time-secret-not-used-at-runtime-0123456789"
 RUN npx prisma generate && npm run build
+# Demo-Datenbank-Vorlage erzeugen (wird beim ersten Start in das
+# Datenvolume kopiert, siehe docker-entrypoint.sh)
+RUN npx prisma db push --skip-generate && npx tsx prisma/seed.ts
 
 # ---- Runtime ----
 FROM base AS runner
@@ -31,6 +34,12 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder /app/prisma/seed-template.db ./seed-template.db
+COPY --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh
+
+# Datenverzeichnis für SQLite-Betrieb (Volume-Mountpunkt) und Next-Cache
+# app-beschreibbar machen
+RUN mkdir -p /data .next/cache && chown app:app /data /app && chown -R app:app .next/cache
 
 USER app
 EXPOSE 3000
@@ -39,4 +48,4 @@ ENV PORT=3000 HOSTNAME=0.0.0.0
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
