@@ -35,11 +35,16 @@ COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 COPY --from=builder /app/prisma/seed-template.db ./seed-template.db
-COPY --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh
+# Bewusst ohne "--chmod" (das setzt BuildKit voraus, das auf Synology-DSM
+# nicht immer aktiv ist) – Rechte werden per RUN gesetzt.
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
-# Datenverzeichnis für SQLite-Betrieb (Volume-Mountpunkt) und Next-Cache
-# app-beschreibbar machen
-RUN mkdir -p /data .next/cache && chown app:app /data /app && chown -R app:app .next/cache
+# Entrypoint ausführbar machen; Datenverzeichnis für SQLite (Volume-Mountpunkt)
+# und Next-Cache für den Non-Root-Benutzer beschreibbar machen
+RUN chmod 755 ./docker-entrypoint.sh \
+    && mkdir -p /data .next/cache \
+    && chown app:app /data /app \
+    && chown -R app:app .next/cache
 
 USER app
 EXPOSE 3000
