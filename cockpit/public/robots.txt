@@ -1,0 +1,3 @@
+# Internes Risikomanagement-Werkzeug – nicht für Suchmaschinen bestimmt.
+User-agent: *
+Disallow: /
