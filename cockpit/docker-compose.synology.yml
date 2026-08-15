@@ -24,7 +24,12 @@ services:
       DATABASE_URL: "file:/data/cockpit.db"
       SESSION_SECRET: "${SESSION_SECRET:?SESSION_SECRET in .env setzen (mind. 32 Zeichen)}"
       AUTH_DEMO_LOGIN: "${AUTH_DEMO_LOGIN:-true}"
-      APP_BASE_URL: "${APP_BASE_URL:-http://192.168.178.97:${HOST_PORT:-3000}}"
+      # Vom Installer mit der echten NAS-IP und dem gewählten Port gefüllt.
+      # Das Protokoll steuert das Secure-Flag des Session-Cookies (siehe
+      # lib/auth/cookie-policy.ts): über http:// darf es nicht gesetzt werden.
+      APP_BASE_URL: "${APP_BASE_URL:-http://localhost:${HOST_PORT:-3000}}"
+      # Optionaler Override, falls das Flag manuell erzwungen werden soll:
+      SESSION_COOKIE_SECURE: "${SESSION_COOKIE_SECURE:-}"
     volumes:
       - cockpit-data:/data
     restart: unless-stopped
