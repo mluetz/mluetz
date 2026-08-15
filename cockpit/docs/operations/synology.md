@@ -51,6 +51,51 @@ Datenbank und die `.env` bleiben erhalten.
 
 ---
 
+## Variante 0b: Ohne SSH – Installation über den DSM-Aufgabenplaner
+
+Wenn SSH deaktiviert ist („connection refused“ auf Port 22), lässt sich die
+Ein-Befehl-Installation vollständig über die DSM-Weboberfläche ausführen — der
+Aufgabenplaner führt Skripte als root aus:
+
+1. **Aufgabe anlegen:** Systemsteuerung → **Aufgabenplaner** → Erstellen →
+   **Geplante Aufgabe** → **Benutzerdefiniertes Skript**
+   - Allgemein: Name `Cockpit-Preflight`, Benutzer **root**
+   - Zeitplan: Datum auf **„Am folgenden Datum ausführen“** ohne Wiederholung
+     stellen (die Aufgabe wird gleich manuell gestartet)
+   - Aufgabeneinstellungen → „Benutzerdefiniertes Skript“:
+
+     ```sh
+     mkdir -p /volume1/docker
+     curl -fsSL https://raw.githubusercontent.com/mluetz/mluetz/claude/ict-third-party-risk-cockpit-96rfzf/cockpit/check-synology.sh | sh > /volume1/docker/cockpit-preflight.log 2>&1
+     ```
+
+2. **Ausführen:** Aufgabe markieren → **Ausführen**. Ergebnis nach ~1 Minute in
+   File Station öffnen: `docker/cockpit-preflight.log` (jede Prüfung `[OK]` /
+   `[WARNUNG]` / `[FEHLER]` plus Fazit).
+3. **Installation:** Zweite Aufgabe `Cockpit-Install` genauso anlegen mit:
+
+     ```sh
+     mkdir -p /volume1/docker
+     curl -fsSL https://raw.githubusercontent.com/mluetz/mluetz/claude/ict-third-party-risk-cockpit-96rfzf/cockpit/install-synology.sh | sh > /volume1/docker/cockpit-install.log 2>&1
+     ```
+
+   → **Ausführen**. Der Build läuft 10–25 Minuten im Hintergrund; Fortschritt
+   steht in `docker/cockpit-install.log` (Datei in File Station erneut öffnen
+   bzw. herunterladen, sie wird fortlaufend geschrieben). Parallel erscheint im
+   **Container Manager** das Abbild und danach der Container `ict-tprm-cockpit`.
+4. **Fertig-Prüfung:** `http://192.168.178.97:3000/api/health` im Browser →
+   `{"status":"ok"}`, dann `http://192.168.178.97:3000` öffnen.
+5. **Aufräumen:** Beide Aufgaben im Aufgabenplaner wieder löschen (oder für
+   spätere Updates behalten — erneutes Ausführen von `Cockpit-Install`
+   aktualisiert die Installation, Datenbank und `.env` bleiben erhalten).
+
+> Hinweis: Der Aufgabenplaner zeigt keine Live-Ausgabe; maßgeblich sind die
+> Log-Dateien unter `docker/` in der File Station. Optional kann unter
+> Aufgabenplaner → Einstellungen die Ausgabe zusätzlich per E-Mail versendet
+> werden.
+
+---
+
 ## Variante A: Container Manager, ohne SSH (empfohlen)
 
 **1. Projektordner anlegen**
