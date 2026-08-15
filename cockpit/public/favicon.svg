@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="ICT &amp; TPRM Cockpit">
+  <rect width="32" height="32" rx="7" fill="#1e3a5f" />
+  <path
+    d="M16 6.5 24 9.5v6.2c0 4.6-3.2 8.4-8 9.8-4.8-1.4-8-5.2-8-9.8V9.5l8-3z"
+    fill="none"
+    stroke="#e8eef6"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+  <path d="m12.4 16.2 2.6 2.6 5-5.4" fill="none" stroke="#e8eef6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

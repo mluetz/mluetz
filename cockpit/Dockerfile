@@ -17,7 +17,9 @@ COPY . .
 # Dummy-Werte nur für den Build (werden zur Laufzeit überschrieben)
 ENV DATABASE_URL="file:/app/prisma/seed-template.db" \
     SESSION_SECRET="build-time-secret-not-used-at-runtime-0123456789"
-RUN npx prisma generate && npm run build
+# public/ absichern: Git speichert keine leeren Verzeichnisse – ohne diese
+# Zeile bricht der spätere COPY-Schritt bei einem Quellstand ohne public/ ab.
+RUN mkdir -p public && npx prisma generate && npm run build
 # Demo-Datenbank-Vorlage erzeugen (wird beim ersten Start in das
 # Datenvolume kopiert, siehe docker-entrypoint.sh)
 RUN npx prisma db push --skip-generate && npx tsx prisma/seed.ts

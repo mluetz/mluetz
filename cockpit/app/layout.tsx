@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   },
   description:
     "ICT & Third Party Risk Management Cockpit – Management-, Arbeits- und Nachverfolgungswerkzeug (Demo-Daten)",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
