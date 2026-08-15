@@ -21,6 +21,20 @@ nicht erforderlich.
 
 ---
 
+## Voraussetzungen automatisch prüfen (Preflight)
+
+Rein lesender Check aller Voraussetzungen (DSM, Docker, RAM, Speicher, Port,
+Internetzugang) – per SSH auf dem NAS:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mluetz/mluetz/claude/ict-third-party-risk-cockpit-96rfzf/cockpit/check-synology.sh | sudo sh
+```
+
+Das Skript meldet je Prüfung `[OK]` / `[WARNUNG]` / `[FEHLER]` und sagt am Ende,
+ob die Installation starten kann.
+
+---
+
 ## Variante 0: Ein-Befehl-Installation (SSH, vollautomatisch)
 
 SSH aktivieren (Systemsteuerung → Terminal & SNMP), anmelden und **einen** Befehl ausführen:
