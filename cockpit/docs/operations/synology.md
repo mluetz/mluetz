@@ -21,6 +21,22 @@ nicht erforderlich.
 
 ---
 
+## Variante 0: Ein-Befehl-Installation (SSH, vollautomatisch)
+
+SSH aktivieren (Systemsteuerung → Terminal & SNMP), anmelden und **einen** Befehl ausführen:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mluetz/mluetz/claude/ict-third-party-risk-cockpit-96rfzf/cockpit/install-synology.sh | sudo sh
+```
+
+Das Skript (`cockpit/install-synology.sh`, vor Ausführung gern lesen) prüft
+Docker, lädt den Projektstand nach `/volume1/docker/cockpit`, erzeugt ein
+`SESSION_SECRET`, baut das Image und startet den Container. Am Ende wird die
+Aufruf-URL angezeigt. Erneutes Ausführen aktualisiert die Installation, die
+Datenbank und die `.env` bleiben erhalten.
+
+---
+
 ## Variante A: Container Manager, ohne SSH (empfohlen)
 
 **1. Projektordner anlegen**
