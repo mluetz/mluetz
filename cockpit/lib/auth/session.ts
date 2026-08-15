@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { shouldUseSecureCookie } from "@/lib/auth/cookie-policy";
 import type { RoleKey } from "@/lib/domain/enums";
 
 /**
@@ -73,7 +74,7 @@ export async function createSessionCookie(userId: string): Promise<void> {
   store.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookie(),
     path: "/",
     maxAge: SESSION_TTL_SECONDS,
   });

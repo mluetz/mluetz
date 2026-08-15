@@ -98,12 +98,24 @@ else
 fi
 echo "==> Host-Port: ${CHOSEN_PORT}"
 
+# --- APP_BASE_URL setzen -------------------------------------
+# Bestimmt u. a., ob das Session-Cookie das Secure-Flag trägt: Über eine reine
+# HTTP-Verbindung darf es das NICHT, sonst verwirft der Browser das Cookie und
+# man landet nach der Anmeldung wieder auf der Login-Seite.
+NAS_IP="$(ip route get 1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if ($i=="src") {print $(i+1); exit}}')"
+[ -n "${NAS_IP:-}" ] || NAS_IP="localhost"
+BASE_URL="http://${NAS_IP}:${CHOSEN_PORT}"
+
+if grep -q '^APP_BASE_URL=' "$APP_DIR/.env" 2>/dev/null; then
+  sed -i.bak "s#^APP_BASE_URL=.*#APP_BASE_URL=${BASE_URL}#" "$APP_DIR/.env" && rm -f "$APP_DIR/.env.bak"
+else
+  printf 'APP_BASE_URL=%s\n' "$BASE_URL" >> "$APP_DIR/.env"
+fi
+echo "==> Basis-URL: ${BASE_URL}"
+
 cd "$APP_DIR"
 echo "==> Baue Image und starte Container – der erste Build dauert je nach Modell 10–25 Minuten …"
 $COMPOSE -f docker-compose.synology.yml up -d --build
-
-NAS_IP="$(ip route get 1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if ($i=="src") {print $(i+1); exit}}')"
-[ -n "${NAS_IP:-}" ] || NAS_IP="<NAS-IP>"
 
 echo ""
 echo "============================================================"
