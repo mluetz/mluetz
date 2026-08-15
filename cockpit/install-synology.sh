@@ -59,6 +59,45 @@ else
   echo "==> Vorhandene .env wird weiterverwendet."
 fi
 
+# --- Host-Port bestimmen -------------------------------------
+# Reihenfolge: HOST_PORT aus der Umgebung > bereits in .env gespeicherter
+# Wert > 3000 > erster freier Port aus der Kandidatenliste.
+port_in_use() {
+  netstat -tln 2>/dev/null | grep -q "[:.]$1 "
+}
+
+CONFIGURED_PORT="$(sed -n 's/^HOST_PORT=//p' "$APP_DIR/.env" | tail -1)"
+CHOSEN_PORT="${HOST_PORT:-${CONFIGURED_PORT:-}}"
+
+if [ -z "$CHOSEN_PORT" ]; then
+  for CANDIDATE in 3000 3001 3002 3080 8300 8380; do
+    if ! port_in_use "$CANDIDATE"; then
+      CHOSEN_PORT="$CANDIDATE"
+      break
+    fi
+  done
+fi
+
+if [ -z "$CHOSEN_PORT" ]; then
+  echo "FEHLER: Kein freier Port gefunden. Bitte HOST_PORT setzen, z. B.:" >&2
+  echo "  HOST_PORT=8390 sh install-synology.sh" >&2
+  exit 1
+fi
+
+if [ "$CHOSEN_PORT" != "${CONFIGURED_PORT:-}" ] && port_in_use "$CHOSEN_PORT"; then
+  echo "FEHLER: Port $CHOSEN_PORT ist belegt. Bitte anderen Port wählen:" >&2
+  echo "  HOST_PORT=<freier-port> sh install-synology.sh" >&2
+  exit 1
+fi
+
+# Port in der .env festschreiben (idempotent)
+if [ -n "$CONFIGURED_PORT" ]; then
+  sed -i.bak "s/^HOST_PORT=.*/HOST_PORT=${CHOSEN_PORT}/" "$APP_DIR/.env" && rm -f "$APP_DIR/.env.bak"
+else
+  printf 'HOST_PORT=%s\n' "$CHOSEN_PORT" >> "$APP_DIR/.env"
+fi
+echo "==> Host-Port: ${CHOSEN_PORT}"
+
 cd "$APP_DIR"
 echo "==> Baue Image und starte Container – der erste Build dauert je nach Modell 10–25 Minuten …"
 $COMPOSE -f docker-compose.synology.yml up -d --build
@@ -68,9 +107,9 @@ NAS_IP="$(ip route get 1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if ($i=="src") {
 
 echo ""
 echo "============================================================"
-echo "Fertig. Das Cockpit läuft unter:  http://${NAS_IP}:3000"
+echo "Fertig. Das Cockpit läuft unter:  http://${NAS_IP}:${CHOSEN_PORT}"
 echo "Demo-Login: riskmanager@demo.example / Demo!2026"
 echo "Status:     docker logs -f ict-tprm-cockpit"
-echo "Health:     http://${NAS_IP}:3000/api/health"
+echo "Health:     http://${NAS_IP}:${CHOSEN_PORT}/api/health"
 echo "Hinweis:    Keine Portweiterleitung ins Internet einrichten."
 echo "============================================================"

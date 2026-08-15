@@ -17,7 +17,7 @@ nicht erforderlich.
 | DSM | 7.x mit Paket **Container Manager** (Paket-Zentrum). Auf DSM 6 heißt es „Docker“ – Schritte analog. |
 | CPU | x86_64 oder ARM64 (alle aktuellen Modelle). |
 | **Arbeitsspeicher** | **≥ 2 GB RAM** für den Build auf dem NAS. Bei weniger (z. B. DS220j, DS120j) bitte **Variante C** nutzen – der Next.js-Build scheitert sonst mit „JavaScript heap out of memory“. |
-| Port | **3000** frei (DSM selbst nutzt 5000/5001 – keine Kollision). |
+| Port | **3000** bevorzugt. Ist er belegt, wählt der Installer automatisch den nächsten freien Port (3001, 3002, 3080, 8300, 8380). Fester Wunschport: `HOST_PORT=8390` vor dem Installationsbefehl setzen. Der gewählte Port wird in `.env` festgeschrieben und bei Updates beibehalten. |
 
 ---
 

@@ -84,10 +84,20 @@ if [ -d /volume1 ]; then
 fi
 
 # --- Port 3000 ------------------------------------------------
-if netstat -tln 2>/dev/null | grep -q ':3000 '; then
-  fail "Port 3000 ist bereits belegt – anderen Port im Compose-Mapping wählen (z. B. \"3001:3000\")"
-else
+port_in_use() { netstat -tln 2>/dev/null | grep -q "[:.]$1 "; }
+
+if ! port_in_use 3000; then
   ok "Port 3000 ist frei"
+else
+  ALT=""
+  for CANDIDATE in 3001 3002 3080 8300 8380; do
+    if ! port_in_use "$CANDIDATE"; then ALT="$CANDIDATE"; break; fi
+  done
+  if [ -n "$ALT" ]; then
+    warn "Port 3000 ist belegt – der Installer weicht automatisch auf Port $ALT aus (oder HOST_PORT=<port> vorgeben)"
+  else
+    fail "Port 3000 und alle Ausweich-Ports sind belegt – bitte HOST_PORT=<freier-port> vorgeben"
+  fi
 fi
 
 # --- Internetzugang (für Image-Download und Projektstand) ------
