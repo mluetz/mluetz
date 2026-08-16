@@ -10,6 +10,7 @@ import {
   Building2,
   ClipboardCheck,
   BookOpenCheck,
+  GraduationCap,
   Swords,
   FileArchive,
   BarChart3,
@@ -37,6 +38,7 @@ const icons = {
   evidence: FileArchive,
   reports: BarChart3,
   governance: Scale,
+  dora: GraduationCap,
   admin: Settings,
   audit: ScrollText,
 } as const;
