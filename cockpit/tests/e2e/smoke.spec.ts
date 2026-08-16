@@ -21,7 +21,8 @@ test("Login-Seite erreichbar und Fehlermeldung bei falschen Zugangsdaten", async
   await page.getByLabel("E-Mail").fill("riskmanager@demo.example");
   await page.getByLabel("Passwort").fill("falsches-passwort");
   await page.getByRole("button", { name: "Anmelden" }).click();
-  await expect(page.getByRole("alert")).toContainText("fehlgeschlagen");
+  // Nicht getByRole("alert"): Der Next.js-Route-Announcer trägt ebenfalls role="alert".
+  await expect(page.getByText(/Anmeldung fehlgeschlagen/)).toBeVisible();
 });
 
 test("ICT Risk Manager: Dashboard, Risk Register und Detailseite", async ({ page }) => {
@@ -64,4 +65,27 @@ test("Management: Reports erreichbar, Entscheidungsvorlage rendert", async ({ pa
   await expect(page.getByRole("heading", { name: "Reports", exact: true })).toBeVisible();
   await page.goto("/reports/DECISION_PAPER");
   await expect(page.getByText(/Stichtag/)).toBeVisible();
+});
+
+test("DORA Wissensbasis: Akkordeon und Begriffs-Modal funktionieren", async ({ page }) => {
+  await login(page, "riskmanager@demo.example");
+  await page.goto("/dora-knowledge");
+  await expect(page.getByRole("heading", { name: "DORA ISRM Wissensbasis" })).toBeVisible();
+
+  // Säule 1 ist initial geöffnet und enthält klickbare Fachbegriffe.
+  // Klick mit Retry, bis die React-Hydration die Handler angebunden hat.
+  await expect(page.getByText("IKT-Risikomanagementrahmen", { exact: false }).first()).toBeVisible();
+  await expect(async () => {
+    await page.getByRole("button", { name: "Leitungsorgan", exact: true }).first().click();
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15000 });
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toContainText("Vorstand");
+  await dialog.getByRole("button", { name: "Schließen" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  // Andere Säule aufklappen (Drittparteien) und dort einen Begriff öffnen
+  await page.getByRole("button", { name: /Management des IKT-Drittparteienrisikos/ }).click();
+  await page.getByRole("button", { name: "CTPP", exact: true }).first().click();
+  await expect(page.getByRole("dialog")).toContainText("Critical Third-Party Provider");
 });
