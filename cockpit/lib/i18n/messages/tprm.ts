@@ -343,7 +343,8 @@ const de = {
     },
     startForm: {
       contextLabel: "Kontext / Anlass (optional)",
-      contextHint: "z. B. Anlass, betroffenes System, Ticket-Nr. – wird in der Ausführung angezeigt.",
+      contextHint:
+        "z. B. Anlass, betroffenes System, Ticket-Nr. – wird in der Ausführung angezeigt.",
       starting: "Starte…",
       submit: "Ausführung starten",
     },
@@ -716,8 +717,7 @@ const en: typeof de = {
       linkedRisks: "Linked risks",
       noRisksLinked: "No risks linked.",
       workflowTitle: "TPRM workflow",
-      workflowDescription:
-        "Every status change is logged with user, timestamp and justification.",
+      workflowDescription: "Every status change is logged with user, timestamp and justification.",
       noWritePermission: "No write permission.",
       noWritePermissionAssessment: "No write permission for assessments.",
       contractsTitle: "Contracts",

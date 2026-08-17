@@ -61,7 +61,9 @@ export function createActionColumns(locale: Locale): ColumnDef<ActionMgmtRow>[] 
       accessorKey: "ownerName",
       header: t.owner,
       cell: ({ row }) =>
-        row.original.ownerName ?? <span className="text-xs text-risk-high">{m.common.noOwner}</span>,
+        row.original.ownerName ?? (
+          <span className="text-xs text-risk-high">{m.common.noOwner}</span>
+        ),
     },
     {
       accessorKey: "priority",

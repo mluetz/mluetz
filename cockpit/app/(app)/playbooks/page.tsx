@@ -65,9 +65,7 @@ export default async function PlaybooksPage() {
               <CardContent className="space-y-2 text-xs text-muted-foreground">
                 <p>{truncate(pb.objective)}</p>
                 <p>
-                  <span className="font-medium text-foreground">
-                    {t.pb.list.severityGuidance}:
-                  </span>{" "}
+                  <span className="font-medium text-foreground">{t.pb.list.severityGuidance}:</span>{" "}
                   {truncate(pb.severityGuidance, 120)}
                 </p>
               </CardContent>

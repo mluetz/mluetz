@@ -143,8 +143,7 @@ function CountBadges({
   emptyMessage: string;
 }) {
   const entries = Object.entries(counts).filter(([, n]) => n > 0);
-  if (entries.length === 0)
-    return <p className="text-sm text-muted-foreground">{emptyMessage}</p>;
+  if (entries.length === 0) return <p className="text-sm text-muted-foreground">{emptyMessage}</p>;
   return (
     <div className="flex flex-wrap gap-2">
       {entries.map(([k, n]) => (
@@ -411,7 +410,8 @@ async function TprmOverview({ t }: { t: ReportsMessages }) {
   const critical = tps.filter((tp) => tp.criticality === "CRITICAL").length;
   const concentration = tps.filter((tp) => tp.concentrationRisk).length;
   const missingExit = tps.filter(
-    (tp) => tp.supportsCriticalFunction && (!tp.exitStrategy || tp.exitStrategy.status === "MISSING"),
+    (tp) =>
+      tp.supportsCriticalFunction && (!tp.exitStrategy || tp.exitStrategy.status === "MISSING"),
   ).length;
   return (
     <div className="space-y-6">

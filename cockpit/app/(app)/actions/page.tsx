@@ -113,11 +113,7 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
           </Link>
         </div>
         <div className="col-span-full flex flex-wrap gap-2 text-xs">
-          <FilterChip
-            href="/actions?overdue=1"
-            active={sp.overdue === "1"}
-            label={t.chipOverdue}
-          />
+          <FilterChip href="/actions?overdue=1" active={sp.overdue === "1"} label={t.chipOverdue} />
           <FilterChip
             href="/actions?escalated=1"
             active={sp.escalated === "1"}

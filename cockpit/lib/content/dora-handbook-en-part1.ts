@@ -10,11 +10,7 @@
  * the UI; the markers match the canonical keys of the English glossary.
  */
 
-import type {
-  HandbookFigure,
-  HandbookGroup,
-  HandbookSection,
-} from "@/lib/content/dora-handbook";
+import type { HandbookFigure, HandbookGroup, HandbookSection } from "@/lib/content/dora-handbook";
 
 /** Thematic parts of the handbook – the steering level of the overview. */
 export const HANDBOOK_GROUPS_EN: HandbookGroup[] = [
@@ -89,8 +85,7 @@ export const HANDBOOK_FIGURES_EN: Record<number, HandbookFigure> = {
     src: "/dora/en/fig-06.svg",
     width: 1834,
     height: 1382,
-    caption:
-      "Integration point of ISMS, BCMS and data protection – orchestrated incident handling",
+    caption: "Integration point of ISMS, BCMS and data protection – orchestrated incident handling",
   },
   7: {
     src: "/dora/en/fig-07.svg",
@@ -599,11 +594,7 @@ export const HANDBOOK_SECTIONS_EN_PART1: HandbookSection[] = [
             "Negligible",
             "No noticeable impact on business processes, customers or regulatory obligations.",
           ],
-          [
-            "2",
-            "Low",
-            "Limited internal impact, compensable at short notice with existing means.",
-          ],
+          ["2", "Low", "Limited internal impact, compensable at short notice with existing means."],
           [
             "3",
             "Medium",

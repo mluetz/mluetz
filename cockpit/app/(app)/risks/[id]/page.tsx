@@ -6,12 +6,7 @@ import { requirePermission, hasPermission } from "@/lib/authz";
 import { classify } from "@/lib/domain/risk-calc";
 import { getRiskThresholds } from "@/lib/settings";
 import { formatDate, formatDateTime, isOverdue } from "@/lib/utils";
-import {
-  RISK_CLASS,
-  RISK_STATUS,
-  RISK_TRANSITIONS,
-  type RiskStatus,
-} from "@/lib/domain/enums";
+import { RISK_CLASS, RISK_STATUS, RISK_TRANSITIONS, type RiskStatus } from "@/lib/domain/enums";
 import { getLocale } from "@/lib/i18n/server";
 import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 import { PageHeader } from "@/components/page-header";
@@ -222,7 +217,10 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                 </div>
                 <TagList label={t.overview.assets} items={risk.assets.map((a) => a.name)} />
                 <TagList label={t.overview.processes} items={risk.processes.map((p) => p.name)} />
-                <TagList label={t.overview.ictServices} items={risk.ictServices.map((s) => s.name)} />
+                <TagList
+                  label={t.overview.ictServices}
+                  items={risk.ictServices.map((s) => s.name)}
+                />
                 <TagList
                   label={t.overview.criticalFunctions}
                   items={risk.criticalFunctions.map((f) => f.name)}
@@ -561,7 +559,9 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                             formatDate(acc.createdAt),
                           )}
                           {acc.approvedBy ? t.acceptance.decidedBy(acc.approvedBy.name) : ""}
-                          {acc.validUntil ? t.acceptance.validUntil(formatDate(acc.validUntil)) : ""}
+                          {acc.validUntil
+                            ? t.acceptance.validUntil(formatDate(acc.validUntil))
+                            : ""}
                         </span>
                       </div>
                       <Info label={t.acceptance.justification} value={acc.justification} />

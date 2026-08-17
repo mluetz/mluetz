@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/input";
 import { DORA_BINDINGNESS } from "@/lib/domain/enums";
+import { getLocale } from "@/lib/i18n/server";
+import { DORA_MESSAGES } from "@/lib/i18n/messages/dora";
 import { CatalogTableClient } from "@/features/dora/catalog-table-client";
 
 export const metadata = { title: "DORA-Anforderungskatalog" };
@@ -26,6 +28,8 @@ export default async function DoraRequirementsPage({
   searchParams: Promise<Search>;
 }) {
   await requirePermission("compliance:read");
+  const locale = await getLocale();
+  const t = DORA_MESSAGES[locale];
   const sp = await searchParams;
   const [chapters, allRows] = await Promise.all([
     db.doraChapter.findMany({ orderBy: { key: "asc" } }),
@@ -43,12 +47,12 @@ export default async function DoraRequirementsPage({
   return (
     <div>
       <PageHeader
-        title="DORA-Anforderungskatalog"
-        description="Alle Anforderungen nach FRWK-DORA-001 mit Reifegrad, Nachweisstatus und offenen Findings"
+        title={t.catalog.title}
+        description={t.catalog.description}
         crumbs={[
           { label: "Overview", href: "/overview" },
           { label: "DORA", href: "/dora" },
-          { label: "Anforderungen" },
+          { label: t.catalog.crumbRequirements },
         ]}
       />
 
@@ -57,9 +61,9 @@ export default async function DoraRequirementsPage({
         className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4"
       >
         <div>
-          <Label htmlFor="f-chapter">Kapitel</Label>
+          <Label htmlFor="f-chapter">{t.catalog.filterChapter}</Label>
           <Select id="f-chapter" name="chapter" defaultValue={sp.chapter ?? ""}>
-            <option value="">Alle</option>
+            <option value="">{t.catalog.all}</option>
             {chapters.map((c) => (
               <option key={c.key} value={c.key}>
                 {c.roman} – {c.title}
@@ -68,23 +72,23 @@ export default async function DoraRequirementsPage({
           </Select>
         </div>
         <div>
-          <Label htmlFor="f-bindingness">Verbindlichkeit</Label>
+          <Label htmlFor="f-bindingness">{t.catalog.filterBindingness}</Label>
           <Select id="f-bindingness" name="bindingness" defaultValue={sp.bindingness ?? ""}>
-            <option value="">Alle</option>
-            {Object.entries(DORA_BINDINGNESS).map(([k, v]) => (
+            <option value="">{t.catalog.all}</option>
+            {Object.keys(DORA_BINDINGNESS).map((k) => (
               <option key={k} value={k}>
-                {v}
+                {t.enums.bindingness[k as keyof typeof DORA_BINDINGNESS]}
               </option>
             ))}
           </Select>
         </div>
         <div className="flex items-end gap-2">
           <Button type="submit" variant="secondary">
-            Filtern
+            {t.catalog.filter}
           </Button>
           <Link href="/dora/requirements">
             <Button type="button" variant="ghost">
-              Zurücksetzen
+              {t.catalog.reset}
             </Button>
           </Link>
         </div>
@@ -92,27 +96,27 @@ export default async function DoraRequirementsPage({
           <FilterChip
             href="/dora/requirements?openKnockouts=1"
             active={sp.openKnockouts === "1"}
-            label="Offene Knockouts"
+            label={t.catalog.chipOpenKnockouts}
           />
           <FilterChip
             href="/dora/requirements?evidenceCapped=1"
             active={sp.evidenceCapped === "1"}
-            label="Nachweissperre aktiv"
+            label={t.catalog.chipEvidenceCapped}
           />
           <FilterChip
             href="/dora/requirements?notAssessed=1"
             active={sp.notAssessed === "1"}
-            label="Nicht bewertet"
+            label={t.catalog.chipNotAssessed}
           />
           <FilterChip
             href="/dora/requirements?withFindings=1"
             active={sp.withFindings === "1"}
-            label="Mit offenen Findings"
+            label={t.catalog.chipWithFindings}
           />
         </div>
       </form>
 
-      <CatalogTableClient rows={rows} />
+      <CatalogTableClient rows={rows} locale={locale} />
     </div>
   );
 }

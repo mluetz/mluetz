@@ -79,7 +79,9 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
         <Kpi label={t.kpiProgress} value={`${action.progress} %`} />
         <Kpi
           label={t.kpiEscalation}
-          value={m.labels.escalationLevels[action.escalationLevel] ?? String(action.escalationLevel)}
+          value={
+            m.labels.escalationLevels[action.escalationLevel] ?? String(action.escalationLevel)
+          }
           warn={action.escalationLevel > 0}
         />
       </div>
@@ -106,7 +108,9 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
               <Info label={t.expectedRiskReduction} value={action.expectedRiskReduction ?? "–"} />
               <Info
                 label={t.validationStatus}
-                value={m.labels.validationStatus[action.validationStatus] ?? action.validationStatus}
+                value={
+                  m.labels.validationStatus[action.validationStatus] ?? action.validationStatus
+                }
               />
               <Info label={t.effectivenessCheck} value={action.effectivenessCheck ?? "–"} />
               <Info label={t.evidenceNote} value={action.evidenceNote ?? "–"} />

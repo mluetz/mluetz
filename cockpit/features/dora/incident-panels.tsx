@@ -12,16 +12,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Label, Select, Textarea } from "@/components/ui/input";
-import { INCIDENT_STATUS } from "@/lib/domain/enums";
+import type { Locale } from "@/lib/i18n/config";
+import { DORA_MESSAGES } from "@/lib/i18n/messages/dora";
 
-function ErrorLine({ state }: { state: ActionResult }) {
+function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
+  const t = DORA_MESSAGES[locale];
   if (state.error)
     return (
       <p role="alert" className="text-sm text-destructive">
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">Gespeichert.</p>;
+  if (state.ok) return <p className="text-sm text-risk-low">{t.common.saved}</p>;
   return null;
 }
 
@@ -66,10 +68,13 @@ interface Option {
 export function NewIncidentForm({
   criticalFunctions,
   thirdParties,
+  locale = "de",
 }: {
   criticalFunctions: Option[];
   thirdParties: Option[];
+  locale?: Locale;
 }) {
+  const t = DORA_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(createIncident, {});
   const [isMajor, setIsMajor] = useState(false);
 
@@ -77,25 +82,25 @@ export function NewIncidentForm({
     <form action={formAction} className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Vorfallsbeschreibung</CardTitle>
+          <CardTitle>{t.incidentForm.cardTitle}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Field label="Titel" htmlFor="title" required>
+          <Field label={t.incidentForm.titleLabel} htmlFor="title" required>
             <Input id="title" name="title" required minLength={5} maxLength={200} />
           </Field>
           <Field
-            label="Beschreibung"
+            label={t.incidentForm.descriptionLabel}
             htmlFor="description"
             required
-            hint="Was ist passiert? Betroffene Dienste, Kundenzahl, Datenverlust, wirtschaftliche Auswirkung."
+            hint={t.incidentForm.descriptionHint}
           >
             <Textarea id="description" name="description" required minLength={10} rows={3} />
           </Field>
           <Field
-            label="Kenntniserlangung"
+            label={t.incidentForm.awarenessLabel}
             htmlFor="awarenessAt"
             required
-            hint="Startpunkt aller Fristen; darf nicht in der Zukunft liegen."
+            hint={t.incidentForm.awarenessHint}
           >
             <Input id="awarenessAt" name="awarenessAt" type="datetime-local" required />
           </Field>
@@ -104,25 +109,25 @@ export function NewIncidentForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Klassifizierung &amp; parallele Pflichtenstränge</CardTitle>
+          <CardTitle>{t.incidentForm.classCardTitle}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <CheckboxLine
             name="isMajor"
-            label="Schwerwiegender Vorfall i. S. v. Art. 18 DORA"
+            label={t.incidentForm.isMajorLabel}
             checked={isMajor}
             onChange={setIsMajor}
-            hint="Startet die DORA-Meldekette (Erst-, Zwischen- und Abschlussmeldung)."
+            hint={t.incidentForm.isMajorHint}
           />
           <div className="grid gap-4 md:grid-cols-2">
             <Field
-              label="Klassifizierungszeitpunkt"
+              label={t.incidentForm.classifiedAtLabel}
               htmlFor="classifiedAt"
               required={isMajor}
               hint={
                 isMajor
-                  ? "Pflicht bei schwerwiegenden Vorfällen; nicht vor der Kenntniserlangung."
-                  : "Optional; nicht vor der Kenntniserlangung."
+                  ? t.incidentForm.classifiedAtHintMajor
+                  : t.incidentForm.classifiedAtHintOptional
               }
             >
               <Input
@@ -132,20 +137,20 @@ export function NewIncidentForm({
                 required={isMajor}
               />
             </Field>
-            <Field label="Klassifizierungsnotiz" htmlFor="classificationNote">
+            <Field label={t.incidentForm.classificationNoteLabel} htmlFor="classificationNote">
               <Textarea id="classificationNote" name="classificationNote" rows={2} />
             </Field>
           </div>
           <div className="grid gap-2 md:grid-cols-2">
             <CheckboxLine
               name="nis2Relevant"
-              label="NIS-2-/BSIG-relevant"
-              hint="Frühwarnung 24 h, Meldung 72 h, Abschlussbericht 1 Monat."
+              label={t.incidentForm.nis2Label}
+              hint={t.incidentForm.nis2Hint}
             />
             <CheckboxLine
               name="gdprRelevant"
-              label="DSGVO-relevant (personenbezogene Daten)"
-              hint="Meldung nach Art. 33 DSGVO binnen 72 h."
+              label={t.incidentForm.gdprLabel}
+              hint={t.incidentForm.gdprHint}
             />
           </div>
         </CardContent>
@@ -153,10 +158,10 @@ export function NewIncidentForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Verknüpfungen</CardTitle>
+          <CardTitle>{t.common.linksTitle}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <Field label="Kritische / wichtige Funktion" htmlFor="criticalFunctionId">
+          <Field label={t.incidentForm.cifLabel} htmlFor="criticalFunctionId">
             <Select id="criticalFunctionId" name="criticalFunctionId" defaultValue="">
               <option value="">–</option>
               {criticalFunctions.map((f) => (
@@ -166,12 +171,12 @@ export function NewIncidentForm({
               ))}
             </Select>
           </Field>
-          <Field label="Drittpartei" htmlFor="thirdPartyId">
+          <Field label={t.common.thirdParty} htmlFor="thirdPartyId">
             <Select id="thirdPartyId" name="thirdPartyId" defaultValue="">
               <option value="">–</option>
-              {thirdParties.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
+              {thirdParties.map((tp) => (
+                <option key={tp.id} value={tp.id}>
+                  {tp.name}
                 </option>
               ))}
             </Select>
@@ -179,9 +184,9 @@ export function NewIncidentForm({
         </CardContent>
       </Card>
 
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" disabled={pending}>
-        {pending ? "Wird angelegt…" : "Vorfall anlegen"}
+        {pending ? t.incidentForm.creating : t.incidentForm.submit}
       </Button>
     </form>
   );
@@ -189,32 +194,39 @@ export function NewIncidentForm({
 
 // ---------------- Nachträgliche Klassifizierung ----------------
 
-export function ClassifyForm({ incidentId }: { incidentId: string }) {
+export function ClassifyForm({
+  incidentId,
+  locale = "de",
+}: {
+  incidentId: string;
+  locale?: Locale;
+}) {
+  const t = DORA_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(classifyIncident, {});
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="incidentId" value={incidentId} />
       <div className="grid gap-4 md:grid-cols-2">
         <Field
-          label="Klassifizierungszeitpunkt"
+          label={t.incidentForm.classifiedAtLabel}
           htmlFor="cl-classifiedAt"
           required
-          hint="Nicht vor der Kenntniserlangung."
+          hint={t.incidentForm.classifyHint}
         >
           <Input id="cl-classifiedAt" name="classifiedAt" type="datetime-local" required />
         </Field>
-        <Field label="Klassifizierungsnotiz" htmlFor="cl-note">
+        <Field label={t.incidentForm.classificationNoteLabel} htmlFor="cl-note">
           <Textarea id="cl-note" name="classificationNote" rows={2} />
         </Field>
       </div>
       <CheckboxLine
         name="isMajor"
-        label="Schwerwiegender Vorfall i. S. v. Art. 18 DORA"
-        hint="Bei Aktivierung werden fehlende DORA-Meldefristen automatisch berechnet und angelegt."
+        label={t.incidentForm.isMajorLabel}
+        hint={t.incidentForm.classifyMajorHint}
       />
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" variant="secondary" disabled={pending}>
-        {pending ? "Speichern…" : "Klassifizierung dokumentieren"}
+        {pending ? t.incidentForm.saving : t.incidentForm.classifySubmit}
       </Button>
     </form>
   );
@@ -222,7 +234,16 @@ export function ClassifyForm({ incidentId }: { incidentId: string }) {
 
 // ---------------- Meldung dokumentieren (inline je Report-Zeile) ----------------
 
-export function ReportSubmitForm({ reportId, label }: { reportId: string; label: string }) {
+export function ReportSubmitForm({
+  reportId,
+  label,
+  locale = "de",
+}: {
+  reportId: string;
+  label: string;
+  locale?: Locale;
+}) {
+  const t = DORA_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     markReportSubmitted,
     {},
@@ -231,11 +252,11 @@ export function ReportSubmitForm({ reportId, label }: { reportId: string; label:
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="reportId" value={reportId} />
       <div>
-        <Label htmlFor={`sub-${reportId}`}>Abgegeben am (leer = jetzt)</Label>
+        <Label htmlFor={`sub-${reportId}`}>{t.incidentForm.submittedAtLabel}</Label>
         <Input id={`sub-${reportId}`} name="submittedAt" type="datetime-local" />
       </div>
       <div className="min-w-56 flex-1">
-        <Label htmlFor={`ref-${reportId}`}>Referenz (z. B. MVP-Portal-ID)</Label>
+        <Label htmlFor={`ref-${reportId}`}>{t.incidentForm.referenceLabel}</Label>
         <Input id={`ref-${reportId}`} name="reference" maxLength={500} />
       </div>
       <Button
@@ -243,12 +264,12 @@ export function ReportSubmitForm({ reportId, label }: { reportId: string; label:
         size="sm"
         variant="secondary"
         disabled={pending}
-        aria-label={`${label} dokumentieren`}
+        aria-label={t.incidentForm.reportSubmitAria(label)}
       >
-        {pending ? "Speichern…" : "Meldung dokumentieren"}
+        {pending ? t.incidentForm.saving : t.incidentForm.reportSubmit}
       </Button>
       <div className="w-full">
-        <ErrorLine state={state} />
+        <ErrorLine state={state} locale={locale} />
       </div>
     </form>
   );
@@ -260,11 +281,14 @@ export function StatusForm({
   incidentId,
   currentStatus,
   allowedTargets,
+  locale = "de",
 }: {
   incidentId: string;
   currentStatus: string;
   allowedTargets: string[];
+  locale?: Locale;
 }) {
+  const t = DORA_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     changeIncidentStatus,
     {},
@@ -272,35 +296,37 @@ export function StatusForm({
   if (allowedTargets.length === 0)
     return (
       <p className="text-sm text-muted-foreground">
-        Keine weiteren Workflow-Übergänge möglich (Status:{" "}
-        {INCIDENT_STATUS[currentStatus as keyof typeof INCIDENT_STATUS] ?? currentStatus}).
+        {t.workflow.noTransitions(
+          t.enums.incidentStatus[currentStatus as keyof typeof t.enums.incidentStatus] ??
+            currentStatus,
+        )}
       </p>
     );
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="incidentId" value={incidentId} />
       <div className="min-w-56">
-        <Label htmlFor="inc-newStatus">Neuer Status</Label>
+        <Label htmlFor="inc-newStatus">{t.workflow.newStatus}</Label>
         <Select id="inc-newStatus" name="newStatus" required defaultValue="">
           <option value="" disabled>
-            Bitte wählen
+            {t.common.pleaseSelect}
           </option>
-          {allowedTargets.map((t) => (
-            <option key={t} value={t}>
-              {INCIDENT_STATUS[t as keyof typeof INCIDENT_STATUS] ?? t}
+          {allowedTargets.map((tgt) => (
+            <option key={tgt} value={tgt}>
+              {t.enums.incidentStatus[tgt as keyof typeof t.enums.incidentStatus] ?? tgt}
             </option>
           ))}
         </Select>
       </div>
       <div className="min-w-72 flex-1">
-        <Label htmlFor="inc-wf-comment">Kommentar / Begründung (Pflicht)</Label>
+        <Label htmlFor="inc-wf-comment">{t.workflow.comment}</Label>
         <Input id="inc-wf-comment" name="comment" required minLength={3} />
       </div>
       <Button type="submit" variant="secondary" disabled={pending}>
-        {pending ? "Wird ausgeführt…" : "Status ändern"}
+        {pending ? t.workflow.executing : t.workflow.changeStatus}
       </Button>
       <div className="w-full">
-        <ErrorLine state={state} />
+        <ErrorLine state={state} locale={locale} />
       </div>
     </form>
   );

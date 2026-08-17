@@ -38,9 +38,7 @@ export function ResidualTrendChart({
 }) {
   const t = CORE_MESSAGES[locale].charts;
   if (data.length === 0)
-    return (
-      <p className="py-8 text-center text-sm text-muted-foreground">{t.noAssessmentData}</p>
-    );
+    return <p className="py-8 text-center text-sm text-muted-foreground">{t.noAssessmentData}</p>;
   return (
     <ResponsiveContainer width="100%" height={220}>
       <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -20 }}>

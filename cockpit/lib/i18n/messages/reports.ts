@@ -279,8 +279,7 @@ const en: typeof de = {
     },
     TOP_RISKS: {
       title: "Top Risks",
-      description:
-        "The ten highest risks by residual score with rating, class and strategy.",
+      description: "The ten highest risks by residual score with rating, class and strategy.",
     },
     ABOVE_APPETITE: {
       title: "Risks Above Risk Appetite",
@@ -293,13 +292,11 @@ const en: typeof de = {
     },
     ACCEPTANCES: {
       title: "Risk Acceptances",
-      description:
-        "All risk acceptances with status, requester, approver and expiry.",
+      description: "All risk acceptances with status, requester, approver and expiry.",
     },
     TPRM_OVERVIEW: {
       title: "Third-Party Overview",
-      description:
-        "Third parties with criticality, residual score, due diligence and exit status.",
+      description: "Third parties with criticality, residual score, due diligence and exit status.",
     },
     DORA_READINESS: {
       title: "DORA Readiness",
@@ -313,8 +310,7 @@ const en: typeof de = {
     },
     QUALITY_REVIEW: {
       title: "Quality Reviews",
-      description:
-        "Results of the quality reviews (four-eyes principle), including average score.",
+      description: "Results of the quality reviews (four-eyes principle), including average score.",
     },
     TREND: {
       title: "Trend (12 Months)",

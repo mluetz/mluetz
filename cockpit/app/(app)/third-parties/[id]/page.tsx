@@ -135,14 +135,8 @@ export default async function ThirdPartyDetailPage({
               <CardContent className="space-y-3 text-sm">
                 <Info label={d.providedService} value={tp.providedService} />
                 <div className="grid grid-cols-2 gap-3">
-                  <Info
-                    label={d.businessOwner}
-                    value={tp.businessOwner?.name ?? d.notAssigned}
-                  />
-                  <Info
-                    label={d.contractOwner}
-                    value={tp.contractOwner?.name ?? d.notAssigned}
-                  />
+                  <Info label={d.businessOwner} value={tp.businessOwner?.name ?? d.notAssigned} />
+                  <Info label={d.contractOwner} value={tp.contractOwner?.name ?? d.notAssigned} />
                   <Info label={d.country} value={tp.registeredCountry} />
                   <Info label={d.ictServiceCategory} value={tp.ictServiceCategory} />
                   <Info label={d.serviceLocations} value={tp.serviceLocations} />

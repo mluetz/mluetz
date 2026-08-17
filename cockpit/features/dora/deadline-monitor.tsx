@@ -1,12 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import {
-  computeDeadlines,
-  remainingLabel,
-  type Deadline,
-  type ReportType,
-} from "@/lib/domain/incident-deadlines";
-import { INCIDENT_REPORT_LABELS, INCIDENT_STATUS } from "@/lib/domain/enums";
+import { computeDeadlines, type Deadline, type ReportType } from "@/lib/domain/incident-deadlines";
+import { INCIDENT_STATUS } from "@/lib/domain/enums";
+import type { Locale } from "@/lib/i18n/config";
+import { DORA_MESSAGES, formatRemaining } from "@/lib/i18n/messages/dora";
 import { formatDateTime } from "@/lib/utils";
 
 export type IncidentStatus = keyof typeof INCIDENT_STATUS;
@@ -38,16 +35,17 @@ export interface DeadlineMonitorReport {
   reference: string | null;
 }
 
-function StatusBadge({ deadline, now }: { deadline: Deadline; now: Date }) {
+function StatusBadge({ deadline, now, locale }: { deadline: Deadline; now: Date; locale: Locale }) {
+  const t = DORA_MESSAGES[locale];
   switch (deadline.status) {
     case "OK":
-      return <Badge variant="low">fristgerecht</Badge>;
+      return <Badge variant="low">{t.deadlineMonitor.onTime}</Badge>;
     case "DUE":
-      return <Badge variant="medium">{remainingLabel(deadline.dueAt, now)}</Badge>;
+      return <Badge variant="medium">{formatRemaining(locale, deadline.dueAt, now)}</Badge>;
     case "OVERDUE":
-      return <Badge variant="critical">{remainingLabel(deadline.dueAt, now)}</Badge>;
+      return <Badge variant="critical">{formatRemaining(locale, deadline.dueAt, now)}</Badge>;
     case "LATE":
-      return <Badge variant="high">verspätet gemeldet</Badge>;
+      return <Badge variant="high">{t.deadlineMonitor.late}</Badge>;
   }
 }
 
@@ -59,10 +57,13 @@ function StatusBadge({ deadline, now }: { deadline: Deadline; now: Date }) {
 export function DeadlineMonitor({
   incident,
   reports,
+  locale = "de",
 }: {
   incident: DeadlineMonitorIncident;
   reports: DeadlineMonitorReport[];
+  locale?: Locale;
 }) {
+  const t = DORA_MESSAGES[locale];
   const now = new Date();
   const submitted: Partial<Record<ReportType, Date>> = {};
   for (const r of reports) {
@@ -84,13 +85,8 @@ export function DeadlineMonitor({
   if (deadlines.length === 0) {
     return (
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          Keine regulatorischen Meldefristen ermittelt: Der Vorfall ist nicht als schwerwiegend
-          klassifiziert und weder NIS-2- noch DSGVO-relevant markiert.
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Fristen nach Art. 19 DORA (RTS 2025/301); parallele Stränge NIS-2/BSIG und DSGVO Art. 33.
-        </p>
+        <p className="text-sm text-muted-foreground">{t.deadlineMonitor.emptyText}</p>
+        <p className="text-xs text-muted-foreground">{t.deadlineMonitor.footnote}</p>
       </div>
     );
   }
@@ -100,10 +96,10 @@ export function DeadlineMonitor({
       <Table>
         <THead>
           <TR>
-            <TH>Meldung</TH>
-            <TH>Fällig am</TH>
-            <TH>Status</TH>
-            <TH>Referenz</TH>
+            <TH>{t.deadlineMonitor.thReport}</TH>
+            <TH>{t.deadlineMonitor.thDueAt}</TH>
+            <TH>{t.deadlineMonitor.thStatus}</TH>
+            <TH>{t.deadlineMonitor.thReference}</TH>
           </TR>
         </THead>
         <TBody>
@@ -111,27 +107,29 @@ export function DeadlineMonitor({
             <TR key={d.reportType}>
               <TD>
                 <p className="text-sm font-medium">
-                  {INCIDENT_REPORT_LABELS[d.reportType] ?? d.reportType}
+                  {t.enums.reportLabels[d.reportType] ?? d.reportType}
                 </p>
-                <p className="text-xs text-muted-foreground">{d.label}</p>
+                <p className="text-xs text-muted-foreground">
+                  {locale === "de" ? d.label : (t.enums.deadlineSublabels[d.reportType] ?? d.label)}
+                </p>
               </TD>
               <TD className="whitespace-nowrap text-xs">{formatDateTime(d.dueAt)}</TD>
               <TD>
-                <StatusBadge deadline={d} now={now} />
+                <StatusBadge deadline={d} now={now} locale={locale} />
               </TD>
               <TD className="text-xs">
                 {referenceByType.get(d.reportType) || "–"}
                 {d.submittedAt ? (
-                  <p className="text-muted-foreground">gemeldet {formatDateTime(d.submittedAt)}</p>
+                  <p className="text-muted-foreground">
+                    {t.deadlineMonitor.submittedAt(formatDateTime(d.submittedAt))}
+                  </p>
                 ) : null}
               </TD>
             </TR>
           ))}
         </TBody>
       </Table>
-      <p className="text-xs text-muted-foreground">
-        Fristen nach Art. 19 DORA (RTS 2025/301); parallele Stränge NIS-2/BSIG und DSGVO Art. 33.
-      </p>
+      <p className="text-xs text-muted-foreground">{t.deadlineMonitor.footnote}</p>
     </div>
   );
 }

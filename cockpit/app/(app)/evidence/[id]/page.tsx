@@ -93,7 +93,9 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
               <Info label={m.common.createdAt} value={formatDateTime(evidence.createdAt)} />
               <Info
                 label={t.reviewStatus}
-                value={m.labels.evidenceReviewStatus[evidence.reviewStatus] ?? evidence.reviewStatus}
+                value={
+                  m.labels.evidenceReviewStatus[evidence.reviewStatus] ?? evidence.reviewStatus
+                }
               />
               <Info label={t.reviewer} value={evidence.reviewer?.name ?? "–"} />
             </div>

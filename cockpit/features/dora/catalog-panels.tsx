@@ -5,9 +5,11 @@ import { assessRequirement, type ActionResult } from "./catalog-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Select, Textarea } from "@/components/ui/input";
-import { DORA_MATURITY } from "@/lib/domain/enums";
+import type { Locale } from "@/lib/i18n/config";
+import { DORA_MESSAGES } from "@/lib/i18n/messages/dora";
 
-function ResultLine({ state }: { state: ActionResult }) {
+function ResultLine({ state, locale }: { state: ActionResult; locale: Locale }) {
+  const t = DORA_MESSAGES[locale];
   return (
     <>
       {state.error ? (
@@ -20,15 +22,24 @@ function ResultLine({ state }: { state: ActionResult }) {
           role="status"
           className="rounded-md border border-risk-medium/50 bg-risk-medium/10 p-2 text-sm font-medium text-risk-medium"
         >
-          Gespeichert – Hinweis: {state.warning}
+          {t.assessment.savedNote(state.warning)}
         </p>
       ) : null}
-      {state.ok && !state.warning ? <p className="text-sm text-risk-low">Gespeichert.</p> : null}
+      {state.ok && !state.warning ? (
+        <p className="text-sm text-risk-low">{t.common.saved}</p>
+      ) : null}
     </>
   );
 }
 
-export function RequirementAssessmentForm({ requirementId }: { requirementId: string }) {
+export function RequirementAssessmentForm({
+  requirementId,
+  locale = "de",
+}: {
+  requirementId: string;
+  locale?: Locale;
+}) {
+  const t = DORA_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     assessRequirement,
     {},
@@ -36,35 +47,32 @@ export function RequirementAssessmentForm({ requirementId }: { requirementId: st
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Neue Bewertung durchführen</CardTitle>
-        <CardDescription>
-          Selbsteinschätzung des Reifegrads (0–5) mit Begründung. Ohne gültigen, geprüften Nachweis
-          wirkt höchstens Reifegrad 2 (Nachweissperre, FRWK-DORA-001 Kap. 11.1).
-        </CardDescription>
+        <CardTitle>{t.assessment.title}</CardTitle>
+        <CardDescription>{t.assessment.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="requirementId" value={requirementId} />
           <div className="grid gap-4 md:grid-cols-[280px_1fr]">
-            <Field label="Reifegrad" htmlFor="maturity" required>
+            <Field label={t.assessment.maturityLabel} htmlFor="maturity" required>
               <Select id="maturity" name="maturity" required defaultValue="">
                 <option value="" disabled>
-                  Bitte wählen
+                  {t.common.pleaseSelect}
                 </option>
-                {Object.entries(DORA_MATURITY).map(([k, v]) => (
+                {Object.entries(t.enums.maturity).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v}
                   </option>
                 ))}
               </Select>
             </Field>
-            <Field label="Begründung der Bewertung" htmlFor="justification" required>
+            <Field label={t.assessment.justificationLabel} htmlFor="justification" required>
               <Textarea id="justification" name="justification" required minLength={10} rows={3} />
             </Field>
           </div>
-          <ResultLine state={state} />
+          <ResultLine state={state} locale={locale} />
           <Button type="submit" disabled={pending}>
-            {pending ? "Speichern…" : "Bewertung speichern"}
+            {pending ? t.assessment.saving : t.assessment.submit}
           </Button>
         </form>
       </CardContent>

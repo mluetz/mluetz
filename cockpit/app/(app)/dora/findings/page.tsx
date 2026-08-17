@@ -3,6 +3,8 @@ import { Plus } from "lucide-react";
 import { hasPermission, requirePermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { isOverdue } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n/server";
+import { DORA_MESSAGES } from "@/lib/i18n/messages/dora";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { FindingsTableClient } from "@/features/dora/findings-table-client";
@@ -23,6 +25,8 @@ export default async function DoraFindingsPage({
   searchParams: Promise<Search>;
 }) {
   const user = await requirePermission("compliance:read");
+  const locale = await getLocale();
+  const t = DORA_MESSAGES[locale];
   const sp = await searchParams;
   const findings = await db.doraFinding.findMany({
     include: {
@@ -55,8 +59,8 @@ export default async function DoraFindingsPage({
   return (
     <div>
       <PageHeader
-        title="DORA-Findings"
-        description="Feststellungen mit Fristen, Eskalation und CAPA-Verknüpfung (FRWK-DORA-001 Kap. 12)"
+        title={t.findings.title}
+        description={t.findings.description}
         crumbs={[
           { label: "Overview", href: "/overview" },
           { label: "DORA", href: "/dora" },
@@ -66,7 +70,7 @@ export default async function DoraFindingsPage({
           hasPermission(user, "compliance:write") ? (
             <Link href="/dora/findings/new">
               <Button>
-                <Plus className="h-4 w-4" aria-hidden /> Neues Finding
+                <Plus className="h-4 w-4" aria-hidden /> {t.findings.newFinding}
               </Button>
             </Link>
           ) : null
@@ -74,20 +78,24 @@ export default async function DoraFindingsPage({
       />
 
       <div className="mb-4 flex flex-wrap gap-2 rounded-lg border bg-card p-3 text-xs">
-        <FilterChip href="/dora/findings?open=1" active={sp.open === "1"} label="Offen" />
+        <FilterChip
+          href="/dora/findings?open=1"
+          active={sp.open === "1"}
+          label={t.findings.chipOpen}
+        />
         <FilterChip
           href="/dora/findings?overdue=1"
           active={sp.overdue === "1"}
-          label="Überfällig"
+          label={t.findings.chipOverdue}
         />
         <FilterChip
           href="/dora/findings?critical=1"
           active={sp.critical === "1"}
-          label="Kritisch"
+          label={t.findings.chipCritical}
         />
       </div>
 
-      <FindingsTableClient rows={rows} />
+      <FindingsTableClient rows={rows} locale={locale} />
     </div>
   );
 }

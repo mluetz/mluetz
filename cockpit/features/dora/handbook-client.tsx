@@ -9,11 +9,7 @@ import { cn } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n/config";
 import { KNOWLEDGE_MESSAGES } from "@/lib/i18n/messages/knowledge";
 import type { GlossaryEntry } from "@/lib/content/dora-knowledge";
-import type {
-  HandbookBlock,
-  HandbookFigure,
-  HandbookSection,
-} from "@/lib/content/dora-handbook";
+import type { HandbookBlock, HandbookFigure, HandbookSection } from "@/lib/content/dora-handbook";
 import { renderWithTerms } from "@/features/dora/knowledge-client";
 
 /**
@@ -181,8 +177,7 @@ export function HandbookSectionBody({
   const entry = term ? glossary[term] : undefined;
   const zoomFig = zoom != null ? figures[zoom] : undefined;
 
-  const withTerms = (text: string) =>
-    renderWithTerms(text, setTerm, glossary, t.modal.explainTerm);
+  const withTerms = (text: string) => renderWithTerms(text, setTerm, glossary, t.modal.explainTerm);
   const renderFigure = (num: number) => (
     <FigureBlock
       num={num}

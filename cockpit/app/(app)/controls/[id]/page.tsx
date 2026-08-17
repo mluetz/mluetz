@@ -108,7 +108,10 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
                     label={t.frequencyLabel}
                     value={m.labels.frequency[control.frequency] ?? control.frequency}
                   />
-                  <Info label={t.controlOwner} value={control.owner?.name ?? m.common.ownerNotNamed} />
+                  <Info
+                    label={t.controlOwner}
+                    value={control.owner?.name ?? m.common.ownerNotNamed}
+                  />
                   <Info
                     label={t.nextTest}
                     value={`${formatDate(control.nextTestDate)}${testOverdue ? m.common.overdueSuffix : ""}`}
@@ -120,10 +123,7 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
                   items={control.regulatoryRequirements.map((r) => `${r.refId} (${r.framework})`)}
                 />
                 <TagList label={t.affectedAssets} items={control.assets.map((a) => a.name)} />
-                <TagList
-                  label={t.affectedProcesses}
-                  items={control.processes.map((p) => p.name)}
-                />
+                <TagList label={t.affectedProcesses} items={control.processes.map((p) => p.name)} />
               </CardContent>
             </Card>
             {canWrite ? (
