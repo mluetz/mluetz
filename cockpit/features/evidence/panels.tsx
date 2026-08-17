@@ -5,20 +5,17 @@ import { createEvidence, reviewEvidence, type ActionResult } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
-import {
-  EVIDENCE_CLASSIFICATION_LABELS,
-  EVIDENCE_DOC_TYPE_LABELS,
-  EVIDENCE_REVIEW_STATUS_LABELS,
-} from "./labels";
+import type { Locale } from "@/lib/i18n/config";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 
-function ErrorLine({ state }: { state: ActionResult }) {
+function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
   if (state.error)
     return (
       <p role="alert" className="text-sm text-destructive">
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">Gespeichert.</p>;
+  if (state.ok) return <p className="text-sm text-risk-low">{OPS_MESSAGES[locale].common.saved}</p>;
   return null;
 }
 
@@ -33,38 +30,42 @@ export function NewEvidenceForm({
   risks,
   controls,
   thirdParties,
+  locale,
 }: {
   risks: LinkOption[];
   controls: LinkOption[];
   thirdParties: LinkOption[];
+  locale: Locale;
 }) {
+  const m = OPS_MESSAGES[locale];
+  const t = m.evidence.panels;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(createEvidence, {});
   return (
     <form action={formAction} className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Metadaten</CardTitle>
+          <CardTitle>{t.metadataCard}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Field label="Titel" htmlFor="ev-title" required>
+          <Field label={t.title} htmlFor="ev-title" required>
             <Input id="ev-title" name="title" required minLength={3} maxLength={200} />
           </Field>
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Dokumentart" htmlFor="ev-docType" required>
+            <Field label={t.docType} htmlFor="ev-docType" required>
               <Select id="ev-docType" name="docType" required defaultValue="">
                 <option value="" disabled>
-                  Bitte wählen
+                  {m.common.pleaseSelect}
                 </option>
-                {Object.entries(EVIDENCE_DOC_TYPE_LABELS).map(([k, v]) => (
+                {Object.entries(m.labels.evidenceDocType).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v}
                   </option>
                 ))}
               </Select>
             </Field>
-            <Field label="Klassifikation" htmlFor="ev-classification" required>
+            <Field label={t.classification} htmlFor="ev-classification" required>
               <Select id="ev-classification" name="classification" required defaultValue="INTERNAL">
-                {Object.entries(EVIDENCE_CLASSIFICATION_LABELS).map(([k, v]) => (
+                {Object.entries(m.labels.evidenceClassification).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v}
                   </option>
@@ -72,26 +73,17 @@ export function NewEvidenceForm({
               </Select>
             </Field>
           </div>
-          <Field
-            label="Link (Speicherort / freigegebener Link)"
-            htmlFor="ev-link"
-            required
-            hint="Es wird nur der Link gespeichert, kein Dokument hochgeladen."
-          >
+          <Field label={t.linkField} htmlFor="ev-link" required hint={t.linkHint}>
             <Input id="ev-link" name="link" type="url" required placeholder="https://…" />
           </Field>
           <div className="grid gap-4 md:grid-cols-3">
-            <Field label="Gültig bis" htmlFor="ev-validUntil">
+            <Field label={t.validUntil} htmlFor="ev-validUntil">
               <Input id="ev-validUntil" name="validUntil" type="date" />
             </Field>
-            <Field label="Version" htmlFor="ev-version">
+            <Field label={t.version} htmlFor="ev-version">
               <Input id="ev-version" name="version" defaultValue="1.0" maxLength={20} />
             </Field>
-            <Field
-              label="Content-Hash (optional)"
-              htmlFor="ev-hash"
-              hint="Integritätsmerkmal, z. B. SHA-256"
-            >
+            <Field label={t.contentHashOptional} htmlFor="ev-hash" hint={t.contentHashHint}>
               <Input id="ev-hash" name="contentHash" maxLength={200} />
             </Field>
           </div>
@@ -100,10 +92,10 @@ export function NewEvidenceForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Zuordnung (optional)</CardTitle>
+          <CardTitle>{t.assignmentCard}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
-          <Field label="Risiko" htmlFor="ev-riskId">
+          <Field label={t.risk} htmlFor="ev-riskId">
             <Select id="ev-riskId" name="riskId" defaultValue="">
               <option value="">–</option>
               {risks.map((r) => (
@@ -113,7 +105,7 @@ export function NewEvidenceForm({
               ))}
             </Select>
           </Field>
-          <Field label="Kontrolle" htmlFor="ev-controlId">
+          <Field label={t.control} htmlFor="ev-controlId">
             <Select id="ev-controlId" name="controlId" defaultValue="">
               <option value="">–</option>
               {controls.map((c) => (
@@ -123,12 +115,12 @@ export function NewEvidenceForm({
               ))}
             </Select>
           </Field>
-          <Field label="Drittpartei" htmlFor="ev-thirdPartyId">
+          <Field label={t.thirdParty} htmlFor="ev-thirdPartyId">
             <Select id="ev-thirdPartyId" name="thirdPartyId" defaultValue="">
               <option value="">–</option>
-              {thirdParties.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
+              {thirdParties.map((tp) => (
+                <option key={tp.id} value={tp.id}>
+                  {tp.label}
                 </option>
               ))}
             </Select>
@@ -136,10 +128,10 @@ export function NewEvidenceForm({
         </CardContent>
       </Card>
 
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Wird angelegt…" : "Nachweis anlegen"}
+          {pending ? m.common.creating : t.submitCreate}
         </Button>
       </div>
     </form>
@@ -148,31 +140,39 @@ export function NewEvidenceForm({
 
 // ---------------- Review ----------------
 
-export function ReviewEvidenceForm({ evidenceDbId }: { evidenceDbId: string }) {
+export function ReviewEvidenceForm({
+  evidenceDbId,
+  locale,
+}: {
+  evidenceDbId: string;
+  locale: Locale;
+}) {
+  const m = OPS_MESSAGES[locale];
+  const t = m.evidence.panels;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(reviewEvidence, {});
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="evidenceId" value={evidenceDbId} />
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Review-Ergebnis" htmlFor="ev-reviewStatus" required>
+        <Field label={t.reviewResult} htmlFor="ev-reviewStatus" required>
           <Select id="ev-reviewStatus" name="reviewStatus" required defaultValue="">
             <option value="" disabled>
-              Bitte wählen
+              {m.common.pleaseSelect}
             </option>
             {(["REVIEWED", "EXPIRED", "REJECTED"] as const).map((k) => (
               <option key={k} value={k}>
-                {EVIDENCE_REVIEW_STATUS_LABELS[k]}
+                {m.labels.evidenceReviewStatus[k]}
               </option>
             ))}
           </Select>
         </Field>
-        <Field label="Kommentar (optional)" htmlFor="ev-review-comment">
+        <Field label={m.common.commentOptional} htmlFor="ev-review-comment">
           <Textarea id="ev-review-comment" name="comment" rows={2} maxLength={1000} />
         </Field>
       </div>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" variant="secondary" disabled={pending}>
-        {pending ? "Speichern…" : "Review speichern"}
+        {pending ? m.common.saving : t.submitReview}
       </Button>
     </form>
   );

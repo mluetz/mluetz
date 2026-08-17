@@ -3,20 +3,20 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission, hasPermission } from "@/lib/authz";
 import { formatDate, formatDateTime, isOverdue } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n/server";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
-  EVIDENCE_CLASSIFICATION_LABELS,
-  EVIDENCE_DOC_TYPE_LABELS,
-  EVIDENCE_REVIEW_STATUS_LABELS,
-} from "@/features/evidence/labels";
 import { ReviewEvidenceForm } from "@/features/evidence/panels";
 
 export const dynamic = "force-dynamic";
 
 export default async function EvidenceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePermission("evidence:read");
+  const locale = await getLocale();
+  const m = OPS_MESSAGES[locale];
+  const t = m.evidence.detail;
   const { id } = await params;
   const evidence = await db.evidence.findUnique({
     where: { id },
@@ -37,10 +37,10 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
     <div>
       <PageHeader
         title={`${evidence.evidenceId} – ${evidence.title}`}
-        description="Metadaten- und Linkregister – es werden keine Dokumente gespeichert."
+        description={m.evidence.list.registerNote}
         crumbs={[
-          { label: "Overview", href: "/overview" },
-          { label: "Nachweise", href: "/evidence" },
+          { label: m.common.overview, href: "/overview" },
+          { label: m.evidence.list.crumb, href: "/evidence" },
           { label: evidence.evidenceId },
         ]}
         actions={
@@ -56,9 +56,9 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
                       : "critical"
               }
             >
-              {EVIDENCE_REVIEW_STATUS_LABELS[evidence.reviewStatus] ?? evidence.reviewStatus}
+              {m.labels.evidenceReviewStatus[evidence.reviewStatus] ?? evidence.reviewStatus}
             </Badge>
-            {expired ? <Badge variant="high">Gültigkeit abgelaufen</Badge> : null}
+            {expired ? <Badge variant="high">{t.expiredBadge}</Badge> : null}
           </div>
         }
       />
@@ -66,40 +66,39 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Metadaten</CardTitle>
+            <CardTitle>{t.metadataCard}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
               <Info
-                label="Dokumentart"
-                value={EVIDENCE_DOC_TYPE_LABELS[evidence.docType] ?? evidence.docType}
+                label={t.docType}
+                value={m.labels.evidenceDocType[evidence.docType] ?? evidence.docType}
               />
               <Info
-                label="Klassifikation"
+                label={t.classification}
                 value={
-                  EVIDENCE_CLASSIFICATION_LABELS[evidence.classification] ?? evidence.classification
+                  m.labels.evidenceClassification[evidence.classification] ??
+                  evidence.classification
                 }
               />
-              <Info label="Owner" value={evidence.owner?.name ?? "–"} />
-              <Info label="Version" value={evidence.version} />
+              <Info label={t.owner} value={evidence.owner?.name ?? "–"} />
+              <Info label={t.version} value={evidence.version} />
               <div>
-                <p className="text-[11px] font-medium text-muted-foreground">Gültig bis</p>
+                <p className="text-[11px] font-medium text-muted-foreground">{t.validUntil}</p>
                 <p className={expired ? "font-medium text-risk-high" : ""}>
                   {formatDate(evidence.validUntil)}
-                  {expired ? " (abgelaufen)" : ""}
+                  {expired ? m.common.expiredSuffix : ""}
                 </p>
               </div>
-              <Info label="Erstellt am" value={formatDateTime(evidence.createdAt)} />
+              <Info label={m.common.createdAt} value={formatDateTime(evidence.createdAt)} />
               <Info
-                label="Reviewstatus"
-                value={
-                  EVIDENCE_REVIEW_STATUS_LABELS[evidence.reviewStatus] ?? evidence.reviewStatus
-                }
+                label={t.reviewStatus}
+                value={m.labels.evidenceReviewStatus[evidence.reviewStatus] ?? evidence.reviewStatus}
               />
-              <Info label="Reviewer" value={evidence.reviewer?.name ?? "–"} />
+              <Info label={t.reviewer} value={evidence.reviewer?.name ?? "–"} />
             </div>
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground">Link (Speicherort)</p>
+              <p className="text-[11px] font-medium text-muted-foreground">{t.linkLabel}</p>
               <a
                 href={evidence.link}
                 target="_blank"
@@ -109,18 +108,18 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
                 {evidence.link}
               </a>
             </div>
-            <Info label="Content-Hash" value={evidence.contentHash || "–"} />
+            <Info label={t.contentHash} value={evidence.contentHash || "–"} />
           </CardContent>
         </Card>
 
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Verknüpfungen</CardTitle>
+              <CardTitle>{t.linksCard}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <p className="text-[11px] font-medium text-muted-foreground">Risiko</p>
+                <p className="text-[11px] font-medium text-muted-foreground">{t.risk}</p>
                 {evidence.risk ? (
                   <Link
                     href={`/risks/${evidence.risk.id}`}
@@ -134,7 +133,7 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
                 )}
               </div>
               <div>
-                <p className="text-[11px] font-medium text-muted-foreground">Kontrolle</p>
+                <p className="text-[11px] font-medium text-muted-foreground">{t.control}</p>
                 {evidence.control ? (
                   <Link
                     href={`/controls/${evidence.control.id}`}
@@ -148,7 +147,7 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
                 )}
               </div>
               <div>
-                <p className="text-[11px] font-medium text-muted-foreground">Drittpartei</p>
+                <p className="text-[11px] font-medium text-muted-foreground">{t.thirdParty}</p>
                 {evidence.thirdParty ? (
                   <Link
                     href={`/third-parties/${evidence.thirdParty.id}`}
@@ -166,16 +165,14 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
 
           <Card>
             <CardHeader>
-              <CardTitle>Review</CardTitle>
-              <CardDescription>
-                Das Review-Ergebnis wird mit Reviewer und Zeitstempel im Audit Trail protokolliert.
-              </CardDescription>
+              <CardTitle>{t.reviewCard}</CardTitle>
+              <CardDescription>{t.reviewCardDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               {canWrite ? (
-                <ReviewEvidenceForm evidenceDbId={evidence.id} />
+                <ReviewEvidenceForm evidenceDbId={evidence.id} locale={locale} />
               ) : (
-                <p className="text-sm text-muted-foreground">Keine Schreibberechtigung.</p>
+                <p className="text-sm text-muted-foreground">{m.common.noWritePermission}</p>
               )}
             </CardContent>
           </Card>

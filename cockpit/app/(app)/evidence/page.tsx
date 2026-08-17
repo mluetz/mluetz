@@ -3,6 +3,8 @@ import { Plus } from "lucide-react";
 import { requirePermission, hasPermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { isOverdue } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n/server";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { EvidenceTableClient } from "@/features/evidence/table-client";
@@ -21,6 +23,9 @@ const DAY_MS = 86400000;
 
 export default async function EvidencePage({ searchParams }: { searchParams: Promise<Search> }) {
   const user = await requirePermission("evidence:read");
+  const locale = await getLocale();
+  const m = OPS_MESSAGES[locale];
+  const t = m.evidence.list;
   const sp = await searchParams;
 
   const entries = await db.evidence.findMany({
@@ -68,14 +73,14 @@ export default async function EvidencePage({ searchParams }: { searchParams: Pro
   return (
     <div>
       <PageHeader
-        title="Nachweisregister"
-        description="Metadaten- und Linkregister – es werden keine Dokumente gespeichert."
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "Nachweise" }]}
+        title={t.title}
+        description={t.registerNote}
+        crumbs={[{ label: m.common.overview, href: "/overview" }, { label: t.crumb }]}
         actions={
           hasPermission(user, "evidence:write") ? (
             <Link href="/evidence/new">
               <Button>
-                <Plus className="h-4 w-4" aria-hidden /> Neuer Nachweis
+                <Plus className="h-4 w-4" aria-hidden /> {t.newEvidence}
               </Button>
             </Link>
           ) : null
@@ -83,20 +88,20 @@ export default async function EvidencePage({ searchParams }: { searchParams: Pro
       />
 
       <div className="mb-4 flex flex-wrap gap-2 rounded-lg border bg-card p-3 text-xs">
-        <FilterChip href="/evidence?expired=1" active={sp.expired === "1"} label="Abgelaufen" />
+        <FilterChip href="/evidence?expired=1" active={sp.expired === "1"} label={t.chipExpired} />
         <FilterChip
           href="/evidence?expiring60=1"
           active={sp.expiring60 === "1"}
-          label="Läuft in 60 Tagen ab"
+          label={t.chipExpiring60}
         />
         <FilterChip
           href="/evidence?notReviewed=1"
           active={sp.notReviewed === "1"}
-          label="Nicht reviewt"
+          label={t.chipNotReviewed}
         />
       </div>
 
-      <EvidenceTableClient rows={rows} />
+      <EvidenceTableClient rows={rows} locale={locale} />
     </div>
   );
 }

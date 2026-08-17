@@ -9,16 +9,17 @@ import {
 } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea, Label } from "@/components/ui/input";
-import { ACTION_STATUS, type ActionStatus } from "@/lib/domain/enums";
+import type { Locale } from "@/lib/i18n/config";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 
-function ErrorLine({ state }: { state: ActionResult }) {
+function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
   if (state.error)
     return (
       <p role="alert" className="text-sm text-destructive">
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">Gespeichert.</p>;
+  if (state.ok) return <p className="text-sm text-risk-low">{OPS_MESSAGES[locale].common.saved}</p>;
   return null;
 }
 
@@ -27,10 +28,14 @@ function ErrorLine({ state }: { state: ActionResult }) {
 export function ProgressForm({
   actionId,
   currentProgress,
+  locale,
 }: {
   actionId: string;
   currentProgress: number;
+  locale: Locale;
 }) {
+  const m = OPS_MESSAGES[locale];
+  const t = m.actions.panels;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     updateActionProgress,
     {},
@@ -39,7 +44,7 @@ export function ProgressForm({
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="actionId" value={actionId} />
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Fortschritt (%)" htmlFor="progress" required>
+        <Field label={t.progressLabel} htmlFor="progress" required>
           <Input
             id="progress"
             name="progress"
@@ -51,20 +56,16 @@ export function ProgressForm({
             defaultValue={currentProgress}
           />
         </Field>
-        <Field label="Kommentar (optional)" htmlFor="progress-comment">
+        <Field label={m.common.commentOptional} htmlFor="progress-comment">
           <Input id="progress-comment" name="comment" maxLength={1000} />
         </Field>
       </div>
-      <Field
-        label="Nachweis / Evidence (optional)"
-        htmlFor="progress-evidence"
-        hint="Kurzer Verweis auf den Umsetzungsnachweis (Link, Dokument, Ticket …)."
-      >
+      <Field label={t.evidenceOptional} htmlFor="progress-evidence" hint={t.evidenceHint}>
         <Textarea id="progress-evidence" name="evidenceNote" rows={2} maxLength={2000} />
       </Field>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" disabled={pending}>
-        {pending ? "Speichern…" : "Fortschritt speichern"}
+        {pending ? m.common.saving : t.saveProgress}
       </Button>
     </form>
   );
@@ -76,11 +77,15 @@ export function StatusForm({
   actionId,
   currentStatus,
   allowedTargets,
+  locale,
 }: {
   actionId: string;
   currentStatus: string;
   allowedTargets: string[];
+  locale: Locale;
 }) {
+  const m = OPS_MESSAGES[locale];
+  const t = m.actions.panels;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     changeActionStatus,
     {},
@@ -88,35 +93,34 @@ export function StatusForm({
   if (allowedTargets.length === 0)
     return (
       <p className="text-sm text-muted-foreground">
-        Keine weiteren Workflow-Übergänge möglich (Status:{" "}
-        {ACTION_STATUS[currentStatus as ActionStatus] ?? currentStatus}).
+        {t.noTransitions(m.labels.actionStatus[currentStatus] ?? currentStatus)}
       </p>
     );
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="actionId" value={actionId} />
       <div className="min-w-56">
-        <Label htmlFor="action-newStatus">Neuer Status</Label>
+        <Label htmlFor="action-newStatus">{t.newStatus}</Label>
         <Select id="action-newStatus" name="newStatus" required defaultValue="">
           <option value="" disabled>
-            Bitte wählen
+            {m.common.pleaseSelect}
           </option>
-          {allowedTargets.map((t) => (
-            <option key={t} value={t}>
-              {ACTION_STATUS[t as ActionStatus] ?? t}
+          {allowedTargets.map((target) => (
+            <option key={target} value={target}>
+              {m.labels.actionStatus[target] ?? target}
             </option>
           ))}
         </Select>
       </div>
       <div className="min-w-72 flex-1">
-        <Label htmlFor="action-wf-comment">Kommentar / Begründung (Pflicht)</Label>
+        <Label htmlFor="action-wf-comment">{t.workflowComment}</Label>
         <Input id="action-wf-comment" name="comment" required minLength={3} />
       </div>
       <Button type="submit" variant="secondary" disabled={pending}>
-        {pending ? "Wird ausgeführt…" : "Status ändern"}
+        {pending ? t.executing : t.changeStatus}
       </Button>
       <div className="w-full">
-        <ErrorLine state={state} />
+        <ErrorLine state={state} locale={locale} />
       </div>
     </form>
   );
@@ -124,41 +128,43 @@ export function StatusForm({
 
 // ---------------- Eskalation ----------------
 
-const ESCALATION_LEVELS: Record<number, string> = {
-  1: "Stufe 1 – Teamleitung",
-  2: "Stufe 2 – Bereich",
-  3: "Stufe 3 – Management",
-};
-
 export function EscalationForm({
   actionId,
   currentLevel,
+  locale,
 }: {
   actionId: string;
   currentLevel: number;
+  locale: Locale;
 }) {
+  const m = OPS_MESSAGES[locale];
+  const t = m.actions.panels;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(escalateAction, {});
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="actionId" value={actionId} />
       <p className="text-xs text-muted-foreground">
-        Aktuelle Eskalationsstufe: {currentLevel > 0 ? ESCALATION_LEVELS[currentLevel] : "keine"}
+        {t.currentEscalation(
+          currentLevel > 0
+            ? (m.labels.escalationLevels[currentLevel] ?? String(currentLevel))
+            : m.common.none,
+        )}
       </p>
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Eskalationsstufe" htmlFor="escalationLevel" required>
+        <Field label={t.escalationLevel} htmlFor="escalationLevel" required>
           <Select id="escalationLevel" name="escalationLevel" required defaultValue="">
             <option value="" disabled>
-              Bitte wählen
+              {m.common.pleaseSelect}
             </option>
             {[1, 2, 3].map((lvl) => (
               <option key={lvl} value={lvl}>
-                {ESCALATION_LEVELS[lvl]}
+                {m.labels.escalationLevels[lvl]}
               </option>
             ))}
           </Select>
         </Field>
       </div>
-      <Field label="Begründung (Pflicht)" htmlFor="escalation-justification" required>
+      <Field label={t.justification} htmlFor="escalation-justification" required>
         <Textarea
           id="escalation-justification"
           name="justification"
@@ -168,9 +174,9 @@ export function EscalationForm({
           maxLength={2000}
         />
       </Field>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" variant="destructive" disabled={pending}>
-        {pending ? "Eskaliere…" : "Eskalieren"}
+        {pending ? t.escalating : t.escalate}
       </Button>
     </form>
   );

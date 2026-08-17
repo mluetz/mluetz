@@ -3,7 +3,8 @@ import { Plus } from "lucide-react";
 import { requirePermission, hasPermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { formatDate, isOverdue } from "@/lib/utils";
-import { ACTION_STATUS, PRIORITY } from "@/lib/domain/enums";
+import { getLocale } from "@/lib/i18n/server";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Select, Label } from "@/components/ui/input";
@@ -22,6 +23,9 @@ interface Search {
 
 export default async function ActionsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const user = await requirePermission("action:read");
+  const locale = await getLocale();
+  const m = OPS_MESSAGES[locale];
+  const t = m.actions.list;
   const sp = await searchParams;
 
   const actions = await db.action.findMany({
@@ -58,14 +62,14 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
   return (
     <div>
       <PageHeader
-        title="Maßnahmen"
-        description="Alle risikomindernden Maßnahmen mit Status, Fortschritt und Eskalation"
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "Maßnahmen" }]}
+        title={t.title}
+        description={t.description}
+        crumbs={[{ label: m.common.overview, href: "/overview" }, { label: t.crumb }]}
         actions={
           hasPermission(user, "action:write") ? (
             <Link href="/actions/new">
               <Button>
-                <Plus className="h-4 w-4" aria-hidden /> Neue Maßnahme
+                <Plus className="h-4 w-4" aria-hidden /> {t.newAction}
               </Button>
             </Link>
           ) : null
@@ -77,10 +81,10 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
         className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4"
       >
         <div>
-          <Label htmlFor="f-status">Status</Label>
+          <Label htmlFor="f-status">{t.statusLabel}</Label>
           <Select id="f-status" name="status" defaultValue={sp.status ?? ""}>
-            <option value="">Alle</option>
-            {Object.entries(ACTION_STATUS).map(([k, v]) => (
+            <option value="">{m.common.all}</option>
+            {Object.entries(m.labels.actionStatus).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>
@@ -88,10 +92,10 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
           </Select>
         </div>
         <div>
-          <Label htmlFor="f-priority">Priorität</Label>
+          <Label htmlFor="f-priority">{t.priorityLabel}</Label>
           <Select id="f-priority" name="priority" defaultValue={sp.priority ?? ""}>
-            <option value="">Alle</option>
-            {Object.entries(PRIORITY).map(([k, v]) => (
+            <option value="">{m.common.all}</option>
+            {Object.entries(m.labels.priority).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>
@@ -100,11 +104,11 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
         </div>
         <div className="col-span-2 flex items-end gap-2">
           <Button type="submit" variant="secondary">
-            Filtern
+            {m.common.filter}
           </Button>
           <Link href="/actions">
             <Button type="button" variant="ghost">
-              Zurücksetzen
+              {m.common.reset}
             </Button>
           </Link>
         </div>
@@ -112,17 +116,17 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
           <FilterChip
             href="/actions?overdue=1"
             active={sp.overdue === "1"}
-            label="Nur überfällige"
+            label={t.chipOverdue}
           />
           <FilterChip
             href="/actions?escalated=1"
             active={sp.escalated === "1"}
-            label="Eskalationsstufe > 0"
+            label={t.chipEscalated}
           />
         </div>
       </form>
 
-      <ActionsTableClient rows={rows} />
+      <ActionsTableClient rows={rows} locale={locale} />
     </div>
   );
 }

@@ -3,11 +3,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
-import {
-  EVIDENCE_CLASSIFICATION_LABELS,
-  EVIDENCE_DOC_TYPE_LABELS,
-  EVIDENCE_REVIEW_STATUS_LABELS,
-} from "./labels";
+import type { Locale } from "@/lib/i18n/config";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 
 /** Angereicherte Nachweis-Zeile für die Listenansicht. */
 export interface EvidenceRow {
@@ -25,88 +22,94 @@ export interface EvidenceRow {
   version: string;
 }
 
-export const evidenceColumns: ColumnDef<EvidenceRow>[] = [
-  {
-    accessorKey: "evidenceId",
-    header: "Evidence ID",
-    cell: ({ row }) => <span className="font-mono text-xs">{row.original.evidenceId}</span>,
-  },
-  {
-    accessorKey: "title",
-    header: "Titel",
-    cell: ({ row }) => (
-      <p className="max-w-[280px] truncate font-medium" title={row.original.title}>
-        {row.original.title}
-      </p>
-    ),
-  },
-  {
-    accessorKey: "docType",
-    header: "Dokumentart",
-    cell: ({ row }) => (
-      <span className="whitespace-nowrap text-xs">
-        {EVIDENCE_DOC_TYPE_LABELS[row.original.docType] ?? row.original.docType}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "ownerName",
-    header: "Owner",
-    cell: ({ row }) => <span className="text-xs">{row.original.ownerName ?? "–"}</span>,
-  },
-  {
-    accessorKey: "assignedTo",
-    header: "Zugeordnet zu",
-    cell: ({ row }) =>
-      row.original.assignedTo ? (
-        <span className="font-mono text-xs">{row.original.assignedTo}</span>
-      ) : (
-        <span className="text-xs text-muted-foreground">–</span>
+/** Spalten-Factory: Beschriftungen gemäß UI-Sprache. */
+export function createEvidenceColumns(locale: Locale): ColumnDef<EvidenceRow>[] {
+  const m = OPS_MESSAGES[locale];
+  const t = m.evidence.columns;
+  return [
+    {
+      accessorKey: "evidenceId",
+      header: t.evidenceId,
+      cell: ({ row }) => <span className="font-mono text-xs">{row.original.evidenceId}</span>,
+    },
+    {
+      accessorKey: "title",
+      header: t.title,
+      cell: ({ row }) => (
+        <p className="max-w-[280px] truncate font-medium" title={row.original.title}>
+          {row.original.title}
+        </p>
       ),
-  },
-  {
-    accessorKey: "validUntil",
-    header: "Gültig bis",
-    cell: ({ row }) => (
-      <span
-        className={`whitespace-nowrap text-xs ${row.original.expired ? "font-medium text-risk-high" : ""}`}
-      >
-        {formatDate(row.original.validUntil)}
-        {row.original.expired ? " (abgelaufen)" : ""}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "classification",
-    header: "Klassifikation",
-    cell: ({ row }) => (
-      <span className="whitespace-nowrap text-xs">
-        {EVIDENCE_CLASSIFICATION_LABELS[row.original.classification] ?? row.original.classification}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "reviewStatus",
-    header: "Reviewstatus",
-    cell: ({ row }) => (
-      <Badge
-        variant={
-          row.original.reviewStatus === "REVIEWED"
-            ? "low"
-            : row.original.reviewStatus === "NOT_REVIEWED"
-              ? "secondary"
-              : row.original.reviewStatus === "EXPIRED"
-                ? "high"
-                : "critical"
-        }
-      >
-        {EVIDENCE_REVIEW_STATUS_LABELS[row.original.reviewStatus] ?? row.original.reviewStatus}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "version",
-    header: "Version",
-    cell: ({ row }) => <span className="text-xs">{row.original.version}</span>,
-  },
-];
+    },
+    {
+      accessorKey: "docType",
+      header: t.docType,
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap text-xs">
+          {m.labels.evidenceDocType[row.original.docType] ?? row.original.docType}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "ownerName",
+      header: t.owner,
+      cell: ({ row }) => <span className="text-xs">{row.original.ownerName ?? "–"}</span>,
+    },
+    {
+      accessorKey: "assignedTo",
+      header: t.assignedTo,
+      cell: ({ row }) =>
+        row.original.assignedTo ? (
+          <span className="font-mono text-xs">{row.original.assignedTo}</span>
+        ) : (
+          <span className="text-xs text-muted-foreground">–</span>
+        ),
+    },
+    {
+      accessorKey: "validUntil",
+      header: t.validUntil,
+      cell: ({ row }) => (
+        <span
+          className={`whitespace-nowrap text-xs ${row.original.expired ? "font-medium text-risk-high" : ""}`}
+        >
+          {formatDate(row.original.validUntil)}
+          {row.original.expired ? m.common.expiredSuffix : ""}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "classification",
+      header: t.classification,
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap text-xs">
+          {m.labels.evidenceClassification[row.original.classification] ??
+            row.original.classification}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "reviewStatus",
+      header: t.reviewStatus,
+      cell: ({ row }) => (
+        <Badge
+          variant={
+            row.original.reviewStatus === "REVIEWED"
+              ? "low"
+              : row.original.reviewStatus === "NOT_REVIEWED"
+                ? "secondary"
+                : row.original.reviewStatus === "EXPIRED"
+                  ? "high"
+                  : "critical"
+          }
+        >
+          {m.labels.evidenceReviewStatus[row.original.reviewStatus] ?? row.original.reviewStatus}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "version",
+      header: t.version,
+      cell: ({ row }) => <span className="text-xs">{row.original.version}</span>,
+    },
+  ];
+}

@@ -1,16 +1,22 @@
 "use client";
 
+import * as React from "react";
 import { DataTable } from "@/components/data-table";
-import { actionColumns, type ActionMgmtRow } from "./columns";
+import type { Locale } from "@/lib/i18n/config";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
+import { createActionColumns, type ActionMgmtRow } from "./columns";
 
-export function ActionsTableClient({ rows }: { rows: ActionMgmtRow[] }) {
+export function ActionsTableClient({ rows, locale }: { rows: ActionMgmtRow[]; locale: Locale }) {
+  const columns = React.useMemo(() => createActionColumns(locale), [locale]);
+  const t = OPS_MESSAGES[locale].actions.list;
   return (
     <DataTable
-      columns={actionColumns}
+      columns={columns}
       data={rows}
-      searchPlaceholder="Maßnahmen durchsuchen (ID, Titel, Owner …)"
+      searchPlaceholder={t.searchPlaceholder}
       getRowHref={(r) => `/actions/${r.id}`}
-      emptyMessage="Keine Maßnahmen für die gewählten Filter."
+      emptyMessage={t.empty}
+      locale={locale}
     />
   );
 }

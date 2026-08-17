@@ -1,16 +1,22 @@
 "use client";
 
+import * as React from "react";
 import { DataTable } from "@/components/data-table";
-import { evidenceColumns, type EvidenceRow } from "./columns";
+import type { Locale } from "@/lib/i18n/config";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
+import { createEvidenceColumns, type EvidenceRow } from "./columns";
 
-export function EvidenceTableClient({ rows }: { rows: EvidenceRow[] }) {
+export function EvidenceTableClient({ rows, locale }: { rows: EvidenceRow[]; locale: Locale }) {
+  const columns = React.useMemo(() => createEvidenceColumns(locale), [locale]);
+  const t = OPS_MESSAGES[locale].evidence.list;
   return (
     <DataTable
-      columns={evidenceColumns}
+      columns={columns}
       data={rows}
-      searchPlaceholder="Nachweise durchsuchen (ID, Titel, Owner …)"
+      searchPlaceholder={t.searchPlaceholder}
       getRowHref={(r) => `/evidence/${r.id}`}
-      emptyMessage="Keine Nachweise für die gewählten Filter."
+      emptyMessage={t.empty}
+      locale={locale}
     />
   );
 }

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { requirePermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { formatDate, isOverdue } from "@/lib/utils";
-import { EFFECTIVENESS_RATING } from "@/lib/domain/enums";
-import { AUTOMATION_LABELS, CONTROL_TYPE_LABELS } from "@/features/controls/labels";
+import { getLocale } from "@/lib/i18n/server";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Select, Label } from "@/components/ui/input";
@@ -23,6 +23,9 @@ interface Search {
 
 export default async function ControlsPage({ searchParams }: { searchParams: Promise<Search> }) {
   await requirePermission("control:read");
+  const locale = await getLocale();
+  const m = OPS_MESSAGES[locale];
+  const t = m.controls.list;
   const sp = await searchParams;
 
   const controls = await db.control.findMany({
@@ -60,9 +63,9 @@ export default async function ControlsPage({ searchParams }: { searchParams: Pro
   return (
     <div>
       <PageHeader
-        title="Control Library"
-        description="Zentrale Bibliothek aller Kontrollen mit Wirksamkeit und Testplanung"
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "Controls" }]}
+        title={t.title}
+        description={t.description}
+        crumbs={[{ label: m.common.overview, href: "/overview" }, { label: t.crumb }]}
       />
 
       <form
@@ -70,10 +73,10 @@ export default async function ControlsPage({ searchParams }: { searchParams: Pro
         className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-5"
       >
         <div>
-          <Label htmlFor="f-type">Typ</Label>
+          <Label htmlFor="f-type">{t.typeLabel}</Label>
           <Select id="f-type" name="type" defaultValue={sp.type ?? ""}>
-            <option value="">Alle</option>
-            {Object.entries(CONTROL_TYPE_LABELS).map(([k, v]) => (
+            <option value="">{m.common.all}</option>
+            {Object.entries(m.labels.controlType).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>
@@ -81,10 +84,10 @@ export default async function ControlsPage({ searchParams }: { searchParams: Pro
           </Select>
         </div>
         <div>
-          <Label htmlFor="f-automation">Automatisierung</Label>
+          <Label htmlFor="f-automation">{t.automationLabel}</Label>
           <Select id="f-automation" name="automation" defaultValue={sp.automation ?? ""}>
-            <option value="">Alle</option>
-            {Object.entries(AUTOMATION_LABELS).map(([k, v]) => (
+            <option value="">{m.common.all}</option>
+            {Object.entries(m.labels.automation).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>
@@ -92,10 +95,10 @@ export default async function ControlsPage({ searchParams }: { searchParams: Pro
           </Select>
         </div>
         <div>
-          <Label htmlFor="f-effectiveness">Operative Wirksamkeit</Label>
+          <Label htmlFor="f-effectiveness">{t.effectivenessLabel}</Label>
           <Select id="f-effectiveness" name="effectiveness" defaultValue={sp.effectiveness ?? ""}>
-            <option value="">Alle</option>
-            {Object.entries(EFFECTIVENESS_RATING).map(([k, v]) => (
+            <option value="">{m.common.all}</option>
+            {Object.entries(m.labels.effectiveness).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>
@@ -104,11 +107,11 @@ export default async function ControlsPage({ searchParams }: { searchParams: Pro
         </div>
         <div className="col-span-2 flex items-end gap-2">
           <Button type="submit" variant="secondary">
-            Filtern
+            {m.common.filter}
           </Button>
           <Link href="/controls">
             <Button type="button" variant="ghost">
-              Zurücksetzen
+              {m.common.reset}
             </Button>
           </Link>
         </div>
@@ -116,12 +119,12 @@ export default async function ControlsPage({ searchParams }: { searchParams: Pro
           <FilterChip
             href="/controls?testOverdue=1"
             active={sp.testOverdue === "1"}
-            label="Test überfällig"
+            label={t.chipTestOverdue}
           />
         </div>
       </form>
 
-      <ControlsTableClient rows={rows} />
+      <ControlsTableClient rows={rows} locale={locale} />
     </div>
   );
 }
