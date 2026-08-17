@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { ArrowRight, ImageIcon } from "lucide-react";
 import { requirePermission } from "@/lib/authz";
 import { getDoraOverview } from "@/features/dora/queries";
+import { HANDBOOK_GROUPS, HANDBOOK_SECTIONS } from "@/lib/content/dora-handbook";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
@@ -56,7 +58,7 @@ export default async function DoraKnowledgePage() {
     <div className="max-w-4xl">
       <PageHeader
         title="DORA ISRM Wissensbasis"
-        description="Die fünf Kernsäulen der Verordnung (EU) 2022/2554 – aufbereitet für das Informationssicherheits-Risikomanagement einer Bank. Markierte Fachbegriffe sind anklickbar; jede Säule zeigt den eigenen Umsetzungsstand aus dem Anforderungskatalog (FRWK-DORA-001)."
+        description="Die fünf Kernsäulen der Verordnung (EU) 2022/2554 und das vollständige Handbuch der Gesamtbetrachtung FRWK-DORA-001 (Kapitel 1–15) – aufbereitet für das Informationssicherheits-Risikomanagement einer Bank. Markierte Fachbegriffe sind anklickbar; jede Säule zeigt den eigenen Umsetzungsstand aus dem Anforderungskatalog."
         crumbs={[{ label: "Overview", href: "/overview" }, { label: "DORA Wissensbasis" }]}
       />
 
@@ -80,6 +82,88 @@ export default async function DoraKnowledgePage() {
       </div>
 
       <DoraKnowledgeBase scores={scores} />
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Das vollständige Handbuch (FRWK-DORA-001)</CardTitle>
+          <CardDescription>
+            Die Gesamtbetrachtung als navigierbares Handbuch: Kapitel 1–8 und 10–15 in fünf
+            thematischen Teilen, inklusive aller Original-Abbildungen und Tabellen des Dokuments.
+            Kapitel 9 (Anforderungskatalog) ist nicht als Text abgebildet, sondern als interaktives
+            Modul umgesetzt.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {HANDBOOK_GROUPS.map((group) => (
+            <section key={group.id}>
+              <h3 className="text-sm font-semibold">{group.title}</h3>
+              <p className="mb-2 text-xs text-muted-foreground">{group.description}</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {HANDBOOK_SECTIONS.filter((s) => s.groupId === group.id).map((s) => (
+                  <Link
+                    key={s.slug}
+                    href={`/dora-knowledge/${s.slug}`}
+                    className="group flex flex-col rounded-lg border p-3 transition-colors hover:border-primary/50 hover:bg-accent/40"
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {s.chapter}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        {s.figures.length > 0 ? (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                            title={`${s.figures.length} Abbildung(en) aus dem Originaldokument`}
+                          >
+                            <ImageIcon className="h-3 w-3" aria-hidden />
+                            {s.figures.length}
+                          </span>
+                        ) : null}
+                        <ArrowRight
+                          className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                          aria-hidden
+                        />
+                      </span>
+                    </span>
+                    <span className="mt-0.5 text-sm font-medium leading-snug">{s.title}</span>
+                    <span className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {s.summary}
+                    </span>
+                  </Link>
+                ))}
+                {group.id === "steuerung" ? (
+                  <Link
+                    href="/dora/requirements"
+                    className="group flex flex-col rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3 transition-colors hover:border-primary/60 hover:bg-primary/10"
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-primary">
+                        Kap. 9
+                      </span>
+                      <ArrowRight
+                        className="h-3.5 w-3.5 text-primary transition-transform group-hover:translate-x-0.5"
+                        aria-hidden
+                      />
+                    </span>
+                    <span className="mt-0.5 text-sm font-medium leading-snug">
+                      Anforderungskatalog – als interaktives Modul
+                    </span>
+                    <span className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      Die 133 Anforderungen der Kapitel II–VI sind nicht als Text, sondern
+                      vollständig bewertbar im Katalog umgesetzt – mit Reifegrad, Nachweisen,
+                      Crosswalk und Knockout-Logik.
+                    </span>
+                  </Link>
+                ) : null}
+              </div>
+            </section>
+          ))}
+          <p className="text-xs text-muted-foreground">
+            Nicht Teil der Wissensbasis: Kap. 16 (Umsetzungsfahrplan) und Kap. 17 (Anhang) – sie
+            betreffen die Projekt- und Dokumentensteuerung des Rahmenwerks.
+          </p>
+        </CardContent>
+      </Card>
 
       <Card className="mt-6">
         <CardHeader>

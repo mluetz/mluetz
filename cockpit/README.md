@@ -49,7 +49,12 @@ Finanzdienstleistungsumfeld (DORA-Kontext).
   KPI-/KRI-Kacheln und Heatmap Kapitel × kritische Funktionen
 - **DORA Wissensbasis:** die 5 Kernsäulen als interaktive Akkordeons mit
   klickbarem Fachbegriffs-Glossar, Live-Umsetzungsstand je Säule und den
-  9 Wirkungsketten des DORA-Regelkreises
+  9 Wirkungsketten des DORA-Regelkreises – plus das **vollständige Handbuch**
+  der Gesamtbetrachtung FRWK-DORA-001 (Kapitel 1–8 und 10–15, in fünf
+  thematischen Teilen navigierbar) mit den 16 Original-Abbildungen des
+  Dokuments (Klick öffnet Großansicht) und den zentralen Tabellen
+  (DORA↔NIS-2, RTS/ITS, Meldefristen, Reifegradskala, KPI/KRI-Katalog,
+  RACI-Matrix); Kapitel 9 ist als interaktiver Anforderungskatalog verlinkt
 - **Reports:** Executive Summary, Top Risks, Appetit-Überschreitungen, überfällige
   Maßnahmen, Akzeptanzen, TPRM-Übersicht, DORA Readiness, Kontrollwirksamkeit,
   Quality-Review, Trend, Entscheidungsvorlage – mit Stichtag/Ersteller/Zeitpunkt,
@@ -59,8 +64,8 @@ Finanzdienstleistungsumfeld (DORA-Kontext).
 
 ## Screenshots
 
-*(Platzhalter – Screenshots des Dashboards, Risk Registers und einer
-Runbook-Ausführung nach dem ersten lokalen Start ergänzen.)*
+_(Platzhalter – Screenshots des Dashboards, Risk Registers und einer
+Runbook-Ausführung nach dem ersten lokalen Start ergänzen.)_
 
 ## Voraussetzungen
 
@@ -81,18 +86,18 @@ npm run dev                 # http://localhost:3000
 
 Passwort für alle Konten: `Demo!2026`
 
-| Rolle | E-Mail |
-|---|---|
-| Administrator | `admin@demo.example` |
-| ICT Risk Manager | `riskmanager@demo.example` |
-| Third Party Risk Manager | `tprm@demo.example` |
-| Information Security Officer | `iso@demo.example` |
-| Risk Owner | `riskowner@demo.example` |
-| Control Owner | `controlowner@demo.example` |
-| Action Owner | `actionowner@demo.example` |
-| Reviewer / Second Line | `secondline@demo.example` |
-| Management (Read-only + Freigaben) | `management@demo.example` |
-| Auditor (read-only inkl. Audit Trail) | `auditor@demo.example` |
+| Rolle                                 | E-Mail                      |
+| ------------------------------------- | --------------------------- |
+| Administrator                         | `admin@demo.example`        |
+| ICT Risk Manager                      | `riskmanager@demo.example`  |
+| Third Party Risk Manager              | `tprm@demo.example`         |
+| Information Security Officer          | `iso@demo.example`          |
+| Risk Owner                            | `riskowner@demo.example`    |
+| Control Owner                         | `controlowner@demo.example` |
+| Action Owner                          | `actionowner@demo.example`  |
+| Reviewer / Second Line                | `secondline@demo.example`   |
+| Management (Read-only + Freigaben)    | `management@demo.example`   |
+| Auditor (read-only inkl. Audit Trail) | `auditor@demo.example`      |
 
 ## Tests
 
@@ -140,19 +145,19 @@ Details: [SECURITY.md](SECURITY.md) und [docs/security/threat-model.md](docs/sec
 
 ## Dokumentation
 
-| Thema | Pfad |
-|---|---|
-| Architektur | docs/architecture/architecture.md |
-| Datenmodell | docs/architecture/data-model.md |
-| Threat Model | docs/security/threat-model.md |
-| RACI / Rollen | docs/governance/raci.md |
-| Risikomethodik | docs/governance/risk-methodology.md |
-| Runbooks (RB-01…RB-20) | docs/runbooks/ |
-| Playbooks (PB-01…PB-16) | docs/playbooks/ |
-| Benutzerhandbuch nach Rolle | docs/user-guide/README.md |
-| Betrieb (Installation, Backup, Monitoring, Release) | docs/operations/README.md |
-| Projektplan, Backlog, Milestones, DoD | docs/project/projektplan.md |
-| Architekturentscheidungen | docs/adr/ |
+| Thema                                               | Pfad                                |
+| --------------------------------------------------- | ----------------------------------- |
+| Architektur                                         | docs/architecture/architecture.md   |
+| Datenmodell                                         | docs/architecture/data-model.md     |
+| Threat Model                                        | docs/security/threat-model.md       |
+| RACI / Rollen                                       | docs/governance/raci.md             |
+| Risikomethodik                                      | docs/governance/risk-methodology.md |
+| Runbooks (RB-01…RB-20)                              | docs/runbooks/                      |
+| Playbooks (PB-01…PB-16)                             | docs/playbooks/                     |
+| Benutzerhandbuch nach Rolle                         | docs/user-guide/README.md           |
+| Betrieb (Installation, Backup, Monitoring, Release) | docs/operations/README.md           |
+| Projektplan, Backlog, Milestones, DoD               | docs/project/projektplan.md         |
+| Architekturentscheidungen                           | docs/adr/                           |
 
 ## Projektstruktur
 
