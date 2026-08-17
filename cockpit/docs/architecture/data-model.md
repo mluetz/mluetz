@@ -56,6 +56,19 @@ Beziehungen, Datenklassifikation und Aufbewahrung.
 | ComplianceMapping | Bewertung je Anforderung (9-stufig, mit Begründung, Owner, Reviewer, Nachweis) – **kein automatisches Compliance-Urteil** |
 | Evidence | Metadaten-/Linkregister (keine Dokumentenablage), optionaler Hash |
 
+### DORA-Anforderungskatalog (FRWK-DORA-001)
+| Entität | Zweck |
+|---|---|
+| DoraChapter | Die 5 DORA-Kapitel als Gliederungs- und Gewichtungsträger (30/25/15/25/5 %) |
+| DoraRequirement | 133 prüfbare Einzelanforderungen mit Artikel, Nachweisspezifikation, MUSS/SOLL/KANN (Gewicht 3/2/1), Knockout-Kennzeichen, Verantwortungsrolle, Crosswalk (ISO 27001, ISO 22301, NIS-2/BSIG, RTS/ITS) und Runbook-/Playbook-Verweisen |
+| DoraAssessment | Historisierte Reifegrad-Bewertung (0–5) je Anforderung; wirksamer Wert wird zur Laufzeit über die Nachweissperre berechnet (lib/domain/dora-scoring.ts) |
+| DoraFinding | Feststellungen aus 5 Quellen mit Schweregrad-Fristen (Tab. 24), Eskalation und CAPA-Verknüpfung auf Action; Schließung nur mit Wirksamkeitskriterium |
+| Incident / IncidentReport | IKT-Vorfälle mit Kenntnis-/Klassifizierungszeitpunkt und Meldekette (DORA 4 h/24 h → 72 h → 1 Monat, NIS-2, DSGVO) – Fristen deterministisch in lib/domain/incident-deadlines.ts |
+
+Evidence ist zusätzlich optional einer DoraRequirement zugeordnet (Grundlage der
+Nachweissperre: nur geprüfte, nicht abgelaufene Nachweise heben den wirksamen
+Reifegrad über 2).
+
 ### Prozesse & Querschnitt
 | Entität | Zweck |
 |---|---|

@@ -875,6 +875,10 @@ async function main() {
     data: { userId: uMgmt, userEmail: "management@demo.example", action: "ACCEPTANCE_DECISION", entityType: "RiskAcceptance", entityId: riskIds[21]!, newValue: "APPROVED", comment: "Befristete Akzeptanz bis Q1/2027 mit Auflagen" },
   });
 
+  // ---------- DORA-Anforderungskatalog (FRWK-DORA-001) ----------
+  const { seedDora } = await import("./dora-seed-core.mjs");
+  await seedDora(db, { log: (m: string) => console.log(`  ${m}`) });
+
   console.log("Seed abgeschlossen.");
   console.log(`Demo-Passwort für alle Konten: ${DEMO_PASSWORD}`);
 }

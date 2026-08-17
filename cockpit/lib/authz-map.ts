@@ -31,6 +31,9 @@ export const PERMISSIONS = {
   "report:read": ["ADMIN", "ICT_RISK_MANAGER", "TPRM_MANAGER", "ISO", "SECOND_LINE", "MANAGEMENT", "AUDITOR"],
   "report:create": ["ADMIN", "ICT_RISK_MANAGER", "TPRM_MANAGER", "ISO"],
   "export": ["ADMIN", "ICT_RISK_MANAGER", "TPRM_MANAGER", "ISO", "SECOND_LINE", "MANAGEMENT", "AUDITOR"],
+  "incident:read": ["ADMIN", "ICT_RISK_MANAGER", "TPRM_MANAGER", "ISO", "RISK_OWNER", "CONTROL_OWNER", "ACTION_OWNER", "SECOND_LINE", "MANAGEMENT", "AUDITOR"],
+  "incident:write": ["ADMIN", "ISO", "ICT_RISK_MANAGER"],
+  "dora:assess": ["ADMIN", "ISO", "ICT_RISK_MANAGER", "SECOND_LINE"],
   "audit:read": ["ADMIN", "AUDITOR", "SECOND_LINE", "ISO"],
   "admin": ["ADMIN"],
 } as const satisfies Record<string, readonly RoleKey[]>;

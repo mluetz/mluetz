@@ -38,6 +38,18 @@ Finanzdienstleistungsumfeld (DORA-Kontext).
 - **Governance:** Compliance-Mapping über DORA, EBA GL, ISO 27001/27005, NIST CSF,
   NIS2 und interne Policies – 9-stufige Bewertung mit Begründung, Owner, Nachweis,
   Reviewer; sichtbarer Disclaimer, kein automatisches Compliance-Urteil
+- **DORA Compliance (FRWK-DORA-001):** vollständiger Anforderungskatalog mit
+  **133 prüfbaren Einzelanforderungen** (Kap. II–VI, 98 Knockouts) inkl. Crosswalk
+  zu ISO/IEC 27001, ISO 22301, NIS-2/BSIG und RTS/ITS; Reifegrad-Bewertung (0–5)
+  mit **Score-Engine** (Kapitel-Scores, DORA Resilience Index, Knockout-Übersteuerung,
+  Nachweissperre, Ampellogik 85/60); Findings mit CAPA-Verknüpfung ins
+  Maßnahmen-Modul (Schweregrade, Fristen, Eskalation, Wirksamkeitskriterium);
+  **Vorfallsmodul mit Meldefristen-Monitor** (Erstmeldung 4 h/24 h, Zwischenmeldung
+  72 h, Abschluss 1 Monat – parallele Prüfung NIS-2 und DSGVO Art. 33);
+  KPI-/KRI-Kacheln und Heatmap Kapitel × kritische Funktionen
+- **DORA Wissensbasis:** die 5 Kernsäulen als interaktive Akkordeons mit
+  klickbarem Fachbegriffs-Glossar, Live-Umsetzungsstand je Säule und den
+  9 Wirkungsketten des DORA-Regelkreises
 - **Reports:** Executive Summary, Top Risks, Appetit-Überschreitungen, überfällige
   Maßnahmen, Akzeptanzen, TPRM-Übersicht, DORA Readiness, Kontrollwirksamkeit,
   Quality-Review, Trend, Entscheidungsvorlage – mit Stichtag/Ersteller/Zeitpunkt,

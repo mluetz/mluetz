@@ -43,18 +43,38 @@ function renderWithTerms(text: string, onTerm: (key: string) => void): React.Rea
   });
 }
 
+export interface PillarScore {
+  scorePercent: number;
+  status: "GREEN" | "YELLOW" | "RED";
+  openKnockouts: number;
+  chapterKey: string;
+}
+
+const SCORE_CLASS: Record<PillarScore["status"], string> = {
+  GREEN: "bg-risk-low/15 text-risk-low border-risk-low/40",
+  YELLOW: "bg-risk-medium/15 text-risk-medium border-risk-medium/40",
+  RED: "bg-risk-critical/15 text-risk-critical border-risk-critical/40",
+};
+const SCORE_LABEL: Record<PillarScore["status"], string> = {
+  GREEN: "GRÜN",
+  YELLOW: "GELB",
+  RED: "ROT",
+};
+
 function PillarAccordion({
   pillar,
   index,
   open,
   onToggle,
   onTerm,
+  score,
 }: {
   pillar: DoraPillar;
   index: number;
   open: boolean;
   onToggle: () => void;
   onTerm: (key: string) => void;
+  score?: PillarScore;
 }) {
   const panelId = `dora-panel-${pillar.id}`;
   const buttonId = `dora-button-${pillar.id}`;
@@ -78,6 +98,22 @@ function PillarAccordion({
               {pillar.chapter} · {pillar.articles}
             </span>
           </span>
+          {score ? (
+            <span
+              className={cn(
+                "shrink-0 rounded-md border px-2 py-1 text-[11px] font-semibold",
+                SCORE_CLASS[score.status],
+              )}
+              title={
+                score.openKnockouts > 0
+                  ? `${score.openKnockouts} offene Knockout-Anforderungen`
+                  : "Umsetzungsstand aus dem Anforderungskatalog"
+              }
+            >
+              {score.scorePercent} % · {SCORE_LABEL[score.status]}
+              {score.openKnockouts > 0 ? ` · ${score.openKnockouts} KO` : ""}
+            </span>
+          ) : null}
           <ChevronDown
             className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
             aria-hidden
@@ -107,6 +143,15 @@ function PillarAccordion({
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">Im Cockpit:</span>
+            {score ? (
+              <Link
+                href={`/dora/requirements?chapter=${score.chapterKey}`}
+                className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-medium transition-colors hover:bg-accent"
+              >
+                Anforderungen dieses Kapitels
+                <ExternalLink className="h-3 w-3" aria-hidden />
+              </Link>
+            ) : null}
             {pillar.cockpitLinks.map((l) => (
               <Link
                 key={l.href + l.label}
@@ -124,7 +169,11 @@ function PillarAccordion({
   );
 }
 
-export function DoraKnowledgeBase() {
+export function DoraKnowledgeBase({
+  scores,
+}: {
+  scores?: Record<string, PillarScore>;
+}) {
   const [openId, setOpenId] = React.useState<string | null>(DORA_PILLARS[0]?.id ?? null);
   const [term, setTerm] = React.useState<string | null>(null);
   const entry = term ? DORA_GLOSSARY[term] : undefined;
@@ -139,6 +188,7 @@ export function DoraKnowledgeBase() {
           open={openId === pillar.id}
           onToggle={() => setOpenId((cur) => (cur === pillar.id ? null : pillar.id))}
           onTerm={setTerm}
+          score={scores?.[pillar.id]}
         />
       ))}
 

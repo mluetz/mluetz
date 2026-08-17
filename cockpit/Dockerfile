@@ -37,6 +37,9 @@ COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 COPY --from=builder /app/prisma/seed-template.db ./seed-template.db
+# Runtime-Updater für bestehende Installationen (idempotenter DORA-Seed)
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/lib/content/dora-catalog.json ./lib/content/dora-catalog.json
 # Bewusst ohne "--chmod" (das setzt BuildKit voraus, das auf Synology-DSM
 # nicht immer aktiv ist) – Rechte werden per RUN gesetzt.
 COPY docker-entrypoint.sh ./docker-entrypoint.sh

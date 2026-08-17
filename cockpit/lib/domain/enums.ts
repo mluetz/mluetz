@@ -78,6 +78,7 @@ export const IMPACT_DIMENSIONS = {
   INTEGRITY: "Integrität",
   AVAILABILITY: "Verfügbarkeit",
   AUTHENTICITY: "Authentizität",
+  NON_REPUDIATION: "Verbindlichkeit (Non-Repudiation)",
   FINANCIAL: "Finanzielle Auswirkungen",
   REGULATORY: "Regulatorische Auswirkungen",
   CUSTOMER: "Kundenwirkung",
@@ -220,3 +221,55 @@ export const FRAMEWORKS = {
 export const COMPLIANCE_DISCLAIMER =
   "Die Anwendung unterstützt die Dokumentation und Steuerung regulatorischer Anforderungen. " +
   "Sie ersetzt keine rechtliche, aufsichtsrechtliche oder unabhängige Compliance-Prüfung.";
+
+// ------------------------------------------------------------------
+// DORA-Anforderungskatalog (FRWK-DORA-001)
+// ------------------------------------------------------------------
+
+export const DORA_BINDINGNESS = {
+  MUSS: "MUSS",
+  SOLL: "SOLL",
+  KANN: "KANN",
+} as const;
+
+export const DORA_MATURITY = {
+  0: "0 – Nicht vorhanden",
+  1: "1 – Initial / ad hoc",
+  2: "2 – Wiederholbar",
+  3: "3 – Definiert",
+  4: "4 – Gesteuert",
+  5: "5 – Optimiert",
+} as const;
+
+export const DORA_FINDING_SOURCE = {
+  SELF_ASSESSMENT: "Selbstbewertung",
+  TEST: "Resilienztest / TLPT",
+  INCIDENT: "Vorfallsnachbereitung",
+  PROVIDER: "Dienstleisterprüfung",
+  AUDIT: "Interne / externe Prüfung",
+} as const;
+
+export const DORA_FINDING_STATUS = {
+  OPEN: "Offen",
+  IN_PROGRESS: "In Bearbeitung",
+  EFFECTIVENESS_CHECK: "Wirksamkeitsprüfung",
+  CLOSED: "Geschlossen",
+} as const;
+
+export const INCIDENT_STATUS = {
+  OPEN: "Offen",
+  CONTAINED: "Eingedämmt",
+  RESTORED: "Wiederhergestellt",
+  CLOSED: "Geschlossen",
+} as const;
+
+export const INCIDENT_REPORT_LABELS: Record<string, string> = {
+  DORA_INITIAL: "DORA-Erstmeldung",
+  DORA_INTERMEDIATE: "DORA-Zwischenmeldung",
+  DORA_FINAL: "DORA-Abschlussmeldung",
+  NIS2_EARLY_WARNING: "NIS-2-Frühwarnung",
+  NIS2_REPORT: "NIS-2-Meldung",
+  NIS2_FINAL: "NIS-2-Abschlussbericht",
+  GDPR_NOTIFICATION: "DSGVO-Meldung (Art. 33)",
+  CUSTOMER_INFO: "Kundeninformation",
+};

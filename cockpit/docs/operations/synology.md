@@ -232,7 +232,7 @@ DSM bringt einen Reverse Proxy mit, der das vorhandene NAS-Zertifikat nutzt:
 
 | Aufgabe | Vorgehen |
 |---|---|
-| **Update** | Neue Dateien hochladen bzw. `git pull`, dann Container Manager → Projekt → **Aktion → Erstellen** (SSH: `docker compose -f docker-compose.synology.yml up -d --build`). Die Datenbank im Volume bleibt erhalten. |
+| **Update** | Neue Dateien hochladen bzw. `git pull`, dann Container Manager → Projekt → **Aktion → Erstellen** (SSH: `docker compose -f docker-compose.synology.yml up -d --build`). Die Datenbank im Volume bleibt erhalten; der Entrypoint führt beim Start automatisch additive Schema-Updates (`prisma db push`) und neue Inhaltsbausteine (z. B. DORA-Anforderungskatalog) idempotent nach – sichtbar im Container-Log. |
 | **Backup** | `sudo docker cp ict-tprm-cockpit:/data/cockpit.db /volume1/docker/cockpit-backup-$(date +%F).db` – für einen konsistenten Stand den Container kurz stoppen. Zusätzlich den Ordner in die Hyper-Backup-Aufgabe aufnehmen. |
 | **Restore** | Container stoppen → Backup-Datei zurückkopieren (`docker cp <datei> ict-tprm-cockpit:/data/cockpit.db`) → Container starten. |
 | **Demo-Daten zurücksetzen** | Container stoppen → Volume `cockpit_cockpit-data` löschen (Container Manager → Volume) → Projekt starten; die Demo-Datenbank wird frisch angelegt. |
