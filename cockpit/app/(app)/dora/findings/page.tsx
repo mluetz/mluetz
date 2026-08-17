@@ -75,8 +75,16 @@ export default async function DoraFindingsPage({
 
       <div className="mb-4 flex flex-wrap gap-2 rounded-lg border bg-card p-3 text-xs">
         <FilterChip href="/dora/findings?open=1" active={sp.open === "1"} label="Offen" />
-        <FilterChip href="/dora/findings?overdue=1" active={sp.overdue === "1"} label="Überfällig" />
-        <FilterChip href="/dora/findings?critical=1" active={sp.critical === "1"} label="Kritisch" />
+        <FilterChip
+          href="/dora/findings?overdue=1"
+          active={sp.overdue === "1"}
+          label="Überfällig"
+        />
+        <FilterChip
+          href="/dora/findings?critical=1"
+          active={sp.critical === "1"}
+          label="Kritisch"
+        />
       </div>
 
       <FindingsTableClient rows={rows} />

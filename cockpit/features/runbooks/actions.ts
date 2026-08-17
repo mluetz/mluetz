@@ -86,7 +86,9 @@ export async function updateStepResult(
     const execution = await db.runbookExecution.findUnique({ where: { id: d.executionId } });
     if (!execution) return { error: "Ausführung nicht gefunden." };
     if (execution.status !== "IN_PROGRESS") {
-      return { error: "Die Ausführung ist bereits abgeschlossen und kann nicht mehr geändert werden." };
+      return {
+        error: "Die Ausführung ist bereits abgeschlossen und kann nicht mehr geändert werden.",
+      };
     }
     const step = await db.runbookStep.findUnique({ where: { id: d.stepId } });
     if (!step || step.runbookId !== execution.runbookId) {

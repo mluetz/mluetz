@@ -27,13 +27,26 @@ export function MaturityTrendChart({
   data: Array<{ month: string; avgMaturity: number; count: number }>;
 }) {
   if (data.length === 0)
-    return <p className="py-8 text-center text-sm text-muted-foreground">Noch keine Bewertungen.</p>;
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground">Noch keine Bewertungen.</p>
+    );
   return (
     <ResponsiveContainer width="100%" height={200}>
       <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -28 }}>
         <CartesianGrid stroke={GRID_STROKE} strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="month" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID_STROKE }} />
-        <YAxis domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} tick={AXIS_TICK} tickLine={false} axisLine={false} />
+        <XAxis
+          dataKey="month"
+          tick={AXIS_TICK}
+          tickLine={false}
+          axisLine={{ stroke: GRID_STROKE }}
+        />
+        <YAxis
+          domain={[0, 5]}
+          ticks={[0, 1, 2, 3, 4, 5]}
+          tick={AXIS_TICK}
+          tickLine={false}
+          axisLine={false}
+        />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
           formatter={(value: number | string, name) => [

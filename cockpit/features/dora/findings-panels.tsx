@@ -71,8 +71,8 @@ export function NewFindingForm({
                 </option>
                 {Object.entries(FINDING_SEVERITY_RULES).map(([k, rule]) => (
                   <option key={k} value={k}>
-                    {rule.label} – Reaktion {rule.responseDays} Tage, Behebung {rule.remediationDays}{" "}
-                    Tage, Eskalation: {rule.escalateTo}
+                    {rule.label} – Reaktion {rule.responseDays} Tage, Behebung{" "}
+                    {rule.remediationDays} Tage, Eskalation: {rule.escalateTo}
                   </option>
                 ))}
               </Select>

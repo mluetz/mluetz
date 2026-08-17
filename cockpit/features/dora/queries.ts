@@ -266,7 +266,10 @@ export async function getDoraOverview(): Promise<DoraOverview> {
     {
       id: "KPI-K3-01",
       label: "Meldefristentreue (offene Vorfälle)",
-      value: incidentSummary.overdueReports === 0 ? "fristgerecht" : `${incidentSummary.overdueReports} überfällig`,
+      value:
+        incidentSummary.overdueReports === 0
+          ? "fristgerecht"
+          : `${incidentSummary.overdueReports} überfällig`,
       target: "100 %",
       ok: incidentSummary.overdueReports === 0,
     },

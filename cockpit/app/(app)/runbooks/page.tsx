@@ -139,7 +139,9 @@ export default async function RunbooksPage() {
       <Card className="mt-4">
         <CardHeader>
           <CardTitle>Abgeschlossene Ausführungen</CardTitle>
-          <CardDescription>Die letzten 10 abgeschlossenen bzw. abgebrochenen Ausführungen.</CardDescription>
+          <CardDescription>
+            Die letzten 10 abgeschlossenen bzw. abgebrochenen Ausführungen.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>

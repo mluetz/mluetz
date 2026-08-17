@@ -86,7 +86,8 @@ export async function changeActionStatus(
   try {
     const user = await assertPermission("action:write");
     const parsed = statusSchema.safeParse(Object.fromEntries(formData));
-    if (!parsed.success) return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
+    if (!parsed.success)
+      return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
     const d = parsed.data;
 
     const action = await db.action.findUnique({ where: { id: d.actionId } });
@@ -95,10 +96,15 @@ export async function changeActionStatus(
     const to = d.newStatus as ActionStatus;
     if (!(to in ACTION_STATUS)) return { error: "Ungültiger Zielstatus." };
     if (to === "CLOSED" && from !== "EFFECTIVENESS_REVIEW") {
-      return { error: "Eine Maßnahme darf erst nach der Wirksamkeitsprüfung (Effectiveness Review) geschlossen werden." };
+      return {
+        error:
+          "Eine Maßnahme darf erst nach der Wirksamkeitsprüfung (Effectiveness Review) geschlossen werden.",
+      };
     }
     if (!ACTION_TRANSITIONS[from]?.includes(to)) {
-      return { error: `Übergang ${ACTION_STATUS[from]} → ${ACTION_STATUS[to]} ist nicht zulässig.` };
+      return {
+        error: `Übergang ${ACTION_STATUS[from]} → ${ACTION_STATUS[to]} ist nicht zulässig.`,
+      };
     }
 
     await db.action.update({ where: { id: d.actionId }, data: { status: to } });
@@ -130,12 +136,17 @@ const escalateSchema = z.object({
   justification: z.string().min(5).max(2000),
 });
 
-export async function escalateAction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function escalateAction(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("action:escalate");
     const parsed = escalateSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) {
-      return { error: "Eskalationsstufe (1–3) und Begründung (mind. 5 Zeichen) sind erforderlich." };
+      return {
+        error: "Eskalationsstufe (1–3) und Begründung (mind. 5 Zeichen) sind erforderlich.",
+      };
     }
     const d = parsed.data;
 
@@ -190,7 +201,10 @@ export async function createAction(_prev: ActionResult, formData: FormData): Pro
     const user = await assertPermission("action:write");
     const parsed = createSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) {
-      return { error: "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", ") };
+      return {
+        error:
+          "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", "),
+      };
     }
     const d = parsed.data;
 

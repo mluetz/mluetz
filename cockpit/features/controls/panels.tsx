@@ -21,7 +21,10 @@ function ErrorLine({ state }: { state: ActionResult }) {
 // ---------------- Neuer Kontrolltest ----------------
 
 export function ControlTestForm({ controlId }: { controlId: string }) {
-  const [state, formAction, pending] = useActionState<ActionResult, FormData>(recordControlTest, {});
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    recordControlTest,
+    {},
+  );
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="controlId" value={controlId} />
@@ -51,7 +54,12 @@ export function ControlTestForm({ controlId }: { controlId: string }) {
           </Select>
         </Field>
         <Field label="Operative Wirksamkeit" htmlFor="operatingEffectiveness" required>
-          <Select id="operatingEffectiveness" name="operatingEffectiveness" required defaultValue="">
+          <Select
+            id="operatingEffectiveness"
+            name="operatingEffectiveness"
+            required
+            defaultValue=""
+          >
             <option value="" disabled>
               Bitte wählen
             </option>
@@ -114,7 +122,14 @@ export function UpdateControlForm({
       <input type="hidden" name="controlId" value={controlId} />
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Name" htmlFor="ctl-name" required>
-          <Input id="ctl-name" name="name" required minLength={3} maxLength={200} defaultValue={defaults.name} />
+          <Input
+            id="ctl-name"
+            name="name"
+            required
+            minLength={3}
+            maxLength={200}
+            defaultValue={defaults.name}
+          />
         </Field>
         <Field label="Control Owner" htmlFor="ctl-owner">
           <Select id="ctl-owner" name="ownerId" defaultValue={defaults.ownerId ?? ""}>

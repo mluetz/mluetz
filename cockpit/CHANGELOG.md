@@ -7,6 +7,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 ## [0.2.0] – 2026-08-17
 
 ### Added
+
 - **DORA-Compliance-Modul** auf Basis des Rahmenwerks FRWK-DORA-001:
   Anforderungskatalog mit 133 prüfbaren Anforderungen (Kap. II–VI, 122 MUSS,
   98 Knockouts) inkl. Crosswalk zu ISO/IEC 27001:2022, ISO 22301, NIS-2/BSIG
@@ -36,6 +37,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 ## [0.1.0] – 2026-08-13
 
 ### Added
+
 - Grundgerüst: Next.js 15 (App Router, TypeScript strict), Tailwind, Prisma
   (SQLite dev / PostgreSQL-ready), HMAC-Session-Auth mit Demo-Login, serverseitiges
   RBAC mit 10 Rollen und Funktionstrennung

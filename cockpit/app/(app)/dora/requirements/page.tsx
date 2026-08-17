@@ -52,7 +52,10 @@ export default async function DoraRequirementsPage({
         ]}
       />
 
-      <form method="GET" className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4">
+      <form
+        method="GET"
+        className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4"
+      >
         <div>
           <Label htmlFor="f-chapter">Kapitel</Label>
           <Select id="f-chapter" name="chapter" defaultValue={sp.chapter ?? ""}>

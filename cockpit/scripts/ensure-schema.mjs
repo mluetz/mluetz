@@ -64,7 +64,9 @@ async function applyScript(file) {
       throw new Error(`Statement fehlgeschlagen: ${stmt.slice(0, 80)} … → ${msg}`);
     }
   }
-  log(`${file}: abgeschlossen${skipped ? ` (${skipped} bereits vorhandene Objekte übersprungen)` : ""}.`);
+  log(
+    `${file}: abgeschlossen${skipped ? ` (${skipped} bereits vorhandene Objekte übersprungen)` : ""}.`,
+  );
 }
 
 /** Updates mit Guards: angewendet wird nur, was nachweislich fehlt. */

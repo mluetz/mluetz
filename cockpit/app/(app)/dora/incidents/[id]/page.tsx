@@ -107,10 +107,7 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <Info label="Vorfallsbeschreibung" value={incident.description} />
-            <Info
-              label="Klassifizierungsnotiz"
-              value={incident.classificationNote ?? "–"}
-            />
+            <Info label="Klassifizierungsnotiz" value={incident.classificationNote ?? "–"} />
           </CardContent>
         </Card>
         <Card>
@@ -174,7 +171,9 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
                 <div key={r.id} className="rounded-md border p-3">
                   <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
                     <span className="font-medium">{label}</span>
-                    <span className={`text-xs ${overdue ? "font-medium text-risk-critical" : "text-muted-foreground"}`}>
+                    <span
+                      className={`text-xs ${overdue ? "font-medium text-risk-critical" : "text-muted-foreground"}`}
+                    >
                       fällig {formatDateTime(r.dueAt)}
                       {overdue ? ` · ${remainingLabel(r.dueAt, now)}` : ""}
                     </span>
@@ -212,8 +211,8 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
         <CardHeader>
           <CardTitle>Workflow</CardTitle>
           <CardDescription>
-            Offen → Eingedämmt → Wiederhergestellt → Geschlossen. Abschluss nur, wenn keine
-            offene überfällige Meldung mehr existiert; jeder Wechsel wird protokolliert.
+            Offen → Eingedämmt → Wiederhergestellt → Geschlossen. Abschluss nur, wenn keine offene
+            überfällige Meldung mehr existiert; jeder Wechsel wird protokolliert.
           </CardDescription>
         </CardHeader>
         <CardContent>

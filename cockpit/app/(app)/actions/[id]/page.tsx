@@ -3,12 +3,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission, hasPermission } from "@/lib/authz";
 import { formatDate, formatDateTime, isOverdue } from "@/lib/utils";
-import {
-  ACTION_STATUS,
-  ACTION_TRANSITIONS,
-  PRIORITY,
-  type ActionStatus,
-} from "@/lib/domain/enums";
+import { ACTION_STATUS, ACTION_TRANSITIONS, PRIORITY, type ActionStatus } from "@/lib/domain/enums";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -102,7 +97,8 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
             <div>
               <p className="text-[11px] font-medium text-muted-foreground">Zugehöriges Risiko</p>
               <Link href={`/risks/${action.risk.id}`} className="text-primary hover:underline">
-                <span className="font-mono text-xs">{action.risk.riskId}</span> – {action.risk.title}
+                <span className="font-mono text-xs">{action.risk.riskId}</span> –{" "}
+                {action.risk.title}
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -110,10 +106,7 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
               <Info label="Startdatum" value={formatDate(action.startDate)} />
               <Info label="Budget" value={action.budget ?? "–"} />
               <Info label="Abhängigkeiten" value={action.dependencies ?? "–"} />
-              <Info
-                label="Erwartete Risikoreduktion"
-                value={action.expectedRiskReduction ?? "–"}
-              />
+              <Info label="Erwartete Risikoreduktion" value={action.expectedRiskReduction ?? "–"} />
               <Info
                 label="Validierungsstatus"
                 value={VALIDATION_STATUS[action.validationStatus] ?? action.validationStatus}

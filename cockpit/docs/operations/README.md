@@ -9,11 +9,13 @@
 ## 1. Installation
 
 ### 1.1 Voraussetzungen
+
 - Node.js (LTS) und npm
 - Dev/Demo: SQLite (dateibasiert, keine Serverinstallation nötig)
 - Produktion: PostgreSQL ≥ 14, Reverse Proxy mit TLS-Terminierung
 
 ### 1.2 Ersteinrichtung (Entwicklung/Demo)
+
 ```bash
 npm install                 # Abhängigkeiten installieren
 cp .env.example .env        # Umgebungsvariablen setzen (DATABASE_URL, SESSION_SECRET)
@@ -21,26 +23,32 @@ npx prisma db push          # Schema in die Datenbank übertragen
 npx prisma db seed          # Demo-Daten und Demo-Benutzer je Rolle einspielen
 npm run dev                 # Entwicklungsserver starten
 ```
+
 Hinweise:
+
 - `SESSION_SECRET` muss ein kryptografisch zufälliger Wert sein; niemals den Beispielwert produktiv verwenden.
 - Der Seed legt je Rolle einen Demo-Benutzer an; Passwörter siehe Projekt-README. **Demo-Konten dürfen in Produktion nicht existieren.**
 
 ### 1.3 Produktion
+
 ```bash
 npm ci
 npx prisma migrate deploy   # Versionierte Migrationen anwenden (kein db push in prod)
 npm run build
 npm run start
 ```
+
 Konfiguration ausschließlich über Umgebungsvariablen; keine Secrets im Repository oder im Client-Bundle.
 
 ## 2. Backup & Restore
 
 ### 2.1 SQLite (Dev/Demo)
+
 - **Backup:** Kopie der Datenbankdatei (z. B. `prisma/dev.db`) bei gestoppter Anwendung, alternativ `sqlite3 dev.db ".backup backup.db"` im laufenden Betrieb.
 - **Restore:** Anwendung stoppen, Datei zurückkopieren, Anwendung starten.
 
 ### 2.2 PostgreSQL (Produktion)
+
 - **Backup:** `pg_dump -Fc "$DATABASE_URL" > cockpit_$(date +%F).dump` – täglich automatisiert; Aufbewahrung gemäß Abschnitt 6; Ablage verschlüsselt und zugriffsbeschränkt.
 - **Restore:** `pg_restore -d "$DATABASE_URL" --clean --if-exists cockpit_YYYY-MM-DD.dump` in einer Wartungsphase; anschließend Healthcheck (Abschnitt 3) und Stichprobenprüfung (Login, Risikoliste, Audit Trail).
 - **Tests:** Restore-Verfahren mindestens halbjährlich testen und das Ergebnis dokumentieren (revisionsrelevant).
@@ -63,25 +71,27 @@ Konfiguration ausschließlich über Umgebungsvariablen; keine Secrets im Reposit
 ## 5. Release & Rollback
 
 ### 5.1 Release
+
 - Releases werden über **Git-Tags** (SemVer, z. B. `v1.4.0`) markiert; aus dem Tag wird ein versioniertes **Docker-Image** gebaut (`cockpit:v1.4.0`).
 - Deployment-Reihenfolge: Backup erstellen → `prisma migrate deploy` → neues Image starten → Healthcheck prüfen.
 - **Migrationsstrategie:** ausschließlich versionierte Prisma-Migrationen in Produktion; abwärtskompatible Migrationen bevorzugen (expand/contract: erst additiv erweitern, Entfernen erst im Folgerelease), damit ein Rollback des Images ohne Schema-Rückbau möglich bleibt.
 
 ### 5.2 Rollback
+
 - **Anwendung:** vorheriges Image-Tag starten (`cockpit:v1.3.x`); bei abwärtskompatiblen Migrationen ohne DB-Eingriff möglich.
 - **Datenbank:** nur im Ausnahmefall Restore aus Backup (Abschnitt 2); dabei gehen zwischenzeitliche Daten inkl. AuditLog-Einträge verloren – Entscheidung dokumentieren und Management informieren.
 - Jedes Rollback ist als Betriebsvorfall zu dokumentieren.
 
 ## 6. Aufbewahrung & Löschkonzept
 
-| Datenart | Regel |
-|---|---|
-| **AuditLog** | Unveränderlich (append-only, kein Änderungs-/Löschpfad in der Anwendung); Aufbewahrung gemäß konfigurierter Frist (AppSetting, Standard 10 Jahre – institutsspezifisch festzulegen); Löschung/Archivierung nur als kontrollierter, dokumentierter Betriebsprozess auf DB-Ebene |
-| Fachdaten (Risiken, Assessments, Akzeptanzen, Kontrollen, Maßnahmen) | Kein physisches Löschen im Regelbetrieb; Abschluss über Status (Closed); Aufbewahrungsfristen je Objekttyp über AppSetting konfigurierbar |
-| Drittpartei- und Vertragsdaten | Aufbewahrung mindestens für die Vertragslaufzeit zuzüglich konfigurierter Frist |
-| Evidence | Es werden nur Metadaten gehalten; Aufbewahrung der referenzierten Dokumente regelt das führende DMS |
-| Personenbezogene Daten (User) | Deaktivierung statt Löschung, solange AuditLog-Referenzen bestehen; Löschanfragen im Einklang mit gesetzlichen Aufbewahrungspflichten bewerten (DSGVO Art. 17 Abs. 3 lit. b) |
-| **Demo-Daten** | Nur in Dev/Demo-Umgebungen; vor Produktivsetzung vollständig entfernen (frische DB, produktiver Seed ohne Demo-Konten) |
+| Datenart                                                             | Regel                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **AuditLog**                                                         | Unveränderlich (append-only, kein Änderungs-/Löschpfad in der Anwendung); Aufbewahrung gemäß konfigurierter Frist (AppSetting, Standard 10 Jahre – institutsspezifisch festzulegen); Löschung/Archivierung nur als kontrollierter, dokumentierter Betriebsprozess auf DB-Ebene |
+| Fachdaten (Risiken, Assessments, Akzeptanzen, Kontrollen, Maßnahmen) | Kein physisches Löschen im Regelbetrieb; Abschluss über Status (Closed); Aufbewahrungsfristen je Objekttyp über AppSetting konfigurierbar                                                                                                                                      |
+| Drittpartei- und Vertragsdaten                                       | Aufbewahrung mindestens für die Vertragslaufzeit zuzüglich konfigurierter Frist                                                                                                                                                                                                |
+| Evidence                                                             | Es werden nur Metadaten gehalten; Aufbewahrung der referenzierten Dokumente regelt das führende DMS                                                                                                                                                                            |
+| Personenbezogene Daten (User)                                        | Deaktivierung statt Löschung, solange AuditLog-Referenzen bestehen; Löschanfragen im Einklang mit gesetzlichen Aufbewahrungspflichten bewerten (DSGVO Art. 17 Abs. 3 lit. b)                                                                                                   |
+| **Demo-Daten**                                                       | Nur in Dev/Demo-Umgebungen; vor Produktivsetzung vollständig entfernen (frische DB, produktiver Seed ohne Demo-Konten)                                                                                                                                                         |
 
 Konfigurierbare Fristen werden über AppSetting gepflegt; Änderungen werden auditiert. Das Löschkonzept ist mit Datenschutz und Compliance des Instituts abzustimmen.
 
@@ -93,12 +103,13 @@ Konfigurierbare Fristen werden über AppSetting gepflegt; Änderungen werden aud
 
 ## 8. Betriebsverantwortung
 
-| Aufgabe | Verantwortlich |
-|---|---|
-| Installation, Updates, Monitoring | Administrator / Betrieb |
-| Backup-Ausführung und Restore-Tests | Betrieb (Nachweis via Runbook-Execution) |
-| Incident-Koordination | Administrator, bei Sicherheitsbezug ISO |
-| Freigabe von Releases | Administrator (technisch), Management (bei fachlich relevanten Änderungen, z. B. Methodik-Parametern) |
+| Aufgabe                             | Verantwortlich                                                                                        |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Installation, Updates, Monitoring   | Administrator / Betrieb                                                                               |
+| Backup-Ausführung und Restore-Tests | Betrieb (Nachweis via Runbook-Execution)                                                              |
+| Incident-Koordination               | Administrator, bei Sicherheitsbezug ISO                                                               |
+| Freigabe von Releases               | Administrator (technisch), Management (bei fachlich relevanten Änderungen, z. B. Methodik-Parametern) |
 
 ---
-*Die Anwendung unterstützt die Dokumentation und Steuerung regulatorischer Anforderungen. Sie ersetzt keine rechtliche, aufsichtsrechtliche oder unabhängige Compliance-Prüfung.*
+
+_Die Anwendung unterstützt die Dokumentation und Steuerung regulatorischer Anforderungen. Sie ersetzt keine rechtliche, aufsichtsrechtliche oder unabhängige Compliance-Prüfung._

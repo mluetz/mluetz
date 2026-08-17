@@ -25,10 +25,17 @@ export function RiskHeatmap({
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-center text-xs" role="grid" aria-label="5×5-Risikomatrix (aktuelle Bewertungen)">
+        <table
+          className="w-full border-collapse text-center text-xs"
+          role="grid"
+          aria-label="5×5-Risikomatrix (aktuelle Bewertungen)"
+        >
           <thead>
             <tr>
-              <th className="p-1 text-left align-bottom font-normal text-muted-foreground" scope="col">
+              <th
+                className="p-1 text-left align-bottom font-normal text-muted-foreground"
+                scope="col"
+              >
                 Likelihood ↓ / Impact →
               </th>
               {[1, 2, 3, 4, 5].map((i) => (
@@ -77,9 +84,18 @@ export function RiskHeatmap({
       </div>
       <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground">
         <LegendItem className="bg-risk-low/30" label={`Low (1–${thresholds.lowMax})`} />
-        <LegendItem className="bg-risk-medium/30" label={`Medium (${thresholds.lowMax + 1}–${thresholds.mediumMax})`} />
-        <LegendItem className="bg-risk-high/30" label={`High (${thresholds.mediumMax + 1}–${thresholds.highMax})`} />
-        <LegendItem className="bg-risk-critical/30" label={`Critical (${thresholds.highMax + 1}–25)`} />
+        <LegendItem
+          className="bg-risk-medium/30"
+          label={`Medium (${thresholds.lowMax + 1}–${thresholds.mediumMax})`}
+        />
+        <LegendItem
+          className="bg-risk-high/30"
+          label={`High (${thresholds.mediumMax + 1}–${thresholds.highMax})`}
+        />
+        <LegendItem
+          className="bg-risk-critical/30"
+          label={`Critical (${thresholds.highMax + 1}–25)`}
+        />
       </div>
     </div>
   );

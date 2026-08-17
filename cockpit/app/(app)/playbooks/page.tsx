@@ -142,7 +142,9 @@ export default async function PlaybooksPage() {
       <Card className="mt-4">
         <CardHeader>
           <CardTitle>Abgeschlossene Ausführungen</CardTitle>
-          <CardDescription>Die letzten 10 geschlossenen bzw. abgebrochenen Ausführungen.</CardDescription>
+          <CardDescription>
+            Die letzten 10 geschlossenen bzw. abgebrochenen Ausführungen.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>

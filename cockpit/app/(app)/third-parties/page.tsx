@@ -23,7 +23,11 @@ interface Search {
 
 const DAY_MS = 86400000;
 
-export default async function ThirdPartiesPage({ searchParams }: { searchParams: Promise<Search> }) {
+export default async function ThirdPartiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Search>;
+}) {
   const user = await requirePermission("thirdparty:read");
   const sp = await searchParams;
 
@@ -59,15 +63,15 @@ export default async function ThirdPartiesPage({ searchParams }: { searchParams:
   }
   if (sp.untestedExit === "1") {
     filtered = filtered.filter(
-      (t) => t.exitStrategy != null && (!t.exitStrategy.lastTestDate || t.exitStrategy.status !== "TESTED"),
+      (t) =>
+        t.exitStrategy != null &&
+        (!t.exitStrategy.lastTestDate || t.exitStrategy.status !== "TESTED"),
     );
   }
   if (sp.overdueActions === "1") {
     filtered = filtered.filter((t) =>
       t.risks.some((r) =>
-        r.actions.some(
-          (a) => !["COMPLETED", "CLOSED"].includes(a.status) && isOverdue(a.dueDate),
-        ),
+        r.actions.some((a) => !["COMPLETED", "CLOSED"].includes(a.status) && isOverdue(a.dueDate)),
       ),
     );
   }

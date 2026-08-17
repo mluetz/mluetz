@@ -78,7 +78,12 @@ export function AssessmentForm({ riskId }: { riskId: string }) {
               </Select>
             </Field>
             <Field label="Kontrollwirksamkeit" htmlFor="controlEffectiveness" required>
-              <Select id="controlEffectiveness" name="controlEffectiveness" required defaultValue="">
+              <Select
+                id="controlEffectiveness"
+                name="controlEffectiveness"
+                required
+                defaultValue=""
+              >
                 <option value="" disabled>
                   Bitte wählen
                 </option>
@@ -175,7 +180,10 @@ export function WorkflowPanel({
 // ---------------- Quality Review ----------------
 
 export function StartReviewButton({ riskId }: { riskId: string }) {
-  const [state, formAction, pending] = useActionState<ActionResult, FormData>(startQualityReview, {});
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    startQualityReview,
+    {},
+  );
   return (
     <form action={formAction} className="space-y-2">
       <input type="hidden" name="riskId" value={riskId} />
@@ -210,7 +218,10 @@ export function CompleteReviewForm({
       <input type="hidden" name="reviewId" value={reviewId} />
       <div className="space-y-2">
         {items.map((item, i) => (
-          <div key={item.id} className="grid items-center gap-2 rounded-md border p-2 md:grid-cols-[1fr_150px_220px]">
+          <div
+            key={item.id}
+            className="grid items-center gap-2 rounded-md border p-2 md:grid-cols-[1fr_150px_220px]"
+          >
             <span className="text-sm">
               {i + 1}. {item.criterion}
             </span>
@@ -261,7 +272,10 @@ export function CompleteReviewForm({
 // ---------------- Akzeptanz ----------------
 
 export function AcceptanceRequestForm({ riskId }: { riskId: string }) {
-  const [state, formAction, pending] = useActionState<ActionResult, FormData>(requestAcceptance, {});
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    requestAcceptance,
+    {},
+  );
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="riskId" value={riskId} />
@@ -282,7 +296,10 @@ export function AcceptanceRequestForm({ riskId }: { riskId: string }) {
 export function AcceptanceDecisionForm({ acceptanceId }: { acceptanceId: string }) {
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(decideAcceptance, {});
   return (
-    <form action={formAction} className="flex flex-wrap items-end gap-3 rounded-md border bg-muted/40 p-3">
+    <form
+      action={formAction}
+      className="flex flex-wrap items-end gap-3 rounded-md border bg-muted/40 p-3"
+    >
       <input type="hidden" name="acceptanceId" value={acceptanceId} />
       <div>
         <Label htmlFor={`dec-${acceptanceId}`}>Entscheidung</Label>

@@ -16,8 +16,7 @@ describe("RBAC-Berechtigungsmatrix", () => {
   it("Auditor hat ausschließlich Lese-/Export-Rechte", () => {
     for (const [perm, roles] of Object.entries(PERMISSIONS)) {
       if ((roles as readonly string[]).includes("AUDITOR")) {
-        const readOnly =
-          perm.endsWith(":read") || perm === "export" || perm === "audit:read";
+        const readOnly = perm.endsWith(":read") || perm === "export" || perm === "audit:read";
         expect(readOnly, `Auditor darf nicht: ${perm}`).toBe(true);
       }
     }
@@ -27,8 +26,7 @@ describe("RBAC-Berechtigungsmatrix", () => {
     for (const [perm, roles] of Object.entries(PERMISSIONS)) {
       if ((roles as readonly string[]).includes("MANAGEMENT")) {
         const allowed =
-          perm.endsWith(":read") ||
-          ["export", "acceptance:approve", "risk:approve"].includes(perm);
+          perm.endsWith(":read") || ["export", "acceptance:approve", "risk:approve"].includes(perm);
         expect(allowed, `Management darf nicht: ${perm}`).toBe(true);
       }
     }

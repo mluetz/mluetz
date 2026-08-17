@@ -30,7 +30,10 @@ const SETTING_DESCRIPTIONS: Record<string, string> = {
   [SETTING_KEYS.mitigationCap]: "Maximal anrechenbare Risikominderung (0–1, Restrisiko-Prinzip)",
 };
 
-export async function updateThresholds(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function updateThresholds(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("admin");
     const parsed = thresholdsSchema.safeParse(Object.fromEntries(formData));
@@ -44,16 +47,28 @@ export async function updateThresholds(_prev: ActionResult, formData: FormData):
     const currentCap = await getMitigationCap();
     const changes: Array<{ key: string; oldValue: string; newValue: string }> = [
       { key: SETTING_KEYS.lowMax, oldValue: String(current.lowMax), newValue: String(d.lowMax) },
-      { key: SETTING_KEYS.mediumMax, oldValue: String(current.mediumMax), newValue: String(d.mediumMax) },
+      {
+        key: SETTING_KEYS.mediumMax,
+        oldValue: String(current.mediumMax),
+        newValue: String(d.mediumMax),
+      },
       { key: SETTING_KEYS.highMax, oldValue: String(current.highMax), newValue: String(d.highMax) },
-      { key: SETTING_KEYS.mitigationCap, oldValue: String(currentCap), newValue: String(d.mitigationCap) },
+      {
+        key: SETTING_KEYS.mitigationCap,
+        oldValue: String(currentCap),
+        newValue: String(d.mitigationCap),
+      },
     ];
 
     for (const c of changes) {
       await db.appSetting.upsert({
         where: { key: c.key },
         update: { value: c.newValue },
-        create: { key: c.key, value: c.newValue, description: SETTING_DESCRIPTIONS[c.key] ?? c.key },
+        create: {
+          key: c.key,
+          value: c.newValue,
+          description: SETTING_DESCRIPTIONS[c.key] ?? c.key,
+        },
       });
       if (c.oldValue !== c.newValue) {
         await audit({
@@ -86,7 +101,10 @@ const activeSchema = z.object({
   active: z.enum(["true", "false"]),
 });
 
-export async function setUserActive(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function setUserActive(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("admin");
     const parsed = activeSchema.safeParse(Object.fromEntries(formData));

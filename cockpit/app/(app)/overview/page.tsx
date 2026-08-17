@@ -46,7 +46,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         description="Lage der ICT- und Informationssicherheitsrisiken – alle Kennzahlen sind anklickbar und führen zur gefilterten Detailansicht."
       />
 
-      <form method="GET" className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3">
+      <form
+        method="GET"
+        className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3"
+      >
         <div className="min-w-44">
           <Label htmlFor="of-cat">Risikokategorie</Label>
           <Select id="of-cat" name="category" defaultValue={sp.category ?? ""}>
@@ -91,24 +94,75 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       {/* KPI-Kacheln */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
         <KpiTile label="Offene Risiken" value={k.openRisks} href="/risks" />
-        <KpiTile label="High / Critical (Residual)" value={k.highCritical} href="/risks?klass=CRITICAL" warn={k.highCritical > 0} />
-        <KpiTile label="Über Risikoappetit" value={k.aboveAppetite} href="/risks?aboveAppetite=1" warn={k.aboveAppetite > 0} />
-        <KpiTile label="Überfällige Risk-Reviews" value={k.overdueReviews} href="/risks?overdueReview=1" warn={k.overdueReviews > 0} />
+        <KpiTile
+          label="High / Critical (Residual)"
+          value={k.highCritical}
+          href="/risks?klass=CRITICAL"
+          warn={k.highCritical > 0}
+        />
+        <KpiTile
+          label="Über Risikoappetit"
+          value={k.aboveAppetite}
+          href="/risks?aboveAppetite=1"
+          warn={k.aboveAppetite > 0}
+        />
+        <KpiTile
+          label="Überfällige Risk-Reviews"
+          value={k.overdueReviews}
+          href="/risks?overdueReview=1"
+          warn={k.overdueReviews > 0}
+        />
         <KpiTile label="Offene Maßnahmen" value={k.openActions} href="/actions" />
-        <KpiTile label="Überfällige Maßnahmen" value={k.overdueActions} href="/actions?overdue=1" warn={k.overdueActions > 0} />
-        <KpiTile label="Offene Risikoakzeptanzen" value={k.openAcceptances} href="/reports/ACCEPTANCES" warn={k.openAcceptances > 0} />
-        <KpiTile label="Kontrollen mit Schwächen" value={k.weakControls} href="/controls?weak=1" warn={k.weakControls > 0} />
-        <KpiTile label="Kritische Drittparteien" value={k.criticalThirdParties} href="/third-parties?critical=1" />
-        <KpiTile label="Auslaufende Verträge (180 T.)" value={k.expiringContracts} href="/third-parties?expiringContracts=1" warn={k.expiringContracts > 0} />
-        <KpiTile label="Risiken ohne Owner" value={k.risksWithoutOwner} href="/risks?noOwner=1" warn={k.risksWithoutOwner > 0} />
-        <KpiTile label="Ohne aktuelle Bewertung" value={k.risksWithoutAssessment} href="/risks?noAssessment=1" warn={k.risksWithoutAssessment > 0} />
+        <KpiTile
+          label="Überfällige Maßnahmen"
+          value={k.overdueActions}
+          href="/actions?overdue=1"
+          warn={k.overdueActions > 0}
+        />
+        <KpiTile
+          label="Offene Risikoakzeptanzen"
+          value={k.openAcceptances}
+          href="/reports/ACCEPTANCES"
+          warn={k.openAcceptances > 0}
+        />
+        <KpiTile
+          label="Kontrollen mit Schwächen"
+          value={k.weakControls}
+          href="/controls?weak=1"
+          warn={k.weakControls > 0}
+        />
+        <KpiTile
+          label="Kritische Drittparteien"
+          value={k.criticalThirdParties}
+          href="/third-parties?critical=1"
+        />
+        <KpiTile
+          label="Auslaufende Verträge (180 T.)"
+          value={k.expiringContracts}
+          href="/third-parties?expiringContracts=1"
+          warn={k.expiringContracts > 0}
+        />
+        <KpiTile
+          label="Risiken ohne Owner"
+          value={k.risksWithoutOwner}
+          href="/risks?noOwner=1"
+          warn={k.risksWithoutOwner > 0}
+        />
+        <KpiTile
+          label="Ohne aktuelle Bewertung"
+          value={k.risksWithoutAssessment}
+          href="/risks?noAssessment=1"
+          warn={k.risksWithoutAssessment > 0}
+        />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Risikomatrix 5 × 5 (aktuelle Bewertungen)</CardTitle>
-            <CardDescription>Zellwert = Anzahl offener Risiken · kleiner Wert = Zell-Score</CardDescription>
+            <CardDescription>
+              Zellwert = Anzahl offener Risiken · kleiner Wert = Zell-Score
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <RiskHeatmap matrix={data.heatmap} thresholds={thresholds} />
@@ -118,7 +172,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         <Card>
           <CardHeader>
             <CardTitle>Entwicklung Residual Risk (12 Monate)</CardTitle>
-            <CardDescription>Monatliches Mittel des Residual-Scores aller Bewertungen</CardDescription>
+            <CardDescription>
+              Monatliches Mittel des Residual-Scores aller Bewertungen
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ResidualTrendChart data={data.trend} />
@@ -154,7 +210,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
               const done = ["COMPLETED", "CLOSED"].includes(s.status);
               return (
                 <Link key={s.status} href={`/actions?status=${s.status}`}>
-                  <Badge variant={done ? "low" : overdueish ? "high" : "secondary"} className="text-sm">
+                  <Badge
+                    variant={done ? "low" : overdueish ? "high" : "secondary"}
+                    className="text-sm"
+                  >
                     {ACTION_STATUS[s.status as ActionStatus] ?? s.status}: {s.count}
                   </Badge>
                 </Link>
@@ -183,7 +242,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       <Card className="mt-4">
         <CardHeader>
           <CardTitle>Top-10-Risiken nach Residual Risk</CardTitle>
-          <CardDescription>Entscheidungsrelevante Risiken – Klick öffnet die Detailansicht</CardDescription>
+          <CardDescription>
+            Entscheidungsrelevante Risiken – Klick öffnet die Detailansicht
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -202,7 +263,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
               {data.top10.map((r) => (
                 <TR key={r.id}>
                   <TD>
-                    <Link href={`/risks/${r.id}`} className="font-mono text-xs text-primary hover:underline">
+                    <Link
+                      href={`/risks/${r.id}`}
+                      className="font-mono text-xs text-primary hover:underline"
+                    >
                       {r.riskId}
                     </Link>
                   </TD>
@@ -214,7 +278,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
                       {r.residualScore} · {RISK_CLASS[r.residualClass as RiskClass] ?? "?"}
                     </Badge>
                   </TD>
-                  <TD className={cn("text-xs", r.aboveAppetite && "font-medium text-risk-critical")}>
+                  <TD
+                    className={cn("text-xs", r.aboveAppetite && "font-medium text-risk-critical")}
+                  >
                     {r.appetiteThreshold}
                     {r.aboveAppetite ? " (überschritten)" : ""}
                   </TD>

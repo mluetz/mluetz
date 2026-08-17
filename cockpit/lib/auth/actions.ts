@@ -73,14 +73,26 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   }
 
   await createSessionCookie(user.id);
-  await audit({ userId: user.id, userEmail: user.email, action: "LOGIN", entityType: "User", entityId: user.id });
+  await audit({
+    userId: user.id,
+    userEmail: user.email,
+    action: "LOGIN",
+    entityType: "User",
+    entityId: user.id,
+  });
   redirect("/overview");
 }
 
 export async function logout(): Promise<void> {
   const user = await getSessionUser();
   if (user) {
-    await audit({ userId: user.id, userEmail: user.email, action: "LOGOUT", entityType: "User", entityId: user.id });
+    await audit({
+      userId: user.id,
+      userEmail: user.email,
+      action: "LOGOUT",
+      entityType: "User",
+      entityId: user.id,
+    });
   }
   await destroySessionCookie();
   redirect("/login");

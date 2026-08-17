@@ -65,7 +65,10 @@ export default async function ControlsPage({ searchParams }: { searchParams: Pro
         crumbs={[{ label: "Overview", href: "/overview" }, { label: "Controls" }]}
       />
 
-      <form method="GET" className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-5">
+      <form
+        method="GET"
+        className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-5"
+      >
         <div>
           <Label htmlFor="f-type">Typ</Label>
           <Select id="f-type" name="type" defaultValue={sp.type ?? ""}>

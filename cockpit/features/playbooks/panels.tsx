@@ -141,7 +141,13 @@ export function UpdateExecutionForm({
         htmlFor="upd-notes"
         hint="Laufende Dokumentation der Lagebeurteilung, Entscheidungen und Maßnahmen. Der Inhalt ersetzt den bisherigen Stand."
       >
-        <Textarea id="upd-notes" name="notes" rows={6} maxLength={8000} defaultValue={notes ?? ""} />
+        <Textarea
+          id="upd-notes"
+          name="notes"
+          rows={6}
+          maxLength={8000}
+          defaultValue={notes ?? ""}
+        />
       </Field>
       <ErrorLine state={state} />
       <Button type="submit" variant="secondary" disabled={pending}>

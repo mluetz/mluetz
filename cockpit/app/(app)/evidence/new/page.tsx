@@ -9,9 +9,18 @@ export const dynamic = "force-dynamic";
 export default async function NewEvidencePage() {
   await requirePermission("evidence:write");
   const [risks, controls, thirdParties] = await Promise.all([
-    db.risk.findMany({ select: { id: true, riskId: true, title: true }, orderBy: { riskId: "asc" } }),
-    db.control.findMany({ select: { id: true, controlId: true, name: true }, orderBy: { controlId: "asc" } }),
-    db.thirdParty.findMany({ select: { id: true, tpId: true, name: true }, orderBy: { tpId: "asc" } }),
+    db.risk.findMany({
+      select: { id: true, riskId: true, title: true },
+      orderBy: { riskId: "asc" },
+    }),
+    db.control.findMany({
+      select: { id: true, controlId: true, name: true },
+      orderBy: { controlId: "asc" },
+    }),
+    db.thirdParty.findMany({
+      select: { id: true, tpId: true, name: true },
+      orderBy: { tpId: "asc" },
+    }),
   ]);
 
   return (

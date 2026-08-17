@@ -88,10 +88,7 @@ export default async function DoraFindingDetailPage({
           value={`${formatDate(finding.remediationDueAt)}${remediationOverdue ? " (überfällig)" : ""}`}
           warn={remediationOverdue}
         />
-        <Kpi
-          label="Geschlossen am"
-          value={finding.closedAt ? formatDate(finding.closedAt) : "–"}
-        />
+        <Kpi label="Geschlossen am" value={finding.closedAt ? formatDate(finding.closedAt) : "–"} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -207,7 +204,9 @@ export default async function DoraFindingDetailPage({
                 </div>
               </li>
             ))}
-            {auditEntries.length === 0 ? <li className="text-muted-foreground">Keine Einträge.</li> : null}
+            {auditEntries.length === 0 ? (
+              <li className="text-muted-foreground">Keine Einträge.</li>
+            ) : null}
           </ul>
         </CardContent>
       </Card>

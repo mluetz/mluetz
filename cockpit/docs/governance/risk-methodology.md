@@ -12,25 +12,25 @@ Das Cockpit verwendet eine 5×5-Risikomatrix. Jedes Risiko wird durch Eintrittsw
 
 ## 2. Likelihood-Skala (Eintrittswahrscheinlichkeit)
 
-| Stufe | Bezeichnung | Beschreibung (Orientierung) |
-|---|---|---|
-| 1 | Rare | Eintritt nur unter außergewöhnlichen Umständen; seltener als alle 10 Jahre erwartbar |
-| 2 | Unlikely | Eintritt möglich, aber nicht erwartet; etwa alle 5–10 Jahre |
-| 3 | Possible | Eintritt unter normalen Umständen denkbar; etwa alle 2–5 Jahre |
-| 4 | Likely | Eintritt wahrscheinlich; etwa jährlich |
-| 5 | Almost Certain | Eintritt nahezu sicher; mehrfach pro Jahr bzw. bereits wiederholt eingetreten |
+| Stufe | Bezeichnung    | Beschreibung (Orientierung)                                                          |
+| ----- | -------------- | ------------------------------------------------------------------------------------ |
+| 1     | Rare           | Eintritt nur unter außergewöhnlichen Umständen; seltener als alle 10 Jahre erwartbar |
+| 2     | Unlikely       | Eintritt möglich, aber nicht erwartet; etwa alle 5–10 Jahre                          |
+| 3     | Possible       | Eintritt unter normalen Umständen denkbar; etwa alle 2–5 Jahre                       |
+| 4     | Likely         | Eintritt wahrscheinlich; etwa jährlich                                               |
+| 5     | Almost Certain | Eintritt nahezu sicher; mehrfach pro Jahr bzw. bereits wiederholt eingetreten        |
 
 Die Frequenzangaben sind Orientierungswerte; maßgeblich ist die begründete Einschätzung im Self Assessment.
 
 ## 3. Impact-Skala (Auswirkung)
 
-| Stufe | Bezeichnung | Beschreibung (Orientierung) |
-|---|---|---|
-| 1 | Insignificant | Vernachlässigbare Auswirkung; keine Außenwirkung, keine Beeinträchtigung von Funktionen |
-| 2 | Minor | Geringe, lokal begrenzte Auswirkung; kurzfristig behebbar, keine regulatorische Relevanz |
-| 3 | Moderate | Spürbare Auswirkung; temporäre Beeinträchtigung von Prozessen, ggf. Meldepflicht zu prüfen |
-| 4 | Major | Erhebliche Auswirkung; Beeinträchtigung wichtiger Funktionen, regulatorische Konsequenzen wahrscheinlich |
-| 5 | Severe | Schwerwiegende Auswirkung; Ausfall kritischer oder wichtiger Funktionen, erheblicher finanzieller/reputativer Schaden |
+| Stufe | Bezeichnung   | Beschreibung (Orientierung)                                                                                           |
+| ----- | ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1     | Insignificant | Vernachlässigbare Auswirkung; keine Außenwirkung, keine Beeinträchtigung von Funktionen                               |
+| 2     | Minor         | Geringe, lokal begrenzte Auswirkung; kurzfristig behebbar, keine regulatorische Relevanz                              |
+| 3     | Moderate      | Spürbare Auswirkung; temporäre Beeinträchtigung von Prozessen, ggf. Meldepflicht zu prüfen                            |
+| 4     | Major         | Erhebliche Auswirkung; Beeinträchtigung wichtiger Funktionen, regulatorische Konsequenzen wahrscheinlich              |
+| 5     | Severe        | Schwerwiegende Auswirkung; Ausfall kritischer oder wichtiger Funktionen, erheblicher finanzieller/reputativer Schaden |
 
 ## 4. Auswirkungsdimensionen
 
@@ -48,20 +48,25 @@ Der Impact ist über alle relevanten Dimensionen zu würdigen; der Gesamtimpact 
 ## 5. Berechnungsformeln
 
 ### 5.1 Inhärentes Risiko
+
 ```
 Inherent = Likelihood × Impact          (Wertebereich 1–25)
 ```
 
 ### 5.2 Residualrisiko
+
 ```
 Residual = round(Inherent × (1 − Effectiveness × M)),  mindestens 1
 ```
+
 - **Effectiveness** ∈ {0; 0,25; 0,5; 0,75; 1,0} – aggregierte Wirksamkeit der zugeordneten Kontrollen aus dem jeweils aktuellen ControlAssessment.
 - **M (Mitigationsfaktor)** = 0,9 (Standard, konfigurierbar über AppSetting). Der Faktor < 1 stellt methodisch sicher, dass eine Kontrolle ein Risiko nie vollständig eliminiert: auch bei Effectiveness = 1,0 verbleibt ein Restrisiko von mindestens 10 % des inhärenten Wertes (bzw. min. 1).
 - Rundung: kaufmännisch; Untergrenze 1.
 
 ### 5.3 Beispielrechnung
+
 Risiko „Ausfall des zentralen Cloud-Dienstleisters":
+
 - Likelihood = 3 (Possible), Impact = 5 (Severe, Dimension Betriebsunterbrechung/kritische Funktion)
 - **Inherent = 3 × 5 = 15 → High**
 - Zugeordnete Kontrollen (Redundanz, Exit-Strategie, Monitoring) mit Effectiveness = 0,75
@@ -70,11 +75,11 @@ Risiko „Ausfall des zentralen Cloud-Dienstleisters":
 ## 6. Klassifikation
 
 | Score | Klassifikation |
-|---|---|
-| 1–4 | Low |
-| 5–9 | Medium |
-| 10–16 | High |
-| 17–25 | Critical |
+| ----- | -------------- |
+| 1–4   | Low            |
+| 5–9   | Medium         |
+| 10–16 | High           |
+| 17–25 | Critical       |
 
 Die Grenzwerte sind über AppSetting konfigurierbar. Änderungen an Klassifikationsgrenzen oder am Mitigationsfaktor wirken prospektiv, werden im AuditLog protokolliert und sind im Management-Reporting kenntlich zu machen. Historische Assessments werden nicht rückwirkend neu klassifiziert.
 
@@ -87,12 +92,12 @@ Die Grenzwerte sind über AppSetting konfigurierbar. Änderungen an Klassifikati
 
 ## 8. Behandlungsstrategien
 
-| Strategie | Beschreibung | Umsetzung im Cockpit |
-|---|---|---|
-| **Avoid** | Risikoquelle beseitigen (Aktivität, Asset oder Dienstleisterbeziehung beenden) | Maßnahme(n) zur Beendigung; bei Drittparteien Verknüpfung mit ExitStrategy |
-| **Reduce** | Wahrscheinlichkeit/Auswirkung durch Kontrollen und Maßnahmen senken | Zuordnung von Controls, Maßnahmen (Action) mit Owner und Termin |
-| **Transfer** | Risiko ganz/teilweise übertragen (Versicherung, vertragliche Regelung) | Dokumentation im Risiko und im Contract; Restrisiko bleibt zu bewerten |
-| **Accept** | Bewusste, befristete Übernahme des Restrisikos | Formaler Akzeptanzprozess (Abschnitt 9) |
+| Strategie    | Beschreibung                                                                   | Umsetzung im Cockpit                                                       |
+| ------------ | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| **Avoid**    | Risikoquelle beseitigen (Aktivität, Asset oder Dienstleisterbeziehung beenden) | Maßnahme(n) zur Beendigung; bei Drittparteien Verknüpfung mit ExitStrategy |
+| **Reduce**   | Wahrscheinlichkeit/Auswirkung durch Kontrollen und Maßnahmen senken            | Zuordnung von Controls, Maßnahmen (Action) mit Owner und Termin            |
+| **Transfer** | Risiko ganz/teilweise übertragen (Versicherung, vertragliche Regelung)         | Dokumentation im Risiko und im Contract; Restrisiko bleibt zu bewerten     |
+| **Accept**   | Bewusste, befristete Übernahme des Restrisikos                                 | Formaler Akzeptanzprozess (Abschnitt 9)                                    |
 
 Die gewählte Strategie ist im Risiko zu dokumentieren und zu begründen; ein Wechsel der Strategie durchläuft erneut das Quality Review.
 
@@ -115,4 +120,5 @@ Workflow: **Request → Bewertung → Appetit-Prüfung → kompensierende Kontro
 - Anlassbezogene Neubewertung bei: wesentlichen Änderungen an Assets/IctServices/Drittparteien, Vorfällen, ineffektiven Kontrollen (ControlAssessment „Ineffective"), Vertragsänderungen, Ergebnis von Runbook-/Playbook-Executions mit Risikobezug.
 
 ---
-*Die Anwendung unterstützt die Dokumentation und Steuerung regulatorischer Anforderungen. Sie ersetzt keine rechtliche, aufsichtsrechtliche oder unabhängige Compliance-Prüfung.*
+
+_Die Anwendung unterstützt die Dokumentation und Steuerung regulatorischer Anforderungen. Sie ersetzt keine rechtliche, aufsichtsrechtliche oder unabhängige Compliance-Prüfung._

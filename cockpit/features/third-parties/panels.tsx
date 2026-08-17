@@ -101,7 +101,10 @@ export function TpAssessmentForm({
   thirdPartyId: string;
   defaults: TpAssessmentDefaults;
 }) {
-  const [state, formAction, pending] = useActionState<ActionResult, FormData>(updateTpAssessment, {});
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    updateTpAssessment,
+    {},
+  );
   return (
     <Card>
       <CardHeader>
@@ -155,7 +158,12 @@ export function TpAssessmentForm({
               />
             </Field>
             <Field label="Due-Diligence-Status" htmlFor="tp-dd" required>
-              <Select id="tp-dd" name="dueDiligenceStatus" required defaultValue={defaults.dueDiligenceStatus}>
+              <Select
+                id="tp-dd"
+                name="dueDiligenceStatus"
+                required
+                defaultValue={defaults.dueDiligenceStatus}
+              >
                 {Object.entries(DUE_DILIGENCE_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v}
@@ -164,7 +172,12 @@ export function TpAssessmentForm({
               </Select>
             </Field>
             <Field label="Substituierbarkeit" htmlFor="tp-subst" required>
-              <Select id="tp-subst" name="substitutability" required defaultValue={defaults.substitutability}>
+              <Select
+                id="tp-subst"
+                name="substitutability"
+                required
+                defaultValue={defaults.substitutability}
+              >
                 {Object.entries(SUBSTITUTABILITY_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
                     {v}
@@ -231,7 +244,10 @@ export function ExitStrategyForm({
   thirdPartyId: string;
   defaults: ExitStrategyDefaults | null;
 }) {
-  const [state, formAction, pending] = useActionState<ActionResult, FormData>(upsertExitStrategy, {});
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    upsertExitStrategy,
+    {},
+  );
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="thirdPartyId" value={thirdPartyId} />
@@ -247,7 +263,12 @@ export function ExitStrategyForm({
       </Field>
       <div className="grid gap-4 md:grid-cols-3">
         <Field label="Status" htmlFor="exit-status" required>
-          <Select id="exit-status" name="status" required defaultValue={defaults?.status ?? "MISSING"}>
+          <Select
+            id="exit-status"
+            name="status"
+            required
+            defaultValue={defaults?.status ?? "MISSING"}
+          >
             {Object.entries(EXIT_STATUS_LABELS).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}

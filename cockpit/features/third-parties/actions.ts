@@ -27,13 +27,19 @@ const createSchema = z.object({
   ictServiceCategory: z.string().min(2).max(200),
 });
 
-export async function createThirdParty(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function createThirdParty(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   let tpDbId = "";
   try {
     const user = await assertPermission("thirdparty:write");
     const parsed = createSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) {
-      return { error: "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", ") };
+      return {
+        error:
+          "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", "),
+      };
     }
     const d = parsed.data;
     const count = await db.thirdParty.count();
@@ -77,11 +83,15 @@ const statusSchema = z.object({
   comment: z.string().min(3).max(1000),
 });
 
-export async function changeTpStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function changeTpStatus(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("thirdparty:write");
     const parsed = statusSchema.safeParse(Object.fromEntries(formData));
-    if (!parsed.success) return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
+    if (!parsed.success)
+      return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
     const d = parsed.data;
 
     const tp = await db.thirdParty.findUnique({ where: { id: d.thirdPartyId } });
@@ -128,18 +138,23 @@ const assessmentSchema = z.object({
   nextReviewDate: z.string().min(1),
 });
 
-export async function updateTpAssessment(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function updateTpAssessment(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("thirdparty:write");
     const parsed = assessmentSchema.safeParse(Object.fromEntries(formData));
-    if (!parsed.success) return { error: "Assessment unvollständig oder ungültig (Scores 1–25, Datum erforderlich)." };
+    if (!parsed.success)
+      return { error: "Assessment unvollständig oder ungültig (Scores 1–25, Datum erforderlich)." };
     const d = parsed.data;
 
     const tp = await db.thirdParty.findUnique({ where: { id: d.thirdPartyId } });
     if (!tp) return { error: "Drittpartei nicht gefunden." };
 
     const nextReviewDate = new Date(d.nextReviewDate);
-    if (Number.isNaN(nextReviewDate.getTime())) return { error: "Ungültiges Datum für das nächste Review." };
+    if (Number.isNaN(nextReviewDate.getTime()))
+      return { error: "Ungültiges Datum für das nächste Review." };
 
     const concentrationRisk = formData.get("concentrationRisk") === "on";
     const supportsCriticalFunction = formData.get("supportsCriticalFunction") === "on";
@@ -188,16 +203,22 @@ const exitSchema = z.object({
   thirdPartyId: z.string().min(1),
   strategySummary: z.string().min(5).max(4000),
   lastTestDate: z.string().optional(),
-  testResult: z.union([z.enum(["PASSED", "PASSED_WITH_FINDINGS", "FAILED"]), z.literal("")]).optional(),
+  testResult: z
+    .union([z.enum(["PASSED", "PASSED_WITH_FINDINGS", "FAILED"]), z.literal("")])
+    .optional(),
   substituteOptions: z.string().max(4000).optional(),
   status: z.enum(["MISSING", "DRAFT", "APPROVED", "TESTED", "OUTDATED"]),
 });
 
-export async function upsertExitStrategy(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function upsertExitStrategy(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("thirdparty:write");
     const parsed = exitSchema.safeParse(Object.fromEntries(formData));
-    if (!parsed.success) return { error: "Exit-Strategie unvollständig (Zusammenfassung mind. 5 Zeichen)." };
+    if (!parsed.success)
+      return { error: "Exit-Strategie unvollständig (Zusammenfassung mind. 5 Zeichen)." };
     const d = parsed.data;
 
     const tp = await db.thirdParty.findUnique({ where: { id: d.thirdPartyId } });

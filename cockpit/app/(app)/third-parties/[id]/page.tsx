@@ -22,7 +22,10 @@ import {
   TpAssessmentForm,
   TpWorkflowPanel,
 } from "@/features/third-parties/panels";
-import { EVIDENCE_REVIEW_STATUS_LABELS, EVIDENCE_DOC_TYPE_LABELS } from "@/features/evidence/labels";
+import {
+  EVIDENCE_REVIEW_STATUS_LABELS,
+  EVIDENCE_DOC_TYPE_LABELS,
+} from "@/features/evidence/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +35,11 @@ function toDateInput(d: Date | null | undefined): string {
   return d ? d.toISOString().slice(0, 10) : "";
 }
 
-export default async function ThirdPartyDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ThirdPartyDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const user = await requirePermission("thirdparty:read");
   const { id } = await params;
   const tp = await db.thirdParty.findUnique({
@@ -76,7 +83,8 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
             </Badge>
             {tp.supportsCriticalFunction ? (
               <Badge variant="high">
-                <AlertTriangle className="mr-1 h-3 w-3" aria-hidden /> unterstützt kritische Funktion
+                <AlertTriangle className="mr-1 h-3 w-3" aria-hidden /> unterstützt kritische
+                Funktion
               </Badge>
             ) : null}
             {tp.concentrationRisk ? <Badge variant="high">Konzentrationsrisiko</Badge> : null}
@@ -86,10 +94,7 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
 
       {/* KPI-Zeile */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
-        <Kpi
-          label="Kritikalität"
-          value={TP_CRITICALITY_LABELS[tp.criticality] ?? tp.criticality}
-        />
+        <Kpi label="Kritikalität" value={TP_CRITICALITY_LABELS[tp.criticality] ?? tp.criticality} />
         <Kpi
           label="Inherent / Residual Score"
           value={`${tp.inherentRiskScore ?? "–"} / ${tp.residualRiskScore ?? "–"}`}
@@ -98,11 +103,7 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
           label="Due Diligence"
           value={DUE_DILIGENCE_LABELS[tp.dueDiligenceStatus] ?? tp.dueDiligenceStatus}
         />
-        <Kpi
-          label="Nächstes Review"
-          value={formatDate(tp.nextReviewDate)}
-          warn={reviewOverdue}
-        />
+        <Kpi label="Nächstes Review" value={formatDate(tp.nextReviewDate)} warn={reviewOverdue} />
         <Kpi label="Status" value={TP_STATUS[status] ?? tp.status} />
       </div>
 
@@ -111,7 +112,9 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
           <TabsTrigger value="overview">Übersicht</TabsTrigger>
           <TabsTrigger value="assessment">Assessment</TabsTrigger>
           <TabsTrigger value="contracts">Verträge ({tp.contracts.length})</TabsTrigger>
-          <TabsTrigger value="subcontractors">Subdienstleister ({tp.subcontractors.length})</TabsTrigger>
+          <TabsTrigger value="subcontractors">
+            Subdienstleister ({tp.subcontractors.length})
+          </TabsTrigger>
           <TabsTrigger value="exit">Exit-Strategie</TabsTrigger>
           <TabsTrigger value="evidence">Nachweise ({tp.evidence.length})</TabsTrigger>
         </TabsList>
@@ -126,8 +129,14 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
               <CardContent className="space-y-3 text-sm">
                 <Info label="Erbrachte Leistung" value={tp.providedService} />
                 <div className="grid grid-cols-2 gap-3">
-                  <Info label="Business Owner" value={tp.businessOwner?.name ?? "⚠ nicht benannt"} />
-                  <Info label="Contract Owner" value={tp.contractOwner?.name ?? "⚠ nicht benannt"} />
+                  <Info
+                    label="Business Owner"
+                    value={tp.businessOwner?.name ?? "⚠ nicht benannt"}
+                  />
+                  <Info
+                    label="Contract Owner"
+                    value={tp.contractOwner?.name ?? "⚠ nicht benannt"}
+                  />
                   <Info label="Sitz (Land)" value={tp.registeredCountry} />
                   <Info label="ICT-Service-Kategorie" value={tp.ictServiceCategory} />
                   <Info label="Leistungsstandorte" value={tp.serviceLocations} />
@@ -140,7 +149,10 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
                     value={SUBSTITUTABILITY_LABELS[tp.substitutability] ?? tp.substitutability}
                   />
                   <Info label="Audit-/Zugangsrechte" value={tp.auditRights ? "Ja" : "Nein"} />
-                  <Info label="Incident-Meldepflicht" value={tp.incidentReporting ? "Ja" : "Nein"} />
+                  <Info
+                    label="Incident-Meldepflicht"
+                    value={tp.incidentReporting ? "Ja" : "Nein"}
+                  />
                   <Info label="Assessment-Datum" value={formatDate(tp.assessmentDate)} />
                 </div>
                 <Info label="Offene Findings" value={tp.openFindings || "–"} />
@@ -161,10 +173,14 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
                 />
                 <TagList
                   label="Leistungen (Services)"
-                  items={tp.services.map((s) => s.ictService ? `${s.name} → ${s.ictService.name}` : s.name)}
+                  items={tp.services.map((s) =>
+                    s.ictService ? `${s.name} → ${s.ictService.name}` : s.name,
+                  )}
                 />
                 <div>
-                  <p className="text-[11px] font-medium text-muted-foreground">Verknüpfte Risiken</p>
+                  <p className="text-[11px] font-medium text-muted-foreground">
+                    Verknüpfte Risiken
+                  </p>
                   {tp.risks.length ? (
                     <ul className="mt-0.5 space-y-1">
                       {tp.risks.map((r) => (
@@ -220,7 +236,9 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
               }}
             />
           ) : (
-            <p className="text-sm text-muted-foreground">Keine Schreibberechtigung für Assessments.</p>
+            <p className="text-sm text-muted-foreground">
+              Keine Schreibberechtigung für Assessments.
+            </p>
           )}
         </TabsContent>
 
@@ -250,7 +268,9 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
                       <TR key={c.id}>
                         <TD className="max-w-[260px] truncate font-medium">{c.title}</TD>
                         <TD className="whitespace-nowrap text-xs">{formatDate(c.startDate)}</TD>
-                        <TD className={`whitespace-nowrap text-xs ${expiring ? "font-medium text-risk-high" : ""}`}>
+                        <TD
+                          className={`whitespace-nowrap text-xs ${expiring ? "font-medium text-risk-high" : ""}`}
+                        >
                           {formatDate(c.endDate)}
                           {expiring ? (
                             <span className="ml-1">
@@ -350,15 +370,19 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
                         {EXIT_STATUS_LABELS[tp.exitStrategy.status] ?? tp.exitStrategy.status}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        Exit-Plan: {tp.exitStrategy.exitPlanExists ? "vorhanden" : "nicht vorhanden"} ·
-                        letzter Test: {formatDate(tp.exitStrategy.lastTestDate)}
+                        Exit-Plan:{" "}
+                        {tp.exitStrategy.exitPlanExists ? "vorhanden" : "nicht vorhanden"} · letzter
+                        Test: {formatDate(tp.exitStrategy.lastTestDate)}
                         {tp.exitStrategy.testResult
                           ? ` (${EXIT_TEST_RESULT_LABELS[tp.exitStrategy.testResult] ?? tp.exitStrategy.testResult})`
                           : ""}
                       </span>
                     </div>
                     <Info label="Zusammenfassung" value={tp.exitStrategy.strategySummary} />
-                    <Info label="Substitutionsoptionen" value={tp.exitStrategy.substituteOptions || "–"} />
+                    <Info
+                      label="Substitutionsoptionen"
+                      value={tp.exitStrategy.substituteOptions || "–"}
+                    />
                   </>
                 ) : (
                   <p className="flex items-center gap-2 rounded-md border border-risk-high/40 bg-risk-high/10 p-3 text-sm font-medium text-risk-high">
@@ -426,14 +450,21 @@ export default async function ThirdPartyDetailPage({ params }: { params: Promise
                     return (
                       <TR key={e.id}>
                         <TD>
-                          <Link href={`/evidence/${e.id}`} className="font-mono text-xs text-primary hover:underline">
+                          <Link
+                            href={`/evidence/${e.id}`}
+                            className="font-mono text-xs text-primary hover:underline"
+                          >
                             {e.evidenceId}
                           </Link>
                         </TD>
                         <TD className="max-w-[260px] truncate">{e.title}</TD>
-                        <TD className="text-xs">{EVIDENCE_DOC_TYPE_LABELS[e.docType] ?? e.docType}</TD>
+                        <TD className="text-xs">
+                          {EVIDENCE_DOC_TYPE_LABELS[e.docType] ?? e.docType}
+                        </TD>
                         <TD className="text-xs">{e.owner?.name ?? "–"}</TD>
-                        <TD className={`whitespace-nowrap text-xs ${expired ? "font-medium text-risk-high" : ""}`}>
+                        <TD
+                          className={`whitespace-nowrap text-xs ${expired ? "font-medium text-risk-high" : ""}`}
+                        >
                           {formatDate(e.validUntil)}
                           {expired ? " (abgelaufen)" : ""}
                         </TD>

@@ -45,7 +45,10 @@ export async function createRisk(_prev: ActionResult, formData: FormData): Promi
     const user = await assertPermission("risk:write");
     const parsed = riskSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) {
-      return { error: "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", ") };
+      return {
+        error:
+          "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", "),
+      };
     }
     const d = parsed.data;
     const count = await db.risk.count();
@@ -191,11 +194,15 @@ const statusSchema = z.object({
   comment: z.string().min(3).max(1000),
 });
 
-export async function changeRiskStatus(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function changeRiskStatus(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("risk:write");
     const parsed = statusSchema.safeParse(Object.fromEntries(formData));
-    if (!parsed.success) return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
+    if (!parsed.success)
+      return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
     const d = parsed.data;
 
     const risk = await db.risk.findUnique({ where: { id: d.riskId } });
@@ -245,7 +252,10 @@ export async function changeRiskStatus(_prev: ActionResult, formData: FormData):
 // Quality Review
 // ---------------------------------------------------------------
 
-export async function startQualityReview(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function startQualityReview(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("risk:review");
     const riskId = String(formData.get("riskId") ?? "");
@@ -302,7 +312,10 @@ export async function completeQualityReview(
     });
     if (!review) return { error: "Review nicht gefunden." };
     if (review.completedAt) return { error: "Review ist bereits abgeschlossen." };
-    if ((d.outcome === "RETURNED" || d.outcome === "REJECTED") && d.rejectionReason.trim().length < 5) {
+    if (
+      (d.outcome === "RETURNED" || d.outcome === "REJECTED") &&
+      d.rejectionReason.trim().length < 5
+    ) {
       return { error: "Rückgabe/Ablehnung erfordert eine dokumentierte Begründung." };
     }
 
@@ -361,7 +374,10 @@ const acceptanceSchema = z.object({
   compensatingControls: z.string().min(5).max(4000),
 });
 
-export async function requestAcceptance(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function requestAcceptance(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("acceptance:request");
     const parsed = acceptanceSchema.safeParse(Object.fromEntries(formData));
@@ -400,7 +416,10 @@ const acceptanceDecisionSchema = z.object({
   validUntil: z.string().optional(),
 });
 
-export async function decideAcceptance(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function decideAcceptance(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("acceptance:approve");
     const parsed = acceptanceDecisionSchema.safeParse(Object.fromEntries(formData));
@@ -416,7 +435,8 @@ export async function decideAcceptance(_prev: ActionResult, formData: FormData):
     }
     let validUntil: Date | null = null;
     if (d.decision === "APPROVED") {
-      if (!d.validUntil) return { error: "Eine Genehmigung muss befristet sein (Gültig-bis-Datum)." };
+      if (!d.validUntil)
+        return { error: "Eine Genehmigung muss befristet sein (Gültig-bis-Datum)." };
       validUntil = new Date(d.validUntil);
       if (Number.isNaN(validUntil.getTime()) || validUntil <= new Date()) {
         return { error: "Gültig-bis-Datum muss in der Zukunft liegen." };
@@ -459,7 +479,10 @@ export async function decideAcceptance(_prev: ActionResult, formData: FormData):
 // Kommentare
 // ---------------------------------------------------------------
 
-export async function addRiskComment(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function addRiskComment(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("risk:read");
     const riskId = String(formData.get("riskId") ?? "");

@@ -87,7 +87,11 @@ export function NewEvidenceForm({
             <Field label="Version" htmlFor="ev-version">
               <Input id="ev-version" name="version" defaultValue="1.0" maxLength={20} />
             </Field>
-            <Field label="Content-Hash (optional)" htmlFor="ev-hash" hint="Integritätsmerkmal, z. B. SHA-256">
+            <Field
+              label="Content-Hash (optional)"
+              htmlFor="ev-hash"
+              hint="Integritätsmerkmal, z. B. SHA-256"
+            >
               <Input id="ev-hash" name="contentHash" maxLength={200} />
             </Field>
           </div>

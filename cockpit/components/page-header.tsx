@@ -20,7 +20,10 @@ export function PageHeader({
   return (
     <div className="mb-5 space-y-2">
       {crumbs && crumbs.length > 0 ? (
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs text-muted-foreground">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center gap-1 text-xs text-muted-foreground"
+        >
           {crumbs.map((c, i) => (
             <span key={i} className="flex items-center gap-1">
               {i > 0 ? <ChevronRight className="h-3 w-3" aria-hidden /> : null}

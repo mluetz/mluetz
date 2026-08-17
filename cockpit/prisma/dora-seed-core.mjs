@@ -12,7 +12,13 @@ const require = createRequire(import.meta.url);
 const catalog = require("../lib/content/dora-catalog.json");
 
 /** Kuratierte Verwebung Anforderung → Runbooks/Playbooks (Default je Kapitel + Overrides). */
-const PROCESS_DEFAULTS = { K2: "RB-01,RB-02", K3: "RB-21", K4: "RB-07", K5: "RB-09,RB-11", K6: "RB-23" };
+const PROCESS_DEFAULTS = {
+  K2: "RB-01,RB-02",
+  K3: "RB-21",
+  K4: "RB-07",
+  K5: "RB-09,RB-11",
+  K6: "RB-23",
+};
 const PROCESS_OVERRIDES = {
   "DORA-K2-004": "RB-18,PB-01",
   "DORA-K2-017": "RB-05,PB-03",
@@ -47,9 +53,9 @@ const PROCESS_OVERRIDES = {
  * maturity: Roh-Reifegrad; evidenced: Nachweis vorhanden und geprüft.
  */
 const MATURITY_OVERRIDES = {
-  "DORA-K5-011": { maturity: 2, evidenced: true },  // Exit-Strategien fehlen → Knockout (Bezug: TP-006/TP-002)
-  "DORA-K5-004": { maturity: 2, evidenced: true },  // Registereinreichung mit Validierungsfehlern → Knockout
-  "DORA-K4-006": { maturity: 2, evidenced: true },  // Jahrestest Ausweich-RZ verschoben → Knockout (Bezug RISK-2026-0017)
+  "DORA-K5-011": { maturity: 2, evidenced: true }, // Exit-Strategien fehlen → Knockout (Bezug: TP-006/TP-002)
+  "DORA-K5-004": { maturity: 2, evidenced: true }, // Registereinreichung mit Validierungsfehlern → Knockout
+  "DORA-K4-006": { maturity: 2, evidenced: true }, // Jahrestest Ausweich-RZ verschoben → Knockout (Bezug RISK-2026-0017)
   "DORA-K2-059": { maturity: 4, evidenced: false }, // Showcase Nachweissperre: 4 bewertet, ohne Nachweis wirksam 2
   "DORA-K2-053": { maturity: 3, evidenced: false }, // Showcase Nachweissperre
   "DORA-K3-010": { maturity: 5, evidenced: true },
@@ -78,72 +84,190 @@ const NEW_RUNBOOKS = [
   {
     code: "RB-21",
     title: "Schwerwiegenden IKT-Vorfall klassifizieren und melden",
-    purpose: "Fristgerechte Klassifizierung (Art. 18) und Meldung (Art. 19) schwerwiegender IKT-Vorfälle an die Aufsicht – 4 h/24 h, 72 h, 1 Monat – inkl. paralleler Prüfung NIS-2 und DSGVO.",
+    purpose:
+      "Fristgerechte Klassifizierung (Art. 18) und Meldung (Art. 19) schwerwiegender IKT-Vorfälle an die Aufsicht – 4 h/24 h, 72 h, 1 Monat – inkl. paralleler Prüfung NIS-2 und DSGVO.",
     scope: "Alle IKT-bezogenen Vorfälle mit möglicher Wesentlichkeit.",
-    trigger: "Kenntniserlangung von einem IKT-Vorfall mit potenzieller Auswirkung auf kritische Dienste.",
-    prerequisites: "Klassifizierungslogik nach DelVO (EU) 2024/1772 operationalisiert; MVP-Portal-Zugang; Bereitschaftsorganisation.",
-    input: "Vorfallsdaten (Kenntniszeitpunkt, betroffene Dienste, Kundenzahl, Datenverlust, wirtschaftliche Auswirkung).",
-    roles: "Durchführung: Information Security Officer (SOC); Meldung/Fristen: ICT Risk Manager; Parallelprüfung: Compliance; Kundeninformation: Kommunikation.",
+    trigger:
+      "Kenntniserlangung von einem IKT-Vorfall mit potenzieller Auswirkung auf kritische Dienste.",
+    prerequisites:
+      "Klassifizierungslogik nach DelVO (EU) 2024/1772 operationalisiert; MVP-Portal-Zugang; Bereitschaftsorganisation.",
+    input:
+      "Vorfallsdaten (Kenntniszeitpunkt, betroffene Dienste, Kundenzahl, Datenverlust, wirtschaftliche Auswirkung).",
+    roles:
+      "Durchführung: Information Security Officer (SOC); Meldung/Fristen: ICT Risk Manager; Parallelprüfung: Compliance; Kundeninformation: Kommunikation.",
     sla: "Klassifizierung unverzüglich; Erstmeldung ≤ 4 h nach Klassifizierung, absolut ≤ 24 h nach Kenntnis; Zwischenmeldung ≤ 72 h; Abschluss ≤ 1 Monat.",
-    escalation: "Fristgefährdung → sofortige Eskalation an Management; Meldefristen-Monitor im Cockpit überwacht automatisch.",
-    output: "Klassifizierungsprotokoll, fristgerechte Meldungen (MVP-Portal), Vorfallsregister-Eintrag, Rücklauf ins Risikoregister (RB-02).",
+    escalation:
+      "Fristgefährdung → sofortige Eskalation an Management; Meldefristen-Monitor im Cockpit überwacht automatisch.",
+    output:
+      "Klassifizierungsprotokoll, fristgerechte Meldungen (MVP-Portal), Vorfallsregister-Eintrag, Rücklauf ins Risikoregister (RB-02).",
     kpi: "Meldefristentreue 100 % (KPI-K3-01); Zeit Kenntnis→Klassifizierung.",
-    controlPoints: "Vier-Augen-Prinzip vor Absendung; Zeitstempel Kenntnis/Klassifizierung/Meldung im Audit Trail.",
+    controlPoints:
+      "Vier-Augen-Prinzip vor Absendung; Zeitstempel Kenntnis/Klassifizierung/Meldung im Audit Trail.",
     reviewCycle: "Halbjährlich (inkl. Übung)",
     steps: [
-      { title: "Vorfall erfassen und Kenntniszeitpunkt festhalten", description: "Vorfall im Cockpit anlegen; Kenntniserlangung dokumentieren – sie startet alle Fristen.", role: "Information Security Officer" },
-      { title: "Klassifizierung nach den 7 Kriterien", description: "Betroffene Kunden/Transaktionen, Dauer, geografische Ausbreitung, Datenverluste, Kritikalität, wirtschaftliche Auswirkungen bewerten; Schwellen der DelVO 2024/1772 anwenden.", role: "Information Security Officer", decision: true, evidence: "Klassifizierungsprotokoll" },
-      { title: "Parallele Pflichtenstränge prüfen", description: "DSGVO Art. 33 (Datenschutzbeauftragter) und NIS-2/BSIG-Relevanz prüfen und Prüfentscheidung dokumentieren – auch bei Verneinung.", role: "Reviewer / Second Line", decision: true },
-      { title: "Erstmeldung absetzen", description: "Harmonisiertes Formular (DfVO 2025/302) befüllen und über das MVP-Portal einreichen; Zeitstempel sichern.", role: "ICT Risk Manager", evidence: "Einreichungsbestätigung" },
-      { title: "Kundeninformation prüfen", description: "Bei Berührung finanzieller Kundeninteressen unverzügliche Information der Kunden (Art. 19 Abs. 3) veranlassen.", role: "Management", decision: true },
-      { title: "Zwischen- und Abschlussmeldung steuern", description: "Fristen im Meldefristen-Monitor verfolgen; Zwischenmeldung ≤ 72 h, Abschlussmeldung mit Root-Cause-Analyse ≤ 1 Monat.", role: "ICT Risk Manager", evidence: "Meldeverzeichnis vollständig" },
-      { title: "Lessons Learned ins Risikoregister", description: "Erkenntnisse nach Art. 13 Abs. 2 in Risikobewertungen und Maßnahmen überführen (RB-02).", role: "ICT Risk Manager" },
+      {
+        title: "Vorfall erfassen und Kenntniszeitpunkt festhalten",
+        description:
+          "Vorfall im Cockpit anlegen; Kenntniserlangung dokumentieren – sie startet alle Fristen.",
+        role: "Information Security Officer",
+      },
+      {
+        title: "Klassifizierung nach den 7 Kriterien",
+        description:
+          "Betroffene Kunden/Transaktionen, Dauer, geografische Ausbreitung, Datenverluste, Kritikalität, wirtschaftliche Auswirkungen bewerten; Schwellen der DelVO 2024/1772 anwenden.",
+        role: "Information Security Officer",
+        decision: true,
+        evidence: "Klassifizierungsprotokoll",
+      },
+      {
+        title: "Parallele Pflichtenstränge prüfen",
+        description:
+          "DSGVO Art. 33 (Datenschutzbeauftragter) und NIS-2/BSIG-Relevanz prüfen und Prüfentscheidung dokumentieren – auch bei Verneinung.",
+        role: "Reviewer / Second Line",
+        decision: true,
+      },
+      {
+        title: "Erstmeldung absetzen",
+        description:
+          "Harmonisiertes Formular (DfVO 2025/302) befüllen und über das MVP-Portal einreichen; Zeitstempel sichern.",
+        role: "ICT Risk Manager",
+        evidence: "Einreichungsbestätigung",
+      },
+      {
+        title: "Kundeninformation prüfen",
+        description:
+          "Bei Berührung finanzieller Kundeninteressen unverzügliche Information der Kunden (Art. 19 Abs. 3) veranlassen.",
+        role: "Management",
+        decision: true,
+      },
+      {
+        title: "Zwischen- und Abschlussmeldung steuern",
+        description:
+          "Fristen im Meldefristen-Monitor verfolgen; Zwischenmeldung ≤ 72 h, Abschlussmeldung mit Root-Cause-Analyse ≤ 1 Monat.",
+        role: "ICT Risk Manager",
+        evidence: "Meldeverzeichnis vollständig",
+      },
+      {
+        title: "Lessons Learned ins Risikoregister",
+        description:
+          "Erkenntnisse nach Art. 13 Abs. 2 in Risikobewertungen und Maßnahmen überführen (RB-02).",
+        role: "ICT Risk Manager",
+      },
     ],
   },
   {
     code: "RB-22",
     title: "Informationsregister jährlich einreichen",
-    purpose: "Vollständige, validierungsfeste jährliche Einreichung des Informationsregisters nach Art. 28 Abs. 3 (ITS (EU) 2024/2956) an die Aufsicht.",
-    scope: "Alle vertraglichen Vereinbarungen über IKT-Dienstleistungen, einschließlich Subunternehmerketten.",
-    trigger: "Jährlicher Einreichungstermin der Aufsicht; anlassbezogen bei wesentlichen Änderungen.",
-    prerequisites: "Drittparteien-Register vollständig (RB-09/RB-11); Datenqualität geprüft (RB-14).",
+    purpose:
+      "Vollständige, validierungsfeste jährliche Einreichung des Informationsregisters nach Art. 28 Abs. 3 (ITS (EU) 2024/2956) an die Aufsicht.",
+    scope:
+      "Alle vertraglichen Vereinbarungen über IKT-Dienstleistungen, einschließlich Subunternehmerketten.",
+    trigger:
+      "Jährlicher Einreichungstermin der Aufsicht; anlassbezogen bei wesentlichen Änderungen.",
+    prerequisites:
+      "Drittparteien-Register vollständig (RB-09/RB-11); Datenqualität geprüft (RB-14).",
     input: "Third-Party-Register, Verträge, Subdienstleister, Datenstandorte, CIF-Zuordnungen.",
-    roles: "Durchführung: Third Party Risk Manager; Datenqualität: ICT Risk Manager; Freigabe: Management.",
+    roles:
+      "Durchführung: Third Party Risk Manager; Datenqualität: ICT Risk Manager; Freigabe: Management.",
     sla: "Einreichung fristgerecht zum aufsichtlichen Stichtag; interne Validierung 10 Arbeitstage vorher abgeschlossen.",
-    escalation: "Validierungsfehler der ESAs → Bereinigung binnen der behördlichen Frist; Eskalation an Management bei Fristgefahr.",
-    output: "Eingereichtes Register (xBRL/Excel über MVP-Portal), Validierungsprotokoll, Einreichungsbestätigung.",
+    escalation:
+      "Validierungsfehler der ESAs → Bereinigung binnen der behördlichen Frist; Eskalation an Management bei Fristgefahr.",
+    output:
+      "Eingereichtes Register (xBRL/Excel über MVP-Portal), Validierungsprotokoll, Einreichungsbestätigung.",
     kpi: "Vollständigkeit des Registers 100 % (KPI-K5-01); Validierungsfehlerquote.",
-    controlPoints: "Vier-Augen-Freigabe vor Einreichung; Abgleich Registerdaten ↔ Vertragsverzeichnis.",
+    controlPoints:
+      "Vier-Augen-Freigabe vor Einreichung; Abgleich Registerdaten ↔ Vertragsverzeichnis.",
     reviewCycle: "Jährlich",
     steps: [
-      { title: "Registerdaten aktualisieren", description: "Alle Verträge, Leistungs- und Datenstandorte, Subdienstleister und CIF-Kennzeichnungen im Third-Party-Register auf Stand bringen.", role: "Third Party Risk Manager" },
-      { title: "Vollständigkeit prüfen", description: "Pflichtfelder nach ITS 2024/2956 je Vertrag prüfen; Lücken mit Ownern schließen (RB-14).", role: "Third Party Risk Manager", evidence: "Vollständigkeitsprüfung" },
-      { title: "Validierungslauf durchführen", description: "Export erzeugen und gegen die Validierungsregeln der ESAs prüfen; Fehler bereinigen.", role: "ICT Risk Manager", evidence: "Validierungsprotokoll" },
-      { title: "Freigabe einholen", description: "Vier-Augen-Freigabe des Exports durch Management dokumentieren.", role: "Management", decision: true },
-      { title: "Einreichen und archivieren", description: "Über das MVP-Portal einreichen; Bestätigung revisionssicher im Evidence-Register ablegen.", role: "Third Party Risk Manager", evidence: "Einreichungsbestätigung" },
+      {
+        title: "Registerdaten aktualisieren",
+        description:
+          "Alle Verträge, Leistungs- und Datenstandorte, Subdienstleister und CIF-Kennzeichnungen im Third-Party-Register auf Stand bringen.",
+        role: "Third Party Risk Manager",
+      },
+      {
+        title: "Vollständigkeit prüfen",
+        description:
+          "Pflichtfelder nach ITS 2024/2956 je Vertrag prüfen; Lücken mit Ownern schließen (RB-14).",
+        role: "Third Party Risk Manager",
+        evidence: "Vollständigkeitsprüfung",
+      },
+      {
+        title: "Validierungslauf durchführen",
+        description:
+          "Export erzeugen und gegen die Validierungsregeln der ESAs prüfen; Fehler bereinigen.",
+        role: "ICT Risk Manager",
+        evidence: "Validierungsprotokoll",
+      },
+      {
+        title: "Freigabe einholen",
+        description: "Vier-Augen-Freigabe des Exports durch Management dokumentieren.",
+        role: "Management",
+        decision: true,
+      },
+      {
+        title: "Einreichen und archivieren",
+        description:
+          "Über das MVP-Portal einreichen; Bestätigung revisionssicher im Evidence-Register ablegen.",
+        role: "Third Party Risk Manager",
+        evidence: "Einreichungsbestätigung",
+      },
     ],
   },
   {
     code: "RB-23",
     title: "Threat-Intelligence-Alert abgleichen (Time to Assess)",
-    purpose: "Systematische Übersetzung externer Bedrohungsinformationen in interne Betroffenheitsanalysen und Maßnahmen (Art. 45 i. V. m. Art. 13).",
+    purpose:
+      "Systematische Übersetzung externer Bedrohungsinformationen in interne Betroffenheitsanalysen und Maßnahmen (Art. 45 i. V. m. Art. 13).",
     scope: "Alle eingehenden Advisories aus Sharing-Communities, CERTs und Herstellerwarnungen.",
     trigger: "Eingang eines externen Alerts/Advisories.",
-    prerequisites: "Aktuelles Asset-Inventar und vollständiges Informationsregister (kritischer Pfad!).",
+    prerequisites:
+      "Aktuelles Asset-Inventar und vollständiges Informationsregister (kritischer Pfad!).",
     input: "Alert (IoCs, betroffene Produkte/Versionen), Asset-Register, Drittparteien-Register.",
-    roles: "Durchführung: Information Security Officer (SOC); Risiko-Update: ICT Risk Manager; Provider-Kontakt: Third Party Risk Manager.",
+    roles:
+      "Durchführung: Information Security Officer (SOC); Risiko-Update: ICT Risk Manager; Provider-Kontakt: Third Party Risk Manager.",
     sla: "Time to Assess ≤ 24 h (KPI-K6-02): vom Alert-Eingang bis zum abgeschlossenen Registerabgleich.",
-    escalation: "Betroffenheit kritischer Funktionen → PB-14/PB-04; aktive Ausnutzung → Incident-Prozess (RB-21).",
-    output: "Abgleichprotokoll, aktualisierte Risikobewertungen, ggf. Maßnahmen und Provider-Anfragen.",
+    escalation:
+      "Betroffenheit kritischer Funktionen → PB-14/PB-04; aktive Ausnutzung → Incident-Prozess (RB-21).",
+    output:
+      "Abgleichprotokoll, aktualisierte Risikobewertungen, ggf. Maßnahmen und Provider-Anfragen.",
     kpi: "Auswertungsquote 100 % (KPI-K6-01); Time to Assess ≤ 24 h (KPI-K6-02).",
-    controlPoints: "Jeder Alert erhält eine dokumentierte Abgleich-Entscheidung – auch bei Nichtbetroffenheit.",
+    controlPoints:
+      "Jeder Alert erhält eine dokumentierte Abgleich-Entscheidung – auch bei Nichtbetroffenheit.",
     reviewCycle: "Jährlich",
     steps: [
-      { title: "Alert erfassen und bewerten", description: "Quelle, Schweregrad und betroffene Produkte/Versionen aufnehmen; Eingangszeitpunkt dokumentieren.", role: "Information Security Officer" },
-      { title: "Asset-Abgleich", description: "Betroffenheit der eigenen Assets und ICT-Services prüfen (Versionen, Exposition).", role: "Information Security Officer" },
-      { title: "Provider-Abgleich", description: "Informationsregister prüfen: Welche Dienstleister und Subdienstleister setzen die betroffene Komponente ein? Anfragen stellen.", role: "Third Party Risk Manager", evidence: "Abgleichprotokoll" },
-      { title: "Risiko- und Maßnahmenableitung", description: "Betroffene Risiken neu bewerten (RB-02), Sofortmaßnahmen und Patches als Maßnahmen anlegen.", role: "ICT Risk Manager", decision: true },
-      { title: "Time to Assess dokumentieren", description: "Abschlusszeitpunkt festhalten; KPI-K6-02 speist sich aus diesen Zeitstempeln.", role: "Information Security Officer" },
+      {
+        title: "Alert erfassen und bewerten",
+        description:
+          "Quelle, Schweregrad und betroffene Produkte/Versionen aufnehmen; Eingangszeitpunkt dokumentieren.",
+        role: "Information Security Officer",
+      },
+      {
+        title: "Asset-Abgleich",
+        description:
+          "Betroffenheit der eigenen Assets und ICT-Services prüfen (Versionen, Exposition).",
+        role: "Information Security Officer",
+      },
+      {
+        title: "Provider-Abgleich",
+        description:
+          "Informationsregister prüfen: Welche Dienstleister und Subdienstleister setzen die betroffene Komponente ein? Anfragen stellen.",
+        role: "Third Party Risk Manager",
+        evidence: "Abgleichprotokoll",
+      },
+      {
+        title: "Risiko- und Maßnahmenableitung",
+        description:
+          "Betroffene Risiken neu bewerten (RB-02), Sofortmaßnahmen und Patches als Maßnahmen anlegen.",
+        role: "ICT Risk Manager",
+        decision: true,
+      },
+      {
+        title: "Time to Assess dokumentieren",
+        description:
+          "Abschlusszeitpunkt festhalten; KPI-K6-02 speist sich aus diesen Zeitstempeln.",
+        role: "Information Security Officer",
+      },
     ],
   },
 ];
@@ -151,20 +275,34 @@ const NEW_RUNBOOKS = [
 const NEW_PLAYBOOK = {
   code: "PB-17",
   scenario: "Offener DORA-Knockout",
-  objective: "Eine knockout-relevante MUSS-Anforderung mit Reifegrad unter 3 unverzüglich beherrschen: Kapitelstatus ROT, Berichtspflicht an das Leitungsorgan, Behebung binnen 10 Arbeitstagen.",
-  activationCriteria: "Score-Engine meldet eine KO-Anforderung mit wirksamem Reifegrad < 3 (inkl. Nachweissperre) – z. B. nach Neubewertung, abgelaufenem Nachweis oder negativem Test.",
-  severityGuidance: "Immer CRITICAL: Knockouts übersteuern jede Durchschnittsbetrachtung (FRWK-DORA-001 Kap. 11.3, Tabelle 24).",
-  rolesRaci: "R: ICT Risk Manager; A: Leitungsorgan (Management); C: ISO, verantwortliche Rolle der Anforderung; I: Second Line, Interne Revision.",
-  initialAssessment: "Ursache klären: fehlende Regelung, fehlender/abgelaufener Nachweis (Nachweissperre) oder festgestellte Unwirksamkeit? Betroffene kritische Funktionen identifizieren.",
-  immediateActions: "Finding (Schweregrad Kritisch) mit CAPA anlegen; Reaktionsfrist sofort, Behebungsfrist 10 Arbeitstage; Kapitel-Ampel prüfen; Managementbericht auslösen.",
-  riskAnalysis: "Zugehöriges Register-Risiko bewerten oder anlegen; prüfen, ob die Lücke weitere Anforderungen oder laufende Prüfungen berührt.",
-  decisionTree: "Nachweis existiert, ist aber nicht verknüpft/geprüft? → Nachweis nachziehen (RB-19), Neubewertung. Regelung fehlt? → Sofortmaßnahme + kompensierende Kontrolle. Behebung > 10 AT? → Managemententscheidung über Interimsmaßnahmen oder Einschränkung der betroffenen Funktion.",
-  communication: "Unverzügliche Information an Management (Tabelle 24: Eskalation Leitungsorgan); Aufnahme in den nächsten Managementbericht; bei Prüfungsbezug Compliance einbinden.",
-  regulatoryCheck: "Knockouts markieren Anforderungen, deren Nichterfüllung in aufsichtlichen Prüfungen mit hoher Wahrscheinlichkeit zu Feststellungen führt – Dokumentation der Behebung revisionssicher führen.",
-  measures: "CAPA mit Wirksamkeitskriterium; Nachtest/Neubewertung erst nach Wirksamkeitsnachweis; Reifegrad-Neubewertung schließt den Regelkreis.",
-  evidenceRequired: "Finding, CAPA, Wirksamkeitsnachweis, Neubewertung mit Begründung, Managementbericht.",
-  closureCriteria: "Wirksamer Reifegrad der Anforderung ≥ 3 (inkl. gültigem Nachweis); Kapitel-Ampel neu berechnet; Finding geschlossen.",
-  postEventReview: "Warum wurde der Knockout nicht früher erkannt? Frühindikatoren (Nachweis-Abläufe, Testtermine) in RB-19/RB-14 schärfen.",
+  objective:
+    "Eine knockout-relevante MUSS-Anforderung mit Reifegrad unter 3 unverzüglich beherrschen: Kapitelstatus ROT, Berichtspflicht an das Leitungsorgan, Behebung binnen 10 Arbeitstagen.",
+  activationCriteria:
+    "Score-Engine meldet eine KO-Anforderung mit wirksamem Reifegrad < 3 (inkl. Nachweissperre) – z. B. nach Neubewertung, abgelaufenem Nachweis oder negativem Test.",
+  severityGuidance:
+    "Immer CRITICAL: Knockouts übersteuern jede Durchschnittsbetrachtung (FRWK-DORA-001 Kap. 11.3, Tabelle 24).",
+  rolesRaci:
+    "R: ICT Risk Manager; A: Leitungsorgan (Management); C: ISO, verantwortliche Rolle der Anforderung; I: Second Line, Interne Revision.",
+  initialAssessment:
+    "Ursache klären: fehlende Regelung, fehlender/abgelaufener Nachweis (Nachweissperre) oder festgestellte Unwirksamkeit? Betroffene kritische Funktionen identifizieren.",
+  immediateActions:
+    "Finding (Schweregrad Kritisch) mit CAPA anlegen; Reaktionsfrist sofort, Behebungsfrist 10 Arbeitstage; Kapitel-Ampel prüfen; Managementbericht auslösen.",
+  riskAnalysis:
+    "Zugehöriges Register-Risiko bewerten oder anlegen; prüfen, ob die Lücke weitere Anforderungen oder laufende Prüfungen berührt.",
+  decisionTree:
+    "Nachweis existiert, ist aber nicht verknüpft/geprüft? → Nachweis nachziehen (RB-19), Neubewertung. Regelung fehlt? → Sofortmaßnahme + kompensierende Kontrolle. Behebung > 10 AT? → Managemententscheidung über Interimsmaßnahmen oder Einschränkung der betroffenen Funktion.",
+  communication:
+    "Unverzügliche Information an Management (Tabelle 24: Eskalation Leitungsorgan); Aufnahme in den nächsten Managementbericht; bei Prüfungsbezug Compliance einbinden.",
+  regulatoryCheck:
+    "Knockouts markieren Anforderungen, deren Nichterfüllung in aufsichtlichen Prüfungen mit hoher Wahrscheinlichkeit zu Feststellungen führt – Dokumentation der Behebung revisionssicher führen.",
+  measures:
+    "CAPA mit Wirksamkeitskriterium; Nachtest/Neubewertung erst nach Wirksamkeitsnachweis; Reifegrad-Neubewertung schließt den Regelkreis.",
+  evidenceRequired:
+    "Finding, CAPA, Wirksamkeitsnachweis, Neubewertung mit Begründung, Managementbericht.",
+  closureCriteria:
+    "Wirksamer Reifegrad der Anforderung ≥ 3 (inkl. gültigem Nachweis); Kapitel-Ampel neu berechnet; Finding geschlossen.",
+  postEventReview:
+    "Warum wurde der Knockout nicht früher erkannt? Frühindikatoren (Nachweis-Abläufe, Testtermine) in RB-19/RB-14 schärfen.",
 };
 
 function hoursFromNow(now, h) {
@@ -196,7 +334,9 @@ export async function seedDora(db, opts = {}) {
     where: { email: opts.creatorEmail ?? "riskmanager@demo.example" },
   });
   if (!assessor || !creator) {
-    throw new Error("Demo-Benutzer (iso@/riskmanager@demo.example) nicht gefunden – Basis-Seed fehlt.");
+    throw new Error(
+      "Demo-Benutzer (iso@/riskmanager@demo.example) nicht gefunden – Basis-Seed fehlt.",
+    );
   }
 
   // ---------- Kapitel & Anforderungen ----------
@@ -250,7 +390,8 @@ export async function seedDora(db, opts = {}) {
         data: {
           requirementId: row.id,
           maturity: Math.max(0, profile.maturity - 2),
-          justification: "Erstbewertung im Rahmen der Gap-Analyse (Phase 2 des Umsetzungsfahrplans).",
+          justification:
+            "Erstbewertung im Rahmen der Gap-Analyse (Phase 2 des Umsetzungsfahrplans).",
           assessorId: assessor.id,
           assessedAt: daysFromNow(now, -(120 + monthsAgo * 30)),
           isCurrent: false,
@@ -370,7 +511,8 @@ export async function seedDora(db, opts = {}) {
       capaActionId: "ACT-2026-0010",
       status: "IN_PROGRESS",
       detectedDaysAgo: 30,
-      effectivenessCriterion: "Getesteter Exit-Plan je CIF-Dienstleister vorhanden; Neubewertung DORA-K5-011 ≥ 3.",
+      effectivenessCriterion:
+        "Getesteter Exit-Plan je CIF-Dienstleister vorhanden; Neubewertung DORA-K5-011 ≥ 3.",
     },
     {
       findingId: "FND-2026-0002",
@@ -383,7 +525,8 @@ export async function seedDora(db, opts = {}) {
       capaActionId: "ACT-2026-0026",
       status: "IN_PROGRESS",
       detectedDaysAgo: 45,
-      effectivenessCriterion: "Erfolgreicher Failover-Test mit Protokoll; RTO-Nachweis je kritischer Funktion.",
+      effectivenessCriterion:
+        "Erfolgreicher Failover-Test mit Protokoll; RTO-Nachweis je kritischer Funktion.",
     },
     {
       findingId: "FND-2026-0003",
@@ -409,7 +552,8 @@ export async function seedDora(db, opts = {}) {
       capaActionId: "ACT-2026-0006",
       status: "OPEN",
       detectedDaysAgo: 12,
-      effectivenessCriterion: "Teilnahmequoten und Phishing-Testergebnisse als verknüpfter Nachweis.",
+      effectivenessCriterion:
+        "Teilnahmequoten und Phishing-Testergebnisse als verknüpfter Nachweis.",
     },
     {
       findingId: "FND-2026-0005",
@@ -453,7 +597,8 @@ export async function seedDora(db, opts = {}) {
         remediationDueAt: daysFromNow(detectedAt, rules.remediationDays),
         status: f.status,
         effectivenessCriterion: f.effectivenessCriterion,
-        escalatedTo: f.severity === "CRITICAL" ? "Leitungsorgan" : f.severity === "HIGH" ? "CISO" : null,
+        escalatedTo:
+          f.severity === "CRITICAL" ? "Leitungsorgan" : f.severity === "HIGH" ? "CISO" : null,
         actionId: f.capaActionId ? await findAction(f.capaActionId) : null,
         createdById: creator.id,
       },
@@ -513,7 +658,8 @@ export async function seedDora(db, opts = {}) {
         awarenessAt: daysFromNow(now, -30),
         classifiedAt: daysFromNow(now, -30),
         isMajor: false,
-        classificationNote: "Schwellen der DelVO 2024/1772 nicht erreicht; DSGVO-/NIS-2-Prüfung negativ, dokumentiert.",
+        classificationNote:
+          "Schwellen der DelVO 2024/1772 nicht erreicht; DSGVO-/NIS-2-Prüfung negativ, dokumentiert.",
         status: "CLOSED",
         gdprRelevant: false,
         nis2Relevant: false,

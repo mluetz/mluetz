@@ -12,12 +12,12 @@ nicht erforderlich.
 
 ## Voraussetzungen prüfen
 
-| Punkt | Anforderung |
-|---|---|
-| DSM | 7.x mit Paket **Container Manager** (Paket-Zentrum). Auf DSM 6 heißt es „Docker“ – Schritte analog. |
-| CPU | x86_64 oder ARM64 (alle aktuellen Modelle). |
-| **Arbeitsspeicher** | **≥ 2 GB RAM** für den Build auf dem NAS. Bei weniger (z. B. DS220j, DS120j) bitte **Variante C** nutzen – der Next.js-Build scheitert sonst mit „JavaScript heap out of memory“. |
-| Port | **3000** bevorzugt. Ist er belegt, wählt der Installer automatisch den nächsten freien Port (3001, 3002, 3080, 8300, 8380). Fester Wunschport: `HOST_PORT=8390` vor dem Installationsbefehl setzen. Der gewählte Port wird in `.env` festgeschrieben und bei Updates beibehalten. |
+| Punkt               | Anforderung                                                                                                                                                                                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DSM                 | 7.x mit Paket **Container Manager** (Paket-Zentrum). Auf DSM 6 heißt es „Docker“ – Schritte analog.                                                                                                                                                                               |
+| CPU                 | x86_64 oder ARM64 (alle aktuellen Modelle).                                                                                                                                                                                                                                       |
+| **Arbeitsspeicher** | **≥ 2 GB RAM** für den Build auf dem NAS. Bei weniger (z. B. DS220j, DS120j) bitte **Variante C** nutzen – der Next.js-Build scheitert sonst mit „JavaScript heap out of memory“.                                                                                                 |
+| Port                | **3000** bevorzugt. Ist er belegt, wählt der Installer automatisch den nächsten freien Port (3001, 3002, 3080, 8300, 8380). Fester Wunschport: `HOST_PORT=8390` vor dem Installationsbefehl setzen. Der gewählte Port wird in `.env` festgeschrieben und bei Updates beibehalten. |
 
 ---
 
@@ -74,15 +74,16 @@ Aufgabenplaner führt Skripte als root aus:
    `[WARNUNG]` / `[FEHLER]` plus Fazit).
 3. **Installation:** Zweite Aufgabe `Cockpit-Install` genauso anlegen mit:
 
-     ```sh
-     mkdir -p /volume1/docker
-     curl -fsSL https://raw.githubusercontent.com/mluetz/mluetz/claude/ict-third-party-risk-cockpit-96rfzf/cockpit/install-synology.sh | sh > /volume1/docker/cockpit-install.log 2>&1
-     ```
+   ```sh
+   mkdir -p /volume1/docker
+   curl -fsSL https://raw.githubusercontent.com/mluetz/mluetz/claude/ict-third-party-risk-cockpit-96rfzf/cockpit/install-synology.sh | sh > /volume1/docker/cockpit-install.log 2>&1
+   ```
 
    → **Ausführen**. Der Build läuft 10–25 Minuten im Hintergrund; Fortschritt
    steht in `docker/cockpit-install.log` (Datei in File Station erneut öffnen
    bzw. herunterladen, sie wird fortlaufend geschrieben). Parallel erscheint im
    **Container Manager** das Abbild und danach der Container `ict-tprm-cockpit`.
+
 4. **Fertig-Prüfung:** `http://192.168.178.97:3000/api/health` im Browser →
    `{"status":"ok"}`, dann `http://192.168.178.97:3000` öffnen.
 5. **Aufräumen:** Beide Aufgaben im Aufgabenplaner wieder löschen (oder für
@@ -126,6 +127,7 @@ Ohne diesen Wert startet der Container bewusst nicht.
 
 **4. Projekt anlegen**
 Container Manager → **Projekt** → **Erstellen**
+
 - Projektname: `cockpit`
 - Pfad: `/volume1/docker/cockpit`
 - Quelle: „Vorhandene docker-compose.yml verwenden“ → **`docker-compose.synology.yml`** wählen
@@ -171,8 +173,8 @@ docker logs -f ict-tprm-cockpit
 
 SSH danach wieder deaktivieren, wenn nicht mehr benötigt.
 
-*(Ist `git` auf dem NAS nicht verfügbar: ZIP wie in Variante A hochladen und nur
-die letzten drei Befehle ausführen.)*
+_(Ist `git` auf dem NAS nicht verfügbar: ZIP wie in Variante A hochladen und nur
+die letzten drei Befehle ausführen.)_
 
 ---
 
@@ -196,12 +198,13 @@ Die Datei `cockpit-image.tar` (ca. 400–600 MB) per File Station nach
 
 **Auf dem NAS:** Container Manager → **Abbild** → **Aktion** → **Importieren** →
 Datei auswählen. Danach Container Manager → **Container** → **Erstellen**:
+
 - Abbild: `ict-tprm-cockpit:latest`
 - Container-Name: `ict-tprm-cockpit`
 - Port-Einstellungen: lokaler Port **3000** → Container-Port **3000**
 - Umgebungsvariablen:
   - `DATABASE_URL` = `file:/data/cockpit.db`
-  - `SESSION_SECRET` = *(eigener Zufallswert, mind. 32 Zeichen)*
+  - `SESSION_SECRET` = _(eigener Zufallswert, mind. 32 Zeichen)_
   - `APP_BASE_URL` = `http://192.168.178.97:3000`
 - Speicherort: neuen Ordner `/volume1/docker/cockpit-data` einbinden als **`/data`**
 - Automatischer Neustart: aktivieren
@@ -230,21 +233,21 @@ DSM bringt einen Reverse Proxy mit, der das vorhandene NAS-Zertifikat nutzt:
 
 ## Betrieb
 
-| Aufgabe | Vorgehen |
-|---|---|
-| **Update** | Neue Dateien hochladen bzw. `git pull`, dann Container Manager → Projekt → **Aktion → Erstellen** (SSH: `docker compose -f docker-compose.synology.yml up -d --build`). Die Datenbank im Volume bleibt erhalten; der Entrypoint führt beim Start automatisch additive Schema-Updates (`prisma db push`) und neue Inhaltsbausteine (z. B. DORA-Anforderungskatalog) idempotent nach – sichtbar im Container-Log. |
-| **Backup** | `sudo docker cp ict-tprm-cockpit:/data/cockpit.db /volume1/docker/cockpit-backup-$(date +%F).db` – für einen konsistenten Stand den Container kurz stoppen. Zusätzlich den Ordner in die Hyper-Backup-Aufgabe aufnehmen. |
-| **Restore** | Container stoppen → Backup-Datei zurückkopieren (`docker cp <datei> ict-tprm-cockpit:/data/cockpit.db`) → Container starten. |
-| **Demo-Daten zurücksetzen** | Container stoppen → Volume `cockpit_cockpit-data` löschen (Container Manager → Volume) → Projekt starten; die Demo-Datenbank wird frisch angelegt. |
-| **Logs** | Container Manager → Container → `ict-tprm-cockpit` → Protokoll, oder `sudo docker logs -f ict-tprm-cockpit`. |
-| **Healthcheck** | `http://192.168.178.97:3000/api/health` → `{"status":"ok"}` |
+| Aufgabe                     | Vorgehen                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Update**                  | Neue Dateien hochladen bzw. `git pull`, dann Container Manager → Projekt → **Aktion → Erstellen** (SSH: `docker compose -f docker-compose.synology.yml up -d --build`). Die Datenbank im Volume bleibt erhalten; der Entrypoint führt beim Start automatisch additive Schema-Updates (`prisma db push`) und neue Inhaltsbausteine (z. B. DORA-Anforderungskatalog) idempotent nach – sichtbar im Container-Log. |
+| **Backup**                  | `sudo docker cp ict-tprm-cockpit:/data/cockpit.db /volume1/docker/cockpit-backup-$(date +%F).db` – für einen konsistenten Stand den Container kurz stoppen. Zusätzlich den Ordner in die Hyper-Backup-Aufgabe aufnehmen.                                                                                                                                                                                        |
+| **Restore**                 | Container stoppen → Backup-Datei zurückkopieren (`docker cp <datei> ict-tprm-cockpit:/data/cockpit.db`) → Container starten.                                                                                                                                                                                                                                                                                    |
+| **Demo-Daten zurücksetzen** | Container stoppen → Volume `cockpit_cockpit-data` löschen (Container Manager → Volume) → Projekt starten; die Demo-Datenbank wird frisch angelegt.                                                                                                                                                                                                                                                              |
+| **Logs**                    | Container Manager → Container → `ict-tprm-cockpit` → Protokoll, oder `sudo docker logs -f ict-tprm-cockpit`.                                                                                                                                                                                                                                                                                                    |
+| **Healthcheck**             | `http://192.168.178.97:3000/api/health` → `{"status":"ok"}`                                                                                                                                                                                                                                                                                                                                                     |
 
 ## Wenn etwas nicht klappt
 
-| Symptom | Ursache / Lösung |
-|---|---|
-| Build bricht mit „heap out of memory“ ab | Zu wenig RAM → **Variante C** (Image auf dem PC bauen). |
-| Container startet nicht, Log: „SESSION_SECRET fehlt oder ist zu kurz“ | `.env` fehlt, liegt im falschen Ordner oder der Wert ist < 32 Zeichen. |
-| Seite nicht erreichbar, Container läuft | Port-Zuordnung 3000→3000 prüfen; DSM-Firewall (Systemsteuerung → Sicherheit → Firewall) für Port 3000 freigeben. |
-| „exec /app/docker-entrypoint.sh: permission denied“ | Image mit altem Stand gebaut → Projekt neu bauen (Rechte werden jetzt im Dockerfile gesetzt). |
-| Anmeldung schlägt fehl | Demo-Login benötigt `AUTH_DEMO_LOGIN=true` (Standard); Passwort ist `Demo!2026`. |
+| Symptom                                                               | Ursache / Lösung                                                                                                 |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Build bricht mit „heap out of memory“ ab                              | Zu wenig RAM → **Variante C** (Image auf dem PC bauen).                                                          |
+| Container startet nicht, Log: „SESSION_SECRET fehlt oder ist zu kurz“ | `.env` fehlt, liegt im falschen Ordner oder der Wert ist < 32 Zeichen.                                           |
+| Seite nicht erreichbar, Container läuft                               | Port-Zuordnung 3000→3000 prüfen; DSM-Firewall (Systemsteuerung → Sicherheit → Firewall) für Port 3000 freigeben. |
+| „exec /app/docker-entrypoint.sh: permission denied“                   | Image mit altem Stand gebaut → Projekt neu bauen (Rechte werden jetzt im Dockerfile gesetzt).                    |
+| Anmeldung schlägt fehl                                                | Demo-Login benötigt `AUTH_DEMO_LOGIN=true` (Standard); Passwort ist `Demo!2026`.                                 |

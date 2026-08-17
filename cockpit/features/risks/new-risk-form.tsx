@@ -50,7 +50,13 @@ export function NewRiskForm({
               <Textarea id="riskEvent" name="riskEvent" required minLength={5} rows={3} />
             </Field>
             <Field label="Mögliche Auswirkungen" htmlFor="impactDescription" required>
-              <Textarea id="impactDescription" name="impactDescription" required minLength={5} rows={3} />
+              <Textarea
+                id="impactDescription"
+                name="impactDescription"
+                required
+                minLength={5}
+                rows={3}
+              />
             </Field>
           </div>
           <div className="grid gap-4 md:grid-cols-2">

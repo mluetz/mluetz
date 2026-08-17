@@ -7,7 +7,9 @@ import { shouldUseSecureCookie } from "@/lib/auth/cookie-policy";
  */
 describe("shouldUseSecureCookie", () => {
   it("respektiert die explizite Vorgabe", () => {
-    expect(shouldUseSecureCookie({ SESSION_COOKIE_SECURE: "true", NODE_ENV: "development" })).toBe(true);
+    expect(shouldUseSecureCookie({ SESSION_COOKIE_SECURE: "true", NODE_ENV: "development" })).toBe(
+      true,
+    );
     expect(
       shouldUseSecureCookie({
         SESSION_COOKIE_SECURE: "false",
@@ -25,7 +27,10 @@ describe("shouldUseSecureCookie", () => {
     ).toBe(false);
     // Hinter HTTPS-Reverse-Proxy: Secure-Flag aktiv
     expect(
-      shouldUseSecureCookie({ NODE_ENV: "production", APP_BASE_URL: "https://192.168.178.97:8443" }),
+      shouldUseSecureCookie({
+        NODE_ENV: "production",
+        APP_BASE_URL: "https://192.168.178.97:8443",
+      }),
     ).toBe(true);
   });
 

@@ -7,10 +7,7 @@ import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { assertPermission } from "@/lib/authz";
 import { FINDING_SEVERITY_RULES } from "@/lib/domain/dora-scoring";
-import {
-  DORA_FINDING_SOURCE,
-  DORA_FINDING_STATUS,
-} from "@/lib/domain/enums";
+import { DORA_FINDING_SOURCE, DORA_FINDING_STATUS } from "@/lib/domain/enums";
 
 /**
  * Server Actions für DORA-Findings/CAPA (FRWK-DORA-001 Kap. 12).
@@ -51,7 +48,10 @@ const createSchema = z.object({
   actionId: z.string().optional(),
 });
 
-export async function createFinding(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function createFinding(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   let findingDbId = "";
   try {
     const user = await assertPermission("compliance:write");
@@ -59,8 +59,7 @@ export async function createFinding(_prev: ActionResult, formData: FormData): Pr
     if (!parsed.success) {
       return {
         error:
-          "Eingaben unvollständig: " +
-          parsed.error.issues.map((i) => i.path.join(".")).join(", "),
+          "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", "),
       };
     }
     const d = parsed.data;

@@ -38,8 +38,7 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
   });
 
   let rows: ActionMgmtRow[] = actions.map((a) => {
-    const overdue =
-      isOverdue(a.dueDate) && !["COMPLETED", "CLOSED"].includes(a.status);
+    const overdue = isOverdue(a.dueDate) && !["COMPLETED", "CLOSED"].includes(a.status);
     return {
       id: a.id,
       actionId: a.actionId,
@@ -73,7 +72,10 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
         }
       />
 
-      <form method="GET" className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4">
+      <form
+        method="GET"
+        className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4"
+      >
         <div>
           <Label htmlFor="f-status">Status</Label>
           <Select id="f-status" name="status" defaultValue={sp.status ?? ""}>
@@ -107,7 +109,11 @@ export default async function ActionsPage({ searchParams }: { searchParams: Prom
           </Link>
         </div>
         <div className="col-span-full flex flex-wrap gap-2 text-xs">
-          <FilterChip href="/actions?overdue=1" active={sp.overdue === "1"} label="Nur überfällige" />
+          <FilterChip
+            href="/actions?overdue=1"
+            active={sp.overdue === "1"}
+            label="Nur überfällige"
+          />
           <FilterChip
             href="/actions?escalated=1"
             active={sp.escalated === "1"}

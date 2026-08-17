@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 
 export function CompleteExecutionForm({ executionId }: { executionId: string }) {
-  const [state, formAction, pending] = useActionState<ActionResult, FormData>(completeExecution, {});
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    completeExecution,
+    {},
+  );
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="executionId" value={executionId} />

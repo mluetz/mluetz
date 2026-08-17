@@ -107,7 +107,9 @@ export function resilienceIndex(chapters: ChapterWeight[]): {
       ? 0
       : chapters.reduce((s, c) => s + c.result.scorePercent * c.weightPercent, 0) / totalWeight;
   const totalOpenKnockouts = chapters.reduce((s, c) => s + c.result.openKnockouts.length, 0);
-  const anyOverdueCritical = chapters.some((c) => c.result.status === "YELLOW" && c.result.scorePercent >= GREEN_MIN_SCORE);
+  const anyOverdueCritical = chapters.some(
+    (c) => c.result.status === "YELLOW" && c.result.scorePercent >= GREEN_MIN_SCORE,
+  );
   const indexPercent = Math.round(weighted * 10) / 10;
   return {
     indexPercent,
@@ -121,8 +123,23 @@ export const FINDING_SEVERITY_RULES: Record<
   string,
   { label: string; responseDays: number; remediationDays: number; escalateTo: string }
 > = {
-  CRITICAL: { label: "Kritisch", responseDays: 0, remediationDays: 14, escalateTo: "Leitungsorgan" },
+  CRITICAL: {
+    label: "Kritisch",
+    responseDays: 0,
+    remediationDays: 14,
+    escalateTo: "Leitungsorgan",
+  },
   HIGH: { label: "Hoch", responseDays: 7, remediationDays: 42, escalateTo: "CISO" },
-  MEDIUM: { label: "Mittel", responseDays: 14, remediationDays: 126, escalateTo: "Fachbereichsleitung" },
-  LOW: { label: "Gering", responseDays: 28, remediationDays: 252, escalateTo: "Prozessverantwortlicher" },
+  MEDIUM: {
+    label: "Mittel",
+    responseDays: 14,
+    remediationDays: 126,
+    escalateTo: "Fachbereichsleitung",
+  },
+  LOW: {
+    label: "Gering",
+    responseDays: 28,
+    remediationDays: 252,
+    escalateTo: "Prozessverantwortlicher",
+  },
 };

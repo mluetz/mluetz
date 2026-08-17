@@ -66,7 +66,8 @@ export default async function RequirementDetailPage({
           <CardHeader>
             <CardTitle>Anforderung</CardTitle>
             <CardDescription>
-              {FRAMEWORKS[requirement.framework as keyof typeof FRAMEWORKS] ?? requirement.framework}{" "}
+              {FRAMEWORKS[requirement.framework as keyof typeof FRAMEWORKS] ??
+                requirement.framework}{" "}
               · {requirement.reference}
             </CardDescription>
           </CardHeader>
