@@ -36,7 +36,13 @@ describe("computeDeadlines – DORA (Art. 19)", () => {
 
   it("ohne Klassifizierung gilt die 24-h-Grenze; Folgefristen bauen darauf auf", () => {
     const d = computeDeadlines(
-      { awarenessAt: T0, classifiedAt: null, isMajor: true, gdprRelevant: false, nis2Relevant: false },
+      {
+        awarenessAt: T0,
+        classifiedAt: null,
+        isMajor: true,
+        gdprRelevant: false,
+        nis2Relevant: false,
+      },
       T0,
     );
     expect(d.find((x) => x.reportType === "DORA_INITIAL")!.dueAt.toISOString()).toBe(
@@ -72,7 +78,13 @@ describe("computeDeadlines – DORA (Art. 19)", () => {
 
   it("nicht schwerwiegend → keine DORA-Fristen", () => {
     const d = computeDeadlines(
-      { awarenessAt: T0, classifiedAt: null, isMajor: false, gdprRelevant: false, nis2Relevant: false },
+      {
+        awarenessAt: T0,
+        classifiedAt: null,
+        isMajor: false,
+        gdprRelevant: false,
+        nis2Relevant: false,
+      },
       T0,
     );
     expect(d.filter((x) => x.reportType.startsWith("DORA"))).toHaveLength(0);
@@ -82,7 +94,13 @@ describe("computeDeadlines – DORA (Art. 19)", () => {
 describe("computeDeadlines – parallele Pflichtenstränge", () => {
   it("NIS-2 und DSGVO laufen ab Kenntniserlangung", () => {
     const d = computeDeadlines(
-      { awarenessAt: T0, classifiedAt: null, isMajor: false, gdprRelevant: true, nis2Relevant: true },
+      {
+        awarenessAt: T0,
+        classifiedAt: null,
+        isMajor: false,
+        gdprRelevant: true,
+        nis2Relevant: true,
+      },
       T0,
     );
     expect(d.find((x) => x.reportType === "NIS2_EARLY_WARNING")!.dueAt.toISOString()).toBe(
@@ -108,9 +126,7 @@ describe("Status und Restlaufzeit", () => {
     };
     const due = new Date("2026-08-20T08:00:00Z");
     // offen, vor Frist
-    expect(
-      computeDeadlines(base, new Date("2026-08-19T08:00:00Z"))[0]!.status,
-    ).toBe("DUE");
+    expect(computeDeadlines(base, new Date("2026-08-19T08:00:00Z"))[0]!.status).toBe("DUE");
     // offen, nach Frist
     expect(computeDeadlines(base, new Date("2026-08-21T08:00:00Z"))[0]!.status).toBe("OVERDUE");
     // fristgerecht gemeldet

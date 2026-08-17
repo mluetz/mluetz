@@ -29,14 +29,17 @@ function ResultLine({ state }: { state: ActionResult }) {
 }
 
 export function RequirementAssessmentForm({ requirementId }: { requirementId: string }) {
-  const [state, formAction, pending] = useActionState<ActionResult, FormData>(assessRequirement, {});
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    assessRequirement,
+    {},
+  );
   return (
     <Card>
       <CardHeader>
         <CardTitle>Neue Bewertung durchführen</CardTitle>
         <CardDescription>
-          Selbsteinschätzung des Reifegrads (0–5) mit Begründung. Ohne gültigen, geprüften
-          Nachweis wirkt höchstens Reifegrad 2 (Nachweissperre, FRWK-DORA-001 Kap. 11.1).
+          Selbsteinschätzung des Reifegrads (0–5) mit Begründung. Ohne gültigen, geprüften Nachweis
+          wirkt höchstens Reifegrad 2 (Nachweissperre, FRWK-DORA-001 Kap. 11.1).
         </CardDescription>
       </CardHeader>
       <CardContent>

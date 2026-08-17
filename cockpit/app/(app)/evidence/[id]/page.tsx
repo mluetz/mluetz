@@ -76,7 +76,9 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
               />
               <Info
                 label="Klassifikation"
-                value={EVIDENCE_CLASSIFICATION_LABELS[evidence.classification] ?? evidence.classification}
+                value={
+                  EVIDENCE_CLASSIFICATION_LABELS[evidence.classification] ?? evidence.classification
+                }
               />
               <Info label="Owner" value={evidence.owner?.name ?? "–"} />
               <Info label="Version" value={evidence.version} />
@@ -90,7 +92,9 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
               <Info label="Erstellt am" value={formatDateTime(evidence.createdAt)} />
               <Info
                 label="Reviewstatus"
-                value={EVIDENCE_REVIEW_STATUS_LABELS[evidence.reviewStatus] ?? evidence.reviewStatus}
+                value={
+                  EVIDENCE_REVIEW_STATUS_LABELS[evidence.reviewStatus] ?? evidence.reviewStatus
+                }
               />
               <Info label="Reviewer" value={evidence.reviewer?.name ?? "–"} />
             </div>
@@ -118,7 +122,10 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
               <div>
                 <p className="text-[11px] font-medium text-muted-foreground">Risiko</p>
                 {evidence.risk ? (
-                  <Link href={`/risks/${evidence.risk.id}`} className="text-primary hover:underline">
+                  <Link
+                    href={`/risks/${evidence.risk.id}`}
+                    className="text-primary hover:underline"
+                  >
                     <span className="font-mono text-xs">{evidence.risk.riskId}</span> –{" "}
                     {evidence.risk.title}
                   </Link>
@@ -129,7 +136,10 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
               <div>
                 <p className="text-[11px] font-medium text-muted-foreground">Kontrolle</p>
                 {evidence.control ? (
-                  <Link href={`/controls/${evidence.control.id}`} className="text-primary hover:underline">
+                  <Link
+                    href={`/controls/${evidence.control.id}`}
+                    className="text-primary hover:underline"
+                  >
                     <span className="font-mono text-xs">{evidence.control.controlId}</span> –{" "}
                     {evidence.control.name}
                   </Link>

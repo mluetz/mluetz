@@ -53,7 +53,8 @@ export const riskColumns: ColumnDef<RiskRow>[] = [
     cell: ({ row }) =>
       row.original.inherentScore != null ? (
         <Badge variant={riskClassVariant(row.original.inherentClass ?? "")}>
-          {row.original.inherentScore} · {RISK_CLASS[row.original.inherentClass as RiskClass] ?? "?"}
+          {row.original.inherentScore} ·{" "}
+          {RISK_CLASS[row.original.inherentClass as RiskClass] ?? "?"}
         </Badge>
       ) : (
         <span className="text-xs text-muted-foreground">nicht bewertet</span>
@@ -66,10 +67,14 @@ export const riskColumns: ColumnDef<RiskRow>[] = [
       row.original.residualScore != null ? (
         <span className="flex items-center gap-1">
           <Badge variant={riskClassVariant(row.original.residualClass ?? "")}>
-            {row.original.residualScore} · {RISK_CLASS[row.original.residualClass as RiskClass] ?? "?"}
+            {row.original.residualScore} ·{" "}
+            {RISK_CLASS[row.original.residualClass as RiskClass] ?? "?"}
           </Badge>
           {row.original.aboveAppetite ? (
-            <span title={`Über Risikoappetit (${row.original.appetiteThreshold})`} className="text-risk-critical">
+            <span
+              title={`Über Risikoappetit (${row.original.appetiteThreshold})`}
+              className="text-risk-critical"
+            >
               <AlertTriangle className="h-3.5 w-3.5" aria-label="Über Risikoappetit" />
             </span>
           ) : null}

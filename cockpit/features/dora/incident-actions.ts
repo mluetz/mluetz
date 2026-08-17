@@ -46,13 +46,19 @@ const incidentSchema = z.object({
   thirdPartyId: z.string().optional(),
 });
 
-export async function createIncident(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function createIncident(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   let incidentDbId = "";
   try {
     const user = await assertPermission("incident:write");
     const parsed = incidentSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) {
-      return { error: "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", ") };
+      return {
+        error:
+          "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", "),
+      };
     }
     const d = parsed.data;
     const isMajor = formData.get("isMajor") === "on";
@@ -235,7 +241,8 @@ export async function changeIncidentStatus(
   try {
     const user = await assertPermission("incident:write");
     const parsed = statusSchema.safeParse(Object.fromEntries(formData));
-    if (!parsed.success) return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
+    if (!parsed.success)
+      return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
     const d = parsed.data;
 
     const incident = await db.incident.findUnique({
@@ -247,7 +254,9 @@ export async function changeIncidentStatus(
     const to = d.newStatus as IncidentStatus;
     if (!(to in INCIDENT_STATUS)) return { error: "Ungültiger Zielstatus." };
     if (!INCIDENT_TRANSITIONS[from]?.includes(to)) {
-      return { error: `Übergang ${INCIDENT_STATUS[from]} → ${INCIDENT_STATUS[to]} ist nicht zulässig.` };
+      return {
+        error: `Übergang ${INCIDENT_STATUS[from]} → ${INCIDENT_STATUS[to]} ist nicht zulässig.`,
+      };
     }
     if (to === "CLOSED") {
       const now = Date.now();

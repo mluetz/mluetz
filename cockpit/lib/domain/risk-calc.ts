@@ -45,10 +45,7 @@ export function residualRisk(
   return Math.max(1, Math.round(raw));
 }
 
-export function classify(
-  score: number,
-  t: RiskThresholds = DEFAULT_THRESHOLDS,
-): RiskClass {
+export function classify(score: number, t: RiskThresholds = DEFAULT_THRESHOLDS): RiskClass {
   if (score <= t.lowMax) return "LOW";
   if (score <= t.mediumMax) return "MEDIUM";
   if (score <= t.highMax) return "HIGH";

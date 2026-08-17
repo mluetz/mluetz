@@ -85,14 +85,22 @@ export function computeDeadlines(input: DeadlineInput, now: Date): Deadline[] {
   }
 
   if (input.nis2Relevant) {
-    push("NIS2_EARLY_WARNING", "NIS-2-Frühwarnung (24 h)", new Date(input.awarenessAt.getTime() + 24 * HOUR));
+    push(
+      "NIS2_EARLY_WARNING",
+      "NIS-2-Frühwarnung (24 h)",
+      new Date(input.awarenessAt.getTime() + 24 * HOUR),
+    );
     const reportDue = new Date(input.awarenessAt.getTime() + 72 * HOUR);
     push("NIS2_REPORT", "NIS-2-Meldung (72 h)", reportDue);
     push("NIS2_FINAL", "NIS-2-Abschlussbericht (1 Monat)", addMonth(sub.NIS2_REPORT ?? reportDue));
   }
 
   if (input.gdprRelevant) {
-    push("GDPR_NOTIFICATION", "DSGVO-Meldung Art. 33 (72 h)", new Date(input.awarenessAt.getTime() + 72 * HOUR));
+    push(
+      "GDPR_NOTIFICATION",
+      "DSGVO-Meldung Art. 33 (72 h)",
+      new Date(input.awarenessAt.getTime() + 72 * HOUR),
+    );
   }
 
   return out;

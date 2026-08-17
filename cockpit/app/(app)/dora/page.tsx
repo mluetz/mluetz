@@ -80,10 +80,32 @@ export default async function DoraDashboardPage() {
           <p className="text-3xl font-bold">{o.index.totalOpenKnockouts}</p>
           <p className="text-xs">KO-Anforderung mit wirksamem Reifegrad &lt; 3</p>
         </Link>
-        <Kpi label="Überfällige CAPA" value={String(o.overdueCapaCount)} href="/dora/findings?overdue=1" warn={o.overdueCapaCount > 0} />
-        <Kpi label="Offene Findings" value={String(openFindings)} href="/dora/findings?open=1" warn={(o.openFindingsBySeverity["CRITICAL"] ?? 0) > 0} sub={`davon ${o.openFindingsBySeverity["CRITICAL"] ?? 0} kritisch`} />
-        <Kpi label="Offene Vorfälle" value={String(o.incidentSummary.open)} href="/dora/incidents?open=1" sub={`davon ${o.incidentSummary.major} schwerwiegend`} warn={o.incidentSummary.major > 0} />
-        <Kpi label="Überfällige Meldungen" value={String(o.incidentSummary.overdueReports)} href="/dora/incidents" warn={o.incidentSummary.overdueReports > 0} />
+        <Kpi
+          label="Überfällige CAPA"
+          value={String(o.overdueCapaCount)}
+          href="/dora/findings?overdue=1"
+          warn={o.overdueCapaCount > 0}
+        />
+        <Kpi
+          label="Offene Findings"
+          value={String(openFindings)}
+          href="/dora/findings?open=1"
+          warn={(o.openFindingsBySeverity["CRITICAL"] ?? 0) > 0}
+          sub={`davon ${o.openFindingsBySeverity["CRITICAL"] ?? 0} kritisch`}
+        />
+        <Kpi
+          label="Offene Vorfälle"
+          value={String(o.incidentSummary.open)}
+          href="/dora/incidents?open=1"
+          sub={`davon ${o.incidentSummary.major} schwerwiegend`}
+          warn={o.incidentSummary.major > 0}
+        />
+        <Kpi
+          label="Überfällige Meldungen"
+          value={String(o.incidentSummary.overdueReports)}
+          href="/dora/incidents"
+          warn={o.incidentSummary.overdueReports > 0}
+        />
       </div>
 
       {/* Kapitelampel */}
@@ -97,9 +119,16 @@ export default async function DoraDashboardPage() {
             <div className="flex items-start justify-between gap-2">
               <p className="text-xs font-semibold">
                 Kapitel {c.roman}
-                <span className="block font-normal text-muted-foreground">{c.articleRange} · Gewicht {c.weightPercent} %</span>
+                <span className="block font-normal text-muted-foreground">
+                  {c.articleRange} · Gewicht {c.weightPercent} %
+                </span>
               </p>
-              <span className={cn("rounded-md border px-1.5 py-0.5 text-[11px] font-semibold", LIGHT_CLASS[c.result.status])}>
+              <span
+                className={cn(
+                  "rounded-md border px-1.5 py-0.5 text-[11px] font-semibold",
+                  LIGHT_CLASS[c.result.status],
+                )}
+              >
                 {LIGHT_LABEL[c.result.status]}
               </span>
             </div>
@@ -109,7 +138,11 @@ export default async function DoraDashboardPage() {
               <div
                 className={cn(
                   "h-full rounded-full",
-                  c.result.status === "GREEN" ? "bg-risk-low" : c.result.status === "YELLOW" ? "bg-risk-medium" : "bg-risk-critical",
+                  c.result.status === "GREEN"
+                    ? "bg-risk-low"
+                    : c.result.status === "YELLOW"
+                      ? "bg-risk-medium"
+                      : "bg-risk-critical",
                 )}
                 style={{ width: `${Math.min(100, c.result.scorePercent)}%` }}
               />
@@ -127,7 +160,9 @@ export default async function DoraDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Reifegradverlauf</CardTitle>
-            <CardDescription>Monatsmittel der Reifegrad-Bewertungen (Skala 0–5, letzte 12 Monate)</CardDescription>
+            <CardDescription>
+              Monatsmittel der Reifegrad-Bewertungen (Skala 0–5, letzte 12 Monate)
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <MaturityTrendChart data={o.maturityTrend} />
@@ -137,7 +172,9 @@ export default async function DoraDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Kennzahlen (KPI/KRI, Tabelle 25)</CardTitle>
-            <CardDescription>Aus den Live-Daten des Cockpits berechnet – Ist gegen Zielwert</CardDescription>
+            <CardDescription>
+              Aus den Live-Daten des Cockpits berechnet – Ist gegen Zielwert
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="grid gap-2 sm:grid-cols-2">
@@ -181,7 +218,10 @@ export default async function DoraDashboardPage() {
                 <th className="p-1.5 text-left font-medium text-muted-foreground">Funktion</th>
                 {heatmap.chapters.map((c) => (
                   <th key={c} className="p-1.5 font-medium" scope="col">
-                    Kap. {["K2", "K3", "K4", "K5", "K6"].indexOf(c) > -1 ? ["II", "III", "IV", "V", "VI"][["K2", "K3", "K4", "K5", "K6"].indexOf(c)] : c}
+                    Kap.{" "}
+                    {["K2", "K3", "K4", "K5", "K6"].indexOf(c) > -1
+                      ? ["II", "III", "IV", "V", "VI"][["K2", "K3", "K4", "K5", "K6"].indexOf(c)]
+                      : c}
                   </th>
                 ))}
               </tr>
@@ -191,11 +231,14 @@ export default async function DoraDashboardPage() {
                 <tr key={cif.id}>
                   <th scope="row" className="p-1.5 text-left font-medium">
                     {cif.name}
-                    {cif.isCritical ? <span className="ml-1 text-[10px] text-muted-foreground">(kritisch)</span> : null}
+                    {cif.isCritical ? (
+                      <span className="ml-1 text-[10px] text-muted-foreground">(kritisch)</span>
+                    ) : null}
                   </th>
                   {heatmap.chapters.map((c) => {
                     const cell = heatmap.cells[cif.id]?.[c] ?? { count: 0, maxResidual: null };
-                    const klass = cell.maxResidual !== null ? classify(cell.maxResidual, thresholds) : null;
+                    const klass =
+                      cell.maxResidual !== null ? classify(cell.maxResidual, thresholds) : null;
                     const bg =
                       klass === "CRITICAL"
                         ? "bg-risk-critical/25"
@@ -209,7 +252,10 @@ export default async function DoraDashboardPage() {
                     return (
                       <td key={c} className="p-0.5">
                         <div
-                          className={cn("flex h-9 items-center justify-center rounded-md border font-semibold", bg)}
+                          className={cn(
+                            "flex h-9 items-center justify-center rounded-md border font-semibold",
+                            bg,
+                          )}
                           title={
                             cell.count
                               ? `${cell.count} offene Risiken · höchste Residual-Klasse: ${klass}`
@@ -226,23 +272,43 @@ export default async function DoraDashboardPage() {
             </tbody>
           </table>
           <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded-sm border bg-risk-low/30" aria-hidden /> Low</span>
-            <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded-sm border bg-risk-medium/30" aria-hidden /> Medium</span>
-            <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded-sm border bg-risk-high/30" aria-hidden /> High</span>
-            <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded-sm border bg-risk-critical/30" aria-hidden /> Critical</span>
-            <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded-sm border bg-muted/60" aria-hidden /> keine</span>
+            <span className="inline-flex items-center gap-1">
+              <span className="h-3 w-3 rounded-sm border bg-risk-low/30" aria-hidden /> Low
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="h-3 w-3 rounded-sm border bg-risk-medium/30" aria-hidden /> Medium
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="h-3 w-3 rounded-sm border bg-risk-high/30" aria-hidden /> High
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="h-3 w-3 rounded-sm border bg-risk-critical/30" aria-hidden />{" "}
+              Critical
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="h-3 w-3 rounded-sm border bg-muted/60" aria-hidden /> keine
+            </span>
           </div>
         </CardContent>
       </Card>
 
       <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-        <Link href="/dora/requirements" className="inline-flex items-center gap-1 text-primary hover:underline">
+        <Link
+          href="/dora/requirements"
+          className="inline-flex items-center gap-1 text-primary hover:underline"
+        >
           Zum Anforderungskatalog <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
-        <Link href="/reports/DORA_READINESS" className="inline-flex items-center gap-1 text-primary hover:underline">
+        <Link
+          href="/reports/DORA_READINESS"
+          className="inline-flex items-center gap-1 text-primary hover:underline"
+        >
           DORA-Readiness-Report <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
-        <Badge variant="outline">Methodik: FRWK-DORA-001 Kap. 11 – Gewichte MUSS 3 / SOLL 2 / KANN 1 · Ampel 85/60 · Nachweissperre ≤ 2</Badge>
+        <Badge variant="outline">
+          Methodik: FRWK-DORA-001 Kap. 11 – Gewichte MUSS 3 / SOLL 2 / KANN 1 · Ampel 85/60 ·
+          Nachweissperre ≤ 2
+        </Badge>
       </div>
 
       <p className="mt-4 text-xs text-muted-foreground">{COMPLIANCE_DISCLAIMER}</p>

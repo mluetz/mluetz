@@ -18,7 +18,15 @@ export interface ActionResult {
 
 const createSchema = z.object({
   title: z.string().min(3).max(200),
-  docType: z.enum(["POLICY", "REPORT", "CERTIFICATE", "TEST_RESULT", "CONTRACT", "SCREENSHOT", "OTHER"]),
+  docType: z.enum([
+    "POLICY",
+    "REPORT",
+    "CERTIFICATE",
+    "TEST_RESULT",
+    "CONTRACT",
+    "SCREENSHOT",
+    "OTHER",
+  ]),
   link: z.string().url({ message: "Link muss eine gültige URL sein." }),
   classification: z.enum(["PUBLIC", "INTERNAL", "CONFIDENTIAL", "STRICTLY_CONFIDENTIAL"]),
   validUntil: z.string().optional(),
@@ -29,13 +37,20 @@ const createSchema = z.object({
   contentHash: z.string().max(200).optional(),
 });
 
-export async function createEvidence(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function createEvidence(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   let evidenceDbId = "";
   try {
     const user = await assertPermission("evidence:write");
     const parsed = createSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) {
-      return { error: "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".") || i.message).join(", ") };
+      return {
+        error:
+          "Eingaben unvollständig: " +
+          parsed.error.issues.map((i) => i.path.join(".") || i.message).join(", "),
+      };
     }
     const d = parsed.data;
 
@@ -89,7 +104,10 @@ const reviewSchema = z.object({
   comment: z.string().max(1000).optional(),
 });
 
-export async function reviewEvidence(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function reviewEvidence(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("evidence:write");
     const parsed = reviewSchema.safeParse(Object.fromEntries(formData));

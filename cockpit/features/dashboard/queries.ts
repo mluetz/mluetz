@@ -28,7 +28,16 @@ export interface DashboardData {
   top10: RiskRow[];
 }
 
-const OPEN_STATUSES = ["OPEN", "TREATMENT", "MONITORING", "ACCEPTED", "IN_ASSESSMENT", "QUALITY_REVIEW", "APPROVAL_PENDING", "SECOND_LINE_REVIEW"];
+const OPEN_STATUSES = [
+  "OPEN",
+  "TREATMENT",
+  "MONITORING",
+  "ACCEPTED",
+  "IN_ASSESSMENT",
+  "QUALITY_REVIEW",
+  "APPROVAL_PENDING",
+  "SECOND_LINE_REVIEW",
+];
 
 export async function getDashboardData(filters: RiskFilters = {}): Promise<DashboardData> {
   const rows = await getRiskRows(filters);
@@ -48,7 +57,13 @@ export async function getDashboardData(filters: RiskFilters = {}): Promise<Dashb
     }),
     db.riskAssessment.findMany({
       where: { assessedAt: { gte: new Date(Date.now() - 365 * 86400000) } },
-      select: { assessedAt: true, residualScore: true, likelihood: true, impact: true, isCurrent: true },
+      select: {
+        assessedAt: true,
+        residualScore: true,
+        likelihood: true,
+        impact: true,
+        isCurrent: true,
+      },
     }),
   ]);
 
@@ -116,7 +131,9 @@ export async function getDashboardData(filters: RiskFilters = {}): Promise<Dashb
     rows,
     kpi: {
       openRisks: openRows.length,
-      highCritical: openRows.filter((r) => r.residualClass === "HIGH" || r.residualClass === "CRITICAL").length,
+      highCritical: openRows.filter(
+        (r) => r.residualClass === "HIGH" || r.residualClass === "CRITICAL",
+      ).length,
       aboveAppetite: openRows.filter((r) => r.aboveAppetite).length,
       overdueReviews: openRows.filter((r) => r.reviewOverdue).length,
       openActions: openActions.length,
@@ -126,7 +143,8 @@ export async function getDashboardData(filters: RiskFilters = {}): Promise<Dashb
       criticalThirdParties: thirdParties,
       expiringContracts: contracts,
       risksWithoutOwner: openRows.filter((r) => !r.ownerName).length,
-      risksWithoutAssessment: rows.filter((r) => r.residualScore === null && r.status !== "CLOSED").length,
+      risksWithoutAssessment: rows.filter((r) => r.residualScore === null && r.status !== "CLOSED")
+        .length,
     },
     heatmap,
     byCategory: [...byCategoryMap.entries()]

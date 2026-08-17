@@ -52,7 +52,10 @@ export default async function DoraRequirementDetailPage({
     { label: "RTS/ITS", value: requirement.cwRtsIts },
   ];
   const linkedProcesses = requirement.linkedProcesses
-    ? requirement.linkedProcesses.split(",").map((s) => s.trim()).filter(Boolean)
+    ? requirement.linkedProcesses
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
     : [];
 
   return (
@@ -118,10 +121,10 @@ export default async function DoraRequirementDetailPage({
       <div className="mb-4 rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
         <p className="font-medium text-foreground">Scoring-Kurzerklärung (FRWK-DORA-001 Kap. 11)</p>
         <p className="mt-1">
-          Score = wirksamer Reifegrad (0–5) × Gewicht (MUSS = 3, SOLL = 2, KANN = 1). Nachweissperre:
-          Ohne gültigen, geprüften Nachweis wirkt höchstens Reifegrad 2. Knockout-Übersteuerung: Eine
-          KO-Anforderung mit wirksamem Reifegrad &lt; 3 setzt den Kapitelstatus auf ROT – unabhängig
-          vom Kapitel-Score.
+          Score = wirksamer Reifegrad (0–5) × Gewicht (MUSS = 3, SOLL = 2, KANN = 1).
+          Nachweissperre: Ohne gültigen, geprüften Nachweis wirkt höchstens Reifegrad 2.
+          Knockout-Übersteuerung: Eine KO-Anforderung mit wirksamem Reifegrad &lt; 3 setzt den
+          Kapitelstatus auf ROT – unabhängig vom Kapitel-Score.
         </p>
       </div>
 
@@ -242,7 +245,8 @@ export default async function DoraRequirementDetailPage({
               {requirement.evidence.length === 0 ? (
                 <TR>
                   <TD colSpan={5} className="text-center text-muted-foreground">
-                    Keine Nachweise verknüpft – Nachweissperre begrenzt den wirksamen Reifegrad auf 2.
+                    Keine Nachweise verknüpft – Nachweissperre begrenzt den wirksamen Reifegrad auf
+                    2.
                   </TD>
                 </TR>
               ) : null}
@@ -285,12 +289,15 @@ export default async function DoraRequirementDetailPage({
                         {FINDING_SEVERITY_RULES[f.severity]?.label ?? f.severity}
                       </Badge>
                     </TD>
-                    <TD className={`whitespace-nowrap text-xs ${overdue ? "font-medium text-risk-critical" : ""}`}>
+                    <TD
+                      className={`whitespace-nowrap text-xs ${overdue ? "font-medium text-risk-critical" : ""}`}
+                    >
                       {formatDate(f.remediationDueAt)}
                       {overdue ? " (überfällig)" : ""}
                     </TD>
                     <TD className="text-xs">
-                      {DORA_FINDING_STATUS[f.status as keyof typeof DORA_FINDING_STATUS] ?? f.status}
+                      {DORA_FINDING_STATUS[f.status as keyof typeof DORA_FINDING_STATUS] ??
+                        f.status}
                     </TD>
                   </TR>
                 );

@@ -54,7 +54,10 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
         include: { assessor: true, dimensionScores: true },
       },
       actions: { include: { owner: true }, orderBy: { dueDate: "asc" } },
-      acceptances: { include: { requestedBy: true, approvedBy: true }, orderBy: { createdAt: "desc" } },
+      acceptances: {
+        include: { requestedBy: true, approvedBy: true },
+        orderBy: { createdAt: "desc" },
+      },
       qualityReviews: {
         orderBy: { startedAt: "desc" },
         include: { checklistItems: { orderBy: { sortOrder: "asc" } } },
@@ -108,7 +111,8 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
             )}
             {aboveAppetite ? (
               <Badge variant="critical">
-                <AlertTriangle className="mr-1 h-3 w-3" aria-hidden /> über Risikoappetit ({appetite})
+                <AlertTriangle className="mr-1 h-3 w-3" aria-hidden /> über Risikoappetit (
+                {appetite})
               </Badge>
             ) : null}
           </div>
@@ -117,9 +121,26 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
 
       {/* KPI-Zeile */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
-        <Kpi label="Inherent Risk" value={current ? `${current.inherentScore} (${RISK_CLASS[classify(current.inherentScore, thresholds)]})` : "–"} />
-        <Kpi label="Kontrollwirksamkeit" value={current ? `${current.controlEffectiveness} %` : "–"} />
-        <Kpi label="Residual Risk" value={current ? `${current.residualScore} (${RISK_CLASS[classify(current.residualScore, thresholds)]})` : "–"} />
+        <Kpi
+          label="Inherent Risk"
+          value={
+            current
+              ? `${current.inherentScore} (${RISK_CLASS[classify(current.inherentScore, thresholds)]})`
+              : "–"
+          }
+        />
+        <Kpi
+          label="Kontrollwirksamkeit"
+          value={current ? `${current.controlEffectiveness} %` : "–"}
+        />
+        <Kpi
+          label="Residual Risk"
+          value={
+            current
+              ? `${current.residualScore} (${RISK_CLASS[classify(current.residualScore, thresholds)]})`
+              : "–"
+          }
+        />
         <Kpi label="Zielrisiko / Appetit" value={`${risk.targetScore ?? "–"} / ${appetite}`} />
         <Kpi
           label="Nächstes Review"
@@ -160,7 +181,9 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                     label="Behandlungsstrategie"
                     value={
                       risk.treatmentStrategy
-                        ? TREATMENT_STRATEGY[risk.treatmentStrategy as keyof typeof TREATMENT_STRATEGY]
+                        ? TREATMENT_STRATEGY[
+                            risk.treatmentStrategy as keyof typeof TREATMENT_STRATEGY
+                          ]
                         : "noch nicht festgelegt"
                     }
                   />
@@ -210,7 +233,11 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
             </CardHeader>
             <CardContent>
               {canWrite ? (
-                <WorkflowPanel riskId={risk.id} currentStatus={risk.status} allowedTargets={allowedTargets} />
+                <WorkflowPanel
+                  riskId={risk.id}
+                  currentStatus={risk.status}
+                  allowedTargets={allowedTargets}
+                />
               ) : (
                 <p className="text-sm text-muted-foreground">Keine Schreibberechtigung.</p>
               )}
@@ -298,16 +325,23 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                   {risk.actions.map((a) => (
                     <TR key={a.id}>
                       <TD>
-                        <Link href={`/actions/${a.id}`} className="font-mono text-xs text-primary hover:underline">
+                        <Link
+                          href={`/actions/${a.id}`}
+                          className="font-mono text-xs text-primary hover:underline"
+                        >
                           {a.actionId}
                         </Link>
                       </TD>
                       <TD className="max-w-[320px] truncate">{a.title}</TD>
                       <TD className="text-xs">{a.owner?.name ?? "–"}</TD>
                       <TD className="text-xs">{a.priority}</TD>
-                      <TD className={`whitespace-nowrap text-xs ${isOverdue(a.dueDate) && !["COMPLETED", "CLOSED"].includes(a.status) ? "font-medium text-risk-high" : ""}`}>
+                      <TD
+                        className={`whitespace-nowrap text-xs ${isOverdue(a.dueDate) && !["COMPLETED", "CLOSED"].includes(a.status) ? "font-medium text-risk-high" : ""}`}
+                      >
                         {formatDate(a.dueDate)}
-                        {isOverdue(a.dueDate) && !["COMPLETED", "CLOSED"].includes(a.status) ? " (überfällig)" : ""}
+                        {isOverdue(a.dueDate) && !["COMPLETED", "CLOSED"].includes(a.status)
+                          ? " (überfällig)"
+                          : ""}
                       </TD>
                       <TD className="text-xs">{a.status}</TD>
                       <TD className="text-xs">{a.progress} %</TD>
@@ -348,7 +382,10 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                   {risk.controls.map(({ control }) => (
                     <TR key={control.id}>
                       <TD>
-                        <Link href={`/controls/${control.id}`} className="font-mono text-xs text-primary hover:underline">
+                        <Link
+                          href={`/controls/${control.id}`}
+                          className="font-mono text-xs text-primary hover:underline"
+                        >
                           {control.controlId}
                         </Link>
                       </TD>
@@ -380,7 +417,8 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                 <CardHeader>
                   <CardTitle>Quality Review</CardTitle>
                   <CardDescription>
-                    Unabhängige Prüfung anhand der 13 Kriterien (RB-03). Ersteller dürfen nicht selbst reviewen.
+                    Unabhängige Prüfung anhand der 13 Kriterien (RB-03). Ersteller dürfen nicht
+                    selbst reviewen.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -431,7 +469,9 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                         >
                           {r.outcome}
                         </Badge>
-                        {r.qualityScore != null ? <span>Qualitätsscore: {r.qualityScore} %</span> : null}
+                        {r.qualityScore != null ? (
+                          <span>Qualitätsscore: {r.qualityScore} %</span>
+                        ) : null}
                         <span className="text-xs text-muted-foreground">
                           {r.reviewerName} · gestartet {formatDate(r.startedAt)}
                           {r.completedAt ? ` · abgeschlossen ${formatDate(r.completedAt)}` : ""}
@@ -449,7 +489,8 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                         <ul className="mt-1 space-y-0.5 text-xs">
                           {r.checklistItems.map((i) => (
                             <li key={i.id}>
-                              {i.fulfilled === true ? "✔" : i.fulfilled === false ? "✘" : "○"} {i.criterion}
+                              {i.fulfilled === true ? "✔" : i.fulfilled === false ? "✘" : "○"}{" "}
+                              {i.criterion}
                               {i.comment ? ` – ${i.comment}` : ""}
                             </li>
                           ))}
@@ -499,7 +540,8 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                                 : "critical"
                           }
                         >
-                          {ACCEPTANCE_STATUS[acc.status as keyof typeof ACCEPTANCE_STATUS] ?? acc.status}
+                          {ACCEPTANCE_STATUS[acc.status as keyof typeof ACCEPTANCE_STATUS] ??
+                            acc.status}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
                           beantragt von {acc.requestedBy.name} am {formatDate(acc.createdAt)}
@@ -509,7 +551,8 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                       </div>
                       <Info label="Begründung" value={acc.justification} />
                       <Info label="Kompensierende Kontrollen" value={acc.compensatingControls} />
-                      {canDecideAcc && (acc.status === "REQUESTED" || acc.status === "IN_REVIEW") ? (
+                      {canDecideAcc &&
+                      (acc.status === "REQUESTED" || acc.status === "IN_REVIEW") ? (
                         <AcceptanceDecisionForm acceptanceId={acc.id} />
                       ) : null}
                     </div>

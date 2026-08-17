@@ -20,16 +20,16 @@ Steuerungscockpit. Alle Daten sind synthetisch.
 
 ## 2. Annahmen und Abgrenzungen
 
-| # | Annahme / Abgrenzung |
-|---|---|
-| A1 | Demo-Login nur in Entwicklungsumgebungen; Produktion über OIDC/Entra ID (ADR-0003). |
-| A2 | Keine Dokumentenablage – Evidence ist ein Metadaten-/Linkregister (sicheres DMS vorausgesetzt). |
-| A3 | SQLite lokal, PostgreSQL produktiv; Schema providerneutral (ADR-0002). |
-| A4 | Fiktiver Mandant „Nordlicht Bank AG“; keinerlei reale Unternehmensdaten. |
-| A5 | Berichtsexporte: CSV nativ, PDF über druckoptimierte HTML-Ansicht (Browser-Print); XLSX-Generierung als Ausbaustufe. |
-| A6 | E-Mail-/Push-Benachrichtigungen sind modelliert (Notification), Versand ist Ausbaustufe. |
-| A7 | Mehrsprachigkeit: deutsche UI, englische Fachbegriffe wo branchenüblich; vollständige i18n vorbereitet, nicht aktiviert. |
-| A8 | Die statische Rollen→Rechte-Matrix (lib/authz-map.ts) ist Single Source of Truth; DB-Tabellen Role/Permission dokumentieren sie. |
+| #   | Annahme / Abgrenzung                                                                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | Demo-Login nur in Entwicklungsumgebungen; Produktion über OIDC/Entra ID (ADR-0003).                                              |
+| A2  | Keine Dokumentenablage – Evidence ist ein Metadaten-/Linkregister (sicheres DMS vorausgesetzt).                                  |
+| A3  | SQLite lokal, PostgreSQL produktiv; Schema providerneutral (ADR-0002).                                                           |
+| A4  | Fiktiver Mandant „Nordlicht Bank AG“; keinerlei reale Unternehmensdaten.                                                         |
+| A5  | Berichtsexporte: CSV nativ, PDF über druckoptimierte HTML-Ansicht (Browser-Print); XLSX-Generierung als Ausbaustufe.             |
+| A6  | E-Mail-/Push-Benachrichtigungen sind modelliert (Notification), Versand ist Ausbaustufe.                                         |
+| A7  | Mehrsprachigkeit: deutsche UI, englische Fachbegriffe wo branchenüblich; vollständige i18n vorbereitet, nicht aktiviert.         |
+| A8  | Die statische Rollen→Rechte-Matrix (lib/authz-map.ts) ist Single Source of Truth; DB-Tabellen Role/Permission dokumentieren sie. |
 
 ## 3. Architektur (Kurzfassung)
 
@@ -58,43 +58,43 @@ klickbaren Dashboard-Kacheln.
 
 ## 7. Priorisiertes Product Backlog (Auszug)
 
-| Prio | Epic | Status v0.1 |
-|---|---|---|
-| P0 | Risk Register + Bewertung + Workflow | umgesetzt |
-| P0 | RBAC, Audit Trail, Security-Header | umgesetzt |
-| P0 | Maßnahmen inkl. Eskalation | umgesetzt |
-| P0 | Dashboard (KPIs, Heatmap, Trend) | umgesetzt |
-| P1 | Quality Review, Akzeptanzen | umgesetzt |
-| P1 | Kontrollbibliothek + Tests | umgesetzt |
-| P1 | Third-Party-Register inkl. Exit/Konzentration | umgesetzt |
-| P1 | Runbooks/Playbooks interaktiv | umgesetzt |
-| P1 | Reports + CSV-Export + Druckansicht | umgesetzt |
-| P2 | Compliance-Mapping-Pflege | umgesetzt |
-| P2 | XLSX-Export, gespeicherte Filter-UI, globale Suche | offen |
-| P2 | Benachrichtigungsversand (E-Mail) | offen |
-| P3 | OIDC/Entra-ID-Aktivierung, i18n-Umschalter, React Hook Form für komplexe Formulare | offen |
-| P3 | Approval-Gremien-Workflows (mehrstufig), Report-Abos | offen |
+| Prio | Epic                                                                               | Status v0.1 |
+| ---- | ---------------------------------------------------------------------------------- | ----------- |
+| P0   | Risk Register + Bewertung + Workflow                                               | umgesetzt   |
+| P0   | RBAC, Audit Trail, Security-Header                                                 | umgesetzt   |
+| P0   | Maßnahmen inkl. Eskalation                                                         | umgesetzt   |
+| P0   | Dashboard (KPIs, Heatmap, Trend)                                                   | umgesetzt   |
+| P1   | Quality Review, Akzeptanzen                                                        | umgesetzt   |
+| P1   | Kontrollbibliothek + Tests                                                         | umgesetzt   |
+| P1   | Third-Party-Register inkl. Exit/Konzentration                                      | umgesetzt   |
+| P1   | Runbooks/Playbooks interaktiv                                                      | umgesetzt   |
+| P1   | Reports + CSV-Export + Druckansicht                                                | umgesetzt   |
+| P2   | Compliance-Mapping-Pflege                                                          | umgesetzt   |
+| P2   | XLSX-Export, gespeicherte Filter-UI, globale Suche                                 | offen       |
+| P2   | Benachrichtigungsversand (E-Mail)                                                  | offen       |
+| P3   | OIDC/Entra-ID-Aktivierung, i18n-Umschalter, React Hook Form für komplexe Formulare | offen       |
+| P3   | Approval-Gremien-Workflows (mehrstufig), Report-Abos                               | offen       |
 
 ## 8. Milestone-Plan bis 31.12.2026
 
-| Meilenstein | Termin | Inhalt |
-|---|---|---|
-| M0 Prototyp (dieser Stand) | 08/2026 | Lauffähiges Cockpit mit allen Kernmodulen, Demo-Daten, CI |
-| M1 Projektstart & Onboarding | 31.08.2026 | Einrichtung Zielumgebung, Postgres, SSO-Anbindung testen |
-| M2 Methodik-Abnahme | 30.09.2026 | Risikomethodik, Appetit-Schwellen, Rollen mit Fachbereich abgestimmt |
-| M3 Pilotbetrieb | 31.10.2026 | Reale (interne) Pilotdaten, RB-01…RB-08 im Regelbetrieb, Monatsreport |
-| M4 TPRM-Vollausbau | 30.11.2026 | Drittparteien-Migration, Konzentrations-/Exit-Reviews, DORA-Register |
-| M5 Übergabe & Verankerung | 31.12.2026 | RB-20, Schulungen, Betriebshandbuch, Abschlussbericht; Option Verlängerung |
+| Meilenstein                  | Termin     | Inhalt                                                                     |
+| ---------------------------- | ---------- | -------------------------------------------------------------------------- |
+| M0 Prototyp (dieser Stand)   | 08/2026    | Lauffähiges Cockpit mit allen Kernmodulen, Demo-Daten, CI                  |
+| M1 Projektstart & Onboarding | 31.08.2026 | Einrichtung Zielumgebung, Postgres, SSO-Anbindung testen                   |
+| M2 Methodik-Abnahme          | 30.09.2026 | Risikomethodik, Appetit-Schwellen, Rollen mit Fachbereich abgestimmt       |
+| M3 Pilotbetrieb              | 31.10.2026 | Reale (interne) Pilotdaten, RB-01…RB-08 im Regelbetrieb, Monatsreport      |
+| M4 TPRM-Vollausbau           | 30.11.2026 | Drittparteien-Migration, Konzentrations-/Exit-Reviews, DORA-Register       |
+| M5 Übergabe & Verankerung    | 31.12.2026 | RB-20, Schulungen, Betriebshandbuch, Abschlussbericht; Option Verlängerung |
 
 ## 9. Risiken der Umsetzung
 
-| Risiko | Gegenmaßnahme |
-|---|---|
-| Scope-Breite vs. Projektlaufzeit | strikte P0/P1-Priorisierung, Backlog-Pflege |
-| Abweichende Bestandsdaten beim Import | Datenqualitäts-Runbook RB-14, Mapping-Workshops |
-| SSO-/Infrastrukturabhängigkeiten | Auth-Abstraktion (ADR-0003), frühe Testanbindung in M1 |
-| Doppelpflege zu bestehendem GRC-Tool | klare Systemgrenze, Export-/Integrations-Schnittstelle als P2 |
-| Akzeptanz der Fachbereiche | Runbook-gestützte Prozesse, Schulungen, einfache UI |
+| Risiko                                | Gegenmaßnahme                                                 |
+| ------------------------------------- | ------------------------------------------------------------- |
+| Scope-Breite vs. Projektlaufzeit      | strikte P0/P1-Priorisierung, Backlog-Pflege                   |
+| Abweichende Bestandsdaten beim Import | Datenqualitäts-Runbook RB-14, Mapping-Workshops               |
+| SSO-/Infrastrukturabhängigkeiten      | Auth-Abstraktion (ADR-0003), frühe Testanbindung in M1        |
+| Doppelpflege zu bestehendem GRC-Tool  | klare Systemgrenze, Export-/Integrations-Schnittstelle als P2 |
+| Akzeptanz der Fachbereiche            | Runbook-gestützte Prozesse, Schulungen, einfache UI           |
 
 ## 10. Definition of Done
 

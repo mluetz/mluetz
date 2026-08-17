@@ -140,8 +140,8 @@ export default async function AdminPage() {
           <CardHeader>
             <CardTitle>Risikoappetit je Kategorie</CardTitle>
             <CardDescription>
-              Residual-Score, ab dessen Überschreitung ein Risiko der Kategorie als „über Appetit&ldquo;
-              gilt (sofern kein risikoindividueller Override gesetzt ist).
+              Residual-Score, ab dessen Überschreitung ein Risiko der Kategorie als „über
+              Appetit&ldquo; gilt (sofern kein risikoindividueller Override gesetzt ist).
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -228,10 +228,7 @@ export default async function AdminPage() {
                 <li>Assets: {assetCount}</li>
                 <li>Geschäftsprozesse: {processCount}</li>
                 <li>ICT-Services: {serviceCount}</li>
-                <li>
-                  Rollen:{" "}
-                  {roles.map((r) => ROLES[r.key as RoleKey] ?? r.name).join(", ")}
-                </li>
+                <li>Rollen: {roles.map((r) => ROLES[r.key as RoleKey] ?? r.name).join(", ")}</li>
               </ul>
             </div>
           </CardContent>

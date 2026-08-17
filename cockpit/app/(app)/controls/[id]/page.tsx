@@ -65,8 +65,9 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={effectivenessVariant(control.designEffectiveness)}>
               Design:{" "}
-              {EFFECTIVENESS_RATING[control.designEffectiveness as keyof typeof EFFECTIVENESS_RATING] ??
-                control.designEffectiveness}
+              {EFFECTIVENESS_RATING[
+                control.designEffectiveness as keyof typeof EFFECTIVENESS_RATING
+              ] ?? control.designEffectiveness}
             </Badge>
             <Badge variant={effectivenessVariant(control.operatingEffectiveness)}>
               Operativ:{" "}
@@ -101,8 +102,9 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
                   <Info
                     label="Typ"
                     value={
-                      CONTROL_TYPE_LABELS[control.controlType as keyof typeof CONTROL_TYPE_LABELS] ??
-                      control.controlType
+                      CONTROL_TYPE_LABELS[
+                        control.controlType as keyof typeof CONTROL_TYPE_LABELS
+                      ] ?? control.controlType
                     }
                   />
                   <Info

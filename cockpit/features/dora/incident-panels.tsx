@@ -45,7 +45,9 @@ function CheckboxLine({
           type="checkbox"
           name={name}
           className="h-4 w-4 rounded border-input accent-primary"
-          {...(onChange ? { checked: checked ?? false, onChange: (e) => onChange(e.target.checked) } : {})}
+          {...(onChange
+            ? { checked: checked ?? false, onChange: (e) => onChange(e.target.checked) }
+            : {})}
         />
         {label}
       </label>
@@ -117,9 +119,18 @@ export function NewIncidentForm({
               label="Klassifizierungszeitpunkt"
               htmlFor="classifiedAt"
               required={isMajor}
-              hint={isMajor ? "Pflicht bei schwerwiegenden Vorfällen; nicht vor der Kenntniserlangung." : "Optional; nicht vor der Kenntniserlangung."}
+              hint={
+                isMajor
+                  ? "Pflicht bei schwerwiegenden Vorfällen; nicht vor der Kenntniserlangung."
+                  : "Optional; nicht vor der Kenntniserlangung."
+              }
             >
-              <Input id="classifiedAt" name="classifiedAt" type="datetime-local" required={isMajor} />
+              <Input
+                id="classifiedAt"
+                name="classifiedAt"
+                type="datetime-local"
+                required={isMajor}
+              />
             </Field>
             <Field label="Klassifizierungsnotiz" htmlFor="classificationNote">
               <Textarea id="classificationNote" name="classificationNote" rows={2} />
@@ -227,7 +238,13 @@ export function ReportSubmitForm({ reportId, label }: { reportId: string; label:
         <Label htmlFor={`ref-${reportId}`}>Referenz (z. B. MVP-Portal-ID)</Label>
         <Input id={`ref-${reportId}`} name="reference" maxLength={500} />
       </div>
-      <Button type="submit" size="sm" variant="secondary" disabled={pending} aria-label={`${label} dokumentieren`}>
+      <Button
+        type="submit"
+        size="sm"
+        variant="secondary"
+        disabled={pending}
+        aria-label={`${label} dokumentieren`}
+      >
         {pending ? "Speichern…" : "Meldung dokumentieren"}
       </Button>
       <div className="w-full">

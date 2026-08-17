@@ -13,7 +13,9 @@ export const STEP_STATUS_LABELS: Record<string, string> = {
   BLOCKED: "Blockiert",
 };
 
-function stepStatusVariant(status: string): "low" | "medium" | "critical" | "secondary" | "outline" {
+function stepStatusVariant(
+  status: string,
+): "low" | "medium" | "critical" | "secondary" | "outline" {
   switch (status) {
     case "DONE":
       return "low";
@@ -63,10 +65,14 @@ export function StepRow({
           <p className="text-sm font-medium">
             {step.sortOrder}. {step.title}
             {step.isDecisionPoint ? (
-              <span className="ml-2 text-xs font-semibold text-risk-medium">◆ Entscheidungspunkt</span>
+              <span className="ml-2 text-xs font-semibold text-risk-medium">
+                ◆ Entscheidungspunkt
+              </span>
             ) : null}
           </p>
-          <p className="mt-0.5 whitespace-pre-wrap text-xs text-muted-foreground">{step.description}</p>
+          <p className="mt-0.5 whitespace-pre-wrap text-xs text-muted-foreground">
+            {step.description}
+          </p>
           <p className="mt-1 text-[11px] text-muted-foreground">
             Rolle: {step.responsibleRole}
             {step.requiredEvidence ? ` · Erforderlicher Nachweis: ${step.requiredEvidence}` : ""}

@@ -71,7 +71,11 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
 
       <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
         <Kpi label="Offene Vorfälle" value={String(openIncidents.length)} />
-        <Kpi label="Davon schwerwiegend" value={String(openMajor.length)} warn={openMajor.length > 0} />
+        <Kpi
+          label="Davon schwerwiegend"
+          value={String(openMajor.length)}
+          warn={openMajor.length > 0}
+        />
         <Kpi
           label="Überfällige Meldungen gesamt"
           value={String(overdueReportsTotal)}
@@ -81,7 +85,11 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
 
       <div className="mb-4 flex flex-wrap gap-2 text-xs">
         <FilterChip href="/dora/incidents?open=1" active={sp.open === "1"} label="offen" />
-        <FilterChip href="/dora/incidents?major=1" active={sp.major === "1"} label="schwerwiegend" />
+        <FilterChip
+          href="/dora/incidents?major=1"
+          active={sp.major === "1"}
+          label="schwerwiegend"
+        />
         <FilterChip
           href="/dora/incidents?overdue=1"
           active={sp.overdue === "1"}
@@ -139,13 +147,19 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
                     "–"
                   )}
                   {overdueCount > 1 ? (
-                    <span className="text-muted-foreground"> (+{overdueCount - 1} weitere überfällig)</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      (+{overdueCount - 1} weitere überfällig)
+                    </span>
                   ) : null}
                 </TD>
                 <TD className="text-xs">{i.criticalFunction?.name ?? "–"}</TD>
                 <TD className="text-xs">
                   {i.thirdParty ? (
-                    <Link href={`/third-parties/${i.thirdParty.id}`} className="text-primary hover:underline">
+                    <Link
+                      href={`/third-parties/${i.thirdParty.id}`}
+                      className="text-primary hover:underline"
+                    >
                       {i.thirdParty.tpId} {i.thirdParty.name}
                     </Link>
                   ) : (

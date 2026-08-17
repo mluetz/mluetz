@@ -41,9 +41,18 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
   const canExecute = hasPermission(user, "playbook:execute");
   const [risks, controls, thirdParties] = canExecute
     ? await Promise.all([
-        db.risk.findMany({ orderBy: { riskId: "asc" }, select: { id: true, riskId: true, title: true } }),
-        db.control.findMany({ orderBy: { controlId: "asc" }, select: { id: true, controlId: true, name: true } }),
-        db.thirdParty.findMany({ orderBy: { tpId: "asc" }, select: { id: true, tpId: true, name: true } }),
+        db.risk.findMany({
+          orderBy: { riskId: "asc" },
+          select: { id: true, riskId: true, title: true },
+        }),
+        db.control.findMany({
+          orderBy: { controlId: "asc" },
+          select: { id: true, controlId: true, name: true },
+        }),
+        db.thirdParty.findMany({
+          orderBy: { tpId: "asc" },
+          select: { id: true, tpId: true, name: true },
+        }),
       ])
     : [[], [], []];
 
@@ -159,7 +168,10 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
                     </Badge>
                   </TD>
                   <TD className="text-xs">
-                    {[e.risk?.riskId, e.thirdParty ? `${e.thirdParty.tpId} ${e.thirdParty.name}` : null]
+                    {[
+                      e.risk?.riskId,
+                      e.thirdParty ? `${e.thirdParty.tpId} ${e.thirdParty.name}` : null,
+                    ]
                       .filter(Boolean)
                       .join(" · ") || "–"}
                   </TD>

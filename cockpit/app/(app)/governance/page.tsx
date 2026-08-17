@@ -45,7 +45,10 @@ export default async function GovernancePage({
 
       <ComplianceDisclaimer />
 
-      <form method="GET" className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3">
+      <form
+        method="GET"
+        className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3"
+      >
         <div className="min-w-56">
           <Label htmlFor="f-framework">Framework</Label>
           <Select id="f-framework" name="framework" defaultValue={framework ?? ""}>

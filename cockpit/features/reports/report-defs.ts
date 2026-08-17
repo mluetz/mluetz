@@ -36,19 +36,22 @@ export const REPORT_DEFS: ReportDef[] = [
   {
     key: "TOP_RISKS",
     titel: "Top-Risiken",
-    beschreibung: "Die zehn höchsten Risiken nach Residual-Score mit Bewertung, Klasse und Strategie.",
+    beschreibung:
+      "Die zehn höchsten Risiken nach Residual-Score mit Bewertung, Klasse und Strategie.",
     permission: "report:read",
   },
   {
     key: "ABOVE_APPETITE",
     titel: "Risiken über Risikoappetit",
-    beschreibung: "Alle Risiken, deren Residual-Score den festgelegten Risikoappetit überschreitet.",
+    beschreibung:
+      "Alle Risiken, deren Residual-Score den festgelegten Risikoappetit überschreitet.",
     permission: "report:read",
   },
   {
     key: "OVERDUE_ACTIONS",
     titel: "Überfällige Maßnahmen",
-    beschreibung: "Alle offenen Maßnahmen mit überschrittener Fälligkeit inkl. Verzugstagen und Eskalationsstufe.",
+    beschreibung:
+      "Alle offenen Maßnahmen mit überschrittener Fälligkeit inkl. Verzugstagen und Eskalationsstufe.",
     permission: "report:read",
   },
   {
@@ -66,19 +69,22 @@ export const REPORT_DEFS: ReportDef[] = [
   {
     key: "DORA_READINESS",
     titel: "DORA Readiness",
-    beschreibung: "Umsetzungsstand der DORA- und DORA-RTS/ITS-Anforderungen inkl. Statusverteilung.",
+    beschreibung:
+      "Umsetzungsstand der DORA- und DORA-RTS/ITS-Anforderungen inkl. Statusverteilung.",
     permission: "report:read",
   },
   {
     key: "CONTROL_EFFECTIVENESS",
     titel: "Kontrollwirksamkeit",
-    beschreibung: "Design- und operative Wirksamkeit aller Kontrollen inkl. letztem Test und Verteilung.",
+    beschreibung:
+      "Design- und operative Wirksamkeit aller Kontrollen inkl. letztem Test und Verteilung.",
     permission: "report:read",
   },
   {
     key: "QUALITY_REVIEW",
     titel: "Quality Reviews",
-    beschreibung: "Ergebnisse der Qualitätsprüfungen (Vier-Augen-Prinzip) inkl. Durchschnittsscore.",
+    beschreibung:
+      "Ergebnisse der Qualitätsprüfungen (Vier-Augen-Prinzip) inkl. Durchschnittsscore.",
     permission: "report:read",
   },
   {

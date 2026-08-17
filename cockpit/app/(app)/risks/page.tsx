@@ -56,7 +56,10 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
         }
       />
 
-      <form method="GET" className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4">
+      <form
+        method="GET"
+        className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4"
+      >
         <div>
           <Label htmlFor="f-status">Status</Label>
           <Select id="f-status" name="status" defaultValue={sp.status ?? ""}>
@@ -101,10 +104,22 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
           </Link>
         </div>
         <div className="col-span-full flex flex-wrap gap-2 text-xs">
-          <FilterChip href="/risks?aboveAppetite=1" active={sp.aboveAppetite === "1"} label="Über Risikoappetit" />
-          <FilterChip href="/risks?overdueReview=1" active={sp.overdueReview === "1"} label="Review überfällig" />
+          <FilterChip
+            href="/risks?aboveAppetite=1"
+            active={sp.aboveAppetite === "1"}
+            label="Über Risikoappetit"
+          />
+          <FilterChip
+            href="/risks?overdueReview=1"
+            active={sp.overdueReview === "1"}
+            label="Review überfällig"
+          />
           <FilterChip href="/risks?noOwner=1" active={sp.noOwner === "1"} label="Ohne Risk Owner" />
-          <FilterChip href="/risks?noAssessment=1" active={sp.noAssessment === "1"} label="Ohne aktuelle Bewertung" />
+          <FilterChip
+            href="/risks?noAssessment=1"
+            active={sp.noAssessment === "1"}
+            label="Ohne aktuelle Bewertung"
+          />
         </div>
       </form>
 

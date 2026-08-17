@@ -393,8 +393,7 @@ async function TprmOverview() {
   const critical = tps.filter((t) => t.criticality === "CRITICAL").length;
   const concentration = tps.filter((t) => t.concentrationRisk).length;
   const missingExit = tps.filter(
-    (t) =>
-      t.supportsCriticalFunction && (!t.exitStrategy || t.exitStrategy.status === "MISSING"),
+    (t) => t.supportsCriticalFunction && (!t.exitStrategy || t.exitStrategy.status === "MISSING"),
   ).length;
   return (
     <div className="space-y-6">
@@ -468,7 +467,8 @@ async function DoraReadiness() {
         <p className="mb-2 text-sm">
           Gesamtindex: <span className="font-semibold">{overview.index.indexPercent} %</span> ·
           Status: <span className="font-semibold">{lightLabel[overview.index.status]}</span> ·
-          Offene Knockouts: <span className="font-semibold">{overview.index.totalOpenKnockouts}</span>
+          Offene Knockouts:{" "}
+          <span className="font-semibold">{overview.index.totalOpenKnockouts}</span>
         </p>
         <Table>
           <THead>
@@ -485,12 +485,16 @@ async function DoraReadiness() {
           <TBody>
             {overview.chapters.map((c) => (
               <TR key={c.key}>
-                <TD>Kap. {c.roman} – {c.title}</TD>
+                <TD>
+                  Kap. {c.roman} – {c.title}
+                </TD>
                 <TD className="text-xs">{c.articleRange}</TD>
                 <TD>{c.weightPercent} %</TD>
                 <TD className="font-semibold">{c.result.scorePercent} %</TD>
                 <TD>{lightLabel[c.result.status]}</TD>
-                <TD className="text-xs">{c.result.assessedCount}/{c.result.totalCount}</TD>
+                <TD className="text-xs">
+                  {c.result.assessedCount}/{c.result.totalCount}
+                </TD>
                 <TD className="text-xs">
                   {c.result.openKnockouts.length ? c.result.openKnockouts.join(", ") : "–"}
                 </TD>
@@ -499,8 +503,8 @@ async function DoraReadiness() {
           </TBody>
         </Table>
         <p className="mt-1 text-xs text-muted-foreground">
-          Methodik: Gewichte MUSS 3 / SOLL 2 / KANN 1; Nachweissperre begrenzt unbelegte
-          Bewertungen auf Reifegrad 2; Knockouts (Reifegrad &lt; 3) setzen das Kapitel auf ROT.
+          Methodik: Gewichte MUSS 3 / SOLL 2 / KANN 1; Nachweissperre begrenzt unbelegte Bewertungen
+          auf Reifegrad 2; Knockouts (Reifegrad &lt; 3) setzen das Kapitel auf ROT.
         </p>
       </section>
       <section>
@@ -574,7 +578,8 @@ async function ControlEffectiveness() {
   const operatingCounts: Record<string, number> = {};
   for (const c of controls) {
     designCounts[c.designEffectiveness] = (designCounts[c.designEffectiveness] ?? 0) + 1;
-    operatingCounts[c.operatingEffectiveness] = (operatingCounts[c.operatingEffectiveness] ?? 0) + 1;
+    operatingCounts[c.operatingEffectiveness] =
+      (operatingCounts[c.operatingEffectiveness] ?? 0) + 1;
   }
   const ratingLabel = (k: string) =>
     EFFECTIVENESS_RATING[k as keyof typeof EFFECTIVENESS_RATING] ?? k;
@@ -728,9 +733,7 @@ async function Trend() {
             <TR key={m}>
               <TD className="whitespace-nowrap font-medium">{m}</TD>
               <TD className="tabular-nums">{b.count}</TD>
-              <TD className="tabular-nums">
-                {b.count > 0 ? (b.sum / b.count).toFixed(1) : "–"}
-              </TD>
+              <TD className="tabular-nums">{b.count > 0 ? (b.sum / b.count).toFixed(1) : "–"}</TD>
             </TR>
           );
         })}

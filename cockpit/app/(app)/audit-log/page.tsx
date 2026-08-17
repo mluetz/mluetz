@@ -18,17 +18,21 @@ interface Search {
   to?: string;
 }
 
-export default async function AuditLogPage({
-  searchParams,
-}: {
-  searchParams: Promise<Search>;
-}) {
+export default async function AuditLogPage({ searchParams }: { searchParams: Promise<Search> }) {
   await requirePermission("audit:read");
   const sp = await searchParams;
 
   const [entityTypes, actions] = await Promise.all([
-    db.auditLog.findMany({ distinct: ["entityType"], select: { entityType: true }, orderBy: { entityType: "asc" } }),
-    db.auditLog.findMany({ distinct: ["action"], select: { action: true }, orderBy: { action: "asc" } }),
+    db.auditLog.findMany({
+      distinct: ["entityType"],
+      select: { entityType: true },
+      orderBy: { entityType: "asc" },
+    }),
+    db.auditLog.findMany({
+      distinct: ["action"],
+      select: { action: true },
+      orderBy: { action: "asc" },
+    }),
   ]);
 
   const from = sp.from ? new Date(sp.from) : undefined;
@@ -65,7 +69,10 @@ export default async function AuditLogPage({
         </p>
       </div>
 
-      <form method="GET" className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-5">
+      <form
+        method="GET"
+        className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-5"
+      >
         <div>
           <Label htmlFor="f-entity">Entitätstyp</Label>
           <Select id="f-entity" name="entityType" defaultValue={sp.entityType ?? ""}>
@@ -144,7 +151,10 @@ export default async function AuditLogPage({
                   <span className="text-xs text-muted-foreground"> · {e.entityId}</span>
                 </TD>
                 <TD className="whitespace-nowrap">{e.field ?? "–"}</TD>
-                <TD className="max-w-72 truncate" title={`${e.oldValue ?? "–"} → ${e.newValue ?? "–"}`}>
+                <TD
+                  className="max-w-72 truncate"
+                  title={`${e.oldValue ?? "–"} → ${e.newValue ?? "–"}`}
+                >
                   {e.oldValue || e.newValue ? `${e.oldValue ?? "–"} → ${e.newValue ?? "–"}` : "–"}
                 </TD>
                 <TD className="max-w-72 truncate" title={e.comment ?? undefined}>

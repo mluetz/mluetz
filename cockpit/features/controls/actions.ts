@@ -46,7 +46,8 @@ export async function recordControlTest(
     let nextTestDate: Date | null = null;
     if (d.nextTestDate) {
       nextTestDate = new Date(d.nextTestDate);
-      if (Number.isNaN(nextTestDate.getTime())) return { error: "Ungültiges Datum für den nächsten Test." };
+      if (Number.isNaN(nextTestDate.getTime()))
+        return { error: "Ungültiges Datum für den nächsten Test." };
     }
 
     await db.$transaction([
@@ -112,12 +113,18 @@ const updateSchema = z.object({
   ownerId: z.string().optional(),
 });
 
-export async function updateControl(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+export async function updateControl(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
   try {
     const user = await assertPermission("control:write");
     const parsed = updateSchema.safeParse(Object.fromEntries(formData));
     if (!parsed.success) {
-      return { error: "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", ") };
+      return {
+        error:
+          "Eingaben unvollständig: " + parsed.error.issues.map((i) => i.path.join(".")).join(", "),
+      };
     }
     const d = parsed.data;
 

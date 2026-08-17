@@ -10,7 +10,10 @@ export default async function NewRiskPage() {
   const [categories, owners, ous, locations] = await Promise.all([
     db.riskCategory.findMany({ orderBy: { name: "asc" } }),
     db.user.findMany({
-      where: { active: true, roles: { some: { role: { key: { in: ["RISK_OWNER", "ICT_RISK_MANAGER", "ISO"] } } } } },
+      where: {
+        active: true,
+        roles: { some: { role: { key: { in: ["RISK_OWNER", "ICT_RISK_MANAGER", "ISO"] } } } },
+      },
       orderBy: { name: "asc" },
     }),
     db.organizationalUnit.findMany({ orderBy: { name: "asc" } }),

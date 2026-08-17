@@ -33,12 +33,19 @@ export function ResidualTrendChart({
   data: Array<{ month: string; avgResidual: number; count: number }>;
 }) {
   if (data.length === 0)
-    return <p className="py-8 text-center text-sm text-muted-foreground">Noch keine Bewertungsdaten.</p>;
+    return (
+      <p className="py-8 text-center text-sm text-muted-foreground">Noch keine Bewertungsdaten.</p>
+    );
   return (
     <ResponsiveContainer width="100%" height={220}>
       <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -20 }}>
         <CartesianGrid stroke={GRID_STROKE} strokeDasharray="3 3" vertical={false} />
-        <XAxis dataKey="month" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID_STROKE }} />
+        <XAxis
+          dataKey="month"
+          tick={AXIS_TICK}
+          tickLine={false}
+          axisLine={{ stroke: GRID_STROKE }}
+        />
         <YAxis domain={[0, 25]} tick={AXIS_TICK} tickLine={false} axisLine={false} />
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
@@ -75,7 +82,13 @@ export function CountBarChart({
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} layout="vertical" margin={{ top: 0, right: 24, bottom: 0, left: 40 }}>
         <CartesianGrid stroke={GRID_STROKE} strokeDasharray="3 3" horizontal={false} />
-        <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: GRID_STROKE }} />
+        <XAxis
+          type="number"
+          allowDecimals={false}
+          tick={AXIS_TICK}
+          tickLine={false}
+          axisLine={{ stroke: GRID_STROKE }}
+        />
         <YAxis
           type="category"
           dataKey="name"

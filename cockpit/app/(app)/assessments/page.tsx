@@ -213,7 +213,11 @@ function DueDate({ date }: { date: Date | null }) {
   return (
     <span className={overdue ? "font-medium text-risk-high" : ""}>
       {formatDate(date)}
-      {overdue ? <Badge variant="high" className="ml-2">überfällig</Badge> : null}
+      {overdue ? (
+        <Badge variant="high" className="ml-2">
+          überfällig
+        </Badge>
+      ) : null}
     </span>
   );
 }
