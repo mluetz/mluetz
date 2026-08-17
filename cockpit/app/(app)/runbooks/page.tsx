@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/authz";
+import { getLocale } from "@/lib/i18n/server";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 import { formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -9,18 +11,14 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
 export const dynamic = "force-dynamic";
 
-const EXECUTION_STATUS: Record<string, string> = {
-  IN_PROGRESS: "Laufend",
-  COMPLETED: "Abgeschlossen",
-  ABORTED: "Abgebrochen",
-};
-
 function truncate(s: string, n = 160): string {
   return s.length > n ? s.slice(0, n).trimEnd() + "…" : s;
 }
 
 export default async function RunbooksPage() {
   await requirePermission("runbook:read");
+  const locale = await getLocale();
+  const t = TPRM_MESSAGES[locale];
 
   const [runbooks, running, completed] = await Promise.all([
     db.runbook.findMany({
@@ -51,15 +49,15 @@ export default async function RunbooksPage() {
   const progressOf = (e: (typeof running)[number]) => {
     const total = e.runbook._count.steps;
     const done = e.stepResults.filter((r) => r.status === "DONE" || r.status === "SKIPPED").length;
-    return `${done}/${total} Schritte`;
+    return `${done}/${total} ${t.rb.list.stepsWord}`;
   };
 
   return (
     <div>
       <PageHeader
-        title="Runbooks"
-        description="Standardisierte Abläufe (Standard Operating Procedures) mit interaktiven Checklisten je Ausführung."
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "Runbooks" }]}
+        title={t.rb.list.title}
+        description={t.rb.list.description}
+        crumbs={[{ label: t.tp.list.crumbOverview, href: "/overview" }, { label: "Runbooks" }]}
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -78,31 +76,32 @@ export default async function RunbooksPage() {
               <CardContent className="space-y-2 text-xs text-muted-foreground">
                 <p>{truncate(rb.purpose)}</p>
                 <p>
-                  {rb._count.steps} Schritte · Review-Zyklus: {rb.reviewCycle}
+                  {rb._count.steps} {t.rb.list.stepsWord} · {t.rb.list.reviewCycle}:{" "}
+                  {rb.reviewCycle}
                 </p>
               </CardContent>
             </Card>
           </Link>
         ))}
         {runbooks.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Keine Runbooks vorhanden.</p>
+          <p className="text-sm text-muted-foreground">{t.rb.list.noRunbooks}</p>
         ) : null}
       </div>
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Laufende Ausführungen</CardTitle>
-          <CardDescription>Alle aktuell offenen Runbook-Ausführungen.</CardDescription>
+          <CardTitle>{t.rb.list.runningTitle}</CardTitle>
+          <CardDescription>{t.rb.list.runningDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <THead>
               <TR>
-                <TH>Runbook</TH>
-                <TH>Gestartet von</TH>
-                <TH>Gestartet am</TH>
-                <TH>Fortschritt</TH>
-                <TH>Aktion</TH>
+                <TH>{t.rb.list.colRunbook}</TH>
+                <TH>{t.common.startedBy}</TH>
+                <TH>{t.common.startedAt}</TH>
+                <TH>{t.common.progress}</TH>
+                <TH>{t.common.action}</TH>
               </TR>
             </THead>
             <TBody>
@@ -119,7 +118,7 @@ export default async function RunbooksPage() {
                       href={`/runbooks/executions/${e.id}`}
                       className="text-xs text-primary hover:underline"
                     >
-                      Öffnen
+                      {t.common.open}
                     </Link>
                   </TD>
                 </TR>
@@ -127,7 +126,7 @@ export default async function RunbooksPage() {
               {running.length === 0 ? (
                 <TR>
                   <TD colSpan={5} className="text-center text-muted-foreground">
-                    Keine laufenden Ausführungen.
+                    {t.rb.list.noRunning}
                   </TD>
                 </TR>
               ) : null}
@@ -138,22 +137,20 @@ export default async function RunbooksPage() {
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Abgeschlossene Ausführungen</CardTitle>
-          <CardDescription>
-            Die letzten 10 abgeschlossenen bzw. abgebrochenen Ausführungen.
-          </CardDescription>
+          <CardTitle>{t.rb.list.completedTitle}</CardTitle>
+          <CardDescription>{t.rb.list.completedDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <THead>
               <TR>
-                <TH>Runbook</TH>
-                <TH>Gestartet von</TH>
-                <TH>Gestartet am</TH>
-                <TH>Beendet am</TH>
-                <TH>Status</TH>
-                <TH>Fortschritt</TH>
-                <TH>Aktion</TH>
+                <TH>{t.rb.list.colRunbook}</TH>
+                <TH>{t.common.startedBy}</TH>
+                <TH>{t.common.startedAt}</TH>
+                <TH>{t.common.endedAt}</TH>
+                <TH>{t.common.status}</TH>
+                <TH>{t.common.progress}</TH>
+                <TH>{t.common.action}</TH>
               </TR>
             </THead>
             <TBody>
@@ -167,7 +164,7 @@ export default async function RunbooksPage() {
                   <TD className="whitespace-nowrap text-xs">{formatDateTime(e.completedAt)}</TD>
                   <TD>
                     <Badge variant={e.status === "COMPLETED" ? "low" : "critical"}>
-                      {EXECUTION_STATUS[e.status] ?? e.status}
+                      {t.labels.rbExecutionStatus[e.status] ?? e.status}
                     </Badge>
                   </TD>
                   <TD className="text-xs">{progressOf(e)}</TD>
@@ -176,7 +173,7 @@ export default async function RunbooksPage() {
                       href={`/runbooks/executions/${e.id}`}
                       className="text-xs text-primary hover:underline"
                     >
-                      Öffnen
+                      {t.common.open}
                     </Link>
                   </TD>
                 </TR>
@@ -184,7 +181,7 @@ export default async function RunbooksPage() {
               {completed.length === 0 ? (
                 <TR>
                   <TD colSpan={7} className="text-center text-muted-foreground">
-                    Noch keine abgeschlossenen Ausführungen.
+                    {t.rb.list.noCompleted}
                   </TD>
                 </TR>
               ) : null}

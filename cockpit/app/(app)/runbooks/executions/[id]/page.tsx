@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission, hasPermission } from "@/lib/authz";
+import { getLocale } from "@/lib/i18n/server";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 import { formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -11,18 +13,14 @@ import { CompleteExecutionForm } from "@/features/runbooks/complete-form";
 
 export const dynamic = "force-dynamic";
 
-const EXECUTION_STATUS: Record<string, string> = {
-  IN_PROGRESS: "Laufend",
-  COMPLETED: "Abgeschlossen",
-  ABORTED: "Abgebrochen",
-};
-
 export default async function RunbookExecutionPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const user = await requirePermission("runbook:read");
+  const locale = await getLocale();
+  const t = TPRM_MESSAGES[locale];
   const { id } = await params;
   const execution = await db.runbookExecution.findUnique({
     where: { id },
@@ -42,16 +40,17 @@ export default async function RunbookExecutionPage({
   }).length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const editable = execution.status === "IN_PROGRESS" && hasPermission(user, "runbook:execute");
+  const rx = t.rb.execution;
 
   return (
     <div>
       <PageHeader
-        title={`Ausführung: ${execution.runbook.code} – ${execution.runbook.title}`}
+        title={`${rx.titlePrefix}: ${execution.runbook.code} – ${execution.runbook.title}`}
         crumbs={[
-          { label: "Overview", href: "/overview" },
+          { label: t.tp.list.crumbOverview, href: "/overview" },
           { label: "Runbooks", href: "/runbooks" },
           { label: execution.runbook.code, href: `/runbooks/${execution.runbookId}` },
-          { label: "Ausführung" },
+          { label: rx.crumbExecution },
         ]}
         actions={
           <Badge
@@ -63,28 +62,28 @@ export default async function RunbookExecutionPage({
                   : "critical"
             }
           >
-            {EXECUTION_STATUS[execution.status] ?? execution.status}
+            {t.labels.rbExecutionStatus[execution.status] ?? execution.status}
           </Badge>
         }
       />
 
       <Card>
         <CardHeader>
-          <CardTitle>Kopfdaten</CardTitle>
+          <CardTitle>{rx.headerData}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 text-sm md:grid-cols-2">
           <Info
-            label="Runbook"
+            label={rx.runbook}
             value={`${execution.runbook.code} – ${execution.runbook.title}`}
             link={`/runbooks/${execution.runbookId}`}
           />
           <Info
-            label="Gestartet von / am"
+            label={rx.startedByAt}
             value={`${execution.startedBy.name} · ${formatDateTime(execution.startedAt)}`}
           />
-          <Info label="Kontext / Anlass" value={execution.contextNote ?? "–"} />
+          <Info label={rx.contextNote} value={execution.contextNote ?? "–"} />
           <Info
-            label="Beendet am"
+            label={t.common.endedAt}
             value={execution.completedAt ? formatDateTime(execution.completedAt) : "–"}
           />
         </CardContent>
@@ -92,11 +91,9 @@ export default async function RunbookExecutionPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Checkliste ({total} Schritte)</CardTitle>
+          <CardTitle>{rx.checklistTitle(total)}</CardTitle>
           <CardDescription>
-            {editable
-              ? "Status und Kommentar je Schritt speichern; Bearbeiter und Zeitstempel werden automatisch protokolliert."
-              : "Die Ausführung ist schreibgeschützt (abgeschlossen oder keine Berechtigung)."}
+            {editable ? rx.checklistEditable : rx.checklistReadonly}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -107,6 +104,7 @@ export default async function RunbookExecutionPage({
                 key={s.id}
                 executionId={execution.id}
                 editable={editable}
+                locale={locale}
                 step={{
                   id: s.id,
                   sortOrder: s.sortOrder,
@@ -130,38 +128,39 @@ export default async function RunbookExecutionPage({
             );
           })}
           {execution.runbook.steps.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Dieses Runbook hat keine Schritte.</p>
+            <p className="text-sm text-muted-foreground">{rx.noSteps}</p>
           ) : null}
         </CardContent>
       </Card>
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Fortschritt &amp; Abschluss</CardTitle>
+          <CardTitle>{rx.progressTitle}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="mb-1 text-sm">
-              {done} von {total} erledigt ({pct} %)
-            </p>
+            <p className="mb-1 text-sm">{rx.progressLine(done, total, pct)}</p>
             <div
               className="h-2 w-full overflow-hidden rounded-full bg-muted"
               role="progressbar"
               aria-valuenow={done}
               aria-valuemin={0}
               aria-valuemax={total}
-              aria-label="Fortschritt der Checkliste"
+              aria-label={rx.progressAria}
             >
               <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
             </div>
           </div>
           {editable ? (
-            <CompleteExecutionForm executionId={execution.id} />
+            <CompleteExecutionForm executionId={execution.id} locale={locale} />
           ) : (
             <p className="text-sm text-muted-foreground">
               {execution.status === "IN_PROGRESS"
-                ? "Keine Berechtigung zum Abschließen dieser Ausführung."
-                : `Diese Ausführung wurde am ${formatDateTime(execution.completedAt)} beendet (${EXECUTION_STATUS[execution.status] ?? execution.status}).`}
+                ? rx.noCompletePermission
+                : t.common.executionEndedAt(
+                    formatDateTime(execution.completedAt),
+                    t.labels.rbExecutionStatus[execution.status] ?? execution.status,
+                  )}
             </p>
           )}
         </CardContent>

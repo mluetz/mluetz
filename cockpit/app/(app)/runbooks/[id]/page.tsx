@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission, hasPermission } from "@/lib/authz";
+import { getLocale } from "@/lib/i18n/server";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 import { formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -11,14 +13,10 @@ import { StartRunbookForm } from "@/features/runbooks/start-form";
 
 export const dynamic = "force-dynamic";
 
-const EXECUTION_STATUS: Record<string, string> = {
-  IN_PROGRESS: "Laufend",
-  COMPLETED: "Abgeschlossen",
-  ABORTED: "Abgebrochen",
-};
-
 export default async function RunbookDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePermission("runbook:read");
+  const locale = await getLocale();
+  const t = TPRM_MESSAGES[locale];
   const { id } = await params;
   const runbook = await db.runbook.findUnique({
     where: { id },
@@ -34,6 +32,7 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
 
   const canExecute = hasPermission(user, "runbook:execute");
   const totalSteps = runbook.steps.length;
+  const rd = t.rb.detail;
 
   return (
     <div>
@@ -41,15 +40,17 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
         title={`${runbook.code} – ${runbook.title}`}
         description={runbook.purpose}
         crumbs={[
-          { label: "Overview", href: "/overview" },
+          { label: t.tp.list.crumbOverview, href: "/overview" },
           { label: "Runbooks", href: "/runbooks" },
           { label: runbook.code },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">Version {runbook.version}</Badge>
+            <Badge variant="secondary">
+              {rd.version} {runbook.version}
+            </Badge>
             <Badge variant={runbook.approvalStatus === "APPROVED" ? "low" : "medium"}>
-              {runbook.approvalStatus === "APPROVED" ? "Freigegeben" : runbook.approvalStatus}
+              {runbook.approvalStatus === "APPROVED" ? rd.approved : runbook.approvalStatus}
             </Badge>
           </div>
         }
@@ -58,36 +59,36 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Beschreibung &amp; Rahmen</CardTitle>
+            <CardTitle>{rd.descriptionFrame}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <Info label="Zweck" value={runbook.purpose} />
-            <Info label="Scope" value={runbook.scope} />
-            <Info label="Trigger / Auslöser" value={runbook.triggerText} />
-            <Info label="Voraussetzungen" value={runbook.prerequisites} />
-            <Info label="Input" value={runbook.input} />
-            <Info label="Rollen" value={runbook.rolesText} />
+            <Info label={rd.purpose} value={runbook.purpose} />
+            <Info label={rd.scope} value={runbook.scope} />
+            <Info label={rd.trigger} value={runbook.triggerText} />
+            <Info label={rd.prerequisites} value={runbook.prerequisites} />
+            <Info label={rd.input} value={runbook.input} />
+            <Info label={rd.roles} value={runbook.rolesText} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Steuerung &amp; Governance</CardTitle>
+            <CardTitle>{rd.governanceTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <Info label="SLA" value={runbook.sla} />
-            <Info label="Eskalationsregeln" value={runbook.escalationRules} />
-            <Info label="Output" value={runbook.output} />
-            <Info label="KPI" value={runbook.kpi} />
-            <Info label="Kontrollpunkte" value={runbook.controlPoints} />
+            <Info label={rd.sla} value={runbook.sla} />
+            <Info label={rd.escalationRules} value={runbook.escalationRules} />
+            <Info label={rd.output} value={runbook.output} />
+            <Info label={rd.kpi} value={runbook.kpi} />
+            <Info label={rd.controlPoints} value={runbook.controlPoints} />
             <div className="grid grid-cols-2 gap-3">
-              <Info label="Review-Zyklus" value={runbook.reviewCycle} />
+              <Info label={rd.reviewCycle} value={runbook.reviewCycle} />
               <Info
-                label="Version / Freigabe"
-                value={`v${runbook.version} · ${runbook.approvalStatus === "APPROVED" ? "Freigegeben" : runbook.approvalStatus}`}
+                label={rd.versionApproval}
+                value={`v${runbook.version} · ${runbook.approvalStatus === "APPROVED" ? rd.approved : runbook.approvalStatus}`}
               />
             </div>
             {runbook.lessonsLearned ? (
-              <Info label="Lessons Learned" value={runbook.lessonsLearned} />
+              <Info label={rd.lessonsLearned} value={runbook.lessonsLearned} />
             ) : null}
           </CardContent>
         </Card>
@@ -95,10 +96,10 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Schritte ({totalSteps})</CardTitle>
-          <CardDescription>
-            Entscheidungspunkte sind mit „◆ Entscheidungspunkt“ gekennzeichnet.
-          </CardDescription>
+          <CardTitle>
+            {rd.stepsTitle} ({totalSteps})
+          </CardTitle>
+          <CardDescription>{rd.stepsDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           <ol className="space-y-2">
@@ -108,7 +109,7 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
                   {s.sortOrder}. {s.title}
                   {s.isDecisionPoint ? (
                     <span className="ml-2 text-xs font-semibold text-risk-medium">
-                      ◆ Entscheidungspunkt
+                      {rd.decisionPoint}
                     </span>
                   ) : null}
                 </p>
@@ -116,13 +117,13 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
                   {s.description}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Rolle: {s.responsibleRole}
-                  {s.requiredEvidence ? ` · Erforderlicher Nachweis: ${s.requiredEvidence}` : ""}
+                  {rd.role}: {s.responsibleRole}
+                  {s.requiredEvidence ? ` · ${rd.requiredEvidence}: ${s.requiredEvidence}` : ""}
                 </p>
               </li>
             ))}
             {runbook.steps.length === 0 ? (
-              <li className="text-sm text-muted-foreground">Keine Schritte definiert.</li>
+              <li className="text-sm text-muted-foreground">{rd.noSteps}</li>
             ) : null}
           </ol>
         </CardContent>
@@ -131,33 +132,32 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
       {canExecute ? (
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Ausführung starten</CardTitle>
-            <CardDescription>
-              Startet eine neue Ausführung als interaktive Checkliste. Jeder Schritt wird mit
-              Bearbeiter, Zeitstempel und Kommentar protokolliert.
-            </CardDescription>
+            <CardTitle>{rd.startTitle}</CardTitle>
+            <CardDescription>{rd.startDescription}</CardDescription>
           </CardHeader>
           <CardContent>
-            <StartRunbookForm runbookId={runbook.id} />
+            <StartRunbookForm runbookId={runbook.id} locale={locale} />
           </CardContent>
         </Card>
       ) : null}
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Ausführungshistorie ({runbook.executions.length})</CardTitle>
+          <CardTitle>
+            {t.common.executionHistory} ({runbook.executions.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <THead>
               <TR>
-                <TH>Status</TH>
-                <TH>Gestartet von</TH>
-                <TH>Gestartet am</TH>
-                <TH>Beendet am</TH>
-                <TH>Fortschritt</TH>
-                <TH>Kontext</TH>
-                <TH>Aktion</TH>
+                <TH>{t.common.status}</TH>
+                <TH>{t.common.startedBy}</TH>
+                <TH>{t.common.startedAt}</TH>
+                <TH>{t.common.endedAt}</TH>
+                <TH>{t.common.progress}</TH>
+                <TH>{rd.context}</TH>
+                <TH>{t.common.action}</TH>
               </TR>
             </THead>
             <TBody>
@@ -177,14 +177,14 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
                               : "critical"
                         }
                       >
-                        {EXECUTION_STATUS[e.status] ?? e.status}
+                        {t.labels.rbExecutionStatus[e.status] ?? e.status}
                       </Badge>
                     </TD>
                     <TD className="text-xs">{e.startedBy.name}</TD>
                     <TD className="whitespace-nowrap text-xs">{formatDateTime(e.startedAt)}</TD>
                     <TD className="whitespace-nowrap text-xs">{formatDateTime(e.completedAt)}</TD>
                     <TD className="text-xs">
-                      {done}/{totalSteps} Schritte
+                      {done}/{totalSteps} {t.rb.list.stepsWord}
                     </TD>
                     <TD className="max-w-[280px] truncate text-xs">{e.contextNote ?? "–"}</TD>
                     <TD>
@@ -192,7 +192,7 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
                         href={`/runbooks/executions/${e.id}`}
                         className="text-xs text-primary hover:underline"
                       >
-                        Öffnen
+                        {t.common.open}
                       </Link>
                     </TD>
                   </TR>
@@ -201,7 +201,7 @@ export default async function RunbookDetailPage({ params }: { params: Promise<{ 
               {runbook.executions.length === 0 ? (
                 <TR>
                   <TD colSpan={7} className="text-center text-muted-foreground">
-                    Dieses Runbook wurde noch nicht ausgeführt.
+                    {rd.notExecutedYet}
                   </TD>
                 </TR>
               ) : null}

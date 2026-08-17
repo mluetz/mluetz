@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission, hasPermission } from "@/lib/authz";
+import { getLocale } from "@/lib/i18n/server";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 import { formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Badge, riskClassVariant } from "@/components/ui/badge";
@@ -11,21 +13,10 @@ import { StartPlaybookForm } from "@/features/playbooks/panels";
 
 export const dynamic = "force-dynamic";
 
-const SEVERITY_LABELS: Record<string, string> = {
-  LOW: "Niedrig",
-  MEDIUM: "Mittel",
-  HIGH: "Hoch",
-  CRITICAL: "Kritisch",
-};
-
-const PB_EXECUTION_STATUS: Record<string, string> = {
-  ACTIVE: "Aktiv",
-  CLOSED: "Geschlossen",
-  ABORTED: "Abgebrochen",
-};
-
 export default async function PlaybookDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePermission("runbook:read");
+  const locale = await getLocale();
+  const t = TPRM_MESSAGES[locale];
   const { id } = await params;
   const playbook = await db.playbook.findUnique({
     where: { id },
@@ -56,22 +47,23 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
       ])
     : [[], [], []];
 
+  const pd = t.pb.detail;
   const sections: Array<{ title: string; value: string }> = [
-    { title: "Szenario", value: playbook.scenario },
-    { title: "Ziel", value: playbook.objective },
-    { title: "Aktivierungskriterien", value: playbook.activationCriteria },
-    { title: "Severity-Leitlinie", value: playbook.severityGuidance },
-    { title: "Rollen & RACI", value: playbook.rolesRaci },
-    { title: "Erste Bewertung", value: playbook.initialAssessment },
-    { title: "Sofortmaßnahmen", value: playbook.immediateActions },
-    { title: "Risikoanalyse", value: playbook.riskAnalysis },
-    { title: "Entscheidungsbaum", value: playbook.decisionTree },
-    { title: "Kommunikation & Eskalation", value: playbook.communication },
-    { title: "Regulatorische Prüfung", value: playbook.regulatoryCheck },
-    { title: "Maßnahmen", value: playbook.measures },
-    { title: "Erforderliche Nachweise", value: playbook.evidenceRequired },
-    { title: "Abschlusskriterien", value: playbook.closureCriteria },
-    { title: "Post-Event-Review", value: playbook.postEventReview },
+    { title: pd.scenario, value: playbook.scenario },
+    { title: pd.objective, value: playbook.objective },
+    { title: pd.activationCriteria, value: playbook.activationCriteria },
+    { title: pd.severityGuidance, value: playbook.severityGuidance },
+    { title: pd.rolesRaci, value: playbook.rolesRaci },
+    { title: pd.initialAssessment, value: playbook.initialAssessment },
+    { title: pd.immediateActions, value: playbook.immediateActions },
+    { title: pd.riskAnalysis, value: playbook.riskAnalysis },
+    { title: pd.decisionTree, value: playbook.decisionTree },
+    { title: pd.communication, value: playbook.communication },
+    { title: pd.regulatoryCheck, value: playbook.regulatoryCheck },
+    { title: pd.measures, value: playbook.measures },
+    { title: pd.evidenceRequired, value: playbook.evidenceRequired },
+    { title: pd.closureCriteria, value: playbook.closureCriteria },
+    { title: pd.postEventReview, value: playbook.postEventReview },
   ];
 
   return (
@@ -80,7 +72,7 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
         title={`${playbook.code} – ${playbook.scenario}`}
         description={playbook.objective}
         crumbs={[
-          { label: "Overview", href: "/overview" },
+          { label: t.tp.list.crumbOverview, href: "/overview" },
           { label: "Playbooks", href: "/playbooks" },
           { label: playbook.code },
         ]}
@@ -100,7 +92,7 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
         {playbook.lessonsLearned ? (
           <Card>
             <CardHeader>
-              <CardTitle>Lessons Learned</CardTitle>
+              <CardTitle>{pd.lessonsLearned}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="whitespace-pre-wrap text-sm">{playbook.lessonsLearned}</p>
@@ -112,18 +104,19 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
       {canExecute ? (
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>Playbook aktivieren</CardTitle>
-            <CardDescription>
-              Startet eine neue Ausführung. Die Severity ist Pflicht; optional kann die Ausführung
-              mit einem Risiko, einer Drittpartei oder einer Kontrolle verknüpft werden.
-            </CardDescription>
+            <CardTitle>{pd.activateTitle}</CardTitle>
+            <CardDescription>{pd.activateDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <StartPlaybookForm
               playbookId={playbook.id}
+              locale={locale}
               risks={risks.map((r) => ({ id: r.id, label: `${r.riskId} – ${r.title}` }))}
               controls={controls.map((c) => ({ id: c.id, label: `${c.controlId} – ${c.name}` }))}
-              thirdParties={thirdParties.map((t) => ({ id: t.id, label: `${t.tpId} – ${t.name}` }))}
+              thirdParties={thirdParties.map((tp) => ({
+                id: tp.id,
+                label: `${tp.tpId} – ${tp.name}`,
+              }))}
             />
           </CardContent>
         </Card>
@@ -131,19 +124,21 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Ausführungshistorie ({playbook.executions.length})</CardTitle>
+          <CardTitle>
+            {t.common.executionHistory} ({playbook.executions.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <THead>
               <TR>
-                <TH>Status</TH>
-                <TH>Severity</TH>
-                <TH>Bezug (Risiko / Drittpartei)</TH>
-                <TH>Gestartet von</TH>
-                <TH>Gestartet am</TH>
-                <TH>Geschlossen am</TH>
-                <TH>Aktion</TH>
+                <TH>{t.common.status}</TH>
+                <TH>{t.pb.list.colSeverity}</TH>
+                <TH>{t.pb.list.colReference}</TH>
+                <TH>{t.common.startedBy}</TH>
+                <TH>{t.common.startedAt}</TH>
+                <TH>{t.common.closedAt}</TH>
+                <TH>{t.common.action}</TH>
               </TR>
             </THead>
             <TBody>
@@ -159,12 +154,12 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
                             : "critical"
                       }
                     >
-                      {PB_EXECUTION_STATUS[e.status] ?? e.status}
+                      {t.labels.pbExecutionStatus[e.status] ?? e.status}
                     </Badge>
                   </TD>
                   <TD>
                     <Badge variant={riskClassVariant(e.severity)}>
-                      {SEVERITY_LABELS[e.severity] ?? e.severity}
+                      {t.labels.severity[e.severity] ?? e.severity}
                     </Badge>
                   </TD>
                   <TD className="text-xs">
@@ -183,7 +178,7 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
                       href={`/playbooks/executions/${e.id}`}
                       className="text-xs text-primary hover:underline"
                     >
-                      Öffnen
+                      {t.common.open}
                     </Link>
                   </TD>
                 </TR>
@@ -191,7 +186,7 @@ export default async function PlaybookDetailPage({ params }: { params: Promise<{
               {playbook.executions.length === 0 ? (
                 <TR>
                   <TD colSpan={7} className="text-center text-muted-foreground">
-                    Dieses Playbook wurde noch nicht aktiviert.
+                    {pd.notActivatedYet}
                   </TD>
                 </TR>
               ) : null}

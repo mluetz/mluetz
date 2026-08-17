@@ -11,15 +11,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Field, Input, Label } from "@/components/ui/input";
 import { ROLES, type RoleKey } from "@/lib/domain/enums";
+import type { Locale } from "@/lib/i18n/config";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 
-function ErrorLine({ state }: { state: ActionResult }) {
+function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
   if (state.error)
     return (
       <p role="alert" className="text-sm text-destructive">
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">Gespeichert.</p>;
+  if (state.ok) return <p className="text-sm text-risk-low">{TPRM_MESSAGES[locale].common.saved}</p>;
   return null;
 }
 
@@ -34,11 +36,14 @@ export function UserRolesForm({
   userId,
   allRoles,
   currentRoleKeys,
+  locale,
 }: {
   userId: string;
   allRoles: RoleOption[];
   currentRoleKeys: string[];
+  locale: Locale;
 }) {
+  const t = TPRM_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(setUserRoles, {});
   return (
     <form action={formAction} className="space-y-2">
@@ -57,9 +62,9 @@ export function UserRolesForm({
           </label>
         ))}
       </div>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" size="sm" variant="secondary" disabled={pending}>
-        {pending ? "Speichern…" : "Rollen speichern"}
+        {pending ? t.common.saving : t.admin.panels.saveRoles}
       </Button>
     </form>
   );
@@ -69,11 +74,14 @@ export function UserActiveToggle({
   userId,
   active,
   isSelf,
+  locale,
 }: {
   userId: string;
   active: boolean;
   isSelf: boolean;
+  locale: Locale;
 }) {
+  const t = TPRM_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(setUserActive, {});
   return (
     <form action={formAction} className="space-y-1">
@@ -84,11 +92,11 @@ export function UserActiveToggle({
         size="sm"
         variant={active ? "outline" : "default"}
         disabled={pending || (isSelf && active)}
-        title={isSelf && active ? "Der eigene Account kann nicht deaktiviert werden." : undefined}
+        title={isSelf && active ? t.admin.panels.cannotDeactivateSelf : undefined}
       >
-        {pending ? "…" : active ? "Deaktivieren" : "Aktivieren"}
+        {pending ? "…" : active ? t.admin.panels.deactivate : t.admin.panels.activate}
       </Button>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
     </form>
   );
 }
@@ -100,17 +108,20 @@ export function ThresholdsForm({
   mediumMax,
   highMax,
   mitigationCap,
+  locale,
 }: {
   lowMax: number;
   mediumMax: number;
   highMax: number;
   mitigationCap: number;
+  locale: Locale;
 }) {
+  const t = TPRM_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(updateThresholds, {});
   return (
     <form action={formAction} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-4">
-        <Field label="Low-Max (Klasse LOW bis …)" htmlFor="t-low" required>
+        <Field label={t.admin.panels.lowMax} htmlFor="t-low" required>
           <Input
             id="t-low"
             name="lowMax"
@@ -121,7 +132,7 @@ export function ThresholdsForm({
             defaultValue={lowMax}
           />
         </Field>
-        <Field label="Medium-Max (MEDIUM bis …)" htmlFor="t-medium" required>
+        <Field label={t.admin.panels.mediumMax} htmlFor="t-medium" required>
           <Input
             id="t-medium"
             name="mediumMax"
@@ -132,7 +143,7 @@ export function ThresholdsForm({
             defaultValue={mediumMax}
           />
         </Field>
-        <Field label="High-Max (HIGH bis …; darüber CRITICAL)" htmlFor="t-high" required>
+        <Field label={t.admin.panels.highMax} htmlFor="t-high" required>
           <Input
             id="t-high"
             name="highMax"
@@ -143,7 +154,7 @@ export function ThresholdsForm({
             defaultValue={highMax}
           />
         </Field>
-        <Field label="Mitigation Cap (0–1)" htmlFor="t-cap" required>
+        <Field label={t.admin.panels.mitigationCap} htmlFor="t-cap" required>
           <Input
             id="t-cap"
             name="mitigationCap"
@@ -156,9 +167,9 @@ export function ThresholdsForm({
           />
         </Field>
       </div>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" disabled={pending}>
-        {pending ? "Speichern…" : "Methodik speichern"}
+        {pending ? t.common.saving : t.admin.panels.saveMethodology}
       </Button>
     </form>
   );
@@ -169,10 +180,13 @@ export function ThresholdsForm({
 export function CategoryAppetiteForm({
   categoryId,
   appetiteThreshold,
+  locale,
 }: {
   categoryId: string;
   appetiteThreshold: number;
+  locale: Locale;
 }) {
+  const t = TPRM_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     updateCategoryAppetite,
     {},
@@ -181,7 +195,7 @@ export function CategoryAppetiteForm({
     <form action={formAction} className="flex items-end gap-2">
       <input type="hidden" name="categoryId" value={categoryId} />
       <div>
-        <Label htmlFor={`app-${categoryId}`}>Appetit (1–25)</Label>
+        <Label htmlFor={`app-${categoryId}`}>{t.admin.panels.appetite}</Label>
         <Input
           id={`app-${categoryId}`}
           name="appetiteThreshold"
@@ -194,10 +208,10 @@ export function CategoryAppetiteForm({
         />
       </div>
       <Button type="submit" size="sm" variant="secondary" disabled={pending}>
-        {pending ? "…" : "Speichern"}
+        {pending ? "…" : t.common.save}
       </Button>
       <div>
-        <ErrorLine state={state} />
+        <ErrorLine state={state} locale={locale} />
       </div>
     </form>
   );

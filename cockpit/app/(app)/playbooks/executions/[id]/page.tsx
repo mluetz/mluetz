@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission, hasPermission } from "@/lib/authz";
+import { getLocale } from "@/lib/i18n/server";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 import { formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Badge, riskClassVariant } from "@/components/ui/badge";
@@ -10,25 +12,14 @@ import { UpdateExecutionForm, ClosePlaybookForm } from "@/features/playbooks/pan
 
 export const dynamic = "force-dynamic";
 
-const SEVERITY_LABELS: Record<string, string> = {
-  LOW: "Niedrig",
-  MEDIUM: "Mittel",
-  HIGH: "Hoch",
-  CRITICAL: "Kritisch",
-};
-
-const PB_EXECUTION_STATUS: Record<string, string> = {
-  ACTIVE: "Aktiv",
-  CLOSED: "Geschlossen",
-  ABORTED: "Abgebrochen",
-};
-
 export default async function PlaybookExecutionPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const user = await requirePermission("runbook:read");
+  const locale = await getLocale();
+  const t = TPRM_MESSAGES[locale];
   const { id } = await params;
   const execution = await db.playbookExecution.findUnique({
     where: { id },
@@ -44,37 +35,39 @@ export default async function PlaybookExecutionPage({
 
   const pb = execution.playbook;
   const editable = execution.status === "ACTIVE" && hasPermission(user, "playbook:execute");
+  const pd = t.pb.detail;
+  const px = t.pb.execution;
 
   const guideSections: Array<{ title: string; value: string }> = [
-    { title: "Aktivierungskriterien", value: pb.activationCriteria },
-    { title: "Severity-Leitlinie", value: pb.severityGuidance },
-    { title: "Rollen & RACI", value: pb.rolesRaci },
-    { title: "Erste Bewertung", value: pb.initialAssessment },
-    { title: "Sofortmaßnahmen", value: pb.immediateActions },
-    { title: "Risikoanalyse", value: pb.riskAnalysis },
-    { title: "Entscheidungsbaum", value: pb.decisionTree },
-    { title: "Kommunikation & Eskalation", value: pb.communication },
-    { title: "Regulatorische Prüfung", value: pb.regulatoryCheck },
-    { title: "Maßnahmen", value: pb.measures },
-    { title: "Erforderliche Nachweise", value: pb.evidenceRequired },
-    { title: "Abschlusskriterien", value: pb.closureCriteria },
-    { title: "Post-Event-Review", value: pb.postEventReview },
+    { title: pd.activationCriteria, value: pb.activationCriteria },
+    { title: pd.severityGuidance, value: pb.severityGuidance },
+    { title: pd.rolesRaci, value: pb.rolesRaci },
+    { title: pd.initialAssessment, value: pb.initialAssessment },
+    { title: pd.immediateActions, value: pb.immediateActions },
+    { title: pd.riskAnalysis, value: pb.riskAnalysis },
+    { title: pd.decisionTree, value: pb.decisionTree },
+    { title: pd.communication, value: pb.communication },
+    { title: pd.regulatoryCheck, value: pb.regulatoryCheck },
+    { title: pd.measures, value: pb.measures },
+    { title: pd.evidenceRequired, value: pb.evidenceRequired },
+    { title: pd.closureCriteria, value: pb.closureCriteria },
+    { title: pd.postEventReview, value: pb.postEventReview },
   ];
 
   return (
     <div>
       <PageHeader
-        title={`Ausführung: ${pb.code} – ${pb.scenario}`}
+        title={`${px.titlePrefix}: ${pb.code} – ${pb.scenario}`}
         crumbs={[
-          { label: "Overview", href: "/overview" },
+          { label: t.tp.list.crumbOverview, href: "/overview" },
           { label: "Playbooks", href: "/playbooks" },
           { label: pb.code, href: `/playbooks/${execution.playbookId}` },
-          { label: "Ausführung" },
+          { label: px.crumbExecution },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={riskClassVariant(execution.severity)}>
-              Severity: {SEVERITY_LABELS[execution.severity] ?? execution.severity}
+              {px.severityPrefix}: {t.labels.severity[execution.severity] ?? execution.severity}
             </Badge>
             <Badge
               variant={
@@ -85,7 +78,7 @@ export default async function PlaybookExecutionPage({
                     : "critical"
               }
             >
-              {PB_EXECUTION_STATUS[execution.status] ?? execution.status}
+              {t.labels.pbExecutionStatus[execution.status] ?? execution.status}
             </Badge>
           </div>
         }
@@ -93,30 +86,30 @@ export default async function PlaybookExecutionPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Kurzinfo &amp; Verknüpfungen</CardTitle>
+          <CardTitle>{px.infoTitle}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 text-sm md:grid-cols-2">
           <Info
-            label="Playbook"
+            label={px.playbook}
             value={`${pb.code} – ${pb.scenario}`}
             link={`/playbooks/${execution.playbookId}`}
           />
           <Info
-            label="Gestartet von / am"
+            label={px.startedByAt}
             value={`${execution.startedBy.name} · ${formatDateTime(execution.startedAt)}`}
           />
-          <Info label="Ziel" value={pb.objective} />
+          <Info label={px.objective} value={pb.objective} />
           <Info
-            label="Geschlossen am"
+            label={t.common.closedAt}
             value={execution.closedAt ? formatDateTime(execution.closedAt) : "–"}
           />
           <Info
-            label="Verknüpftes Risiko"
+            label={px.linkedRisk}
             value={execution.risk ? `${execution.risk.riskId} – ${execution.risk.title}` : "–"}
             link={execution.risk ? `/risks/${execution.risk.id}` : undefined}
           />
           <Info
-            label="Verknüpfte Drittpartei"
+            label={px.linkedThirdParty}
             value={
               execution.thirdParty
                 ? `${execution.thirdParty.tpId} – ${execution.thirdParty.name}`
@@ -125,7 +118,7 @@ export default async function PlaybookExecutionPage({
             link={execution.thirdParty ? `/third-parties/${execution.thirdParty.id}` : undefined}
           />
           <Info
-            label="Verknüpfte Kontrolle"
+            label={px.linkedControl}
             value={
               execution.control ? `${execution.control.controlId} – ${execution.control.name}` : "–"
             }
@@ -136,12 +129,8 @@ export default async function PlaybookExecutionPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Notizen</CardTitle>
-          <CardDescription>
-            {editable
-              ? "Laufende Dokumentation der Ausführung (Lagebeurteilung, Entscheidungen, Maßnahmen)."
-              : "Die Ausführung ist geschlossen – Notizen sind schreibgeschützt."}
-          </CardDescription>
+          <CardTitle>{px.notesTitle}</CardTitle>
+          <CardDescription>{editable ? px.notesEditable : px.notesReadonly}</CardDescription>
         </CardHeader>
         <CardContent>
           {editable ? (
@@ -149,6 +138,7 @@ export default async function PlaybookExecutionPage({
               executionId={execution.id}
               severity={execution.severity}
               notes={execution.notes}
+              locale={locale}
             />
           ) : (
             <p className="whitespace-pre-wrap text-sm">{execution.notes ?? "–"}</p>
@@ -158,10 +148,8 @@ export default async function PlaybookExecutionPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Playbook-Leitfaden</CardTitle>
-          <CardDescription>
-            Vollständiger Leitfaden des Playbooks – Abschnitte zum Aufklappen.
-          </CardDescription>
+          <CardTitle>{px.guideTitle}</CardTitle>
+          <CardDescription>{px.guideDescription}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {guideSections.map((s) => (
@@ -175,19 +163,20 @@ export default async function PlaybookExecutionPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Abschluss</CardTitle>
-          <CardDescription>
-            Der Abschlusskommentar wird den Notizen als „Abschluss: …“ angehängt und protokolliert.
-          </CardDescription>
+          <CardTitle>{px.closureTitle}</CardTitle>
+          <CardDescription>{px.closureDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           {editable ? (
-            <ClosePlaybookForm executionId={execution.id} />
+            <ClosePlaybookForm executionId={execution.id} locale={locale} />
           ) : (
             <p className="text-sm text-muted-foreground">
               {execution.status === "ACTIVE"
-                ? "Keine Berechtigung zum Schließen dieser Ausführung."
-                : `Diese Ausführung wurde am ${formatDateTime(execution.closedAt)} beendet (${PB_EXECUTION_STATUS[execution.status] ?? execution.status}).`}
+                ? px.noClosePermission
+                : t.common.executionEndedAt(
+                    formatDateTime(execution.closedAt),
+                    t.labels.pbExecutionStatus[execution.status] ?? execution.status,
+                  )}
             </p>
           )}
         </CardContent>
