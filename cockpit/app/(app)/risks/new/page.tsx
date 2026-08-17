@@ -1,5 +1,7 @@
 import { requirePermission } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { getLocale } from "@/lib/i18n/server";
+import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 import { PageHeader } from "@/components/page-header";
 import { NewRiskForm } from "@/features/risks/new-risk-form";
 
@@ -7,6 +9,8 @@ export const metadata = { title: "Neues Risiko" };
 
 export default async function NewRiskPage() {
   await requirePermission("risk:write");
+  const locale = await getLocale();
+  const t = CORE_MESSAGES[locale].newRisk;
   const [categories, owners, ous, locations] = await Promise.all([
     db.riskCategory.findMany({ orderBy: { name: "asc" } }),
     db.user.findMany({
@@ -23,15 +27,16 @@ export default async function NewRiskPage() {
   return (
     <div className="max-w-3xl">
       <PageHeader
-        title="Neues Risiko erfassen"
-        description="Ersterfassung gemäß Runbook RB-01 – Ursache, Ereignis und Auswirkung getrennt beschreiben."
+        title={t.pageTitle}
+        description={t.pageDescription}
         crumbs={[
           { label: "Overview", href: "/overview" },
           { label: "Risks", href: "/risks" },
-          { label: "Neues Risiko" },
+          { label: t.crumb },
         ]}
       />
       <NewRiskForm
+        locale={locale}
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}
         owners={owners.map((o) => ({ id: o.id, name: o.name }))}
         ous={ous.map((o) => ({ id: o.id, name: o.name }))}

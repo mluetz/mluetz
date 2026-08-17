@@ -4,6 +4,8 @@ import { requirePermission } from "@/lib/authz";
 import { hasPermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getRiskRows } from "@/features/risks/queries";
+import { getLocale } from "@/lib/i18n/server";
+import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Select, Label } from "@/components/ui/input";
@@ -26,6 +28,8 @@ interface Search {
 
 export default async function RisksPage({ searchParams }: { searchParams: Promise<Search> }) {
   const user = await requirePermission("risk:read");
+  const locale = await getLocale();
+  const t = CORE_MESSAGES[locale];
   const sp = await searchParams;
   const categories = await db.riskCategory.findMany({ orderBy: { name: "asc" } });
   const rows = await getRiskRows({
@@ -42,14 +46,14 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
   return (
     <div>
       <PageHeader
-        title="Risk Register"
-        description="Operatives Register aller ICT- und Informationssicherheitsrisiken"
+        title={t.risks.title}
+        description={t.risks.description}
         crumbs={[{ label: "Overview", href: "/overview" }, { label: "Risks" }]}
         actions={
           hasPermission(user, "risk:write") ? (
             <Link href="/risks/new">
               <Button>
-                <Plus className="h-4 w-4" aria-hidden /> Neues Risiko
+                <Plus className="h-4 w-4" aria-hidden /> {t.risks.newRisk}
               </Button>
             </Link>
           ) : null
@@ -61,9 +65,9 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
         className="mb-4 grid grid-cols-2 gap-3 rounded-lg border bg-card p-3 md:grid-cols-4"
       >
         <div>
-          <Label htmlFor="f-status">Status</Label>
+          <Label htmlFor="f-status">{t.risks.filters.status}</Label>
           <Select id="f-status" name="status" defaultValue={sp.status ?? ""}>
-            <option value="">Alle</option>
+            <option value="">{t.common.all}</option>
             {Object.entries(RISK_STATUS).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
@@ -72,9 +76,9 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
           </Select>
         </div>
         <div>
-          <Label htmlFor="f-cat">Risikokategorie</Label>
+          <Label htmlFor="f-cat">{t.risks.filters.category}</Label>
           <Select id="f-cat" name="category" defaultValue={sp.category ?? ""}>
-            <option value="">Alle</option>
+            <option value="">{t.common.all}</option>
             {categories.map((c) => (
               <option key={c.key} value={c.key}>
                 {c.name}
@@ -83,9 +87,9 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
           </Select>
         </div>
         <div>
-          <Label htmlFor="f-class">Residual-Klasse</Label>
+          <Label htmlFor="f-class">{t.risks.filters.residualClass}</Label>
           <Select id="f-class" name="klass" defaultValue={sp.klass ?? ""}>
-            <option value="">Alle</option>
+            <option value="">{t.common.all}</option>
             {Object.entries(RISK_CLASS).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
@@ -95,11 +99,11 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
         </div>
         <div className="flex items-end gap-2">
           <Button type="submit" variant="secondary">
-            Filtern
+            {t.common.filter}
           </Button>
           <Link href="/risks">
             <Button type="button" variant="ghost">
-              Zurücksetzen
+              {t.common.reset}
             </Button>
           </Link>
         </div>
@@ -107,23 +111,27 @@ export default async function RisksPage({ searchParams }: { searchParams: Promis
           <FilterChip
             href="/risks?aboveAppetite=1"
             active={sp.aboveAppetite === "1"}
-            label="Über Risikoappetit"
+            label={t.risks.chips.aboveAppetite}
           />
           <FilterChip
             href="/risks?overdueReview=1"
             active={sp.overdueReview === "1"}
-            label="Review überfällig"
+            label={t.risks.chips.overdueReview}
           />
-          <FilterChip href="/risks?noOwner=1" active={sp.noOwner === "1"} label="Ohne Risk Owner" />
+          <FilterChip
+            href="/risks?noOwner=1"
+            active={sp.noOwner === "1"}
+            label={t.risks.chips.noOwner}
+          />
           <FilterChip
             href="/risks?noAssessment=1"
             active={sp.noAssessment === "1"}
-            label="Ohne aktuelle Bewertung"
+            label={t.risks.chips.noAssessment}
           />
         </div>
       </form>
 
-      <RisksTableClient rows={rows} />
+      <RisksTableClient rows={rows} locale={locale} />
     </div>
   );
 }

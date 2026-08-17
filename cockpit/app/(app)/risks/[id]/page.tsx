@@ -7,13 +7,13 @@ import { classify } from "@/lib/domain/risk-calc";
 import { getRiskThresholds } from "@/lib/settings";
 import { formatDate, formatDateTime, isOverdue } from "@/lib/utils";
 import {
-  ACCEPTANCE_STATUS,
   RISK_CLASS,
   RISK_STATUS,
   RISK_TRANSITIONS,
-  TREATMENT_STRATEGY,
   type RiskStatus,
 } from "@/lib/domain/enums";
+import { getLocale } from "@/lib/i18n/server";
+import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 import { PageHeader } from "@/components/page-header";
 import { Badge, riskClassVariant } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -33,6 +33,9 @@ export const dynamic = "force-dynamic";
 
 export default async function RiskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePermission("risk:read");
+  const locale = await getLocale();
+  const t = CORE_MESSAGES[locale].riskDetail;
+  const tEnums = CORE_MESSAGES[locale].enums;
   const { id } = await params;
   const risk = await db.risk.findUnique({
     where: { id },
@@ -107,12 +110,12 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                 {RISK_CLASS[classify(current.residualScore, thresholds)]}
               </Badge>
             ) : (
-              <Badge variant="outline">nicht bewertet</Badge>
+              <Badge variant="outline">{t.notAssessed}</Badge>
             )}
             {aboveAppetite ? (
               <Badge variant="critical">
-                <AlertTriangle className="mr-1 h-3 w-3" aria-hidden /> über Risikoappetit (
-                {appetite})
+                <AlertTriangle className="mr-1 h-3 w-3" aria-hidden />{" "}
+                {t.aboveAppetiteBadge(appetite)}
               </Badge>
             ) : null}
           </div>
@@ -122,7 +125,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
       {/* KPI-Zeile */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
         <Kpi
-          label="Inherent Risk"
+          label={t.kpi.inherent}
           value={
             current
               ? `${current.inherentScore} (${RISK_CLASS[classify(current.inherentScore, thresholds)]})`
@@ -130,34 +133,43 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
           }
         />
         <Kpi
-          label="Kontrollwirksamkeit"
+          label={t.kpi.controlEffectiveness}
           value={current ? `${current.controlEffectiveness} %` : "–"}
         />
         <Kpi
-          label="Residual Risk"
+          label={t.kpi.residual}
           value={
             current
               ? `${current.residualScore} (${RISK_CLASS[classify(current.residualScore, thresholds)]})`
               : "–"
           }
         />
-        <Kpi label="Zielrisiko / Appetit" value={`${risk.targetScore ?? "–"} / ${appetite}`} />
+        <Kpi label={t.kpi.target} value={`${risk.targetScore ?? "–"} / ${appetite}`} />
         <Kpi
-          label="Nächstes Review"
+          label={t.kpi.nextReview}
           value={risk.nextReviewDate ? formatDate(risk.nextReviewDate) : "–"}
           warn={isOverdue(risk.nextReviewDate) && status !== "CLOSED"}
+          overdueSuffix={t.kpi.overdueSuffix}
         />
       </div>
 
       <Tabs defaultValue="overview">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="overview">Übersicht</TabsTrigger>
-          <TabsTrigger value="assessment">Bewertung</TabsTrigger>
-          <TabsTrigger value="actions">Maßnahmen ({risk.actions.length})</TabsTrigger>
-          <TabsTrigger value="controls">Kontrollen ({risk.controls.length})</TabsTrigger>
-          <TabsTrigger value="review">Quality Review ({risk.qualityReviews.length})</TabsTrigger>
-          <TabsTrigger value="acceptance">Akzeptanz ({risk.acceptances.length})</TabsTrigger>
-          <TabsTrigger value="history">Historie</TabsTrigger>
+          <TabsTrigger value="overview">{t.tabs.overview}</TabsTrigger>
+          <TabsTrigger value="assessment">{t.tabs.assessment}</TabsTrigger>
+          <TabsTrigger value="actions">
+            {t.tabs.actions} ({risk.actions.length})
+          </TabsTrigger>
+          <TabsTrigger value="controls">
+            {t.tabs.controls} ({risk.controls.length})
+          </TabsTrigger>
+          <TabsTrigger value="review">
+            {t.tabs.review} ({risk.qualityReviews.length})
+          </TabsTrigger>
+          <TabsTrigger value="acceptance">
+            {t.tabs.acceptance} ({risk.acceptances.length})
+          </TabsTrigger>
+          <TabsTrigger value="history">{t.tabs.history}</TabsTrigger>
         </TabsList>
 
         {/* ---------- Übersicht ---------- */}
@@ -165,60 +177,62 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Risikobeschreibung</CardTitle>
+                <CardTitle>{t.overview.descriptionTitle}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <Info label="Ursache" value={risk.cause} />
-                <Info label="Risikoereignis" value={risk.riskEvent} />
-                <Info label="Mögliche Auswirkungen" value={risk.impactDescription} />
+                <Info label={t.overview.cause} value={risk.cause} />
+                <Info label={t.overview.riskEvent} value={risk.riskEvent} />
+                <Info label={t.overview.impactDescription} value={risk.impactDescription} />
                 <div className="grid grid-cols-2 gap-3">
-                  <Info label="Bedrohung" value={risk.threat} />
-                  <Info label="Schwachstelle" value={risk.vulnerability} />
+                  <Info label={t.overview.threat} value={risk.threat} />
+                  <Info label={t.overview.vulnerability} value={risk.vulnerability} />
                 </div>
-                <Info label="Bestehende Kontrollen (narrativ)" value={risk.existingControls} />
+                <Info label={t.overview.existingControls} value={risk.existingControls} />
                 <div className="grid grid-cols-2 gap-3">
                   <Info
-                    label="Behandlungsstrategie"
+                    label={t.overview.treatmentStrategy}
                     value={
                       risk.treatmentStrategy
-                        ? TREATMENT_STRATEGY[
-                            risk.treatmentStrategy as keyof typeof TREATMENT_STRATEGY
-                          ]
-                        : "noch nicht festgelegt"
+                        ? (tEnums.treatmentStrategy[risk.treatmentStrategy] ??
+                          risk.treatmentStrategy)
+                        : t.overview.treatmentNotSet
                     }
                   />
-                  <Info label="Fälligkeit Behandlung" value={formatDate(risk.dueDate)} />
+                  <Info label={t.overview.treatmentDue} value={formatDate(risk.dueDate)} />
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Zuordnung &amp; Governance</CardTitle>
+                <CardTitle>{t.overview.governanceTitle}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="grid grid-cols-2 gap-3">
-                  <Info label="Risikokategorie" value={risk.category.name} />
-                  <Info label="Risk Owner" value={risk.riskOwner?.name ?? "⚠ nicht benannt"} />
-                  <Info label="Gesellschaft/Bereich" value={risk.ou?.name ?? "–"} />
-                  <Info label="Standort" value={risk.location?.name ?? "–"} />
-                  <Info label="Erstellt von" value={risk.createdBy.name} />
-                  <Info label="Erstellt am" value={formatDate(risk.createdAt)} />
-                  <Info label="Letzte Änderung" value={formatDateTime(risk.updatedAt)} />
-                  <Info label="Version" value={String(risk.version)} />
+                  <Info label={t.overview.category} value={risk.category.name} />
+                  <Info
+                    label={t.overview.owner}
+                    value={risk.riskOwner?.name ?? t.overview.ownerMissing}
+                  />
+                  <Info label={t.overview.ou} value={risk.ou?.name ?? "–"} />
+                  <Info label={t.overview.location} value={risk.location?.name ?? "–"} />
+                  <Info label={t.overview.createdBy} value={risk.createdBy.name} />
+                  <Info label={t.overview.createdAt} value={formatDate(risk.createdAt)} />
+                  <Info label={t.overview.updatedAt} value={formatDateTime(risk.updatedAt)} />
+                  <Info label={t.overview.version} value={String(risk.version)} />
                 </div>
-                <TagList label="Betroffene Assets" items={risk.assets.map((a) => a.name)} />
-                <TagList label="Geschäftsprozesse" items={risk.processes.map((p) => p.name)} />
-                <TagList label="ICT-Services" items={risk.ictServices.map((s) => s.name)} />
+                <TagList label={t.overview.assets} items={risk.assets.map((a) => a.name)} />
+                <TagList label={t.overview.processes} items={risk.processes.map((p) => p.name)} />
+                <TagList label={t.overview.ictServices} items={risk.ictServices.map((s) => s.name)} />
                 <TagList
-                  label="Kritische / wichtige Funktionen"
+                  label={t.overview.criticalFunctions}
                   items={risk.criticalFunctions.map((f) => f.name)}
                 />
                 <TagList
-                  label="Drittparteien"
-                  items={risk.thirdParties.map((t) => `${t.tpId} ${t.name}`)}
+                  label={t.overview.thirdParties}
+                  items={risk.thirdParties.map((tp) => `${tp.tpId} ${tp.name}`)}
                 />
                 <TagList
-                  label="Regulatorische Zuordnung"
+                  label={t.overview.regulatory}
                   items={risk.regulatoryRequirements.map((r) => `${r.refId} (${r.framework})`)}
                 />
               </CardContent>
@@ -226,10 +240,8 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
           </div>
           <Card className="mt-4">
             <CardHeader>
-              <CardTitle>Workflow</CardTitle>
-              <CardDescription>
-                Jeder Statuswechsel wird mit Benutzer, Zeitstempel und Begründung protokolliert.
-              </CardDescription>
+              <CardTitle>{t.overview.workflowTitle}</CardTitle>
+              <CardDescription>{t.overview.workflowDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               {canWrite ? (
@@ -237,9 +249,10 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                   riskId={risk.id}
                   currentStatus={risk.status}
                   allowedTargets={allowedTargets}
+                  locale={locale}
                 />
               ) : (
-                <p className="text-sm text-muted-foreground">Keine Schreibberechtigung.</p>
+                <p className="text-sm text-muted-foreground">{t.overview.noWritePermission}</p>
               )}
             </CardContent>
           </Card>
@@ -248,23 +261,23 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
         {/* ---------- Bewertung ---------- */}
         <TabsContent value="assessment">
           <div className="space-y-4">
-            {canAssess ? <AssessmentForm riskId={risk.id} /> : null}
+            {canAssess ? <AssessmentForm riskId={risk.id} locale={locale} /> : null}
             <Card>
               <CardHeader>
-                <CardTitle>Bewertungshistorie</CardTitle>
+                <CardTitle>{t.assessment.historyTitle}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <THead>
                     <TR>
-                      <TH>Datum</TH>
-                      <TH>Bewertet von</TH>
+                      <TH>{t.assessment.date}</TH>
+                      <TH>{t.assessment.assessedBy}</TH>
                       <TH>L</TH>
                       <TH>I</TH>
-                      <TH>Wirksamkeit</TH>
-                      <TH>Inherent</TH>
-                      <TH>Residual</TH>
-                      <TH>Begründung</TH>
+                      <TH>{t.assessment.effectiveness}</TH>
+                      <TH>{t.assessment.inherent}</TH>
+                      <TH>{t.assessment.residual}</TH>
+                      <TH>{t.assessment.justification}</TH>
                     </TR>
                   </THead>
                   <TBody>
@@ -291,7 +304,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                     {risk.assessments.length === 0 ? (
                       <TR>
                         <TD colSpan={8} className="text-center text-muted-foreground">
-                          Noch keine Bewertung vorhanden.
+                          {t.assessment.empty}
                         </TD>
                       </TR>
                     ) : null}
@@ -306,19 +319,19 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
         <TabsContent value="actions">
           <Card>
             <CardHeader>
-              <CardTitle>Zugeordnete Maßnahmen</CardTitle>
+              <CardTitle>{t.actions.title}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <THead>
                   <TR>
-                    <TH>Action ID</TH>
-                    <TH>Titel</TH>
-                    <TH>Owner</TH>
-                    <TH>Priorität</TH>
-                    <TH>Fällig</TH>
-                    <TH>Status</TH>
-                    <TH>Fortschritt</TH>
+                    <TH>{t.actions.actionId}</TH>
+                    <TH>{t.actions.colTitle}</TH>
+                    <TH>{t.actions.owner}</TH>
+                    <TH>{t.actions.priority}</TH>
+                    <TH>{t.actions.due}</TH>
+                    <TH>{t.actions.status}</TH>
+                    <TH>{t.actions.progress}</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -340,7 +353,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                       >
                         {formatDate(a.dueDate)}
                         {isOverdue(a.dueDate) && !["COMPLETED", "CLOSED"].includes(a.status)
-                          ? " (überfällig)"
+                          ? t.actions.overdueSuffix
                           : ""}
                       </TD>
                       <TD className="text-xs">{a.status}</TD>
@@ -350,7 +363,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                   {risk.actions.length === 0 ? (
                     <TR>
                       <TD colSpan={7} className="text-center text-muted-foreground">
-                        Keine Maßnahmen zugeordnet.
+                        {t.actions.empty}
                       </TD>
                     </TR>
                   ) : null}
@@ -364,18 +377,18 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
         <TabsContent value="controls">
           <Card>
             <CardHeader>
-              <CardTitle>Verknüpfte Kontrollen</CardTitle>
+              <CardTitle>{t.controls.title}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <THead>
                   <TR>
-                    <TH>Control ID</TH>
-                    <TH>Name</TH>
-                    <TH>Typ</TH>
-                    <TH>Control Owner</TH>
-                    <TH>Design</TH>
-                    <TH>Operativ</TH>
+                    <TH>{t.controls.controlId}</TH>
+                    <TH>{t.controls.name}</TH>
+                    <TH>{t.controls.type}</TH>
+                    <TH>{t.controls.owner}</TH>
+                    <TH>{t.controls.design}</TH>
+                    <TH>{t.controls.operating}</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -399,7 +412,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                   {risk.controls.length === 0 ? (
                     <TR>
                       <TD colSpan={6} className="text-center text-muted-foreground">
-                        Keine Kontrollen verknüpft.
+                        {t.controls.empty}
                       </TD>
                     </TR>
                   ) : null}
@@ -415,26 +428,24 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
             {canReview && !openReview && risk.status === "QUALITY_REVIEW" ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>Quality Review</CardTitle>
-                  <CardDescription>
-                    Unabhängige Prüfung anhand der 13 Kriterien (RB-03). Ersteller dürfen nicht
-                    selbst reviewen.
-                  </CardDescription>
+                  <CardTitle>{t.review.title}</CardTitle>
+                  <CardDescription>{t.review.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <StartReviewButton riskId={risk.id} />
+                  <StartReviewButton riskId={risk.id} locale={locale} />
                 </CardContent>
               </Card>
             ) : null}
             {openReview && canReview ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>Laufendes Review abschließen</CardTitle>
-                  <CardDescription>Reviewer: {openReview.reviewerName}</CardDescription>
+                  <CardTitle>{t.review.completeTitle}</CardTitle>
+                  <CardDescription>{t.review.reviewer(openReview.reviewerName)}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <CompleteReviewForm
                     reviewId={openReview.id}
+                    locale={locale}
                     items={openReview.checklistItems.map((i) => ({
                       id: i.id,
                       criterion: i.criterion,
@@ -447,11 +458,11 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
             ) : null}
             <Card>
               <CardHeader>
-                <CardTitle>Review-Historie</CardTitle>
+                <CardTitle>{t.review.historyTitle}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {risk.qualityReviews.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Noch keine Quality Reviews.</p>
+                  <p className="text-sm text-muted-foreground">{t.review.empty}</p>
                 ) : (
                   risk.qualityReviews.map((r) => (
                     <div key={r.id} className="rounded-md border p-3 text-sm">
@@ -470,21 +481,25 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                           {r.outcome}
                         </Badge>
                         {r.qualityScore != null ? (
-                          <span>Qualitätsscore: {r.qualityScore} %</span>
+                          <span>{t.review.qualityScore(r.qualityScore)}</span>
                         ) : null}
                         <span className="text-xs text-muted-foreground">
-                          {r.reviewerName} · gestartet {formatDate(r.startedAt)}
-                          {r.completedAt ? ` · abgeschlossen ${formatDate(r.completedAt)}` : ""}
+                          {r.reviewerName} · {t.review.startedAt(formatDate(r.startedAt))}
+                          {r.completedAt ? t.review.completedAt(formatDate(r.completedAt)) : ""}
                         </span>
                       </div>
                       {r.comments ? <p className="mt-1">{r.comments}</p> : null}
                       {r.rejectionReason ? (
-                        <p className="mt-1 text-destructive">Begründung: {r.rejectionReason}</p>
+                        <p className="mt-1 text-destructive">
+                          {t.review.rejectionReason(r.rejectionReason)}
+                        </p>
                       ) : null}
                       <details className="mt-2">
                         <summary className="cursor-pointer text-xs text-muted-foreground">
-                          Checkliste ({r.checklistItems.filter((i) => i.fulfilled === true).length}/
-                          {r.checklistItems.length} erfüllt)
+                          {t.review.checklistSummary(
+                            r.checklistItems.filter((i) => i.fulfilled === true).length,
+                            r.checklistItems.length,
+                          )}
                         </summary>
                         <ul className="mt-1 space-y-0.5 text-xs">
                           {r.checklistItems.map((i) => (
@@ -510,23 +525,21 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
             {canRequestAcc ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>Risikoakzeptanz beantragen</CardTitle>
-                  <CardDescription>
-                    Akzeptanzen sind stets befristet und erfordern Managementfreigabe (RB-06).
-                  </CardDescription>
+                  <CardTitle>{t.acceptance.requestTitle}</CardTitle>
+                  <CardDescription>{t.acceptance.requestDescription}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <AcceptanceRequestForm riskId={risk.id} />
+                  <AcceptanceRequestForm riskId={risk.id} locale={locale} />
                 </CardContent>
               </Card>
             ) : null}
             <Card>
               <CardHeader>
-                <CardTitle>Akzeptanzanträge</CardTitle>
+                <CardTitle>{t.acceptance.listTitle}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {risk.acceptances.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Keine Akzeptanzanträge vorhanden.</p>
+                  <p className="text-sm text-muted-foreground">{t.acceptance.empty}</p>
                 ) : (
                   risk.acceptances.map((acc) => (
                     <div key={acc.id} className="space-y-2 rounded-md border p-3 text-sm">
@@ -540,20 +553,25 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                                 : "critical"
                           }
                         >
-                          {ACCEPTANCE_STATUS[acc.status as keyof typeof ACCEPTANCE_STATUS] ??
-                            acc.status}
+                          {tEnums.acceptanceStatus[acc.status] ?? acc.status}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          beantragt von {acc.requestedBy.name} am {formatDate(acc.createdAt)}
-                          {acc.approvedBy ? ` · entschieden von ${acc.approvedBy.name}` : ""}
-                          {acc.validUntil ? ` · befristet bis ${formatDate(acc.validUntil)}` : ""}
+                          {t.acceptance.requestedBy(
+                            acc.requestedBy.name,
+                            formatDate(acc.createdAt),
+                          )}
+                          {acc.approvedBy ? t.acceptance.decidedBy(acc.approvedBy.name) : ""}
+                          {acc.validUntil ? t.acceptance.validUntil(formatDate(acc.validUntil)) : ""}
                         </span>
                       </div>
-                      <Info label="Begründung" value={acc.justification} />
-                      <Info label="Kompensierende Kontrollen" value={acc.compensatingControls} />
+                      <Info label={t.acceptance.justification} value={acc.justification} />
+                      <Info
+                        label={t.acceptance.compensatingControls}
+                        value={acc.compensatingControls}
+                      />
                       {canDecideAcc &&
                       (acc.status === "REQUESTED" || acc.status === "IN_REVIEW") ? (
-                        <AcceptanceDecisionForm acceptanceId={acc.id} />
+                        <AcceptanceDecisionForm acceptanceId={acc.id} locale={locale} />
                       ) : null}
                     </div>
                   ))
@@ -568,7 +586,7 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Audit Trail (Auszug)</CardTitle>
+                <CardTitle>{t.history.auditTitle}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-xs">
@@ -587,17 +605,17 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
                     </li>
                   ))}
                   {auditEntries.length === 0 ? (
-                    <li className="text-muted-foreground">Keine Einträge.</li>
+                    <li className="text-muted-foreground">{t.history.noEntries}</li>
                   ) : null}
                 </ul>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Kommentare</CardTitle>
+                <CardTitle>{t.history.commentsTitle}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <CommentForm riskId={risk.id} />
+                <CommentForm riskId={risk.id} locale={locale} />
                 <ul className="space-y-2 text-sm">
                   {risk.comments.map((c) => (
                     <li key={c.id} className="rounded-md border p-2">
@@ -617,13 +635,23 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
   );
 }
 
-function Kpi({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+function Kpi({
+  label,
+  value,
+  warn,
+  overdueSuffix,
+}: {
+  label: string;
+  value: string;
+  warn?: boolean;
+  overdueSuffix?: string;
+}) {
   return (
     <div className="rounded-lg border bg-card p-3">
       <p className="text-[11px] text-muted-foreground">{label}</p>
       <p className={`text-sm font-semibold ${warn ? "text-risk-high" : ""}`}>
         {value}
-        {warn ? " (überfällig)" : ""}
+        {warn ? (overdueSuffix ?? " (überfällig)") : ""}
       </p>
     </div>
   );

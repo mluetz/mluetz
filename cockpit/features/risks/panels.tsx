@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Field, Input, Select, Textarea, Label } from "@/components/ui/input";
 import {
-  CONTROL_EFFECTIVENESS_LABELS,
   CONTROL_EFFECTIVENESS_PERCENT,
   IMPACT,
   IMPACT_DIMENSIONS,
@@ -23,40 +22,42 @@ import {
   RISK_STATUS,
   type RiskStatus,
 } from "@/lib/domain/enums";
+import type { Locale } from "@/lib/i18n/config";
+import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 
-function ErrorLine({ state }: { state: ActionResult }) {
+function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
   if (state.error)
     return (
       <p role="alert" className="text-sm text-destructive">
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">Gespeichert.</p>;
+  if (state.ok) return <p className="text-sm text-risk-low">{CORE_MESSAGES[locale].panels.saved}</p>;
   return null;
 }
 
 // ---------------- Bewertung ----------------
 
-export function AssessmentForm({ riskId }: { riskId: string }) {
+export function AssessmentForm({ riskId, locale }: { riskId: string; locale: Locale }) {
+  const t = CORE_MESSAGES[locale].panels.assessment;
+  const tc = CORE_MESSAGES[locale].common;
+  const dimensionLabels = CORE_MESSAGES[locale].enums.impactDimensions;
+  const effectivenessLabels = CORE_MESSAGES[locale].enums.controlEffectiveness;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(assessRisk, {});
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Neue Bewertung durchführen</CardTitle>
-        <CardDescription>
-          Inherent = Likelihood × Impact; Residual wird aus der Kontrollwirksamkeit abgeleitet
-          (Methodik: docs/governance/risk-methodology.md). Der Impact ergibt sich aus dem Maximum
-          der bewerteten Dimensionen.
-        </CardDescription>
+        <CardTitle>{t.title}</CardTitle>
+        <CardDescription>{t.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="riskId" value={riskId} />
           <div className="grid gap-4 md:grid-cols-3">
-            <Field label="Eintrittswahrscheinlichkeit" htmlFor="likelihood" required>
+            <Field label={t.likelihood} htmlFor="likelihood" required>
               <Select id="likelihood" name="likelihood" required defaultValue="">
                 <option value="" disabled>
-                  Bitte wählen
+                  {tc.pleaseChoose}
                 </option>
                 {Object.entries(LIKELIHOOD).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -65,10 +66,10 @@ export function AssessmentForm({ riskId }: { riskId: string }) {
                 ))}
               </Select>
             </Field>
-            <Field label="Auswirkung (Fallback ohne Dimensionen)" htmlFor="impact" required>
+            <Field label={t.impactFallback} htmlFor="impact" required>
               <Select id="impact" name="impact" required defaultValue="">
                 <option value="" disabled>
-                  Bitte wählen
+                  {tc.pleaseChoose}
                 </option>
                 {Object.entries(IMPACT).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -77,7 +78,7 @@ export function AssessmentForm({ riskId }: { riskId: string }) {
                 ))}
               </Select>
             </Field>
-            <Field label="Kontrollwirksamkeit" htmlFor="controlEffectiveness" required>
+            <Field label={t.controlEffectiveness} htmlFor="controlEffectiveness" required>
               <Select
                 id="controlEffectiveness"
                 name="controlEffectiveness"
@@ -85,11 +86,11 @@ export function AssessmentForm({ riskId }: { riskId: string }) {
                 defaultValue=""
               >
                 <option value="" disabled>
-                  Bitte wählen
+                  {tc.pleaseChoose}
                 </option>
                 {CONTROL_EFFECTIVENESS_PERCENT.map((p) => (
                   <option key={p} value={p}>
-                    {CONTROL_EFFECTIVENESS_LABELS[p]}
+                    {effectivenessLabels[p]}
                   </option>
                 ))}
               </Select>
@@ -97,12 +98,12 @@ export function AssessmentForm({ riskId }: { riskId: string }) {
           </div>
           <fieldset className="rounded-md border p-3">
             <legend className="px-1 text-xs font-medium text-muted-foreground">
-              Auswirkung je Dimension (1–5, optional; Maximum bestimmt den Impact)
+              {t.dimensionsLegend}
             </legend>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {Object.entries(IMPACT_DIMENSIONS).map(([k, label]) => (
+              {Object.keys(IMPACT_DIMENSIONS).map((k) => (
                 <div key={k}>
-                  <Label htmlFor={`dim_${k}`}>{label}</Label>
+                  <Label htmlFor={`dim_${k}`}>{dimensionLabels[k]}</Label>
                   <Select id={`dim_${k}`} name={`dim_${k}`} defaultValue="">
                     <option value="">–</option>
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -115,12 +116,12 @@ export function AssessmentForm({ riskId }: { riskId: string }) {
               ))}
             </div>
           </fieldset>
-          <Field label="Begründung der Bewertung" htmlFor="justification" required>
+          <Field label={t.justification} htmlFor="justification" required>
             <Textarea id="justification" name="justification" required minLength={10} rows={3} />
           </Field>
-          <ErrorLine state={state} />
+          <ErrorLine state={state} locale={locale} />
           <Button type="submit" disabled={pending}>
-            {pending ? "Speichern…" : "Bewertung speichern"}
+            {pending ? t.saving : t.save}
           </Button>
         </form>
       </CardContent>
@@ -134,44 +135,47 @@ export function WorkflowPanel({
   riskId,
   currentStatus,
   allowedTargets,
+  locale,
 }: {
   riskId: string;
   currentStatus: string;
   allowedTargets: string[];
+  locale: Locale;
 }) {
+  const t = CORE_MESSAGES[locale].panels.workflow;
+  const tc = CORE_MESSAGES[locale].common;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(changeRiskStatus, {});
   if (allowedTargets.length === 0)
     return (
       <p className="text-sm text-muted-foreground">
-        Keine weiteren Workflow-Übergänge möglich (Status:{" "}
-        {RISK_STATUS[currentStatus as RiskStatus] ?? currentStatus}).
+        {t.noTransitions(RISK_STATUS[currentStatus as RiskStatus] ?? currentStatus)}
       </p>
     );
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="riskId" value={riskId} />
       <div className="min-w-56">
-        <Label htmlFor="newStatus">Neuer Status</Label>
+        <Label htmlFor="newStatus">{t.newStatus}</Label>
         <Select id="newStatus" name="newStatus" required defaultValue="">
           <option value="" disabled>
-            Bitte wählen
+            {tc.pleaseChoose}
           </option>
-          {allowedTargets.map((t) => (
-            <option key={t} value={t}>
-              {RISK_STATUS[t as RiskStatus] ?? t}
+          {allowedTargets.map((tgt) => (
+            <option key={tgt} value={tgt}>
+              {RISK_STATUS[tgt as RiskStatus] ?? tgt}
             </option>
           ))}
         </Select>
       </div>
       <div className="min-w-72 flex-1">
-        <Label htmlFor="wf-comment">Kommentar / Begründung (Pflicht)</Label>
+        <Label htmlFor="wf-comment">{t.comment}</Label>
         <Input id="wf-comment" name="comment" required minLength={3} />
       </div>
       <Button type="submit" variant="secondary" disabled={pending}>
-        {pending ? "Wird ausgeführt…" : "Status ändern"}
+        {pending ? t.executing : t.changeStatus}
       </Button>
       <div className="w-full">
-        <ErrorLine state={state} />
+        <ErrorLine state={state} locale={locale} />
       </div>
     </form>
   );
@@ -179,7 +183,8 @@ export function WorkflowPanel({
 
 // ---------------- Quality Review ----------------
 
-export function StartReviewButton({ riskId }: { riskId: string }) {
+export function StartReviewButton({ riskId, locale }: { riskId: string; locale: Locale }) {
+  const t = CORE_MESSAGES[locale].panels.review;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     startQualityReview,
     {},
@@ -188,9 +193,9 @@ export function StartReviewButton({ riskId }: { riskId: string }) {
     <form action={formAction} className="space-y-2">
       <input type="hidden" name="riskId" value={riskId} />
       <Button type="submit" disabled={pending}>
-        {pending ? "Starte…" : "Quality Review starten"}
+        {pending ? t.starting : t.start}
       </Button>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
     </form>
   );
 }
@@ -205,10 +210,14 @@ export interface ChecklistItemDto {
 export function CompleteReviewForm({
   reviewId,
   items,
+  locale,
 }: {
   reviewId: string;
   items: ChecklistItemDto[];
+  locale: Locale;
 }) {
+  const t = CORE_MESSAGES[locale].panels.review;
+  const tc = CORE_MESSAGES[locale].common;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     completeQualityReview,
     {},
@@ -228,42 +237,42 @@ export function CompleteReviewForm({
             <Select
               name={`item_${item.id}`}
               defaultValue={item.fulfilled === true ? "yes" : item.fulfilled === false ? "no" : ""}
-              aria-label={`Bewertung: ${item.criterion}`}
+              aria-label={t.itemAria(item.criterion)}
             >
-              <option value="">offen</option>
-              <option value="yes">erfüllt</option>
-              <option value="no">nicht erfüllt</option>
+              <option value="">{t.itemOpen}</option>
+              <option value="yes">{t.itemFulfilled}</option>
+              <option value="no">{t.itemNotFulfilled}</option>
             </Select>
             <Input
               name={`comment_${item.id}`}
-              placeholder="Kommentar (optional)"
+              placeholder={t.commentPlaceholder}
               defaultValue={item.comment ?? ""}
-              aria-label={`Kommentar: ${item.criterion}`}
+              aria-label={t.commentAria(item.criterion)}
             />
           </div>
         ))}
       </div>
       <div className="grid gap-4 md:grid-cols-3">
-        <Field label="Ergebnis" htmlFor="outcome" required>
+        <Field label={t.outcome} htmlFor="outcome" required>
           <Select id="outcome" name="outcome" required defaultValue="">
             <option value="" disabled>
-              Bitte wählen
+              {tc.pleaseChoose}
             </option>
-            <option value="APPROVED">Freigeben</option>
-            <option value="RETURNED">Zur Nachbearbeitung zurückgeben</option>
-            <option value="REJECTED">Ablehnen</option>
+            <option value="APPROVED">{t.outcomeApprove}</option>
+            <option value="RETURNED">{t.outcomeReturn}</option>
+            <option value="REJECTED">{t.outcomeReject}</option>
           </Select>
         </Field>
-        <Field label="Review-Kommentar" htmlFor="rev-comments">
+        <Field label={t.comments} htmlFor="rev-comments">
           <Input id="rev-comments" name="comments" />
         </Field>
-        <Field label="Begründung bei Rückgabe/Ablehnung" htmlFor="rejectionReason">
+        <Field label={t.rejectionReason} htmlFor="rejectionReason">
           <Input id="rejectionReason" name="rejectionReason" />
         </Field>
       </div>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" disabled={pending}>
-        {pending ? "Speichern…" : "Review abschließen (Vier-Augen-Prinzip)"}
+        {pending ? t.saving : t.complete}
       </Button>
     </form>
   );
@@ -271,7 +280,8 @@ export function CompleteReviewForm({
 
 // ---------------- Akzeptanz ----------------
 
-export function AcceptanceRequestForm({ riskId }: { riskId: string }) {
+export function AcceptanceRequestForm({ riskId, locale }: { riskId: string; locale: Locale }) {
+  const t = CORE_MESSAGES[locale].panels.acceptance;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     requestAcceptance,
     {},
@@ -279,21 +289,29 @@ export function AcceptanceRequestForm({ riskId }: { riskId: string }) {
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="riskId" value={riskId} />
-      <Field label="Begründung des Akzeptanzantrags" htmlFor="acc-just" required>
+      <Field label={t.justification} htmlFor="acc-just" required>
         <Textarea id="acc-just" name="justification" required minLength={10} rows={2} />
       </Field>
-      <Field label="Kompensierende Kontrollen" htmlFor="acc-comp" required>
+      <Field label={t.compensatingControls} htmlFor="acc-comp" required>
         <Textarea id="acc-comp" name="compensatingControls" required minLength={5} rows={2} />
       </Field>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" variant="secondary" disabled={pending}>
-        {pending ? "Sende…" : "Risikoakzeptanz beantragen"}
+        {pending ? t.sending : t.request}
       </Button>
     </form>
   );
 }
 
-export function AcceptanceDecisionForm({ acceptanceId }: { acceptanceId: string }) {
+export function AcceptanceDecisionForm({
+  acceptanceId,
+  locale,
+}: {
+  acceptanceId: string;
+  locale: Locale;
+}) {
+  const t = CORE_MESSAGES[locale].panels.acceptance;
+  const tc = CORE_MESSAGES[locale].common;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(decideAcceptance, {});
   return (
     <form
@@ -302,28 +320,28 @@ export function AcceptanceDecisionForm({ acceptanceId }: { acceptanceId: string 
     >
       <input type="hidden" name="acceptanceId" value={acceptanceId} />
       <div>
-        <Label htmlFor={`dec-${acceptanceId}`}>Entscheidung</Label>
+        <Label htmlFor={`dec-${acceptanceId}`}>{t.decision}</Label>
         <Select id={`dec-${acceptanceId}`} name="decision" required defaultValue="">
           <option value="" disabled>
-            Bitte wählen
+            {tc.pleaseChoose}
           </option>
-          <option value="APPROVED">Genehmigen (befristet)</option>
-          <option value="REJECTED">Ablehnen</option>
+          <option value="APPROVED">{t.approve}</option>
+          <option value="REJECTED">{t.reject}</option>
         </Select>
       </div>
       <div>
-        <Label htmlFor={`vu-${acceptanceId}`}>Befristet bis</Label>
+        <Label htmlFor={`vu-${acceptanceId}`}>{t.validUntil}</Label>
         <Input id={`vu-${acceptanceId}`} type="date" name="validUntil" />
       </div>
       <div className="min-w-64 flex-1">
-        <Label htmlFor={`cm-${acceptanceId}`}>Kommentar (Pflicht)</Label>
+        <Label htmlFor={`cm-${acceptanceId}`}>{t.comment}</Label>
         <Input id={`cm-${acceptanceId}`} name="comment" required minLength={3} />
       </div>
       <Button type="submit" disabled={pending}>
-        {pending ? "Speichern…" : "Entscheiden"}
+        {pending ? t.saving : t.decide}
       </Button>
       <div className="w-full">
-        <ErrorLine state={state} />
+        <ErrorLine state={state} locale={locale} />
       </div>
     </form>
   );
@@ -331,20 +349,21 @@ export function AcceptanceDecisionForm({ acceptanceId }: { acceptanceId: string 
 
 // ---------------- Kommentare ----------------
 
-export function CommentForm({ riskId }: { riskId: string }) {
+export function CommentForm({ riskId, locale }: { riskId: string; locale: Locale }) {
+  const t = CORE_MESSAGES[locale].panels.comment;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(addRiskComment, {});
   return (
     <form action={formAction} className="flex items-end gap-2">
       <input type="hidden" name="riskId" value={riskId} />
       <div className="flex-1">
-        <Label htmlFor="comment-body">Kommentar hinzufügen</Label>
+        <Label htmlFor="comment-body">{t.add}</Label>
         <Input id="comment-body" name="body" required minLength={2} maxLength={2000} />
       </div>
       <Button type="submit" variant="secondary" disabled={pending}>
-        {pending ? "…" : "Senden"}
+        {pending ? "…" : t.send}
       </Button>
       <div className="w-full">
-        <ErrorLine state={state} />
+        <ErrorLine state={state} locale={locale} />
       </div>
     </form>
   );
