@@ -23,6 +23,8 @@ import { PrintButton } from "@/features/reports/print-button";
 import { SaveReportButton } from "@/features/reports/save-report-button";
 import { ComplianceDisclaimer } from "@/features/governance/disclaimer";
 import { complianceStatusLabel, complianceStatusVariant } from "@/features/governance/status";
+import { getLocale } from "@/lib/i18n/server";
+import { REPORTS_MESSAGES, type ReportsMessages } from "@/lib/i18n/messages/reports";
 
 export const metadata = { title: "Bericht" };
 export const dynamic = "force-dynamic";
@@ -31,49 +33,52 @@ export default async function ReportPage({ params }: { params: Promise<{ type: s
   const { type } = await params;
   const def = getReportDef(type);
   if (!def) notFound();
+  const locale = await getLocale();
+  const t = REPORTS_MESSAGES[locale];
   const user = await requirePermission(def.permission);
   const now = new Date();
+  const title = t.defs[def.key].title;
 
-  const content = await renderContent(def.key);
+  const content = await renderContent(def.key, t);
 
   return (
     <div>
       <PageHeader
-        title={def.titel}
-        description={def.beschreibung}
+        title={title}
+        description={t.defs[def.key].description}
         crumbs={[
           { label: "Overview", href: "/overview" },
           { label: "Reports", href: "/reports" },
-          { label: def.titel },
+          { label: title },
         ]}
         actions={
           <div className="no-print flex items-center gap-2">
-            <SaveReportButton reportType={def.key} title={def.titel} />
-            <PrintButton />
+            <SaveReportButton reportType={def.key} title={title} locale={locale} />
+            <PrintButton locale={locale} />
           </div>
         }
       />
 
       <div className="mb-5 grid gap-x-8 gap-y-1 rounded-lg border bg-card p-4 text-sm md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <span className="block text-xs text-muted-foreground">Bericht</span>
-          {def.titel}
+          <span className="block text-xs text-muted-foreground">{t.meta.report}</span>
+          {title}
         </div>
         <div>
-          <span className="block text-xs text-muted-foreground">Stichtag</span>
+          <span className="block text-xs text-muted-foreground">{t.meta.effectiveDate}</span>
           {formatDate(now)}
         </div>
         <div>
-          <span className="block text-xs text-muted-foreground">Ersteller</span>
+          <span className="block text-xs text-muted-foreground">{t.meta.author}</span>
           {user.name}
         </div>
         <div>
-          <span className="block text-xs text-muted-foreground">Generiert am</span>
+          <span className="block text-xs text-muted-foreground">{t.meta.generatedAt}</span>
           {formatDateTime(now)}
         </div>
         <div className="md:col-span-2 lg:col-span-4">
-          <span className="block text-xs text-muted-foreground">Angewandte Filter</span>
-          alle
+          <span className="block text-xs text-muted-foreground">{t.meta.appliedFilters}</span>
+          {t.meta.filtersAll}
         </div>
       </div>
 
@@ -86,30 +91,30 @@ export default async function ReportPage({ params }: { params: Promise<{ type: s
 // Inhalte je Berichtstyp
 // ------------------------------------------------------------------
 
-async function renderContent(key: ReportKey): Promise<ReactNode> {
+async function renderContent(key: ReportKey, t: ReportsMessages): Promise<ReactNode> {
   switch (key) {
     case "EXECUTIVE_SUMMARY":
-      return <ExecutiveSummary />;
+      return <ExecutiveSummary t={t} />;
     case "TOP_RISKS":
-      return <TopRisks />;
+      return <TopRisks t={t} />;
     case "ABOVE_APPETITE":
-      return <AboveAppetite />;
+      return <AboveAppetite t={t} />;
     case "OVERDUE_ACTIONS":
-      return <OverdueActions />;
+      return <OverdueActions t={t} />;
     case "ACCEPTANCES":
-      return <Acceptances />;
+      return <Acceptances t={t} />;
     case "TPRM_OVERVIEW":
-      return <TprmOverview />;
+      return <TprmOverview t={t} />;
     case "DORA_READINESS":
-      return <DoraReadiness />;
+      return <DoraReadiness t={t} />;
     case "CONTROL_EFFECTIVENESS":
-      return <ControlEffectiveness />;
+      return <ControlEffectiveness t={t} />;
     case "QUALITY_REVIEW":
-      return <QualityReviews />;
+      return <QualityReviews t={t} />;
     case "TREND":
-      return <Trend />;
+      return <Trend t={t} />;
     case "DECISION_PAPER":
-      return <DecisionPaper />;
+      return <DecisionPaper t={t} />;
   }
 }
 
@@ -130,14 +135,16 @@ function CountBadges({
   counts,
   labelOf,
   variantOf,
+  emptyMessage,
 }: {
   counts: Record<string, number>;
   labelOf: (key: string) => string;
   variantOf?: (key: string) => "low" | "medium" | "high" | "critical" | "secondary";
+  emptyMessage: string;
 }) {
   const entries = Object.entries(counts).filter(([, n]) => n > 0);
   if (entries.length === 0)
-    return <p className="text-sm text-muted-foreground">Keine Daten vorhanden.</p>;
+    return <p className="text-sm text-muted-foreground">{emptyMessage}</p>;
   return (
     <div className="flex flex-wrap gap-2">
       {entries.map(([k, n]) => (
@@ -149,20 +156,28 @@ function CountBadges({
   );
 }
 
-function RiskRowsTable({ rows, emptyMessage }: { rows: RiskRow[]; emptyMessage: string }) {
+function RiskRowsTable({
+  rows,
+  emptyMessage,
+  t,
+}: {
+  rows: RiskRow[];
+  emptyMessage: string;
+  t: ReportsMessages;
+}) {
   return (
     <Table>
       <THead>
         <TR>
-          <TH>Risiko-ID</TH>
-          <TH>Titel</TH>
-          <TH>Kategorie</TH>
-          <TH>Owner</TH>
-          <TH>Inherent</TH>
-          <TH>Residual</TH>
-          <TH>Klasse</TH>
-          <TH>Status</TH>
-          <TH>Strategie</TH>
+          <TH>{t.riskTable.riskId}</TH>
+          <TH>{t.riskTable.title}</TH>
+          <TH>{t.riskTable.category}</TH>
+          <TH>{t.riskTable.owner}</TH>
+          <TH>{t.riskTable.inherent}</TH>
+          <TH>{t.riskTable.residual}</TH>
+          <TH>{t.riskTable.riskClass}</TH>
+          <TH>{t.riskTable.status}</TH>
+          <TH>{t.riskTable.strategy}</TH>
         </TR>
       </THead>
       <TBody>
@@ -218,7 +233,7 @@ function topByResidual(rows: RiskRow[], n = 10): RiskRow[] {
     .slice(0, n);
 }
 
-async function ExecutiveSummary() {
+async function ExecutiveSummary({ t }: { t: ReportsMessages }) {
   const rows = await getRiskRows();
   const open = rows.filter((r) => !["CLOSED", "REJECTED"].includes(r.status));
   const highCritical = open.filter(
@@ -242,45 +257,48 @@ async function ExecutiveSummary() {
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="mb-3 text-sm font-semibold">Kennzahlen</h2>
+        <h2 className="mb-3 text-sm font-semibold">{t.executiveSummary.kpiHeading}</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Kpi label="Offene Risiken" value={open.length} />
-          <Kpi label="High / Critical (Residual)" value={highCritical.length} />
-          <Kpi label="Über Risikoappetit" value={open.filter((r) => r.aboveAppetite).length} />
-          <Kpi label="Überfällige Reviews" value={rows.filter((r) => r.reviewOverdue).length} />
-          <Kpi label="Offene Maßnahmen" value={openActions} />
-          <Kpi label="Überfällige Maßnahmen" value={overdueActions} />
-          <Kpi label="Offene Akzeptanzanträge" value={openAcceptances} />
-          <Kpi label="Unwirksame Kontrollen" value={ineffectiveControls} />
-          <Kpi label="Kritische Drittparteien" value={criticalTps} />
+          <Kpi label={t.executiveSummary.openRisks} value={open.length} />
+          <Kpi label={t.executiveSummary.highCritical} value={highCritical.length} />
+          <Kpi
+            label={t.executiveSummary.aboveAppetite}
+            value={open.filter((r) => r.aboveAppetite).length}
+          />
+          <Kpi
+            label={t.executiveSummary.overdueReviews}
+            value={rows.filter((r) => r.reviewOverdue).length}
+          />
+          <Kpi label={t.executiveSummary.openActions} value={openActions} />
+          <Kpi label={t.executiveSummary.overdueActions} value={overdueActions} />
+          <Kpi label={t.executiveSummary.openAcceptances} value={openAcceptances} />
+          <Kpi label={t.executiveSummary.ineffectiveControls} value={ineffectiveControls} />
+          <Kpi label={t.executiveSummary.criticalThirdParties} value={criticalTps} />
         </div>
       </section>
       <section>
-        <h2 className="mb-3 text-sm font-semibold">Top-10-Risiken nach Residual-Score</h2>
-        <RiskRowsTable rows={topByResidual(rows)} emptyMessage="Keine bewerteten Risiken." />
+        <h2 className="mb-3 text-sm font-semibold">{t.executiveSummary.topHeading}</h2>
+        <RiskRowsTable
+          rows={topByResidual(rows)}
+          emptyMessage={t.executiveSummary.emptyRisks}
+          t={t}
+        />
       </section>
     </div>
   );
 }
 
-async function TopRisks() {
+async function TopRisks({ t }: { t: ReportsMessages }) {
   const rows = await getRiskRows();
-  return (
-    <RiskRowsTable rows={topByResidual(rows)} emptyMessage="Keine bewerteten Risiken vorhanden." />
-  );
+  return <RiskRowsTable rows={topByResidual(rows)} emptyMessage={t.topRisks.empty} t={t} />;
 }
 
-async function AboveAppetite() {
+async function AboveAppetite({ t }: { t: ReportsMessages }) {
   const rows = await getRiskRows({ aboveAppetite: true });
-  return (
-    <RiskRowsTable
-      rows={rows}
-      emptyMessage="Kein Risiko überschreitet derzeit den Risikoappetit."
-    />
-  );
+  return <RiskRowsTable rows={rows} emptyMessage={t.aboveAppetite.empty} t={t} />;
 }
 
-async function OverdueActions() {
+async function OverdueActions({ t }: { t: ReportsMessages }) {
   const actions = await db.action.findMany({
     where: { status: { notIn: ["CLOSED", "COMPLETED"] }, dueDate: { lt: new Date() } },
     include: { risk: { select: { id: true, riskId: true, title: true } }, owner: true },
@@ -291,20 +309,20 @@ async function OverdueActions() {
     <Table>
       <THead>
         <TR>
-          <TH>Maßnahmen-ID</TH>
-          <TH>Titel</TH>
-          <TH>Owner</TH>
-          <TH>Fälligkeit</TH>
-          <TH>Verzugstage</TH>
-          <TH>Eskalationsstufe</TH>
-          <TH>Risiko</TH>
+          <TH>{t.overdueActions.actionId}</TH>
+          <TH>{t.overdueActions.title}</TH>
+          <TH>{t.overdueActions.owner}</TH>
+          <TH>{t.overdueActions.dueDate}</TH>
+          <TH>{t.overdueActions.daysOverdue}</TH>
+          <TH>{t.overdueActions.escalationLevel}</TH>
+          <TH>{t.overdueActions.risk}</TH>
         </TR>
       </THead>
       <TBody>
         {actions.length === 0 ? (
           <TR>
             <TD colSpan={7} className="h-16 text-center text-muted-foreground">
-              Keine überfälligen Maßnahmen.
+              {t.overdueActions.empty}
             </TD>
           </TR>
         ) : (
@@ -331,7 +349,7 @@ async function OverdueActions() {
   );
 }
 
-async function Acceptances() {
+async function Acceptances({ t }: { t: ReportsMessages }) {
   const acceptances = await db.riskAcceptance.findMany({
     include: {
       risk: { select: { id: true, riskId: true, title: true } },
@@ -344,19 +362,19 @@ async function Acceptances() {
     <Table>
       <THead>
         <TR>
-          <TH>Risiko</TH>
-          <TH>Status</TH>
-          <TH>Antragsteller</TH>
-          <TH>Genehmiger</TH>
-          <TH>Befristet bis</TH>
-          <TH>Kompensierende Kontrollen</TH>
+          <TH>{t.acceptances.risk}</TH>
+          <TH>{t.acceptances.status}</TH>
+          <TH>{t.acceptances.requestedBy}</TH>
+          <TH>{t.acceptances.approvedBy}</TH>
+          <TH>{t.acceptances.validUntil}</TH>
+          <TH>{t.acceptances.compensatingControls}</TH>
         </TR>
       </THead>
       <TBody>
         {acceptances.length === 0 ? (
           <TR>
             <TD colSpan={6} className="h-16 text-center text-muted-foreground">
-              Keine Risikoakzeptanzen vorhanden.
+              {t.acceptances.empty}
             </TD>
           </TR>
         ) : (
@@ -385,58 +403,58 @@ async function Acceptances() {
   );
 }
 
-async function TprmOverview() {
+async function TprmOverview({ t }: { t: ReportsMessages }) {
   const tps = await db.thirdParty.findMany({
     include: { exitStrategy: true },
     orderBy: { tpId: "asc" },
   });
-  const critical = tps.filter((t) => t.criticality === "CRITICAL").length;
-  const concentration = tps.filter((t) => t.concentrationRisk).length;
+  const critical = tps.filter((tp) => tp.criticality === "CRITICAL").length;
+  const concentration = tps.filter((tp) => tp.concentrationRisk).length;
   const missingExit = tps.filter(
-    (t) => t.supportsCriticalFunction && (!t.exitStrategy || t.exitStrategy.status === "MISSING"),
+    (tp) => tp.supportsCriticalFunction && (!tp.exitStrategy || tp.exitStrategy.status === "MISSING"),
   ).length;
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <Kpi label="Kritische Drittparteien" value={critical} />
-        <Kpi label="Konzentrationsrisiken" value={concentration} />
-        <Kpi label="Fehlende Exit-Strategien (kritische Funktion)" value={missingExit} />
+        <Kpi label={t.tprm.criticalThirdParties} value={critical} />
+        <Kpi label={t.tprm.concentrationRisks} value={concentration} />
+        <Kpi label={t.tprm.missingExit} value={missingExit} />
       </div>
       <Table>
         <THead>
           <TR>
-            <TH>TP-ID</TH>
-            <TH>Name</TH>
-            <TH>Status</TH>
-            <TH>Kritikalität</TH>
-            <TH>Residual</TH>
-            <TH>Due Diligence</TH>
-            <TH>Nächstes Review</TH>
-            <TH>Konzentration</TH>
-            <TH>Exit-Status</TH>
+            <TH>{t.tprm.tpId}</TH>
+            <TH>{t.tprm.name}</TH>
+            <TH>{t.tprm.status}</TH>
+            <TH>{t.tprm.criticality}</TH>
+            <TH>{t.tprm.residual}</TH>
+            <TH>{t.tprm.dueDiligence}</TH>
+            <TH>{t.tprm.nextReview}</TH>
+            <TH>{t.tprm.concentration}</TH>
+            <TH>{t.tprm.exitStatus}</TH>
           </TR>
         </THead>
         <TBody>
           {tps.length === 0 ? (
             <TR>
               <TD colSpan={9} className="h-16 text-center text-muted-foreground">
-                Keine Drittparteien vorhanden.
+                {t.tprm.empty}
               </TD>
             </TR>
           ) : (
-            tps.map((t) => (
-              <TR key={t.id}>
-                <TD className="whitespace-nowrap font-medium">{t.tpId}</TD>
-                <TD>{t.name}</TD>
+            tps.map((tp) => (
+              <TR key={tp.id}>
+                <TD className="whitespace-nowrap font-medium">{tp.tpId}</TD>
+                <TD>{tp.name}</TD>
                 <TD className="whitespace-nowrap">
-                  {TP_STATUS[t.status as keyof typeof TP_STATUS] ?? t.status}
+                  {TP_STATUS[tp.status as keyof typeof TP_STATUS] ?? tp.status}
                 </TD>
-                <TD className="whitespace-nowrap">{t.criticality}</TD>
-                <TD className="tabular-nums">{t.residualRiskScore ?? "–"}</TD>
-                <TD className="whitespace-nowrap">{t.dueDiligenceStatus}</TD>
-                <TD className="whitespace-nowrap">{formatDate(t.nextReviewDate)}</TD>
-                <TD>{t.concentrationRisk ? "ja" : "nein"}</TD>
-                <TD className="whitespace-nowrap">{t.exitStrategy?.status ?? "MISSING"}</TD>
+                <TD className="whitespace-nowrap">{tp.criticality}</TD>
+                <TD className="tabular-nums">{tp.residualRiskScore ?? "–"}</TD>
+                <TD className="whitespace-nowrap">{tp.dueDiligenceStatus}</TD>
+                <TD className="whitespace-nowrap">{formatDate(tp.nextReviewDate)}</TD>
+                <TD>{tp.concentrationRisk ? t.common.yes : t.common.no}</TD>
+                <TD className="whitespace-nowrap">{tp.exitStrategy?.status ?? "MISSING"}</TD>
               </TR>
             ))
           )}
@@ -446,7 +464,7 @@ async function TprmOverview() {
   );
 }
 
-async function DoraReadiness() {
+async function DoraReadiness({ t }: { t: ReportsMessages }) {
   const mappings = await db.complianceMapping.findMany({
     where: { requirement: { framework: { in: ["DORA", "DORA_RTS"] } } },
     include: { requirement: true, owner: true },
@@ -456,37 +474,36 @@ async function DoraReadiness() {
   for (const m of mappings) counts[m.status] = (counts[m.status] ?? 0) + 1;
   const { getDoraOverview } = await import("@/features/dora/queries");
   const overview = await getDoraOverview();
-  const lightLabel = { GREEN: "GRÜN", YELLOW: "GELB", RED: "ROT" } as const;
+  const lightLabel = t.dora.lights;
   return (
     <div className="space-y-6">
       <ComplianceDisclaimer />
       <section>
-        <h2 className="mb-3 text-sm font-semibold">
-          DORA Resilience Index (Anforderungskatalog FRWK-DORA-001)
-        </h2>
+        <h2 className="mb-3 text-sm font-semibold">{t.dora.indexHeading}</h2>
         <p className="mb-2 text-sm">
-          Gesamtindex: <span className="font-semibold">{overview.index.indexPercent} %</span> ·
-          Status: <span className="font-semibold">{lightLabel[overview.index.status]}</span> ·
-          Offene Knockouts:{" "}
+          {t.dora.totalIndex} <span className="font-semibold">{overview.index.indexPercent} %</span>{" "}
+          · {t.dora.statusLabel}{" "}
+          <span className="font-semibold">{lightLabel[overview.index.status]}</span> ·{" "}
+          {t.dora.openKnockoutsLabel}{" "}
           <span className="font-semibold">{overview.index.totalOpenKnockouts}</span>
         </p>
         <Table>
           <THead>
             <TR>
-              <TH>Kapitel</TH>
-              <TH>Artikel</TH>
-              <TH>Gewicht</TH>
-              <TH>Score</TH>
-              <TH>Status</TH>
-              <TH>Bewertet</TH>
-              <TH>Offene Knockouts</TH>
+              <TH>{t.dora.chapter}</TH>
+              <TH>{t.dora.articles}</TH>
+              <TH>{t.dora.weight}</TH>
+              <TH>{t.dora.score}</TH>
+              <TH>{t.dora.status}</TH>
+              <TH>{t.dora.assessed}</TH>
+              <TH>{t.dora.openKnockouts}</TH>
             </TR>
           </THead>
           <TBody>
             {overview.chapters.map((c) => (
               <TR key={c.key}>
                 <TD>
-                  Kap. {c.roman} – {c.title}
+                  {t.dora.chapterAbbrev} {c.roman} – {c.title}
                 </TD>
                 <TD className="text-xs">{c.articleRange}</TD>
                 <TD>{c.weightPercent} %</TD>
@@ -502,36 +519,34 @@ async function DoraReadiness() {
             ))}
           </TBody>
         </Table>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Methodik: Gewichte MUSS 3 / SOLL 2 / KANN 1; Nachweissperre begrenzt unbelegte Bewertungen
-          auf Reifegrad 2; Knockouts (Reifegrad &lt; 3) setzen das Kapitel auf ROT.
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t.dora.methodology}</p>
       </section>
       <section>
-        <h2 className="mb-3 text-sm font-semibold">Statusverteilung</h2>
+        <h2 className="mb-3 text-sm font-semibold">{t.dora.statusDistribution}</h2>
         <CountBadges
           counts={counts}
           labelOf={complianceStatusLabel}
           variantOf={complianceStatusVariant}
+          emptyMessage={t.common.noData}
         />
       </section>
       <Table>
         <THead>
           <TR>
-            <TH>Ref-ID</TH>
-            <TH>Framework</TH>
-            <TH>Anforderung</TH>
-            <TH>Status</TH>
-            <TH>Begründung</TH>
-            <TH>Owner</TH>
-            <TH>Nächstes Review</TH>
+            <TH>{t.dora.refId}</TH>
+            <TH>{t.dora.framework}</TH>
+            <TH>{t.dora.requirement}</TH>
+            <TH>{t.dora.status}</TH>
+            <TH>{t.dora.justification}</TH>
+            <TH>{t.dora.owner}</TH>
+            <TH>{t.dora.nextReview}</TH>
           </TR>
         </THead>
         <TBody>
           {mappings.length === 0 ? (
             <TR>
               <TD colSpan={7} className="h-16 text-center text-muted-foreground">
-                Keine DORA-Mappings vorhanden.
+                {t.dora.empty}
               </TD>
             </TR>
           ) : (
@@ -566,7 +581,7 @@ async function DoraReadiness() {
   );
 }
 
-async function ControlEffectiveness() {
+async function ControlEffectiveness({ t }: { t: ReportsMessages }) {
   const controls = await db.control.findMany({
     include: {
       owner: true,
@@ -587,31 +602,35 @@ async function ControlEffectiveness() {
     <div className="space-y-6">
       <section className="space-y-3">
         <div>
-          <h2 className="mb-2 text-sm font-semibold">Verteilung Design-Wirksamkeit</h2>
-          <CountBadges counts={designCounts} labelOf={ratingLabel} />
+          <h2 className="mb-2 text-sm font-semibold">{t.controls.designDistribution}</h2>
+          <CountBadges counts={designCounts} labelOf={ratingLabel} emptyMessage={t.common.noData} />
         </div>
         <div>
-          <h2 className="mb-2 text-sm font-semibold">Verteilung operative Wirksamkeit</h2>
-          <CountBadges counts={operatingCounts} labelOf={ratingLabel} />
+          <h2 className="mb-2 text-sm font-semibold">{t.controls.operatingDistribution}</h2>
+          <CountBadges
+            counts={operatingCounts}
+            labelOf={ratingLabel}
+            emptyMessage={t.common.noData}
+          />
         </div>
       </section>
       <Table>
         <THead>
           <TR>
-            <TH>Kontroll-ID</TH>
-            <TH>Name</TH>
-            <TH>Owner</TH>
-            <TH>Design-Wirksamkeit</TH>
-            <TH>Operative Wirksamkeit</TH>
-            <TH>Letzter Test</TH>
-            <TH>Nächster Test</TH>
+            <TH>{t.controls.controlId}</TH>
+            <TH>{t.controls.name}</TH>
+            <TH>{t.controls.owner}</TH>
+            <TH>{t.controls.designEffectiveness}</TH>
+            <TH>{t.controls.operatingEffectiveness}</TH>
+            <TH>{t.controls.lastTest}</TH>
+            <TH>{t.controls.nextTest}</TH>
           </TR>
         </THead>
         <TBody>
           {controls.length === 0 ? (
             <TR>
               <TD colSpan={7} className="h-16 text-center text-muted-foreground">
-                Keine Kontrollen vorhanden.
+                {t.controls.empty}
               </TD>
             </TR>
           ) : (
@@ -635,7 +654,7 @@ async function ControlEffectiveness() {
   );
 }
 
-async function QualityReviews() {
+async function QualityReviews({ t }: { t: ReportsMessages }) {
   const reviews = await db.qualityReview.findMany({
     include: { risk: { select: { id: true, riskId: true, title: true } } },
     orderBy: { startedAt: "desc" },
@@ -647,25 +666,25 @@ async function QualityReviews() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <Kpi label="Quality Reviews gesamt" value={reviews.length} />
-        <Kpi label="Mit Score abgeschlossen" value={scored.length} />
-        <Kpi label="Durchschnittsscore" value={avg !== null ? `${avg} %` : "–"} />
+        <Kpi label={t.quality.total} value={reviews.length} />
+        <Kpi label={t.quality.completedWithScore} value={scored.length} />
+        <Kpi label={t.quality.averageScore} value={avg !== null ? `${avg} %` : "–"} />
       </div>
       <Table>
         <THead>
           <TR>
-            <TH>Risiko</TH>
-            <TH>Reviewer</TH>
-            <TH>Ergebnis</TH>
-            <TH>Score</TH>
-            <TH>Datum</TH>
+            <TH>{t.quality.risk}</TH>
+            <TH>{t.quality.reviewer}</TH>
+            <TH>{t.quality.outcome}</TH>
+            <TH>{t.quality.score}</TH>
+            <TH>{t.quality.date}</TH>
           </TR>
         </THead>
         <TBody>
           {reviews.length === 0 ? (
             <TR>
               <TD colSpan={5} className="h-16 text-center text-muted-foreground">
-                Keine Quality Reviews vorhanden.
+                {t.quality.empty}
               </TD>
             </TR>
           ) : (
@@ -692,7 +711,7 @@ async function QualityReviews() {
   );
 }
 
-async function Trend() {
+async function Trend({ t }: { t: ReportsMessages }) {
   const start = new Date();
   start.setMonth(start.getMonth() - 11);
   start.setDate(1);
@@ -721,9 +740,9 @@ async function Trend() {
     <Table>
       <THead>
         <TR>
-          <TH>Monat</TH>
-          <TH>Anzahl Bewertungen</TH>
-          <TH>Ø Residual-Score</TH>
+          <TH>{t.trend.month}</TH>
+          <TH>{t.trend.assessmentCount}</TH>
+          <TH>{t.trend.avgResidualScore}</TH>
         </TR>
       </THead>
       <TBody>
@@ -742,15 +761,15 @@ async function Trend() {
   );
 }
 
-function DecisionLine() {
+function DecisionLine({ t }: { t: ReportsMessages }) {
   return (
     <p className="mt-3 border-b border-dashed pb-1 text-sm">
-      Entscheidung: ______________________________________________
+      {t.decisionPaper.decision} ______________________________________________
     </p>
   );
 }
 
-async function DecisionPaper() {
+async function DecisionPaper({ t }: { t: ReportsMessages }) {
   const [openAcceptances, aboveAppetiteRows, escalations] = await Promise.all([
     db.riskAcceptance.findMany({
       where: { status: { in: ["REQUESTED", "IN_REVIEW"] } },
@@ -769,22 +788,22 @@ async function DecisionPaper() {
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="mb-3 text-sm font-semibold">1. Offene Akzeptanzanträge</h2>
+        <h2 className="mb-3 text-sm font-semibold">{t.decisionPaper.section1}</h2>
         <Table>
           <THead>
             <TR>
-              <TH>Risiko</TH>
-              <TH>Antragsteller</TH>
-              <TH>Status</TH>
-              <TH>Beantragt am</TH>
-              <TH>Begründung</TH>
+              <TH>{t.decisionPaper.risk}</TH>
+              <TH>{t.decisionPaper.requestedBy}</TH>
+              <TH>{t.decisionPaper.status}</TH>
+              <TH>{t.decisionPaper.requestedAt}</TH>
+              <TH>{t.decisionPaper.justification}</TH>
             </TR>
           </THead>
           <TBody>
             {openAcceptances.length === 0 ? (
               <TR>
                 <TD colSpan={5} className="h-14 text-center text-muted-foreground">
-                  Keine offenen Akzeptanzanträge.
+                  {t.decisionPaper.emptyAcceptances}
                 </TD>
               </TR>
             ) : (
@@ -809,38 +828,33 @@ async function DecisionPaper() {
             )}
           </TBody>
         </Table>
-        <DecisionLine />
+        <DecisionLine t={t} />
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold">
-          2. Risiken über Risikoappetit ohne aktive Behandlung
-        </h2>
-        <RiskRowsTable
-          rows={untreated}
-          emptyMessage="Keine Risiken über Appetit ohne aktive Behandlung."
-        />
-        <DecisionLine />
+        <h2 className="mb-3 text-sm font-semibold">{t.decisionPaper.section2}</h2>
+        <RiskRowsTable rows={untreated} emptyMessage={t.decisionPaper.emptyUntreated} t={t} />
+        <DecisionLine t={t} />
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-semibold">3. Eskalationen (Stufe ≥ 2)</h2>
+        <h2 className="mb-3 text-sm font-semibold">{t.decisionPaper.section3}</h2>
         <Table>
           <THead>
             <TR>
-              <TH>Maßnahmen-ID</TH>
-              <TH>Titel</TH>
-              <TH>Owner</TH>
-              <TH>Fälligkeit</TH>
-              <TH>Eskalationsstufe</TH>
-              <TH>Risiko</TH>
+              <TH>{t.decisionPaper.actionId}</TH>
+              <TH>{t.decisionPaper.title}</TH>
+              <TH>{t.decisionPaper.owner}</TH>
+              <TH>{t.decisionPaper.dueDate}</TH>
+              <TH>{t.decisionPaper.escalationLevel}</TH>
+              <TH>{t.decisionPaper.risk}</TH>
             </TR>
           </THead>
           <TBody>
             {escalations.length === 0 ? (
               <TR>
                 <TD colSpan={6} className="h-14 text-center text-muted-foreground">
-                  Keine Eskalationen der Stufe 2 oder höher.
+                  {t.decisionPaper.emptyEscalations}
                 </TD>
               </TR>
             ) : (
@@ -861,7 +875,7 @@ async function DecisionPaper() {
             )}
           </TBody>
         </Table>
-        <DecisionLine />
+        <DecisionLine t={t} />
       </section>
     </div>
   );

@@ -3,6 +3,8 @@ import { requirePermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { getRiskThresholds } from "@/lib/settings";
+import { getLocale } from "@/lib/i18n/server";
+import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 import { RiskHeatmap } from "@/components/heatmap";
 import { CountBarChart, ResidualTrendChart } from "@/features/dashboard/charts";
 import { PageHeader } from "@/components/page-header";
@@ -25,6 +27,8 @@ interface Search {
 
 export default async function OverviewPage({ searchParams }: { searchParams: Promise<Search> }) {
   await requirePermission("risk:read");
+  const locale = await getLocale();
+  const t = CORE_MESSAGES[locale];
   const sp = await searchParams;
   const [data, thresholds, categories, ous, locations] = await Promise.all([
     getDashboardData({
@@ -41,19 +45,16 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 
   return (
     <div>
-      <PageHeader
-        title="Executive Dashboard"
-        description="Lage der ICT- und Informationssicherheitsrisiken – alle Kennzahlen sind anklickbar und führen zur gefilterten Detailansicht."
-      />
+      <PageHeader title={t.dashboard.title} description={t.dashboard.description} />
 
       <form
         method="GET"
         className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3"
       >
         <div className="min-w-44">
-          <Label htmlFor="of-cat">Risikokategorie</Label>
+          <Label htmlFor="of-cat">{t.dashboard.filters.category}</Label>
           <Select id="of-cat" name="category" defaultValue={sp.category ?? ""}>
-            <option value="">Alle</option>
+            <option value="">{t.common.all}</option>
             {categories.map((c) => (
               <option key={c.key} value={c.key}>
                 {c.name}
@@ -62,9 +63,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           </Select>
         </div>
         <div className="min-w-44">
-          <Label htmlFor="of-ou">Gesellschaft / Bereich</Label>
+          <Label htmlFor="of-ou">{t.dashboard.filters.ou}</Label>
           <Select id="of-ou" name="ouId" defaultValue={sp.ouId ?? ""}>
-            <option value="">Alle</option>
+            <option value="">{t.common.all}</option>
             {ous.map((o) => (
               <option key={o.id} value={o.id}>
                 {o.name}
@@ -73,9 +74,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           </Select>
         </div>
         <div className="min-w-40">
-          <Label htmlFor="of-loc">Standort</Label>
+          <Label htmlFor="of-loc">{t.dashboard.filters.location}</Label>
           <Select id="of-loc" name="locationId" defaultValue={sp.locationId ?? ""}>
-            <option value="">Alle</option>
+            <option value="">{t.common.all}</option>
             {locations.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.name}
@@ -84,72 +85,72 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           </Select>
         </div>
         <Button type="submit" variant="secondary">
-          Filtern
+          {t.common.filter}
         </Button>
         <Link href="/overview" className="text-xs text-muted-foreground hover:underline">
-          Zurücksetzen
+          {t.common.reset}
         </Link>
       </form>
 
       {/* KPI-Kacheln */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
-        <KpiTile label="Offene Risiken" value={k.openRisks} href="/risks" />
+        <KpiTile label={t.dashboard.kpi.openRisks} value={k.openRisks} href="/risks" />
         <KpiTile
-          label="High / Critical (Residual)"
+          label={t.dashboard.kpi.highCritical}
           value={k.highCritical}
           href="/risks?klass=CRITICAL"
           warn={k.highCritical > 0}
         />
         <KpiTile
-          label="Über Risikoappetit"
+          label={t.dashboard.kpi.aboveAppetite}
           value={k.aboveAppetite}
           href="/risks?aboveAppetite=1"
           warn={k.aboveAppetite > 0}
         />
         <KpiTile
-          label="Überfällige Risk-Reviews"
+          label={t.dashboard.kpi.overdueReviews}
           value={k.overdueReviews}
           href="/risks?overdueReview=1"
           warn={k.overdueReviews > 0}
         />
-        <KpiTile label="Offene Maßnahmen" value={k.openActions} href="/actions" />
+        <KpiTile label={t.dashboard.kpi.openActions} value={k.openActions} href="/actions" />
         <KpiTile
-          label="Überfällige Maßnahmen"
+          label={t.dashboard.kpi.overdueActions}
           value={k.overdueActions}
           href="/actions?overdue=1"
           warn={k.overdueActions > 0}
         />
         <KpiTile
-          label="Offene Risikoakzeptanzen"
+          label={t.dashboard.kpi.openAcceptances}
           value={k.openAcceptances}
           href="/reports/ACCEPTANCES"
           warn={k.openAcceptances > 0}
         />
         <KpiTile
-          label="Kontrollen mit Schwächen"
+          label={t.dashboard.kpi.weakControls}
           value={k.weakControls}
           href="/controls?weak=1"
           warn={k.weakControls > 0}
         />
         <KpiTile
-          label="Kritische Drittparteien"
+          label={t.dashboard.kpi.criticalThirdParties}
           value={k.criticalThirdParties}
           href="/third-parties?critical=1"
         />
         <KpiTile
-          label="Auslaufende Verträge (180 T.)"
+          label={t.dashboard.kpi.expiringContracts}
           value={k.expiringContracts}
           href="/third-parties?expiringContracts=1"
           warn={k.expiringContracts > 0}
         />
         <KpiTile
-          label="Risiken ohne Owner"
+          label={t.dashboard.kpi.risksWithoutOwner}
           value={k.risksWithoutOwner}
           href="/risks?noOwner=1"
           warn={k.risksWithoutOwner > 0}
         />
         <KpiTile
-          label="Ohne aktuelle Bewertung"
+          label={t.dashboard.kpi.risksWithoutAssessment}
           value={k.risksWithoutAssessment}
           href="/risks?noAssessment=1"
           warn={k.risksWithoutAssessment > 0}
@@ -159,10 +160,8 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Risikomatrix 5 × 5 (aktuelle Bewertungen)</CardTitle>
-            <CardDescription>
-              Zellwert = Anzahl offener Risiken · kleiner Wert = Zell-Score
-            </CardDescription>
+            <CardTitle>{t.dashboard.cards.matrixTitle}</CardTitle>
+            <CardDescription>{t.dashboard.cards.matrixDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <RiskHeatmap matrix={data.heatmap} thresholds={thresholds} />
@@ -171,38 +170,39 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 
         <Card>
           <CardHeader>
-            <CardTitle>Entwicklung Residual Risk (12 Monate)</CardTitle>
-            <CardDescription>
-              Monatliches Mittel des Residual-Scores aller Bewertungen
-            </CardDescription>
+            <CardTitle>{t.dashboard.cards.trendTitle}</CardTitle>
+            <CardDescription>{t.dashboard.cards.trendDescription}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResidualTrendChart data={data.trend} />
+            <ResidualTrendChart data={data.trend} locale={locale} />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Risiken je Kategorie</CardTitle>
+            <CardTitle>{t.dashboard.cards.byCategory}</CardTitle>
           </CardHeader>
           <CardContent>
-            <CountBarChart data={data.byCategory.map((c) => ({ name: c.name, count: c.count }))} />
+            <CountBarChart
+              data={data.byCategory.map((c) => ({ name: c.name, count: c.count }))}
+              locale={locale}
+            />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Risiken je Geschäftsbereich</CardTitle>
+            <CardTitle>{t.dashboard.cards.byOu}</CardTitle>
           </CardHeader>
           <CardContent>
-            <CountBarChart data={data.byOu} />
+            <CountBarChart data={data.byOu} locale={locale} />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Maßnahmenstatus</CardTitle>
-            <CardDescription>Statusverteilung aller Maßnahmen (Ampel + Text)</CardDescription>
+            <CardTitle>{t.dashboard.cards.actionStatusTitle}</CardTitle>
+            <CardDescription>{t.dashboard.cards.actionStatusDescription}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {data.actionStatus.map((s) => {
@@ -222,7 +222,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
             {k.overdueActions > 0 ? (
               <Link href="/actions?overdue=1">
                 <Badge variant="critical" className="text-sm">
-                  Überfällig: {k.overdueActions}
+                  {t.dashboard.overdueBadge}: {k.overdueActions}
                 </Badge>
               </Link>
             ) : null}
@@ -231,32 +231,30 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
 
         <Card>
           <CardHeader>
-            <CardTitle>Risiken je Drittpartei (Top 8)</CardTitle>
+            <CardTitle>{t.dashboard.cards.byThirdParty}</CardTitle>
           </CardHeader>
           <CardContent>
-            <CountBarChart data={data.byThirdParty} />
+            <CountBarChart data={data.byThirdParty} locale={locale} />
           </CardContent>
         </Card>
       </div>
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Top-10-Risiken nach Residual Risk</CardTitle>
-          <CardDescription>
-            Entscheidungsrelevante Risiken – Klick öffnet die Detailansicht
-          </CardDescription>
+          <CardTitle>{t.dashboard.cards.top10Title}</CardTitle>
+          <CardDescription>{t.dashboard.cards.top10Description}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <THead>
               <TR>
-                <TH>Risk ID</TH>
-                <TH>Titel</TH>
-                <TH>Kategorie</TH>
-                <TH>Risk Owner</TH>
-                <TH>Residual</TH>
-                <TH>Appetit</TH>
-                <TH>Status</TH>
+                <TH>{t.dashboard.top10.riskId}</TH>
+                <TH>{t.dashboard.top10.title}</TH>
+                <TH>{t.dashboard.top10.category}</TH>
+                <TH>{t.dashboard.top10.owner}</TH>
+                <TH>{t.dashboard.top10.residual}</TH>
+                <TH>{t.dashboard.top10.appetite}</TH>
+                <TH>{t.dashboard.top10.status}</TH>
               </TR>
             </THead>
             <TBody>
@@ -282,7 +280,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
                     className={cn("text-xs", r.aboveAppetite && "font-medium text-risk-critical")}
                   >
                     {r.appetiteThreshold}
-                    {r.aboveAppetite ? " (überschritten)" : ""}
+                    {r.aboveAppetite ? t.dashboard.top10.exceededSuffix : ""}
                   </TD>
                   <TD className="text-xs">{r.status}</TD>
                 </TR>
@@ -293,10 +291,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       </Card>
 
       <p className="mt-4 text-xs text-muted-foreground">
-        Entscheidungspunkte für das Management: offene Risikoakzeptanzen, Risiken über dem
-        Risikoappetit und Eskalationen ab Stufe 2 – siehe{" "}
+        {t.dashboard.decisionNote}{" "}
         <Link href="/reports/DECISION_PAPER" className="text-primary hover:underline">
-          Entscheidungsvorlage
+          {t.dashboard.decisionNoteLink}
         </Link>
         .
       </p>

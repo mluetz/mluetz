@@ -2,8 +2,9 @@ import Link from "next/link";
 import { requirePermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { formatDate, isOverdue } from "@/lib/utils";
-import { RISK_STATUS, TP_STATUS, type RiskStatus, type TpStatus } from "@/lib/domain/enums";
-import { EFFECTIVENESS_RATING } from "@/lib/domain/enums";
+import { RISK_STATUS, type RiskStatus } from "@/lib/domain/enums";
+import { getLocale } from "@/lib/i18n/server";
+import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -16,6 +17,9 @@ const HORIZON_DAYS = 30;
 
 export default async function AssessmentsPage() {
   await requirePermission("risk:read");
+  const locale = await getLocale();
+  const t = CORE_MESSAGES[locale].assessments;
+  const tEnums = CORE_MESSAGES[locale].enums;
   const horizon = new Date(Date.now() + HORIZON_DAYS * 86400000);
 
   const [risks, controls, thirdParties] = await Promise.all([
@@ -39,11 +43,13 @@ export default async function AssessmentsPage() {
     }),
   ]);
 
+  const overdueLabel = t.overdue;
+
   return (
     <div>
       <PageHeader
-        title="Assessments"
-        description={`Fällige und überfällige Reviews und Tests innerhalb der nächsten ${HORIZON_DAYS} Tage`}
+        title={t.title}
+        description={t.description(HORIZON_DAYS)}
         crumbs={[{ label: "Overview", href: "/overview" }, { label: "Assessments" }]}
       />
 
@@ -51,20 +57,18 @@ export default async function AssessmentsPage() {
         {/* ---------- Risiko-Reviews ---------- */}
         <Card>
           <CardHeader>
-            <CardTitle>Fällige Risiko-Reviews ({risks.length})</CardTitle>
-            <CardDescription>
-              Risiken mit nächstem Review-Termin in weniger als {HORIZON_DAYS} Tagen.
-            </CardDescription>
+            <CardTitle>{t.riskReviews.title(risks.length)}</CardTitle>
+            <CardDescription>{t.riskReviews.description(HORIZON_DAYS)}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <THead>
                 <TR>
-                  <TH>Risk ID</TH>
-                  <TH>Titel</TH>
-                  <TH>Status</TH>
-                  <TH>Risk Owner</TH>
-                  <TH>Nächstes Review</TH>
+                  <TH>{t.riskReviews.riskId}</TH>
+                  <TH>{t.riskReviews.colTitle}</TH>
+                  <TH>{t.riskReviews.status}</TH>
+                  <TH>{t.riskReviews.owner}</TH>
+                  <TH>{t.riskReviews.nextReview}</TH>
                 </TR>
               </THead>
               <TBody>
@@ -82,14 +86,14 @@ export default async function AssessmentsPage() {
                     <TD className="text-xs">{RISK_STATUS[r.status as RiskStatus] ?? r.status}</TD>
                     <TD className="text-xs">{r.riskOwner?.name ?? "–"}</TD>
                     <TD className="whitespace-nowrap text-xs">
-                      <DueDate date={r.nextReviewDate} />
+                      <DueDate date={r.nextReviewDate} overdueLabel={overdueLabel} />
                     </TD>
                   </TR>
                 ))}
                 {risks.length === 0 ? (
                   <TR>
                     <TD colSpan={5} className="text-center text-muted-foreground">
-                      Keine fälligen Risiko-Reviews.
+                      {t.riskReviews.empty}
                     </TD>
                   </TR>
                 ) : null}
@@ -101,20 +105,18 @@ export default async function AssessmentsPage() {
         {/* ---------- Kontrolltests ---------- */}
         <Card>
           <CardHeader>
-            <CardTitle>Fällige Kontrolltests ({controls.length})</CardTitle>
-            <CardDescription>
-              Kontrollen mit nächstem Testtermin in weniger als {HORIZON_DAYS} Tagen.
-            </CardDescription>
+            <CardTitle>{t.controlTests.title(controls.length)}</CardTitle>
+            <CardDescription>{t.controlTests.description(HORIZON_DAYS)}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <THead>
                 <TR>
-                  <TH>Control ID</TH>
-                  <TH>Name</TH>
-                  <TH>Owner</TH>
-                  <TH>Operative Wirksamkeit</TH>
-                  <TH>Nächster Test</TH>
+                  <TH>{t.controlTests.controlId}</TH>
+                  <TH>{t.controlTests.name}</TH>
+                  <TH>{t.controlTests.owner}</TH>
+                  <TH>{t.controlTests.operatingEffectiveness}</TH>
+                  <TH>{t.controlTests.nextTest}</TH>
                 </TR>
               </THead>
               <TBody>
@@ -131,19 +133,18 @@ export default async function AssessmentsPage() {
                     <TD className="max-w-[360px] truncate">{c.name}</TD>
                     <TD className="text-xs">{c.owner?.name ?? "–"}</TD>
                     <TD className="text-xs">
-                      {EFFECTIVENESS_RATING[
-                        c.operatingEffectiveness as keyof typeof EFFECTIVENESS_RATING
-                      ] ?? c.operatingEffectiveness}
+                      {tEnums.effectivenessRating[c.operatingEffectiveness] ??
+                        c.operatingEffectiveness}
                     </TD>
                     <TD className="whitespace-nowrap text-xs">
-                      <DueDate date={c.nextTestDate} />
+                      <DueDate date={c.nextTestDate} overdueLabel={overdueLabel} />
                     </TD>
                   </TR>
                 ))}
                 {controls.length === 0 ? (
                   <TR>
                     <TD colSpan={5} className="text-center text-muted-foreground">
-                      Keine fälligen Kontrolltests.
+                      {t.controlTests.empty}
                     </TD>
                   </TR>
                 ) : null}
@@ -155,47 +156,45 @@ export default async function AssessmentsPage() {
         {/* ---------- Third-Party-Reviews ---------- */}
         <Card>
           <CardHeader>
-            <CardTitle>Fällige Third-Party-Reviews ({thirdParties.length})</CardTitle>
-            <CardDescription>
-              Drittparteien mit nächstem Review-Termin in weniger als {HORIZON_DAYS} Tagen.
-            </CardDescription>
+            <CardTitle>{t.tpReviews.title(thirdParties.length)}</CardTitle>
+            <CardDescription>{t.tpReviews.description(HORIZON_DAYS)}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <THead>
                 <TR>
-                  <TH>TP ID</TH>
-                  <TH>Name</TH>
-                  <TH>Business Owner</TH>
-                  <TH>Status</TH>
-                  <TH>Kritikalität</TH>
-                  <TH>Nächstes Review</TH>
+                  <TH>{t.tpReviews.tpId}</TH>
+                  <TH>{t.tpReviews.name}</TH>
+                  <TH>{t.tpReviews.businessOwner}</TH>
+                  <TH>{t.tpReviews.status}</TH>
+                  <TH>{t.tpReviews.criticality}</TH>
+                  <TH>{t.tpReviews.nextReview}</TH>
                 </TR>
               </THead>
               <TBody>
-                {thirdParties.map((t) => (
-                  <TR key={t.id}>
+                {thirdParties.map((tp) => (
+                  <TR key={tp.id}>
                     <TD>
                       <Link
-                        href={`/third-parties/${t.id}`}
+                        href={`/third-parties/${tp.id}`}
                         className="font-mono text-xs text-primary hover:underline"
                       >
-                        {t.tpId}
+                        {tp.tpId}
                       </Link>
                     </TD>
-                    <TD className="max-w-[280px] truncate">{t.name}</TD>
-                    <TD className="text-xs">{t.businessOwner?.name ?? "–"}</TD>
-                    <TD className="text-xs">{TP_STATUS[t.status as TpStatus] ?? t.status}</TD>
-                    <TD className="text-xs">{t.criticality}</TD>
+                    <TD className="max-w-[280px] truncate">{tp.name}</TD>
+                    <TD className="text-xs">{tp.businessOwner?.name ?? "–"}</TD>
+                    <TD className="text-xs">{tEnums.tpStatus[tp.status] ?? tp.status}</TD>
+                    <TD className="text-xs">{tp.criticality}</TD>
                     <TD className="whitespace-nowrap text-xs">
-                      <DueDate date={t.nextReviewDate} />
+                      <DueDate date={tp.nextReviewDate} overdueLabel={overdueLabel} />
                     </TD>
                   </TR>
                 ))}
                 {thirdParties.length === 0 ? (
                   <TR>
                     <TD colSpan={6} className="text-center text-muted-foreground">
-                      Keine fälligen Third-Party-Reviews.
+                      {t.tpReviews.empty}
                     </TD>
                   </TR>
                 ) : null}
@@ -208,14 +207,14 @@ export default async function AssessmentsPage() {
   );
 }
 
-function DueDate({ date }: { date: Date | null }) {
+function DueDate({ date, overdueLabel }: { date: Date | null; overdueLabel: string }) {
   const overdue = isOverdue(date);
   return (
     <span className={overdue ? "font-medium text-risk-high" : ""}>
       {formatDate(date)}
       {overdue ? (
         <Badge variant="high" className="ml-2">
-          überfällig
+          {overdueLabel}
         </Badge>
       ) : null}
     </span>

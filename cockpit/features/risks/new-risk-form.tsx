@@ -5,6 +5,8 @@ import { createRisk, type ActionResult } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
+import type { Locale } from "@/lib/i18n/config";
+import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 
 interface Option {
   id: string;
@@ -12,44 +14,48 @@ interface Option {
 }
 
 export function NewRiskForm({
+  locale,
   categories,
   owners,
   ous,
   locations,
 }: {
+  locale: Locale;
   categories: Option[];
   owners: Option[];
   ous: Option[];
   locations: Option[];
 }) {
+  const t = CORE_MESSAGES[locale].newRisk;
+  const tc = CORE_MESSAGES[locale].common;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(createRisk, {});
 
   return (
     <form action={formAction} className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Risikobeschreibung</CardTitle>
+          <CardTitle>{t.sectionDescription}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Field label="Risikotitel" htmlFor="title" required>
+          <Field label={t.fields.title} htmlFor="title" required>
             <Input id="title" name="title" required minLength={5} maxLength={200} />
           </Field>
           <Field
-            label="Risikobeschreibung"
+            label={t.fields.description}
             htmlFor="description"
             required
-            hint="Verständliche Gesamtbeschreibung des Risikos."
+            hint={t.fields.descriptionHint}
           >
             <Textarea id="description" name="description" required minLength={10} rows={3} />
           </Field>
           <div className="grid gap-4 md:grid-cols-3">
-            <Field label="Ursache" htmlFor="cause" required>
+            <Field label={t.fields.cause} htmlFor="cause" required>
               <Textarea id="cause" name="cause" required minLength={5} rows={3} />
             </Field>
-            <Field label="Risikoereignis" htmlFor="riskEvent" required>
+            <Field label={t.fields.riskEvent} htmlFor="riskEvent" required>
               <Textarea id="riskEvent" name="riskEvent" required minLength={5} rows={3} />
             </Field>
-            <Field label="Mögliche Auswirkungen" htmlFor="impactDescription" required>
+            <Field label={t.fields.impactDescription} htmlFor="impactDescription" required>
               <Textarea
                 id="impactDescription"
                 name="impactDescription"
@@ -60,14 +66,14 @@ export function NewRiskForm({
             </Field>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Bedrohung" htmlFor="threat" required>
+            <Field label={t.fields.threat} htmlFor="threat" required>
               <Input id="threat" name="threat" required minLength={2} />
             </Field>
-            <Field label="Schwachstelle" htmlFor="vulnerability" required>
+            <Field label={t.fields.vulnerability} htmlFor="vulnerability" required>
               <Input id="vulnerability" name="vulnerability" required minLength={2} />
             </Field>
           </div>
-          <Field label="Bestehende Kontrollen (narrativ)" htmlFor="existingControls">
+          <Field label={t.fields.existingControls} htmlFor="existingControls">
             <Textarea id="existingControls" name="existingControls" rows={2} />
           </Field>
         </CardContent>
@@ -75,13 +81,13 @@ export function NewRiskForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Zuordnung</CardTitle>
+          <CardTitle>{t.sectionAssignment}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <Field label="Risikokategorie" htmlFor="categoryId" required>
+          <Field label={t.fields.category} htmlFor="categoryId" required>
             <Select id="categoryId" name="categoryId" required defaultValue="">
               <option value="" disabled>
-                Bitte wählen
+                {tc.pleaseChoose}
               </option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -90,9 +96,9 @@ export function NewRiskForm({
               ))}
             </Select>
           </Field>
-          <Field label="Risk Owner" htmlFor="riskOwnerId">
+          <Field label={t.fields.owner} htmlFor="riskOwnerId">
             <Select id="riskOwnerId" name="riskOwnerId" defaultValue="">
-              <option value="">– später zuordnen –</option>
+              <option value="">{t.assignLater}</option>
               {owners.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.name}
@@ -100,7 +106,7 @@ export function NewRiskForm({
               ))}
             </Select>
           </Field>
-          <Field label="Gesellschaft / Geschäftsbereich" htmlFor="ouId">
+          <Field label={t.fields.ou} htmlFor="ouId">
             <Select id="ouId" name="ouId" defaultValue="">
               <option value="">–</option>
               {ous.map((o) => (
@@ -110,7 +116,7 @@ export function NewRiskForm({
               ))}
             </Select>
           </Field>
-          <Field label="Standort" htmlFor="locationId">
+          <Field label={t.fields.location} htmlFor="locationId">
             <Select id="locationId" name="locationId" defaultValue="">
               <option value="">–</option>
               {locations.map((l) => (
@@ -130,13 +136,10 @@ export function NewRiskForm({
       ) : null}
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? "Wird angelegt…" : "Risiko anlegen (Status: Draft)"}
+          {pending ? t.submitPending : t.submit}
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Nach der Anlage: Bewertung durchführen, dann Workflow Draft → Self Assessment → Quality
-        Review → Freigaben (siehe RB-01/RB-03).
-      </p>
+      <p className="text-xs text-muted-foreground">{t.footnote}</p>
     </form>
   );
 }

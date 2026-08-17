@@ -11,6 +11,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { Locale } from "@/lib/i18n/config";
+import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
 
 /**
  * Diagramme (Recharts). Eine Kennzahl je Achse, einfarbige Marken über
@@ -29,12 +31,15 @@ const TOOLTIP_STYLE = {
 
 export function ResidualTrendChart({
   data,
+  locale = "de",
 }: {
   data: Array<{ month: string; avgResidual: number; count: number }>;
+  locale?: Locale;
 }) {
+  const t = CORE_MESSAGES[locale].charts;
   if (data.length === 0)
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">Noch keine Bewertungsdaten.</p>
+      <p className="py-8 text-center text-sm text-muted-foreground">{t.noAssessmentData}</p>
     );
   return (
     <ResponsiveContainer width="100%" height={220}>
@@ -51,9 +56,9 @@ export function ResidualTrendChart({
           contentStyle={TOOLTIP_STYLE}
           formatter={(value: number | string, name) => [
             value,
-            name === "avgResidual" ? "Ø Residual-Score" : "Bewertungen",
+            name === "avgResidual" ? t.avgResidual : t.assessments,
           ]}
-          labelFormatter={(l) => `Monat ${l}`}
+          labelFormatter={(l) => t.monthLabel(String(l))}
         />
         <Line
           type="monotone"
@@ -72,12 +77,15 @@ export function ResidualTrendChart({
 export function CountBarChart({
   data,
   height = 220,
+  locale = "de",
 }: {
   data: Array<{ name: string; count: number }>;
   height?: number;
+  locale?: Locale;
 }) {
+  const t = CORE_MESSAGES[locale].charts;
   if (data.length === 0)
-    return <p className="py-8 text-center text-sm text-muted-foreground">Keine Daten.</p>;
+    return <p className="py-8 text-center text-sm text-muted-foreground">{t.noData}</p>;
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} layout="vertical" margin={{ top: 0, right: 24, bottom: 0, left: 40 }}>
@@ -97,7 +105,7 @@ export function CountBarChart({
           tickLine={false}
           axisLine={false}
         />
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number | string) => [v, "Risiken"]} />
+        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number | string) => [v, t.risks]} />
         <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={14} />
       </BarChart>
     </ResponsiveContainer>
