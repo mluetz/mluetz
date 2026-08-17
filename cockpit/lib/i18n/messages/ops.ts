@@ -727,11 +727,10 @@ const en: typeof de = {
       reviewer: "Reviewer",
       evidence: "Evidence",
       nextReview: "Next review",
-      noAssessment: "No compliance assessment recorded for this requirement yet (status: Not Assessed).",
-      assessmentCard: (hasMapping: boolean) =>
-        `${hasMapping ? "Update" : "Record"} assessment`,
-      assessmentCardDesc:
-        "Status changes are recorded in the audit trail with old and new value.",
+      noAssessment:
+        "No compliance assessment recorded for this requirement yet (status: Not Assessed).",
+      assessmentCard: (hasMapping: boolean) => `${hasMapping ? "Update" : "Record"} assessment`,
+      assessmentCardDesc: "Status changes are recorded in the audit trail with old and new value.",
       historyCard: "History (Audit Trail)",
       historyCardDesc: "All status changes of this requirement (append-only, not editable).",
       noHistory: "No changes recorded yet.",

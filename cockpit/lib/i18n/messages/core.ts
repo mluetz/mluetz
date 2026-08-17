@@ -658,8 +658,7 @@ const en: typeof de = {
       thirdParties: "Third parties",
       regulatory: "Regulatory mapping",
       workflowTitle: "Workflow",
-      workflowDescription:
-        "Every status change is logged with user, timestamp and justification.",
+      workflowDescription: "Every status change is logged with user, timestamp and justification.",
       noWritePermission: "No write permission.",
     },
     assessment: {
@@ -789,8 +788,7 @@ const en: typeof de = {
 
   assessments: {
     title: "Assessments",
-    description: (days: number) =>
-      `Due and overdue reviews and tests within the next ${days} days`,
+    description: (days: number) => `Due and overdue reviews and tests within the next ${days} days`,
     riskReviews: {
       title: (n: number) => `Due risk reviews (${n})`,
       description: (days: number) => `Risks with the next review date in less than ${days} days.`,

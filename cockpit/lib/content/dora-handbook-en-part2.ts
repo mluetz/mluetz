@@ -359,7 +359,13 @@ export const HANDBOOK_SECTIONS_EN_PART2: HandbookSection[] = [
       {
         kind: "table",
         title: "Table 24: Severity levels, remediation deadlines and escalation tiers",
-        head: ["Severity", "Definition", "Response deadline", "Remediation deadline", "Escalation to"],
+        head: [
+          "Severity",
+          "Definition",
+          "Response deadline",
+          "Remediation deadline",
+          "Escalation to",
+        ],
         rows: [
           [
             "Critical",
@@ -609,14 +615,7 @@ export const HANDBOOK_SECTIONS_EN_PART2: HandbookSection[] = [
             "0",
             "Monthly",
           ],
-          [
-            "KRI-GOV-03",
-            "Overdue CAPAs",
-            "Overall",
-            "Actions past their due date",
-            "0",
-            "Monthly",
-          ],
+          ["KRI-GOV-03", "Overdue CAPAs", "Overall", "Actions past their due date", "0", "Monthly"],
         ],
       },
     ],
@@ -797,7 +796,7 @@ export const HANDBOOK_SECTIONS_EN_PART2: HandbookSection[] = [
       {
         kind: "list",
         items: [
-          "The \"Open knockouts\" tile ranks on par with the overall index. It prevents a good average from concealing a hard compliance gap.",
+          'The "Open knockouts" tile ranks on par with the overall index. It prevents a good average from concealing a hard compliance gap.',
           "The chapter traffic light is overridden by knockouts. In the example, Chapter V is RED despite 67 percent, because exit strategies for providers of critical functions are missing.",
           "The heatmap connects the chapter view with the view of critical functions and makes it possible to answer which business process is concretely at risk.",
           "The reporting deadline monitor shows the remaining time per ongoing incident and automatically checks the three parallel strands of obligations under DORA, NIS-2 and the GDPR.",

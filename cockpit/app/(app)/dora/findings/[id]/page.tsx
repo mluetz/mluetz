@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { hasPermission, requirePermission } from "@/lib/authz";
-import { FINDING_SEVERITY_RULES } from "@/lib/domain/dora-scoring";
-import { DORA_FINDING_SOURCE, DORA_FINDING_STATUS } from "@/lib/domain/enums";
 import { formatDate, formatDateTime, isOverdue } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n/server";
+import { DORA_MESSAGES } from "@/lib/i18n/messages/dora";
 import { PageHeader } from "@/components/page-header";
 import { Badge, riskClassVariant } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,8 @@ export default async function DoraFindingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const user = await requirePermission("compliance:read");
+  const locale = await getLocale();
+  const t = DORA_MESSAGES[locale];
   const { id } = await params;
   const finding = await db.doraFinding.findUnique({
     where: { id },
@@ -37,7 +39,7 @@ export default async function DoraFindingDetailPage({
   });
   if (!finding) notFound();
 
-  const rule = FINDING_SEVERITY_RULES[finding.severity];
+  const severityLabel = t.enums.severity[finding.severity] ?? finding.severity;
   const responseOverdue = finding.status === "OPEN" && isOverdue(finding.responseDueAt);
   const remediationOverdue = finding.status !== "CLOSED" && isOverdue(finding.remediationDueAt);
   const allowedTargets = FINDING_TRANSITIONS[finding.status] ?? [];
@@ -64,69 +66,78 @@ export default async function DoraFindingDetailPage({
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">
-              {DORA_FINDING_STATUS[finding.status as keyof typeof DORA_FINDING_STATUS] ??
+              {t.enums.findingStatus[finding.status as keyof typeof t.enums.findingStatus] ??
                 finding.status}
             </Badge>
-            <Badge variant={riskClassVariant(finding.severity)}>
-              {rule?.label ?? finding.severity}
-            </Badge>
-            {remediationOverdue ? <Badge variant="critical">Behebung überfällig</Badge> : null}
+            <Badge variant={riskClassVariant(finding.severity)}>{severityLabel}</Badge>
+            {remediationOverdue ? (
+              <Badge variant="critical">{t.findingDetail.remediationOverdueBadge}</Badge>
+            ) : null}
           </div>
         }
       />
 
       {/* KPI-Zeile: Fristen */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Kpi label="Festgestellt am" value={formatDate(finding.detectedAt)} />
+        <Kpi label={t.findingDetail.kpiDetected} value={formatDate(finding.detectedAt)} />
         <Kpi
-          label="Reaktion fällig"
-          value={`${formatDate(finding.responseDueAt)}${responseOverdue ? " (überfällig)" : ""}`}
+          label={t.findingDetail.kpiResponseDue}
+          value={`${formatDate(finding.responseDueAt)}${responseOverdue ? t.common.overdueSuffix : ""}`}
           warn={responseOverdue}
         />
         <Kpi
-          label="Behebung fällig"
-          value={`${formatDate(finding.remediationDueAt)}${remediationOverdue ? " (überfällig)" : ""}`}
+          label={t.findingDetail.kpiRemediationDue}
+          value={`${formatDate(finding.remediationDueAt)}${remediationOverdue ? t.common.overdueSuffix : ""}`}
           warn={remediationOverdue}
         />
-        <Kpi label="Geschlossen am" value={finding.closedAt ? formatDate(finding.closedAt) : "–"} />
+        <Kpi
+          label={t.findingDetail.kpiClosed}
+          value={finding.closedAt ? formatDate(finding.closedAt) : "–"}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Details</CardTitle>
+            <CardTitle>{t.findingDetail.detailsTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
               <Info
-                label="Quelle"
+                label={t.findingDetail.source}
                 value={
-                  DORA_FINDING_SOURCE[finding.source as keyof typeof DORA_FINDING_SOURCE] ??
+                  t.enums.findingSource[finding.source as keyof typeof t.enums.findingSource] ??
                   finding.source
                 }
               />
-              <Info label="Schweregrad" value={rule?.label ?? finding.severity} />
-              <Info label="Eskalation an" value={finding.escalatedTo ?? "–"} />
-              <Info label="Erstellt von" value={finding.createdBy.name} />
+              <Info label={t.findingDetail.severity} value={severityLabel} />
+              <Info
+                label={t.findingDetail.escalatedTo}
+                value={
+                  finding.escalatedTo
+                    ? (t.enums.escalation[finding.escalatedTo] ?? finding.escalatedTo)
+                    : "–"
+                }
+              />
+              <Info label={t.findingDetail.createdBy} value={finding.createdBy.name} />
             </div>
-            <Info label="Beschreibung" value={finding.description} />
+            <Info label={t.findingDetail.descriptionLabel} value={finding.description} />
             <Info
-              label="Wirksamkeitskriterium"
-              value={
-                finding.effectivenessCriterion ??
-                "⚠ noch nicht gesetzt – erforderlich für den Abschluss (Kap. 12.1)"
-              }
+              label={t.findingDetail.effectivenessCriterion}
+              value={finding.effectivenessCriterion ?? t.findingDetail.effectivenessMissing}
             />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Verknüpfungen</CardTitle>
+            <CardTitle>{t.common.linksTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground">DORA-Anforderung</p>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                {t.findingDetail.requirementLabel}
+              </p>
               {finding.requirement ? (
                 <Link
                   href={`/dora/requirements/${finding.requirement.id}`}
@@ -136,11 +147,13 @@ export default async function DoraFindingDetailPage({
                   {finding.requirement.title}
                 </Link>
               ) : (
-                <p className="text-xs text-muted-foreground">ohne Anforderungsbezug</p>
+                <p className="text-xs text-muted-foreground">{t.findings.noRequirement}</p>
               )}
             </div>
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground">CAPA-Maßnahme</p>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                {t.findingDetail.capaLabel}
+              </p>
               {finding.action ? (
                 <div>
                   <Link
@@ -151,11 +164,14 @@ export default async function DoraFindingDetailPage({
                     {finding.action.title}
                   </Link>
                   <p className="text-xs text-muted-foreground">
-                    Status: {finding.action.status} · fällig {formatDate(finding.action.dueDate)}
+                    {t.findingDetail.capaStatus(
+                      finding.action.status,
+                      formatDate(finding.action.dueDate),
+                    )}
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">keine Maßnahme verknüpft</p>
+                <p className="text-xs text-muted-foreground">{t.findingDetail.noAction}</p>
               )}
             </div>
           </CardContent>
@@ -164,11 +180,8 @@ export default async function DoraFindingDetailPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Statuswechsel</CardTitle>
-          <CardDescription>
-            Workflow: Offen → In Bearbeitung → Wirksamkeitsprüfung → Geschlossen. Der Abschluss
-            erfordert ein dokumentiertes Wirksamkeitskriterium (FRWK-DORA-001 Kap. 12.1).
-          </CardDescription>
+          <CardTitle>{t.findingDetail.statusChangeTitle}</CardTitle>
+          <CardDescription>{t.findingDetail.statusChangeDesc}</CardDescription>
         </CardHeader>
         <CardContent>
           {canWrite ? (
@@ -177,16 +190,17 @@ export default async function DoraFindingDetailPage({
               currentStatus={finding.status}
               allowedTargets={allowedTargets}
               hasEffectivenessCriterion={Boolean(finding.effectivenessCriterion)}
+              locale={locale}
             />
           ) : (
-            <p className="text-sm text-muted-foreground">Keine Schreibberechtigung.</p>
+            <p className="text-sm text-muted-foreground">{t.common.noWritePermission}</p>
           )}
         </CardContent>
       </Card>
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Audit Trail (Auszug)</CardTitle>
+          <CardTitle>{t.common.auditTrail}</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-2 text-xs">
@@ -205,7 +219,7 @@ export default async function DoraFindingDetailPage({
               </li>
             ))}
             {auditEntries.length === 0 ? (
-              <li className="text-muted-foreground">Keine Einträge.</li>
+              <li className="text-muted-foreground">{t.common.noEntries}</li>
             ) : null}
           </ul>
         </CardContent>

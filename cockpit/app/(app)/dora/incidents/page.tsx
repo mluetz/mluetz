@@ -6,8 +6,8 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { INCIDENT_STATUS } from "@/lib/domain/enums";
-import { remainingLabel } from "@/lib/domain/incident-deadlines";
+import { getLocale } from "@/lib/i18n/server";
+import { DORA_MESSAGES, formatRemaining } from "@/lib/i18n/messages/dora";
 import { formatDateTime } from "@/lib/utils";
 import type { IncidentStatus } from "@/features/dora/deadline-monitor";
 
@@ -22,6 +22,8 @@ interface Search {
 
 export default async function IncidentsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const user = await requirePermission("incident:read");
+  const locale = await getLocale();
+  const t = DORA_MESSAGES[locale];
   const sp = await searchParams;
   const now = new Date();
 
@@ -55,14 +57,14 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
   return (
     <div>
       <PageHeader
-        title="IKT-Vorfälle"
-        description="Vorfallsregister mit Meldefristen-Monitor nach Art. 17–23 DORA (RB-21)"
+        title={t.incidents.title}
+        description={t.incidents.description}
         crumbs={[{ label: "Overview", href: "/overview" }, { label: "Incidents" }]}
         actions={
           hasPermission(user, "incident:write") ? (
             <Link href="/dora/incidents/new">
               <Button>
-                <Plus className="h-4 w-4" aria-hidden /> Vorfall erfassen
+                <Plus className="h-4 w-4" aria-hidden /> {t.incidents.newIncident}
               </Button>
             </Link>
           ) : null
@@ -70,44 +72,48 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
       />
 
       <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-        <Kpi label="Offene Vorfälle" value={String(openIncidents.length)} />
+        <Kpi label={t.incidents.kpiOpen} value={String(openIncidents.length)} />
         <Kpi
-          label="Davon schwerwiegend"
+          label={t.incidents.kpiMajor}
           value={String(openMajor.length)}
           warn={openMajor.length > 0}
         />
         <Kpi
-          label="Überfällige Meldungen gesamt"
+          label={t.incidents.kpiOverdue}
           value={String(overdueReportsTotal)}
           warn={overdueReportsTotal > 0}
         />
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2 text-xs">
-        <FilterChip href="/dora/incidents?open=1" active={sp.open === "1"} label="offen" />
+        <FilterChip
+          href="/dora/incidents?open=1"
+          active={sp.open === "1"}
+          label={t.incidents.chipOpen}
+        />
         <FilterChip
           href="/dora/incidents?major=1"
           active={sp.major === "1"}
-          label="schwerwiegend"
+          label={t.incidents.chipMajor}
         />
         <FilterChip
           href="/dora/incidents?overdue=1"
           active={sp.overdue === "1"}
-          label="mit überfälliger Meldung"
+          label={t.incidents.chipOverdue}
         />
       </div>
 
       <Table>
         <THead>
           <TR>
-            <TH>Incident ID</TH>
-            <TH>Titel</TH>
-            <TH>Schwerwiegend</TH>
-            <TH>Status</TH>
-            <TH>Kenntnis</TH>
-            <TH>Nächste offene Frist</TH>
-            <TH>Kritische Funktion</TH>
-            <TH>Drittpartei</TH>
+            <TH>{t.incidents.thIncidentId}</TH>
+            <TH>{t.incidents.thTitle}</TH>
+            <TH>{t.incidents.thMajor}</TH>
+            <TH>{t.incidents.thStatus}</TH>
+            <TH>{t.incidents.thAwareness}</TH>
+            <TH>{t.incidents.thNextDue}</TH>
+            <TH>{t.incidents.thCif}</TH>
+            <TH>{t.incidents.thThirdParty}</TH>
           </TR>
         </THead>
         <TBody>
@@ -126,14 +132,14 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
                 <TD className="max-w-[320px] truncate">{i.title}</TD>
                 <TD>
                   {i.isMajor ? (
-                    <Badge variant="critical">Ja</Badge>
+                    <Badge variant="critical">{t.incidents.yes}</Badge>
                   ) : (
-                    <Badge variant="outline">Nein</Badge>
+                    <Badge variant="outline">{t.incidents.no}</Badge>
                   )}
                 </TD>
                 <TD>
                   <Badge variant="secondary">
-                    {INCIDENT_STATUS[i.status as IncidentStatus] ?? i.status}
+                    {t.enums.incidentStatus[i.status as IncidentStatus] ?? i.status}
                   </Badge>
                 </TD>
                 <TD className="whitespace-nowrap text-xs">{formatDateTime(i.awarenessAt)}</TD>
@@ -141,7 +147,7 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
                   {nextDue ? (
                     <span className={overdue ? "font-medium text-risk-critical" : ""}>
                       {formatDateTime(nextDue.dueAt)}
-                      {overdue ? ` · ${remainingLabel(nextDue.dueAt, now)}` : ""}
+                      {overdue ? ` · ${formatRemaining(locale, nextDue.dueAt, now)}` : ""}
                     </span>
                   ) : (
                     "–"
@@ -149,7 +155,7 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
                   {overdueCount > 1 ? (
                     <span className="text-muted-foreground">
                       {" "}
-                      (+{overdueCount - 1} weitere überfällig)
+                      {t.incidents.moreOverdue(overdueCount - 1)}
                     </span>
                   ) : null}
                 </TD>
@@ -172,7 +178,7 @@ export default async function IncidentsPage({ searchParams }: { searchParams: Pr
           {rows.length === 0 ? (
             <TR>
               <TD colSpan={8} className="text-center text-muted-foreground">
-                Keine Vorfälle gefunden.
+                {t.incidents.emptyMessage}
               </TD>
             </TR>
           ) : null}

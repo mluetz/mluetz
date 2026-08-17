@@ -119,6 +119,43 @@ test("DORA Handbuch: Kapitelübersicht, Detailseite mit Abbildung und Navigation
   await expect(page.getByRole("heading", { name: /Kap\. 12/ })).toBeVisible();
 });
 
+test("Sprachumschaltung: EN-Oberfläche, englisches Handbuch mit Figure, zurück zu DE", async ({
+  page,
+}) => {
+  await login(page, "riskmanager@demo.example");
+
+  // Auf Englisch umschalten (Umschalter im Header)
+  const toggle = page.getByRole("group", { name: "Sprache wählen" });
+  await toggle.getByRole("button").nth(1).click();
+  await expect(
+    page.getByLabel("Hauptnavigation").getByRole("link", { name: "DORA Knowledge Base" }),
+  ).toBeVisible();
+
+  // Wissensbasis auf Englisch: Überschrift, Säulen-Inhalt, Handbuch-Karten
+  await page.goto("/dora-knowledge");
+  await expect(page.getByRole("heading", { name: "DORA ISRM Knowledge Base" })).toBeVisible();
+  await expect(page.getByText("The complete handbook (FRWK-DORA-001)")).toBeVisible();
+
+  // Handbuch-Detail: englischer Titel und englische SVG-Abbildung
+  await page.getByRole("link", { name: /Maturity and scoring model|Maturity & scoring/i }).click();
+  await expect(page.getByRole("heading", { name: /Ch\. 11/ })).toBeVisible();
+  await expect(page.getByAltText(/Figure 9:/)).toBeVisible();
+
+  // Glossar-Modal auf Englisch
+  await expect(async () => {
+    await page.getByRole("button", { name: "evidence lock", exact: true }).first().click();
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15000 });
+  await page.getByRole("dialog").getByRole("button", { name: "Close" }).click();
+
+  // Zurück auf Deutsch
+  const toggleEn = page.getByRole("group", { name: "Select language" });
+  await toggleEn.getByRole("button").first().click();
+  await expect(
+    page.getByLabel("Hauptnavigation").getByRole("link", { name: "DORA Wissensbasis" }),
+  ).toBeVisible();
+});
+
 test("DORA Compliance: Dashboard, Katalog mit Knockouts und Meldefristen-Monitor", async ({
   page,
 }) => {
@@ -133,8 +170,12 @@ test("DORA Compliance: Dashboard, Katalog mit Knockouts und Meldefristen-Monitor
   await page.goto("/dora/requirements?openKnockouts=1");
   await expect(page.getByText("DORA-K5-011").first()).toBeVisible();
 
-  // Anforderungsdetail: Crosswalk und Bewertung
-  await page.getByRole("link", { name: "DORA-K5-011" }).first().click();
+  // Anforderungsdetail: Crosswalk und Bewertung.
+  // Klick mit Retry, bis die React-Hydration die Navigation angebunden hat.
+  await expect(async () => {
+    await page.getByRole("link", { name: "DORA-K5-011" }).first().click();
+    await page.waitForURL("**/dora/requirements/*", { timeout: 2000 });
+  }).toPass({ timeout: 15000 });
   await expect(page.getByText(/Ausstiegsstrategien/).first()).toBeVisible();
   await expect(page.getByText(/ISO\/IEC 27001/).first()).toBeVisible();
 

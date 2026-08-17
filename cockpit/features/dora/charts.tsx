@@ -9,6 +9,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { Locale } from "@/lib/i18n/config";
+import { DORA_MESSAGES } from "@/lib/i18n/messages/dora";
 
 const AXIS_TICK = { fontSize: 11, fill: "hsl(var(--muted-foreground))" } as const;
 const GRID_STROKE = "hsl(var(--border))";
@@ -23,12 +25,15 @@ const TOOLTIP_STYLE = {
 /** Reifegradverlauf: Monatsmittel der (Neu-)Bewertungen, Skala 0–5. */
 export function MaturityTrendChart({
   data,
+  locale = "de",
 }: {
   data: Array<{ month: string; avgMaturity: number; count: number }>;
+  locale?: Locale;
 }) {
+  const t = DORA_MESSAGES[locale];
   if (data.length === 0)
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">Noch keine Bewertungen.</p>
+      <p className="py-8 text-center text-sm text-muted-foreground">{t.charts.noAssessments}</p>
     );
   return (
     <ResponsiveContainer width="100%" height={200}>
@@ -51,9 +56,9 @@ export function MaturityTrendChart({
           contentStyle={TOOLTIP_STYLE}
           formatter={(value: number | string, name) => [
             value,
-            name === "avgMaturity" ? "Ø Reifegrad" : "Bewertungen",
+            name === "avgMaturity" ? t.charts.avgMaturity : t.charts.assessments,
           ]}
-          labelFormatter={(l) => `Monat ${l}`}
+          labelFormatter={(l) => t.charts.monthLabel(String(l))}
         />
         <Line
           type="monotone"

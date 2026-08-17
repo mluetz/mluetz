@@ -52,10 +52,7 @@ export default async function DoraKnowledgePage() {
       <PageHeader
         title={t.page.title}
         description={t.page.description}
-        crumbs={[
-          { label: t.page.crumbOverview, href: "/overview" },
-          { label: t.page.crumbSelf },
-        ]}
+        crumbs={[{ label: t.page.crumbOverview, href: "/overview" }, { label: t.page.crumbSelf }]}
       />
 
       <div className="mb-4 rounded-lg border bg-accent/40 p-3 text-xs">

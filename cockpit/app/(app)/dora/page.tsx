@@ -8,14 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { classify } from "@/lib/domain/risk-calc";
 import { getRiskThresholds } from "@/lib/settings";
-import { COMPLIANCE_DISCLAIMER } from "@/lib/domain/enums";
+import { getLocale } from "@/lib/i18n/server";
+import { DORA_MESSAGES } from "@/lib/i18n/messages/dora";
 import type { TrafficLight } from "@/lib/domain/dora-scoring";
 import { cn } from "@/lib/utils";
 
 export const metadata = { title: "DORA Compliance" };
 export const dynamic = "force-dynamic";
 
-const LIGHT_LABEL: Record<TrafficLight, string> = { GREEN: "GRÜN", YELLOW: "GELB", RED: "ROT" };
 const LIGHT_CLASS: Record<TrafficLight, string> = {
   GREEN: "bg-risk-low/15 text-risk-low border-risk-low/40",
   YELLOW: "bg-risk-medium/15 text-risk-medium border-risk-medium/40",
@@ -24,6 +24,8 @@ const LIGHT_CLASS: Record<TrafficLight, string> = {
 
 export default async function DoraDashboardPage() {
   await requirePermission("compliance:read");
+  const locale = await getLocale();
+  const t = DORA_MESSAGES[locale];
   const [o, heatmap, thresholds] = await Promise.all([
     getDoraOverview(),
     getCifChapterHeatmap(),
@@ -34,22 +36,22 @@ export default async function DoraDashboardPage() {
   return (
     <div>
       <PageHeader
-        title="DORA Compliance"
-        description="Anforderungskatalog FRWK-DORA-001: 133 prüfbare Anforderungen, Reifegrad-Scoring mit Knockout-Übersteuerung und Nachweissperre, Findings/CAPA und Meldefristen-Monitor."
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "DORA Compliance" }]}
+        title={t.dashboard.title}
+        description={t.dashboard.description}
+        crumbs={[{ label: "Overview", href: "/overview" }, { label: t.dashboard.title }]}
         actions={
           <div className="flex flex-wrap gap-2">
             <Link href="/dora/requirements" className="text-sm text-primary hover:underline">
-              Katalog
+              {t.dashboard.linkCatalog}
             </Link>
             <Link href="/dora/findings" className="text-sm text-primary hover:underline">
-              Findings
+              {t.dashboard.linkFindings}
             </Link>
             <Link href="/dora/incidents" className="text-sm text-primary hover:underline">
-              Vorfälle
+              {t.dashboard.linkIncidents}
             </Link>
             <Link href="/dora-knowledge" className="text-sm text-primary hover:underline">
-              Wissensbasis
+              {t.dashboard.linkKnowledge}
             </Link>
           </div>
         }
@@ -58,12 +60,12 @@ export default async function DoraDashboardPage() {
       {/* Kopfzeile: Index und Knockouts gleichrangig (FRWK-DORA-001, Kap. 15.2) */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
         <div className={cn("rounded-lg border-2 p-4", LIGHT_CLASS[o.index.status])}>
-          <p className="text-[11px] font-medium">DORA Resilience Index</p>
+          <p className="text-[11px] font-medium">{t.dashboard.resilienceIndex}</p>
           <p className="text-3xl font-bold">{o.index.indexPercent} %</p>
           <p className="text-xs font-semibold">
-            Status: {LIGHT_LABEL[o.index.status]}
+            {t.dashboard.statusLabel}: {t.light[o.index.status]}
             {o.index.status === "RED" && o.index.totalOpenKnockouts > 0
-              ? " (Knockout-Übersteuerung)"
+              ? t.dashboard.knockoutOverrideSuffix
               : ""}
           </p>
         </div>
@@ -75,33 +77,33 @@ export default async function DoraDashboardPage() {
           )}
         >
           <p className="flex items-center gap-1 text-[11px] font-medium">
-            <AlertOctagon className="h-3.5 w-3.5" aria-hidden /> Offene Knockouts
+            <AlertOctagon className="h-3.5 w-3.5" aria-hidden /> {t.dashboard.openKnockouts}
           </p>
           <p className="text-3xl font-bold">{o.index.totalOpenKnockouts}</p>
-          <p className="text-xs">KO-Anforderung mit wirksamem Reifegrad &lt; 3</p>
+          <p className="text-xs">{t.dashboard.knockoutHint}</p>
         </Link>
         <Kpi
-          label="Überfällige CAPA"
+          label={t.dashboard.overdueCapa}
           value={String(o.overdueCapaCount)}
           href="/dora/findings?overdue=1"
           warn={o.overdueCapaCount > 0}
         />
         <Kpi
-          label="Offene Findings"
+          label={t.dashboard.openFindings}
           value={String(openFindings)}
           href="/dora/findings?open=1"
           warn={(o.openFindingsBySeverity["CRITICAL"] ?? 0) > 0}
-          sub={`davon ${o.openFindingsBySeverity["CRITICAL"] ?? 0} kritisch`}
+          sub={t.dashboard.ofCritical(o.openFindingsBySeverity["CRITICAL"] ?? 0)}
         />
         <Kpi
-          label="Offene Vorfälle"
+          label={t.dashboard.openIncidents}
           value={String(o.incidentSummary.open)}
           href="/dora/incidents?open=1"
-          sub={`davon ${o.incidentSummary.major} schwerwiegend`}
+          sub={t.dashboard.ofMajor(o.incidentSummary.major)}
           warn={o.incidentSummary.major > 0}
         />
         <Kpi
-          label="Überfällige Meldungen"
+          label={t.dashboard.overdueReports}
           value={String(o.incidentSummary.overdueReports)}
           href="/dora/incidents"
           warn={o.incidentSummary.overdueReports > 0}
@@ -118,9 +120,9 @@ export default async function DoraDashboardPage() {
           >
             <div className="flex items-start justify-between gap-2">
               <p className="text-xs font-semibold">
-                Kapitel {c.roman}
+                {t.dashboard.chapter(c.roman)}
                 <span className="block font-normal text-muted-foreground">
-                  {c.articleRange} · Gewicht {c.weightPercent} %
+                  {t.dashboard.chapterMeta(c.articleRange, c.weightPercent)}
                 </span>
               </p>
               <span
@@ -129,7 +131,7 @@ export default async function DoraDashboardPage() {
                   LIGHT_CLASS[c.result.status],
                 )}
               >
-                {LIGHT_LABEL[c.result.status]}
+                {t.light[c.result.status]}
               </span>
             </div>
             <p className="mt-1 line-clamp-2 text-[13px] leading-snug">{c.title}</p>
@@ -149,8 +151,12 @@ export default async function DoraDashboardPage() {
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">
               {c.result.openKnockouts.length > 0
-                ? `⚠ ${c.result.openKnockouts.length} Knockout: ${c.result.openKnockouts.slice(0, 2).join(", ")}${c.result.openKnockouts.length > 2 ? " …" : ""}`
-                : `${c.result.assessedCount}/${c.result.totalCount} bewertet`}
+                ? t.dashboard.knockoutLine(
+                    c.result.openKnockouts.length,
+                    c.result.openKnockouts.slice(0, 2).join(", "),
+                    c.result.openKnockouts.length > 2,
+                  )
+                : t.dashboard.assessedLine(c.result.assessedCount, c.result.totalCount)}
             </p>
           </Link>
         ))}
@@ -159,43 +165,49 @@ export default async function DoraDashboardPage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Reifegradverlauf</CardTitle>
-            <CardDescription>
-              Monatsmittel der Reifegrad-Bewertungen (Skala 0–5, letzte 12 Monate)
-            </CardDescription>
+            <CardTitle>{t.dashboard.trendTitle}</CardTitle>
+            <CardDescription>{t.dashboard.trendDesc}</CardDescription>
           </CardHeader>
           <CardContent>
-            <MaturityTrendChart data={o.maturityTrend} />
+            <MaturityTrendChart data={o.maturityTrend} locale={locale} />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Kennzahlen (KPI/KRI, Tabelle 25)</CardTitle>
-            <CardDescription>
-              Aus den Live-Daten des Cockpits berechnet – Ist gegen Zielwert
-            </CardDescription>
+            <CardTitle>{t.dashboard.kpiTitle}</CardTitle>
+            <CardDescription>{t.dashboard.kpiDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="grid gap-2 sm:grid-cols-2">
-              {o.kpis.map((k) => (
-                <li key={k.id} className="rounded-md border p-2">
-                  <p className="text-[11px] text-muted-foreground">
-                    <span className="font-mono">{k.id}</span> · Ziel {k.target}
-                  </p>
-                  <p className="flex items-center justify-between gap-2 text-sm font-semibold">
-                    <span>{k.label}</span>
-                    <span
-                      className={cn(
-                        k.ok === true && "text-risk-low",
-                        k.ok === false && "text-risk-critical",
-                      )}
-                    >
-                      {k.value} {k.ok === true ? "✓" : k.ok === false ? "✗" : ""}
-                    </span>
-                  </p>
-                </li>
-              ))}
+              {o.kpis.map((k) => {
+                const label = t.kpiLabels[k.id] ?? k.label;
+                const value =
+                  k.value === "fristgerecht"
+                    ? t.kpiText.onTime
+                    : k.value.endsWith("überfällig")
+                      ? k.value.replace("überfällig", t.kpiText.overdue)
+                      : k.value;
+                const target = k.target === "vollständig" ? t.kpiText.complete : k.target;
+                return (
+                  <li key={k.id} className="rounded-md border p-2">
+                    <p className="text-[11px] text-muted-foreground">
+                      <span className="font-mono">{k.id}</span> · {t.dashboard.target} {target}
+                    </p>
+                    <p className="flex items-center justify-between gap-2 text-sm font-semibold">
+                      <span>{label}</span>
+                      <span
+                        className={cn(
+                          k.ok === true && "text-risk-low",
+                          k.ok === false && "text-risk-critical",
+                        )}
+                      >
+                        {value} {k.ok === true ? "✓" : k.ok === false ? "✗" : ""}
+                      </span>
+                    </p>
+                  </li>
+                );
+              })}
             </ul>
           </CardContent>
         </Card>
@@ -204,21 +216,19 @@ export default async function DoraDashboardPage() {
       {/* Heatmap Kapitel × kritische Funktionen */}
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Gefährdungslage je kritischer Funktion</CardTitle>
-          <CardDescription>
-            Offene Risiken mit regulatorischem Bezug zum DORA-Kapitel, je kritischer/wichtiger
-            Funktion – Zellfarbe = höchste Residual-Klasse, Zahl = Anzahl Risiken. Klick öffnet das
-            gefilterte Risk Register.
-          </CardDescription>
+          <CardTitle>{t.dashboard.heatmapTitle}</CardTitle>
+          <CardDescription>{t.dashboard.heatmapDesc}</CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full border-collapse text-center text-xs">
             <thead>
               <tr>
-                <th className="p-1.5 text-left font-medium text-muted-foreground">Funktion</th>
+                <th className="p-1.5 text-left font-medium text-muted-foreground">
+                  {t.dashboard.functionCol}
+                </th>
                 {heatmap.chapters.map((c) => (
                   <th key={c} className="p-1.5 font-medium" scope="col">
-                    Kap.{" "}
+                    {t.dashboard.chapterAbbrev}{" "}
                     {["K2", "K3", "K4", "K5", "K6"].indexOf(c) > -1
                       ? ["II", "III", "IV", "V", "VI"][["K2", "K3", "K4", "K5", "K6"].indexOf(c)]
                       : c}
@@ -232,7 +242,9 @@ export default async function DoraDashboardPage() {
                   <th scope="row" className="p-1.5 text-left font-medium">
                     {cif.name}
                     {cif.isCritical ? (
-                      <span className="ml-1 text-[10px] text-muted-foreground">(kritisch)</span>
+                      <span className="ml-1 text-[10px] text-muted-foreground">
+                        {t.dashboard.criticalTag}
+                      </span>
                     ) : null}
                   </th>
                   {heatmap.chapters.map((c) => {
@@ -258,8 +270,8 @@ export default async function DoraDashboardPage() {
                           )}
                           title={
                             cell.count
-                              ? `${cell.count} offene Risiken · höchste Residual-Klasse: ${klass}`
-                              : "keine offenen Risiken mit diesem Kapitelbezug"
+                              ? t.dashboard.cellTitle(cell.count, String(klass))
+                              : t.dashboard.cellTitleEmpty
                           }
                         >
                           {cell.count || ""}
@@ -286,7 +298,8 @@ export default async function DoraDashboardPage() {
               Critical
             </span>
             <span className="inline-flex items-center gap-1">
-              <span className="h-3 w-3 rounded-sm border bg-muted/60" aria-hidden /> keine
+              <span className="h-3 w-3 rounded-sm border bg-muted/60" aria-hidden />{" "}
+              {t.dashboard.legendNone}
             </span>
           </div>
         </CardContent>
@@ -297,21 +310,18 @@ export default async function DoraDashboardPage() {
           href="/dora/requirements"
           className="inline-flex items-center gap-1 text-primary hover:underline"
         >
-          Zum Anforderungskatalog <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+          {t.dashboard.toCatalog} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
         <Link
           href="/reports/DORA_READINESS"
           className="inline-flex items-center gap-1 text-primary hover:underline"
         >
-          DORA-Readiness-Report <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+          {t.dashboard.readinessReport} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
-        <Badge variant="outline">
-          Methodik: FRWK-DORA-001 Kap. 11 – Gewichte MUSS 3 / SOLL 2 / KANN 1 · Ampel 85/60 ·
-          Nachweissperre ≤ 2
-        </Badge>
+        <Badge variant="outline">{t.dashboard.methodology}</Badge>
       </div>
 
-      <p className="mt-4 text-xs text-muted-foreground">{COMPLIANCE_DISCLAIMER}</p>
+      <p className="mt-4 text-xs text-muted-foreground">{t.disclaimer}</p>
     </div>
   );
 }

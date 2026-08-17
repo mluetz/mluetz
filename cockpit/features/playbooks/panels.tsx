@@ -19,7 +19,8 @@ function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">{TPRM_MESSAGES[locale].common.saved}</p>;
+  if (state.ok)
+    return <p className="text-sm text-risk-low">{TPRM_MESSAGES[locale].common.saved}</p>;
   return null;
 }
 

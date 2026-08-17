@@ -32,7 +32,8 @@ function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">{CORE_MESSAGES[locale].panels.saved}</p>;
+  if (state.ok)
+    return <p className="text-sm text-risk-low">{CORE_MESSAGES[locale].panels.saved}</p>;
   return null;
 }
 
