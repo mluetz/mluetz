@@ -3,34 +3,39 @@ import { ShieldCheck, LogOut } from "lucide-react";
 import { requireUser } from "@/lib/authz";
 import { hasPermission } from "@/lib/authz";
 import { logout } from "@/lib/auth/actions";
+import { getLocale } from "@/lib/i18n/server";
+import { CHROME_MESSAGES } from "@/lib/i18n/messages/chrome";
 import { AppNav, type NavItem } from "@/components/app-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import { ROLES } from "@/lib/domain/enums";
 import { Button } from "@/components/ui/button";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
+  const locale = await getLocale();
+  const t = CHROME_MESSAGES[locale];
 
   const items: NavItem[] = [
-    { href: "/overview", label: "Overview", icon: "overview" },
-    { href: "/risks", label: "Risks", icon: "risks" },
-    { href: "/actions", label: "Actions", icon: "actions" },
-    { href: "/controls", label: "Controls", icon: "controls" },
-    { href: "/third-parties", label: "Third Parties", icon: "thirdparties" },
-    { href: "/assessments", label: "Assessments", icon: "assessments" },
-    { href: "/runbooks", label: "Runbooks", icon: "runbooks" },
-    { href: "/playbooks", label: "Playbooks", icon: "playbooks" },
-    { href: "/evidence", label: "Evidence", icon: "evidence" },
-    { href: "/reports", label: "Reports", icon: "reports" },
-    { href: "/governance", label: "Governance", icon: "governance" },
-    { href: "/dora", label: "DORA Compliance", icon: "doraCompliance" },
-    { href: "/dora-knowledge", label: "DORA Wissensbasis", icon: "dora" },
+    { href: "/overview", label: t.nav.overview, icon: "overview" },
+    { href: "/risks", label: t.nav.risks, icon: "risks" },
+    { href: "/actions", label: t.nav.actions, icon: "actions" },
+    { href: "/controls", label: t.nav.controls, icon: "controls" },
+    { href: "/third-parties", label: t.nav.thirdParties, icon: "thirdparties" },
+    { href: "/assessments", label: t.nav.assessments, icon: "assessments" },
+    { href: "/runbooks", label: t.nav.runbooks, icon: "runbooks" },
+    { href: "/playbooks", label: t.nav.playbooks, icon: "playbooks" },
+    { href: "/evidence", label: t.nav.evidence, icon: "evidence" },
+    { href: "/reports", label: t.nav.reports, icon: "reports" },
+    { href: "/governance", label: t.nav.governance, icon: "governance" },
+    { href: "/dora", label: t.nav.doraCompliance, icon: "doraCompliance" },
+    { href: "/dora-knowledge", label: t.nav.doraKnowledge, icon: "dora" },
   ];
   if (hasPermission(user, "audit:read")) {
-    items.push({ href: "/audit-log", label: "Audit Trail", icon: "audit" });
+    items.push({ href: "/audit-log", label: t.nav.auditTrail, icon: "audit" });
   }
   if (hasPermission(user, "admin")) {
-    items.push({ href: "/admin", label: "Administration", icon: "admin" });
+    items.push({ href: "/admin", label: t.nav.admin, icon: "admin" });
   }
 
   const roleLabels = user.roles.map((r) => ROLES[r]).join(", ");
@@ -45,7 +50,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <span className="text-sm font-semibold leading-tight">
             ICT &amp; TPRM
             <br />
-            <span className="text-xs font-normal text-muted-foreground">Risk Cockpit</span>
+            <span className="text-xs font-normal text-muted-foreground">{t.brand.subtitle}</span>
           </span>
         </Link>
         <div className="flex-1 overflow-y-auto">
@@ -60,15 +65,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="no-print sticky top-0 z-10 flex h-14 items-center justify-between gap-3 border-b bg-background/95 px-4 backdrop-blur">
-          <p className="truncate text-xs text-muted-foreground">
-            Demo-Umgebung – ausschließlich synthetische Daten. Kein freigegebenes GRC-System.
-          </p>
-          <div className="flex items-center gap-1">
+          <p className="truncate text-xs text-muted-foreground">{t.header.demoBanner}</p>
+          <div className="flex items-center gap-1.5">
+            <LanguageToggle locale={locale} />
             <ThemeToggle />
             <form action={logout}>
               <Button variant="ghost" size="sm" type="submit">
                 <LogOut className="h-4 w-4" aria-hidden />
-                Abmelden
+                {t.header.logout}
               </Button>
             </form>
           </div>

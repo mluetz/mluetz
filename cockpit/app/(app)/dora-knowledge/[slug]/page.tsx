@@ -2,11 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { requirePermission } from "@/lib/authz";
-import {
-  getHandbookNeighbors,
-  getHandbookSection,
-  HANDBOOK_GROUPS,
-} from "@/lib/content/dora-handbook";
+import { getLocale } from "@/lib/i18n/server";
+import { KNOWLEDGE_MESSAGES } from "@/lib/i18n/messages/knowledge";
+import { getHandbookContent, getKnowledgeContent } from "@/lib/content/knowledge-locale";
 import { HandbookSectionBody } from "@/features/dora/handbook-client";
 import { PageHeader } from "@/components/page-header";
 import { COMPLIANCE_DISCLAIMER } from "@/lib/domain/enums";
@@ -20,29 +18,44 @@ export default async function HandbookSectionPage({
 }) {
   await requirePermission("risk:read");
   const { slug } = await params;
-  const section = getHandbookSection(slug);
-  if (!section) notFound();
+  const locale = await getLocale();
+  const t = KNOWLEDGE_MESSAGES[locale];
+  const { glossary } = getKnowledgeContent(locale);
+  const handbook = getHandbookContent(locale);
 
-  const group = HANDBOOK_GROUPS.find((g) => g.id === section.groupId);
-  const { prev, next } = getHandbookNeighbors(slug);
+  const index = handbook.sections.findIndex((s) => s.slug === slug);
+  if (index < 0) notFound();
+  const section = handbook.sections[index]!;
+  const prev = index > 0 ? handbook.sections[index - 1] : undefined;
+  const next = index < handbook.sections.length - 1 ? handbook.sections[index + 1] : undefined;
+
+  const group = handbook.groups.find((g) => g.id === section.groupId);
 
   return (
     <div className="max-w-4xl">
       <PageHeader
         title={`${section.chapter} – ${section.title}`}
-        description={`${group?.title ?? "DORA-Handbuch"} · Quelle: FRWK-DORA-001 v1.0 (Gesamtbetrachtung DORA). Markierte Fachbegriffe sind anklickbar, Abbildungen öffnen per Klick eine Großansicht.`}
+        description={t.handbook.sourceNote(group?.title ?? t.handbook.fallbackGroup)}
         crumbs={[
-          { label: "Overview", href: "/overview" },
-          { label: "DORA Wissensbasis", href: "/dora-knowledge" },
+          { label: t.page.crumbOverview, href: "/overview" },
+          { label: t.page.crumbSelf, href: "/dora-knowledge" },
           { label: section.chapter },
         ]}
       />
 
       <div className="rounded-lg border bg-card p-5">
-        <HandbookSectionBody section={section} />
+        <HandbookSectionBody
+          section={section}
+          glossary={glossary}
+          figures={handbook.figures}
+          locale={locale}
+        />
       </div>
 
-      <nav className="mt-4 flex items-stretch justify-between gap-3" aria-label="Kapitelnavigation">
+      <nav
+        className="mt-4 flex items-stretch justify-between gap-3"
+        aria-label={t.handbook.navAria}
+      >
         {prev ? (
           <Link
             href={`/dora-knowledge/${prev.slug}`}

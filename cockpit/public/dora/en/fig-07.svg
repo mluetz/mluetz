@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2046 1155" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6b82"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="2046" height="1155" fill="#ffffff"/>
+
+  <!-- T0 connectors -->
+  <g fill="none" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)">
+    <path d="M 100 455 C 100 280, 180 196, 397 191"/>
+    <path d="M 185 550 C 260 553, 340 556, 422 558"/>
+    <path d="M 100 625 C 100 800, 150 938, 322 957"/>
+  </g>
+
+  <!-- T0 box -->
+  <rect x="15" y="455" width="170" height="170" rx="16" fill="#eef2f8" stroke="#5a6b82" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="28">
+    <text x="100" y="512" font-weight="bold">T0</text>
+    <text x="100" y="556">Becoming</text>
+    <text x="100" y="594">aware</text>
+  </g>
+
+  <!-- GDPR lane -->
+  <rect x="285" y="12" width="1145" height="335" fill="#f4f6fa" stroke="#b9c2d0" stroke-width="2"/>
+  <text x="857" y="52" text-anchor="middle" fill="#1a1a1a" font-size="26">GDPR - Regulation (EU) 2016/679 - addressee: competent data protection authority</text>
+
+  <rect x="405" y="85" width="390" height="215" fill="#f6eefa" stroke="#7030a0" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="600" y="142" font-weight="bold">Notification Art. 33</text>
+    <text x="600" y="184">within <tspan font-weight="bold">72 hours</tspan></text>
+    <text x="600" y="222">of awareness, where there</text>
+    <text x="600" y="260">is a risk to data subjects</text>
+  </g>
+
+  <rect x="955" y="90" width="430" height="210" fill="#f6eefa" stroke="#7030a0" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="1170" y="147" font-weight="bold">Communication Art. 34</text>
+    <text x="1170" y="189"><tspan font-weight="bold">without undue delay</tspan> in</text>
+    <text x="1170" y="227">case of a high risk</text>
+    <text x="1170" y="265">to data subjects</text>
+  </g>
+
+  <line x1="795" y1="192" x2="947" y2="192" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- NIS-2 lane -->
+  <rect x="285" y="380" width="1745" height="330" fill="#f4f6fa" stroke="#b9c2d0" stroke-width="2"/>
+  <text x="1157" y="420" text-anchor="middle" fill="#1a1a1a" font-size="26">NIS-2 - BSIG as amended (NIS2UmsuCG) - addressee: BSI via the BSI reporting portal</text>
+
+  <rect x="430" y="470" width="340" height="175" fill="#e5eaf3" stroke="#1f3c5e" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="600" y="527" font-weight="bold">Early warning</text>
+    <text x="600" y="569">within <tspan font-weight="bold">24 hours</tspan></text>
+    <text x="600" y="607">of awareness</text>
+  </g>
+
+  <rect x="1000" y="450" width="340" height="215" fill="#e5eaf3" stroke="#1f3c5e" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="1170" y="507" font-weight="bold">Report</text>
+    <text x="1170" y="549">within <tspan font-weight="bold">72 hours</tspan></text>
+    <text x="1170" y="587">of awareness, with</text>
+    <text x="1170" y="625">initial assessment</text>
+  </g>
+
+  <rect x="1570" y="470" width="340" height="175" fill="#e5eaf3" stroke="#1f3c5e" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="1740" y="527" font-weight="bold">Final report</text>
+    <text x="1740" y="569">within <tspan font-weight="bold">1 month</tspan></text>
+    <text x="1740" y="607">after the report</text>
+  </g>
+
+  <line x1="770" y1="557" x2="992" y2="557" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+  <line x1="1340" y1="557" x2="1562" y2="557" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- DORA lane -->
+  <rect x="285" y="750" width="1745" height="390" fill="#f4f6fa" stroke="#b9c2d0" stroke-width="2"/>
+  <text x="1157" y="790" text-anchor="middle" fill="#1a1a1a" font-size="26">DORA - Regulation (EU) 2022/2554, Art. 19 in conjunction with RTS 2025/301 - addressee: BaFin via the MVP portal</text>
+
+  <rect x="330" y="830" width="530" height="260" fill="#fdf2e2" stroke="#c0561a" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="595" y="892" font-weight="bold">Initial report</text>
+    <text x="595" y="934">within <tspan font-weight="bold">4 hours</tspan> after</text>
+    <text x="595" y="972">classification as major,</text>
+    <text x="595" y="1010">at the latest <tspan font-weight="bold">24 hours</tspan></text>
+    <text x="595" y="1048">after becoming aware</text>
+  </g>
+
+  <rect x="975" y="855" width="400" height="215" fill="#fdf2e2" stroke="#c0561a" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="1175" y="917" font-weight="bold">Intermediate report</text>
+    <text x="1175" y="959">within <tspan font-weight="bold">72 hours</tspan></text>
+    <text x="1175" y="997">after the initial report,</text>
+    <text x="1175" y="1035">earlier upon stabilization</text>
+  </g>
+
+  <rect x="1520" y="855" width="450" height="215" fill="#fdf2e2" stroke="#c0561a" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="1745" y="917" font-weight="bold">Final report</text>
+    <text x="1745" y="959">within <tspan font-weight="bold">1 month</tspan> after the</text>
+    <text x="1745" y="997">last intermediate report,</text>
+    <text x="1745" y="1035">incl. root cause and CAPA</text>
+  </g>
+
+  <line x1="860" y1="962" x2="967" y2="962" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+  <line x1="1375" y1="962" x2="1512" y2="962" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+</svg>

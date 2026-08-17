@@ -47,6 +47,11 @@ Finanzdienstleistungsumfeld (DORA-Kontext).
   **Vorfallsmodul mit Meldefristen-Monitor** (Erstmeldung 4 h/24 h, Zwischenmeldung
   72 h, Abschluss 1 Monat – parallele Prüfung NIS-2 und DSGVO Art. 33);
   KPI-/KRI-Kacheln und Heatmap Kapitel × kritische Funktionen
+- **Zweisprachigkeit (DE/EN):** Umschalter im Kopfbereich (Cookie-basiert,
+  Standard Deutsch). Oberfläche, Wissensbasis inkl. Handbuch und Glossar sowie
+  die 16 Abbildungen (für EN als originalgetreue SVG-Rekonstruktionen mit
+  englischen Beschriftungen) sind vollständig zweisprachig; die synthetischen
+  Demo-Daten (Risiken, Katalogtexte, Runbook-Inhalte) bleiben bewusst deutsch
 - **DORA Wissensbasis:** die 5 Kernsäulen als interaktive Akkordeons mit
   klickbarem Fachbegriffs-Glossar, Live-Umsetzungsstand je Säule und den
   9 Wirkungsketten des DORA-Regelkreises – plus das **vollständige Handbuch**

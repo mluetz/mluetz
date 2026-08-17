@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2045 754" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6b85"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="2045" height="754" fill="#ffffff"/>
+
+  <!-- line-of-defense group backgrounds -->
+  <rect x="8" y="190" width="240" height="160" fill="#f7f9fb" stroke="#c9d2dc" stroke-width="1.5"/>
+  <rect x="265" y="190" width="1445" height="350" fill="#f7f9fb" stroke="#c9d2dc" stroke-width="1.5"/>
+  <rect x="160" y="575" width="1390" height="160" fill="#f7f9fb" stroke="#c9d2dc" stroke-width="1.5"/>
+  <g font-size="14" fill="#444444" text-anchor="middle">
+    <text x="128" y="209">Third Line of Defense</text>
+    <text x="990" y="209">Second Line of Defense</text>
+    <text x="855" y="594">First Line of Defense</text>
+  </g>
+
+  <!-- arrows -->
+  <g fill="none" stroke="#5a6b85" stroke-width="1.3">
+    <path d="M295,75 C500,110 780,170 898,212" marker-end="url(#arr)"/>
+    <path d="M120,220 C128,195 140,162 152,138" stroke-dasharray="3,4" marker-end="url(#arr)"/>
+    <path d="M855,290 C600,330 450,372 421,416" marker-end="url(#arr)"/>
+    <path d="M880,325 C750,370 668,396 646,426" stroke-dasharray="3,4" marker-end="url(#arr)"/>
+    <path d="M930,325 C900,365 872,392 862,416" stroke-dasharray="3,4" marker-end="url(#arr)"/>
+    <path d="M1095,300 C1250,340 1382,380 1421,416" marker-end="url(#arr)"/>
+    <path d="M855,280 C500,340 320,470 300,596" marker-end="url(#arr)"/>
+    <path d="M960,325 C965,450 970,530 972,596" marker-end="url(#arr)"/>
+    <path d="M1010,325 C1120,430 1192,520 1206,596" marker-end="url(#arr)"/>
+    <path d="M1435,525 L1440,596" marker-end="url(#arr)"/>
+    <path d="M1095,270 C1450,318 1650,395 1751,438" marker-end="url(#arr)"/>
+    <path d="M1753,428 C1600,368 1350,296 1100,276" stroke-dasharray="3,4" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- edge labels -->
+  <g font-size="13" fill="#33404f" text-anchor="middle">
+    <text x="180" y="164">Audit results</text>
+    <text x="1520" y="392">Notifications and reports</text>
+    <text x="1725" y="378">Supervisory feedback</text>
+    <text x="1725" y="395">Art. 22</text>
+  </g>
+
+  <!-- management body -->
+  <rect x="65" y="6" width="230" height="128" fill="#faeedb" stroke="#b45f17" stroke-width="3"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="180" y="28" font-weight="bold">Management body / board</text>
+    <text x="180" y="47">Art. 5(2) - bears the ultimate</text>
+    <text x="180" y="65">responsibility, approves</text>
+    <text x="180" y="83">strategy and risk appetite,</text>
+    <text x="180" y="101">is trained regularly (Art. 5(4))</text>
+    <text x="180" y="122" font-style="italic">ACCOUNTABLE</text>
+  </g>
+
+  <!-- internal audit -->
+  <rect x="25" y="222" width="205" height="110" fill="#e8eef6" stroke="#2c4a6e" stroke-width="2"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="128" y="245" font-weight="bold">Internal audit</text>
+    <text x="128" y="264">Independent review of the</text>
+    <text x="128" y="282">risk management framework,</text>
+    <text x="128" y="300">Art. 6(6)</text>
+    <text x="128" y="320" font-style="italic">INFORMED / auditing</text>
+  </g>
+
+  <!-- CISO -->
+  <rect x="855" y="213" width="240" height="125" fill="#e8eef6" stroke="#2c4a6e" stroke-width="2.5"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="975" y="236" font-weight="bold">CISO / ICT risk management</text>
+    <text x="975" y="255">Control function per Art. 6(4),</text>
+    <text x="975" y="273">runs the risk management</text>
+    <text x="975" y="291">framework, reports to the</text>
+    <text x="975" y="309">management body</text>
+    <text x="975" y="329" font-style="italic">RESPONSIBLE Chap. II</text>
+  </g>
+
+  <!-- BCM officer -->
+  <rect x="320" y="420" width="195" height="105" fill="#e8eef6" stroke="#2c4a6e" stroke-width="2"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="417" y="444" font-weight="bold">BCM officer</text>
+    <text x="417" y="463">BIA, BCP / DRP, RTO / RPO,</text>
+    <text x="417" y="481">emergency exercises</text>
+    <text x="417" y="503" font-style="italic">RESPONSIBLE Art. 11, 12</text>
+  </g>
+
+  <!-- data protection officer -->
+  <rect x="550" y="430" width="185" height="85" fill="#e8eef6" stroke="#2c4a6e" stroke-width="2"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="642" y="455" font-weight="bold">Data protection officer</text>
+    <text x="642" y="475">Interface to GDPR</text>
+    <text x="642" y="497" font-style="italic">CONSULTED</text>
+  </g>
+
+  <!-- compliance -->
+  <rect x="765" y="420" width="195" height="105" fill="#e8eef6" stroke="#2c4a6e" stroke-width="2"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="862" y="444" font-weight="bold">Compliance</text>
+    <text x="862" y="463">Regulatory interpretation,</text>
+    <text x="862" y="481">supervisory communication</text>
+    <text x="862" y="503" font-style="italic">CONSULTED</text>
+  </g>
+
+  <!-- third-party risk management -->
+  <rect x="1320" y="420" width="220" height="105" fill="#e8eef6" stroke="#2c4a6e" stroke-width="2"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="1430" y="444" font-weight="bold">Third-party risk management</text>
+    <text x="1430" y="463">Information register,</text>
+    <text x="1430" y="481">contracts, concentration risk</text>
+    <text x="1430" y="503" font-style="italic">RESPONSIBLE Chap. V</text>
+  </g>
+
+  <!-- external bodies -->
+  <rect x="1755" y="420" width="275" height="105" fill="#eef2f8" stroke="#2c4a6e" stroke-width="2"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="1892" y="446" font-weight="bold">External bodies</text>
+    <text x="1892" y="465">BaFin and ECB, EBA / ESMA / EIOPA,</text>
+    <text x="1892" y="483">external TLPT testers (Art. 27),</text>
+    <text x="1892" y="501">auditors, CTPP lead overseer</text>
+  </g>
+
+  <!-- first line boxes -->
+  <rect x="185" y="600" width="230" height="110" fill="#eaf3ee" stroke="#3a7d54" stroke-width="2.5"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="300" y="624" font-weight="bold">IT operations and architecture</text>
+    <text x="300" y="643">Implements technical controls,</text>
+    <text x="300" y="661">CMDB maintenance, patch and</text>
+    <text x="300" y="679">vulnerability management</text>
+    <text x="300" y="700" font-style="italic">RESPONSIBLE Art. 7-10</text>
+  </g>
+
+  <rect x="875" y="600" width="200" height="110" fill="#eaf3ee" stroke="#3a7d54" stroke-width="2.5"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="975" y="627" font-weight="bold">Security Operations</text>
+    <text x="975" y="647">Detection, first response,</text>
+    <text x="975" y="665">forensics, incident records</text>
+    <text x="975" y="691" font-style="italic">RESPONSIBLE Art. 10, 17</text>
+  </g>
+
+  <rect x="1105" y="600" width="215" height="110" fill="#eaf3ee" stroke="#3a7d54" stroke-width="2.5"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="1212" y="627" font-weight="bold">Business units / CIF owners</text>
+    <text x="1212" y="647">Process ownership, BIA input,</text>
+    <text x="1212" y="665">protection-needs assessment</text>
+    <text x="1212" y="691" font-style="italic">RESPONSIBLE Art. 8</text>
+  </g>
+
+  <rect x="1350" y="600" width="185" height="110" fill="#eaf3ee" stroke="#3a7d54" stroke-width="2.5"/>
+  <g font-size="13" fill="#1f2d3d" text-anchor="middle">
+    <text x="1442" y="627" font-weight="bold">Procurement and legal</text>
+    <text x="1442" y="647">Contract negotiation,</text>
+    <text x="1442" y="665">mandatory clauses Art. 30</text>
+    <text x="1442" y="691" font-style="italic">SUPPORT Chap. V</text>
+  </g>
+</svg>

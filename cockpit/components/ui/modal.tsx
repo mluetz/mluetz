@@ -15,12 +15,15 @@ export function Modal({
   title,
   children,
   className,
+  closeLabel = "Schließen",
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
   className?: string;
+  /** Barrierefreie Beschriftung des Schließen-Buttons (lokalisierbar). */
+  closeLabel?: string;
 }) {
   const dialogRef = React.useRef<HTMLDivElement>(null);
   const restoreFocusRef = React.useRef<HTMLElement | null>(null);
@@ -65,7 +68,7 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Schließen"
+            aria-label={closeLabel}
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-4 w-4" aria-hidden />
