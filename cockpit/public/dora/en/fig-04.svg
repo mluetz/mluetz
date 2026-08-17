@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2046 1301" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="9" refX="9" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L10,4.5 L0,9 z" fill="#44546a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="2046" height="1301" fill="#ffffff"/>
+
+  <!-- Phase A group -->
+  <rect x="12" y="10" width="2022" height="380" fill="#f7f9fc" stroke="#c9d2de" stroke-width="1.5"/>
+  <text x="1023" y="44" font-size="26" fill="#333333" text-anchor="middle">Phase A &#8211; Selection and contracting</text>
+
+  <!-- Box 1 -->
+  <rect x="75" y="64" width="365" height="280" fill="#e9edf6" stroke="#1f3a5f" stroke-width="3.5"/>
+  <text x="257" y="106" font-size="26" font-weight="bold" fill="#333333" text-anchor="middle">1. Needs and strategy</text>
+  <text x="257" y="140" font-size="24" font-style="italic" fill="#333333" text-anchor="middle">Art. 28(2)</text>
+  <text x="257" y="196" font-size="24" fill="#333333" text-anchor="middle">Strategy for ICT third-</text>
+  <text x="257" y="230" font-size="24" fill="#333333" text-anchor="middle">party risk, multi-vendor</text>
+  <text x="257" y="264" font-size="24" fill="#333333" text-anchor="middle">principles, approval by</text>
+  <text x="257" y="298" font-size="24" fill="#333333" text-anchor="middle">the management body</text>
+
+  <!-- Box 2 -->
+  <rect x="560" y="64" width="380" height="280" fill="#e9edf6" stroke="#1f3a5f" stroke-width="3.5"/>
+  <text x="750" y="106" font-size="26" font-weight="bold" fill="#333333" text-anchor="middle">2. Pre-assessment</text>
+  <text x="750" y="140" font-size="24" font-style="italic" fill="#333333" text-anchor="middle">Art. 29</text>
+  <text x="750" y="196" font-size="24" fill="#333333" text-anchor="middle">Concentration risk, substi-</text>
+  <text x="750" y="230" font-size="24" fill="#333333" text-anchor="middle">tutability, subcontractor</text>
+  <text x="750" y="264" font-size="24" fill="#333333" text-anchor="middle">chains, third-country links</text>
+  <text x="750" y="298" font-size="24" fill="#333333" text-anchor="middle">and legal enforceability</text>
+
+  <!-- Box 3 -->
+  <rect x="1065" y="64" width="380" height="280" fill="#e9edf6" stroke="#1f3a5f" stroke-width="3.5"/>
+  <text x="1255" y="106" font-size="26" font-weight="bold" fill="#333333" text-anchor="middle">3. Due diligence</text>
+  <text x="1255" y="140" font-size="24" font-style="italic" fill="#333333" text-anchor="middle">Art. 28(4)</text>
+  <text x="1255" y="196" font-size="24" fill="#333333" text-anchor="middle">Suitability review, certificates</text>
+  <text x="1255" y="230" font-size="24" fill="#333333" text-anchor="middle">and audit reports, assessment</text>
+  <text x="1255" y="264" font-size="24" fill="#333333" text-anchor="middle">of the security level</text>
+
+  <!-- Box 4 -->
+  <rect x="1570" y="64" width="390" height="280" fill="#e9edf6" stroke="#1f3a5f" stroke-width="3.5"/>
+  <text x="1765" y="106" font-size="26" font-weight="bold" fill="#333333" text-anchor="middle">4. Contract design</text>
+  <text x="1765" y="140" font-size="24" font-style="italic" fill="#333333" text-anchor="middle">Art. 30</text>
+  <text x="1765" y="196" font-size="24" fill="#333333" text-anchor="middle">Mandatory clauses: service,</text>
+  <text x="1765" y="230" font-size="24" fill="#333333" text-anchor="middle">locations, audit and access</text>
+  <text x="1765" y="264" font-size="24" fill="#333333" text-anchor="middle">rights, termination, exit,</text>
+  <text x="1765" y="298" font-size="24" fill="#333333" text-anchor="middle">subcontracting</text>
+
+  <!-- arrows Phase A -->
+  <path d="M 440 204 L 553 204" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 940 204 L 1058 204" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 1445 204 L 1563 204" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Phase A -> Box 5 -->
+  <path d="M 1023 390 L 1023 465" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Box 5: register entry and reporting -->
+  <rect x="380" y="472" width="1286" height="145" fill="#fdf3e0" stroke="#c05a11" stroke-width="4"/>
+  <text x="1023" y="518" font-size="25" fill="#333333" text-anchor="middle"><tspan font-weight="bold">5. Register entry and reporting</tspan><tspan font-size="23">&#160;&#160;&#183;&#160;&#160;</tspan><tspan font-size="24" font-style="italic">Art. 28(3) in conjunction with ITS (EU) 2024/2956</tspan></text>
+  <text x="1023" y="558" font-size="23" fill="#333333" text-anchor="middle">Maintain the register of information; submit it annually to BaFin via the MVP portal (xBRL or Excel template).</text>
+  <text x="1023" y="592" font-size="23" fill="#333333" text-anchor="middle">The entry is also the data basis for the concentration and dependency analysis.</text>
+
+  <!-- Box 5 -> Phase B -->
+  <path d="M 1023 617 L 1023 695" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Phase B group -->
+  <rect x="250" y="702" width="1545" height="390" fill="#f7f9fc" stroke="#c9d2de" stroke-width="1.5"/>
+  <text x="1023" y="736" font-size="26" fill="#333333" text-anchor="middle">Phase B &#8211; Operation, monitoring and termination</text>
+
+  <!-- Box 6 -->
+  <rect x="305" y="756" width="405" height="305" fill="#eaf4ee" stroke="#2e7d5b" stroke-width="3.5"/>
+  <text x="507" y="800" font-size="26" font-weight="bold" fill="#333333" text-anchor="middle">6. Ongoing monitoring</text>
+  <text x="507" y="834" font-size="24" font-style="italic" fill="#333333" text-anchor="middle">Art. 28(5)</text>
+  <text x="507" y="898" font-size="24" fill="#333333" text-anchor="middle">SLA and KPI monitoring,</text>
+  <text x="507" y="932" font-size="24" fill="#333333" text-anchor="middle">recertification, threat intel</text>
+  <text x="507" y="966" font-size="24" fill="#333333" text-anchor="middle">matching, notification of</text>
+  <text x="507" y="1000" font-size="24" fill="#333333" text-anchor="middle">material service changes</text>
+
+  <!-- Box 7 -->
+  <rect x="830" y="756" width="390" height="305" fill="#eaf4ee" stroke="#2e7d5b" stroke-width="3.5"/>
+  <text x="1025" y="800" font-size="26" font-weight="bold" fill="#333333" text-anchor="middle">7. Testing and auditing</text>
+  <text x="1025" y="834" font-size="24" font-style="italic" fill="#333333" text-anchor="middle">Art. 24-26 and Art. 30</text>
+  <text x="1025" y="898" font-size="24" fill="#333333" text-anchor="middle">Inclusion in resilience tests</text>
+  <text x="1025" y="932" font-size="24" fill="#333333" text-anchor="middle">and TLPT, evidence review,</text>
+  <text x="1025" y="966" font-size="24" fill="#333333" text-anchor="middle">on-site audits based on the</text>
+  <text x="1025" y="1000" font-size="24" fill="#333333" text-anchor="middle">contractual audit rights</text>
+
+  <!-- Box 8 -->
+  <rect x="1350" y="756" width="380" height="305" fill="#fdecea" stroke="#c0392b" stroke-width="3.5"/>
+  <text x="1540" y="800" font-size="26" font-weight="bold" fill="#333333" text-anchor="middle">8. Exit and termination</text>
+  <text x="1540" y="834" font-size="24" font-style="italic" fill="#333333" text-anchor="middle">Art. 28(7) and (8)</text>
+  <text x="1540" y="898" font-size="24" fill="#333333" text-anchor="middle">Documented and tested</text>
+  <text x="1540" y="932" font-size="24" fill="#333333" text-anchor="middle">exit strategy, return of data,</text>
+  <text x="1540" y="966" font-size="24" fill="#333333" text-anchor="middle">transition without disruption</text>
+  <text x="1540" y="1000" font-size="24" fill="#333333" text-anchor="middle">of critical functions</text>
+
+  <!-- arrows Phase B -->
+  <path d="M 710 908 L 823 908" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 1220 908 L 1343 908" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Phase B -> bottom box -->
+  <path d="M 1023 1092 L 1023 1165" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Bottom box -->
+  <rect x="380" y="1172" width="1286" height="118" fill="#fdf3e0" stroke="#c05a11" stroke-width="4"/>
+  <text x="1023" y="1218" font-size="25" fill="#333333" text-anchor="middle"><tspan font-weight="bold">Successor provider or contract renewal</tspan><tspan font-size="23">&#160;&#160;&#183;&#160;&#160;</tspan><tspan font-size="24" font-style="italic">re-run from the pre-assessment under Art. 29</tspan></text>
+  <text x="1023" y="1260" font-size="23" fill="#333333" text-anchor="middle">The lifecycle must be managed as a closed control loop, not as a one-off procurement exercise.</text>
+</svg>

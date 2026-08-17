@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1834 1382" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6b82"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1834" height="1382" fill="#ffffff"/>
+
+  <!-- arrows: source systems into DORA sweet spot -->
+  <g fill="none" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)">
+    <path d="M 287 252 C 420 380, 560 435, 738 462"/>
+    <path d="M 917 252 L 917 338"/>
+    <path d="M 1547 252 C 1414 380, 1274 435, 1096 462"/>
+  </g>
+
+  <!-- arrows: sweet spot to the three strands -->
+  <g fill="none" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)">
+    <path d="M 775 610 C 600 700, 420 740, 295 784"/>
+    <path d="M 917 697 L 917 784"/>
+    <path d="M 1059 610 C 1234 700, 1414 740, 1539 784"/>
+  </g>
+
+  <!-- arrows: strands into shared situational picture -->
+  <g fill="none" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)">
+    <path d="M 287 1027 C 340 1130, 480 1195, 636 1230"/>
+    <path d="M 917 1027 L 917 1114"/>
+    <path d="M 1547 1027 C 1494 1130, 1354 1195, 1198 1230"/>
+  </g>
+
+  <!-- ISMS -->
+  <rect x="15" y="15" width="545" height="235" fill="#e6ecf6" stroke="#1f3c5e" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="287" y="70" font-size="29" font-weight="bold">ISMS - ISO/IEC 27001:2022</text>
+    <text x="287" y="115">Focus: protection goals, prevention,</text>
+    <text x="287" y="153">access control, threat modeling</text>
+    <text x="287" y="199" font-style="italic">provides the preventive controls</text>
+  </g>
+
+  <!-- BCMS -->
+  <rect x="644" y="15" width="545" height="235" fill="#fdecec" stroke="#c00000" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="917" y="70" font-size="29" font-weight="bold">BCMS - ISO 22301:2019</text>
+    <text x="917" y="115">Focus: business continuity, recovery,</text>
+    <text x="917" y="153">BCP / DRP, RTO and RPO</text>
+    <text x="917" y="199" font-style="italic">provides the emergency capability</text>
+  </g>
+
+  <!-- Data privacy -->
+  <rect x="1274" y="15" width="545" height="235" fill="#f5edfa" stroke="#7030a0" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="1547" y="70" font-size="29" font-weight="bold">Data Privacy - GDPR</text>
+    <text x="1547" y="115">Focus: protection of personal</text>
+    <text x="1547" y="153">data, privacy by design, RoPA</text>
+    <text x="1547" y="199" font-style="italic">provides the data subject perspective</text>
+  </g>
+
+  <!-- DORA sweet spot -->
+  <circle cx="917" cy="520" r="175" fill="#fdf3e3" stroke="#c0561a" stroke-width="9"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="28">
+    <text x="917" y="472" font-size="30" font-weight="bold">DORA Sweet Spot</text>
+    <text x="917" y="518">Orchestrated incident</text>
+    <text x="917" y="556">handling and ICT</text>
+    <text x="917" y="594">risk management</text>
+  </g>
+
+  <!-- Strand 1 -->
+  <rect x="15" y="790" width="545" height="235" fill="#e7f2ec" stroke="#1e7145" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="287" y="845" font-size="29" font-weight="bold">Strand 1 - ISMS / DORA</text>
+    <text x="287" y="892">Classification under Art. 18,</text>
+    <text x="287" y="930">initial report to BaFin,</text>
+    <text x="287" y="968">forensics and root cause</text>
+  </g>
+
+  <!-- Strand 2 -->
+  <rect x="644" y="790" width="545" height="235" fill="#e7f2ec" stroke="#1e7145" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="917" y="845" font-size="29" font-weight="bold">Strand 2 - BCMS</text>
+    <text x="917" y="892">Activation of BCP / DRP,</text>
+    <text x="917" y="930">emergency operation of critical</text>
+    <text x="917" y="968">functions, RTO monitoring</text>
+  </g>
+
+  <!-- Strand 3 -->
+  <rect x="1274" y="790" width="545" height="235" fill="#e7f2ec" stroke="#1e7145" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="1547" y="845" font-size="29" font-weight="bold">Strand 3 - Data Privacy</text>
+    <text x="1547" y="892">Review under Art. 33 GDPR,</text>
+    <text x="1547" y="930">72-h notification to the data</text>
+    <text x="1547" y="968">protection authority if required</text>
+  </g>
+
+  <!-- Shared situational picture -->
+  <rect x="644" y="1120" width="545" height="245" fill="#fdf3e3" stroke="#c0561a" stroke-width="7"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="917" y="1177" font-size="29" font-weight="bold">Shared situational picture</text>
+    <text x="917" y="1224">One incident, one data set,</text>
+    <text x="917" y="1262">three parallel obligation strands -</text>
+    <text x="917" y="1300">managed centrally in the GRC tool</text>
+  </g>
+</svg>

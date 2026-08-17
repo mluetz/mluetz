@@ -4,6 +4,22 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ## [Unreleased]
 
+### Added
+
+- **Zweisprachigkeit Deutsch/Englisch:** Cookie-basierter Sprachumschalter im
+  Kopfbereich und auf der Anmeldeseite (Standard Deutsch); Oberfläche der
+  Module, Executive Dashboard, Reports-Chrome sowie die komplette DORA-
+  Wissensbasis (5 Säulen, Glossar, Handbuch Kap. 1–8/10–15) auf Englisch
+- Die 16 Abbildungen des Rahmenwerks für die englische Ausgabe als
+  originalgetreue SVG-Rekonstruktionen mit englischen Beschriftungen
+  (public/dora/en/fig-01…16.svg)
+- **DORA-Handbuch in der Wissensbasis:** Kapitel 1–8 und 10–15 der
+  Gesamtbetrachtung FRWK-DORA-001 als navigierbare Kapitelseiten in fünf
+  thematischen Teilen, inkl. der 16 Original-Abbildungen (Klick-Großansicht),
+  zentraler Tabellen (DORA↔NIS-2, RTS/ITS, Meldefristen, Reifegradskala,
+  KPI/KRI-Katalog, RACI) und Cockpit-Deep-Links; Kapitel 9 verlinkt auf den
+  interaktiven Anforderungskatalog
+
 ## [0.2.0] – 2026-08-17
 
 ### Added

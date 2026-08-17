@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2047 1159" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L9,4 L0,8 z" fill="#44546a"/>
+    </marker>
+    <marker id="arrowDot" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L9,4 L0,8 z" fill="#6b7686"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="2047" height="1159" fill="#ffffff"/>
+
+  <!-- Group: EU legal framework -->
+  <rect x="905" y="8" width="990" height="855" fill="#f7f9fc" stroke="#c9d2de" stroke-width="1.5"/>
+  <text x="1400" y="40" font-size="27" fill="#333333" text-anchor="middle">EU legal framework (directly applicable or requiring transposition)</text>
+
+  <!-- GDPR -->
+  <rect x="950" y="52" width="380" height="125" fill="#e9edf6" stroke="#1f3a5f" stroke-width="3"/>
+  <text x="1140" y="90" font-size="27" font-weight="bold" fill="#1f3a5f" text-anchor="middle">GDPR</text>
+  <text x="1140" y="124" font-size="24" fill="#333333" text-anchor="middle">Regulation (EU) 2016/679</text>
+  <text x="1140" y="156" font-size="24" fill="#333333" text-anchor="middle">Protection of personal data</text>
+
+  <!-- CRA -->
+  <rect x="1460" y="52" width="390" height="125" fill="#e9edf6" stroke="#1f3a5f" stroke-width="3"/>
+  <text x="1655" y="90" font-size="27" font-weight="bold" fill="#1f3a5f" text-anchor="middle">CRA</text>
+  <text x="1655" y="124" font-size="24" fill="#333333" text-anchor="middle">Regulation (EU) 2024/2847</text>
+  <text x="1655" y="156" font-size="24" fill="#333333" text-anchor="middle">Security of digital products</text>
+
+  <!-- dotted connectors into DORA -->
+  <path d="M 1140 177 C 1145 220, 1152 260, 1162 300" fill="none" stroke="#6b7686" stroke-width="2" stroke-dasharray="3 6" marker-end="url(#arrowDot)"/>
+  <path d="M 1650 177 C 1610 245, 1470 300, 1382 336" fill="none" stroke="#6b7686" stroke-width="2" stroke-dasharray="3 6" marker-end="url(#arrowDot)"/>
+
+  <rect x="1010" y="212" width="262" height="66" fill="#ffffff"/>
+  <text x="1140" y="238" font-size="24" fill="#333333" text-anchor="middle">Incident = often also</text>
+  <text x="1140" y="268" font-size="24" fill="#333333" text-anchor="middle">a data breach</text>
+
+  <rect x="1520" y="212" width="270" height="66" fill="#ffffff"/>
+  <text x="1655" y="238" font-size="24" fill="#333333" text-anchor="middle">Security requirements</text>
+  <text x="1655" y="268" font-size="24" fill="#333333" text-anchor="middle">for products in use</text>
+
+  <!-- DORA -->
+  <rect x="985" y="308" width="400" height="155" fill="#fbf1de" stroke="#c05a11" stroke-width="4"/>
+  <text x="1185" y="345" font-size="27" font-weight="bold" fill="#333333" text-anchor="middle">DORA</text>
+  <text x="1185" y="378" font-size="24" fill="#333333" text-anchor="middle">Regulation (EU) 2022/2554</text>
+  <text x="1185" y="410" font-size="23" font-style="italic" fill="#333333" text-anchor="middle">Regulation &#8211; directly applicable</text>
+  <text x="1185" y="442" font-size="24" fill="#333333" text-anchor="middle">Sector: financial services</text>
+
+  <!-- Lex specialis -->
+  <path d="M 1215 463 C 1245 530, 1268 600, 1276 665" fill="none" stroke="#6b7686" stroke-width="2" stroke-dasharray="3 6" marker-end="url(#arrowDot)"/>
+  <rect x="1140" y="500" width="280" height="100" fill="#ffffff"/>
+  <text x="1280" y="530" font-size="25" font-weight="bold" fill="#333333" text-anchor="middle">Lex specialis</text>
+  <text x="1280" y="562" font-size="24" fill="#333333" text-anchor="middle">supersedes NIS-2 for</text>
+  <text x="1280" y="592" font-size="24" fill="#333333" text-anchor="middle">financial entities</text>
+
+  <!-- NIS-2 -->
+  <rect x="1070" y="670" width="420" height="155" fill="#e3e9f3" stroke="#1f3a5f" stroke-width="4"/>
+  <text x="1280" y="707" font-size="27" font-weight="bold" fill="#1f3a5f" text-anchor="middle">NIS-2</text>
+  <text x="1280" y="740" font-size="24" fill="#333333" text-anchor="middle">Directive (EU) 2022/2555</text>
+  <text x="1280" y="772" font-size="23" font-style="italic" fill="#333333" text-anchor="middle">Directive &#8211; national transposition</text>
+  <text x="1280" y="804" font-size="24" fill="#333333" text-anchor="middle">18 sectors</text>
+
+  <!-- Group: Normative implementation basis -->
+  <rect x="10" y="635" width="870" height="505" fill="#f7f9fc" stroke="#c9d2de" stroke-width="1.5"/>
+  <text x="445" y="668" font-size="27" fill="#333333" text-anchor="middle">Normative implementation basis</text>
+
+  <!-- ISO 22301 -->
+  <rect x="55" y="700" width="380" height="95" fill="#edf5ef" stroke="#2e7d5b" stroke-width="3"/>
+  <text x="245" y="738" font-size="26" font-weight="bold" fill="#1f3a5f" text-anchor="middle">ISO 22301:2019</text>
+  <text x="245" y="772" font-size="23" fill="#333333" text-anchor="middle">BCMS &#8211; business continuity, RTO/RPO</text>
+
+  <!-- ISO/IEC 27005 -->
+  <rect x="490" y="700" width="335" height="95" fill="#edf5ef" stroke="#2e7d5b" stroke-width="3"/>
+  <text x="657" y="738" font-size="26" font-weight="bold" fill="#1f3a5f" text-anchor="middle">ISO/IEC 27005</text>
+  <text x="657" y="772" font-size="23" fill="#333333" text-anchor="middle">Risk management methodology</text>
+
+  <!-- ISO/IEC 27001 -->
+  <rect x="505" y="990" width="335" height="95" fill="#edf5ef" stroke="#2e7d5b" stroke-width="3"/>
+  <text x="672" y="1028" font-size="26" font-weight="bold" fill="#1f3a5f" text-anchor="middle">ISO/IEC 27001:2022</text>
+  <text x="672" y="1062" font-size="23" fill="#333333" text-anchor="middle">ISMS &#8211; preventive controls</text>
+
+  <!-- arrows among the norms -->
+  <path d="M 490 748 L 445 748" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 655 795 L 658 982" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- DORA -> ISO 27001 (curved) -->
+  <path d="M 1020 463 C 890 690, 780 850, 700 982" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <!-- NIS-2 -> ISO 27001 (curved) -->
+  <path d="M 1110 825 C 970 895, 830 945, 745 985" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Group: National level Germany -->
+  <rect x="1050" y="930" width="940" height="215" fill="#f7f9fc" stroke="#c9d2de" stroke-width="1.5"/>
+  <text x="1520" y="962" font-size="27" fill="#333333" text-anchor="middle">National level: Germany</text>
+
+  <!-- BSIG -->
+  <rect x="1090" y="975" width="400" height="140" fill="#e9edf6" stroke="#1f3a5f" stroke-width="3"/>
+  <text x="1290" y="1016" font-size="25" font-weight="bold" fill="#333333" text-anchor="middle">BSIG (new version)</text>
+  <text x="1290" y="1052" font-size="23" fill="#333333" text-anchor="middle">NIS2UmsuCG, in force 6 Dec 2025</text>
+  <text x="1290" y="1086" font-size="23" fill="#333333" text-anchor="middle">Supervision: BSI</text>
+
+  <!-- Financial sector supervisory law -->
+  <rect x="1520" y="975" width="445" height="140" fill="#e9edf6" stroke="#1f3a5f" stroke-width="3"/>
+  <text x="1742" y="1010" font-size="24" font-weight="bold" fill="#333333" text-anchor="middle">Financial sector supervisory law</text>
+  <text x="1742" y="1044" font-size="22" fill="#333333" text-anchor="middle">KWG / MaRisk / DORA implementation</text>
+  <text x="1742" y="1074" font-size="22" fill="#333333" text-anchor="middle">Supervision: BaFin, ECB,</text>
+  <text x="1742" y="1102" font-size="22" fill="#333333" text-anchor="middle">EBA/ESMA/EIOPA</text>
+
+  <!-- NIS-2 -> BSIG -->
+  <path d="M 1280 825 L 1280 968" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <!-- DORA -> financial supervisory law (curved) -->
+  <path d="M 1385 400 C 1760 480, 1800 740, 1750 968" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+</svg>

@@ -6,22 +6,30 @@ import { BookOpen, ChevronDown, ExternalLink, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
-import { DORA_GLOSSARY, DORA_PILLARS, type DoraPillar } from "@/lib/content/dora-knowledge";
+import type { Locale } from "@/lib/i18n/config";
+import { KNOWLEDGE_MESSAGES } from "@/lib/i18n/messages/knowledge";
+import type { DoraPillar, GlossaryEntry } from "@/lib/content/dora-knowledge";
 
 /**
  * Interaktive DORA-Wissensbasis:
  * – 5 Kernsäulen als barrierearme Akkordeons (aria-expanded, Tastatur)
  * – [[Begriff]]-Markierungen werden als klickbare Fachbegriffe gerendert,
  *   die ein Erklär-Modal im Bankenkontext öffnen.
+ * Inhalte (Säulen, Glossar) kommen sprachabhängig vom Server als Props.
  */
 
 /** Zerlegt einen Absatz in Text- und Glossar-Segmente (auch vom Handbuch genutzt). */
-export function renderWithTerms(text: string, onTerm: (key: string) => void): React.ReactNode[] {
+export function renderWithTerms(
+  text: string,
+  onTerm: (key: string) => void,
+  glossary: Record<string, GlossaryEntry>,
+  explainTerm: (title: string) => string,
+): React.ReactNode[] {
   const parts = text.split(/\[\[(.+?)\]\]/g);
   return parts.map((part, i) => {
     // Ungerade Indizes sind die Capture-Gruppen (= Begriffe)
     if (i % 2 === 1) {
-      const known = part in DORA_GLOSSARY;
+      const known = part in glossary;
       if (!known) return <React.Fragment key={i}>{part}</React.Fragment>;
       return (
         <button
@@ -29,7 +37,7 @@ export function renderWithTerms(text: string, onTerm: (key: string) => void): Re
           type="button"
           onClick={() => onTerm(part)}
           className="rounded-sm font-medium text-primary underline decoration-dotted underline-offset-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          title={`Begriff erklären: ${DORA_GLOSSARY[part]!.title}`}
+          title={explainTerm(glossary[part]!.title)}
         >
           {part}
         </button>
@@ -51,11 +59,6 @@ const SCORE_CLASS: Record<PillarScore["status"], string> = {
   YELLOW: "bg-risk-medium/15 text-risk-medium border-risk-medium/40",
   RED: "bg-risk-critical/15 text-risk-critical border-risk-critical/40",
 };
-const SCORE_LABEL: Record<PillarScore["status"], string> = {
-  GREEN: "GRÜN",
-  YELLOW: "GELB",
-  RED: "ROT",
-};
 
 function PillarAccordion({
   pillar,
@@ -64,6 +67,8 @@ function PillarAccordion({
   onToggle,
   onTerm,
   score,
+  glossary,
+  locale,
 }: {
   pillar: DoraPillar;
   index: number;
@@ -71,9 +76,13 @@ function PillarAccordion({
   onToggle: () => void;
   onTerm: (key: string) => void;
   score?: PillarScore;
+  glossary: Record<string, GlossaryEntry>;
+  locale: Locale;
 }) {
+  const t = KNOWLEDGE_MESSAGES[locale];
   const panelId = `dora-panel-${pillar.id}`;
   const buttonId = `dora-button-${pillar.id}`;
+  const withTerms = (text: string) => renderWithTerms(text, onTerm, glossary, t.modal.explainTerm);
   return (
     <div className="rounded-lg border bg-card">
       <h2>
@@ -102,11 +111,11 @@ function PillarAccordion({
               )}
               title={
                 score.openKnockouts > 0
-                  ? `${score.openKnockouts} offene Knockout-Anforderungen`
-                  : "Umsetzungsstand aus dem Anforderungskatalog"
+                  ? t.pillars.scoreTitleKnockouts(score.openKnockouts)
+                  : t.pillars.scoreTitleDefault
               }
             >
-              {score.scorePercent} % · {SCORE_LABEL[score.status]}
+              {score.scorePercent} % · {t.pillars.light[score.status]}
               {score.openKnockouts > 0 ? ` · ${score.openKnockouts} KO` : ""}
             </span>
           ) : null}
@@ -128,13 +137,13 @@ function PillarAccordion({
         >
           <div className="space-y-3 text-sm leading-relaxed">
             {pillar.paragraphs.map((p, i) => (
-              <p key={i}>{renderWithTerms(p, onTerm)}</p>
+              <p key={i}>{withTerms(p)}</p>
             ))}
           </div>
           <div className="rounded-md border bg-muted/40 p-3">
             <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
               <ListChecks className="h-3.5 w-3.5" aria-hidden />
-              Konkrete ISRM-Aufgaben in der Bank
+              {t.pillars.tasksHeading}
             </p>
             <ul className="space-y-1.5 text-sm">
               {pillar.isrmTasks.map((task, i) => (
@@ -143,19 +152,19 @@ function PillarAccordion({
                     className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
                     aria-hidden
                   />
-                  <span>{renderWithTerms(task, onTerm)}</span>
+                  <span>{withTerms(task)}</span>
                 </li>
               ))}
             </ul>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-muted-foreground">Im Cockpit:</span>
+            <span className="text-muted-foreground">{t.pillars.cockpitLead}</span>
             {score ? (
               <Link
                 href={`/dora/requirements?chapter=${score.chapterKey}`}
                 className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 font-medium transition-colors hover:bg-accent"
               >
-                Anforderungen dieses Kapitels
+                {t.pillars.chapterRequirements}
                 <ExternalLink className="h-3 w-3" aria-hidden />
               </Link>
             ) : null}
@@ -176,14 +185,25 @@ function PillarAccordion({
   );
 }
 
-export function DoraKnowledgeBase({ scores }: { scores?: Record<string, PillarScore> }) {
-  const [openId, setOpenId] = React.useState<string | null>(DORA_PILLARS[0]?.id ?? null);
+export function DoraKnowledgeBase({
+  scores,
+  pillars,
+  glossary,
+  locale,
+}: {
+  scores?: Record<string, PillarScore>;
+  pillars: DoraPillar[];
+  glossary: Record<string, GlossaryEntry>;
+  locale: Locale;
+}) {
+  const t = KNOWLEDGE_MESSAGES[locale];
+  const [openId, setOpenId] = React.useState<string | null>(pillars[0]?.id ?? null);
   const [term, setTerm] = React.useState<string | null>(null);
-  const entry = term ? DORA_GLOSSARY[term] : undefined;
+  const entry = term ? glossary[term] : undefined;
 
   return (
     <div className="space-y-3">
-      {DORA_PILLARS.map((pillar, i) => (
+      {pillars.map((pillar, i) => (
         <PillarAccordion
           key={pillar.id}
           pillar={pillar}
@@ -192,30 +212,43 @@ export function DoraKnowledgeBase({ scores }: { scores?: Record<string, PillarSc
           onToggle={() => setOpenId((cur) => (cur === pillar.id ? null : pillar.id))}
           onTerm={setTerm}
           score={scores?.[pillar.id]}
+          glossary={glossary}
+          locale={locale}
         />
       ))}
 
-      <Modal open={!!entry} onClose={() => setTerm(null)} title={entry?.title ?? ""}>
+      <Modal
+        open={!!entry}
+        onClose={() => setTerm(null)}
+        title={entry?.title ?? ""}
+        closeLabel={t.modal.close}
+      >
         <p className="text-sm leading-relaxed">{entry?.definition}</p>
         <p className="mt-4 flex items-center gap-1.5 border-t pt-3 text-xs text-muted-foreground">
           <BookOpen className="h-3.5 w-3.5 shrink-0" aria-hidden />
-          Kurzdefinition im Bankenkontext – maßgeblich sind die Verordnung (EU) 2022/2554 und die
-          zugehörigen RTS/ITS.
+          {t.modal.footer}
         </p>
       </Modal>
     </div>
   );
 }
 
-export function GlossaryIndex() {
+export function GlossaryIndex({
+  glossary,
+  locale,
+}: {
+  glossary: Record<string, GlossaryEntry>;
+  locale: Locale;
+}) {
+  const t = KNOWLEDGE_MESSAGES[locale];
   const [term, setTerm] = React.useState<string | null>(null);
-  const entry = term ? DORA_GLOSSARY[term] : undefined;
+  const entry = term ? glossary[term] : undefined;
   // Dubletten (Flexionsformen) über den Titel zusammenführen
   const unique = new Map<string, string>();
-  for (const [key, value] of Object.entries(DORA_GLOSSARY)) {
+  for (const [key, value] of Object.entries(glossary)) {
     if (!unique.has(value.title)) unique.set(value.title, key);
   }
-  const entries = [...unique.entries()].sort(([a], [b]) => a.localeCompare(b, "de"));
+  const entries = [...unique.entries()].sort(([a], [b]) => a.localeCompare(b, locale));
 
   return (
     <>
@@ -232,7 +265,12 @@ export function GlossaryIndex() {
           </Badge>
         ))}
       </div>
-      <Modal open={!!entry} onClose={() => setTerm(null)} title={entry?.title ?? ""}>
+      <Modal
+        open={!!entry}
+        onClose={() => setTerm(null)}
+        title={entry?.title ?? ""}
+        closeLabel={t.modal.close}
+      >
         <p className="text-sm leading-relaxed">{entry?.definition}</p>
       </Modal>
     </>

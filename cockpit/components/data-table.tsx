@@ -24,16 +24,41 @@ interface DataTableProps<TData, TValue> {
   getRowHref?: (row: TData) => string;
   pageSize?: number;
   emptyMessage?: string;
+  /** UI-Sprache für die eingebauten Beschriftungen (Standard: Deutsch). */
+  locale?: "de" | "en";
 }
+
+const TABLE_TEXT = {
+  de: {
+    search: "Suchen…",
+    searchAria: "Tabelle durchsuchen",
+    empty: "Keine Einträge gefunden.",
+    ofEntries: (shown: number, total: number) => `${shown} von ${total} Einträgen`,
+    page: (current: number, total: number) => `Seite ${current} von ${total}`,
+    prev: "Vorherige Seite",
+    next: "Nächste Seite",
+  },
+  en: {
+    search: "Search…",
+    searchAria: "Search table",
+    empty: "No entries found.",
+    ofEntries: (shown: number, total: number) => `${shown} of ${total} entries`,
+    page: (current: number, total: number) => `Page ${current} of ${total}`,
+    prev: "Previous page",
+    next: "Next page",
+  },
+} as const;
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  searchPlaceholder = "Suchen…",
+  searchPlaceholder,
   getRowHref,
   pageSize = 25,
-  emptyMessage = "Keine Einträge gefunden.",
+  emptyMessage,
+  locale = "de",
 }: DataTableProps<TData, TValue>) {
+  const text = TABLE_TEXT[locale];
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState("");
 
@@ -56,12 +81,12 @@ export function DataTable<TData, TValue>({
         <Input
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder={searchPlaceholder}
+          placeholder={searchPlaceholder ?? text.search}
           className="max-w-xs"
-          aria-label="Tabelle durchsuchen"
+          aria-label={text.searchAria}
         />
         <span className="text-xs text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} von {data.length} Einträgen
+          {text.ofEntries(table.getFilteredRowModel().rows.length, data.length)}
         </span>
       </div>
       <Table>
@@ -109,7 +134,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TR>
               <TD colSpan={columns.length} className="h-20 text-center text-muted-foreground">
-                {emptyMessage}
+                {emptyMessage ?? text.empty}
               </TD>
             </TR>
           )}
@@ -117,13 +142,13 @@ export function DataTable<TData, TValue>({
       </Table>
       {table.getPageCount() > 1 ? (
         <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
-          Seite {table.getState().pagination.pageIndex + 1} von {table.getPageCount()}
+          {text.page(table.getState().pagination.pageIndex + 1, table.getPageCount())}
           <Button
             variant="outline"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            aria-label="Vorherige Seite"
+            aria-label={text.prev}
           >
             <ChevronLeft className="h-4 w-4" aria-hidden />
           </Button>
@@ -132,7 +157,7 @@ export function DataTable<TData, TValue>({
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            aria-label="Nächste Seite"
+            aria-label={text.next}
           >
             <ChevronRight className="h-4 w-4" aria-hidden />
           </Button>

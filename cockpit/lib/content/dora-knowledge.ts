@@ -129,7 +129,12 @@ export const DORA_PILLARS: DoraPillar[] = [
 ];
 
 /** Glossar: Fachbegriffe im Bankenkontext, kurz und prägnant. */
-export const DORA_GLOSSARY: Record<string, { title: string; definition: string }> = {
+export interface GlossaryEntry {
+  title: string;
+  definition: string;
+}
+
+export const DORA_GLOSSARY: Record<string, GlossaryEntry> = {
   Leitungsorgan: {
     title: "Leitungsorgan",
     definition:

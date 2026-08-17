@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2046 670" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6b85"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="2046" height="670" fill="#ffffff"/>
+
+  <!-- arrows: index to chapters -->
+  <g fill="none" stroke="#5a6b85" stroke-width="1.5" marker-end="url(#arr)">
+    <path d="M700,80 C450,100 250,115 180,146"/>
+    <path d="M850,80 C700,100 610,115 574,146"/>
+    <path d="M985,80 C975,105 968,125 966,146"/>
+    <path d="M1150,80 C1290,100 1350,115 1374,146"/>
+    <path d="M1300,80 C1600,100 1740,115 1793,146"/>
+    <path d="M175,275 L175,356"/>
+    <path d="M570,275 L570,356"/>
+    <path d="M965,275 L965,356"/>
+    <path d="M1375,275 L1375,356"/>
+    <path d="M1795,275 L1795,386"/>
+  </g>
+
+  <!-- top index box -->
+  <rect x="355" y="10" width="1290" height="68" fill="#faeedb" stroke="#b45f17" stroke-width="4"/>
+  <text x="415" y="51" font-size="21" fill="#1f2d3d"><tspan font-weight="bold">DORA Resilience Index</tspan><tspan> - overall maturity level in percent, weighted average of Chapters II to VI with knockout override</tspan></text>
+
+  <!-- chapter boxes -->
+  <g fill="#e8eef6" stroke="#2c4a6e" stroke-width="2.5">
+    <rect x="50" y="150" width="250" height="125"/>
+    <rect x="445" y="150" width="250" height="125"/>
+    <rect x="840" y="150" width="250" height="125"/>
+    <rect x="1250" y="150" width="250" height="125"/>
+    <rect x="1670" y="150" width="250" height="125"/>
+  </g>
+  <g font-size="20" fill="#1f2d3d" text-anchor="middle">
+    <text x="175" y="188" font-weight="bold">Chapter II</text>
+    <text x="175" y="216">ICT risk management</text>
+    <text x="175" y="244" font-style="italic">Weight 30 percent</text>
+    <text x="570" y="188" font-weight="bold">Chapter III</text>
+    <text x="570" y="216">Incident management</text>
+    <text x="570" y="244" font-style="italic">Weight 25 percent</text>
+    <text x="965" y="188" font-weight="bold">Chapter IV</text>
+    <text x="965" y="216">Resilience testing</text>
+    <text x="965" y="244" font-style="italic">Weight 15 percent</text>
+    <text x="1375" y="188" font-weight="bold">Chapter V</text>
+    <text x="1375" y="216">Third-party risk</text>
+    <text x="1375" y="244" font-style="italic">Weight 25 percent</text>
+    <text x="1795" y="188" font-weight="bold">Chapter VI</text>
+    <text x="1795" y="216">Information sharing</text>
+    <text x="1795" y="244" font-style="italic">Weight 5 percent</text>
+  </g>
+
+  <!-- indicator boxes -->
+  <g fill="#eaf3ee" stroke="#3a7d54" stroke-width="2.5">
+    <rect x="10" y="360" width="330" height="250"/>
+    <rect x="405" y="360" width="330" height="250"/>
+    <rect x="800" y="360" width="330" height="250"/>
+    <rect x="1210" y="360" width="330" height="250"/>
+    <rect x="1630" y="390" width="330" height="200"/>
+  </g>
+
+  <g font-size="18" fill="#1f2d3d" text-anchor="middle">
+    <text x="175" y="394"><tspan font-weight="bold">KPI</tspan><tspan> Coverage of critical</tspan></text>
+    <text x="175" y="421">functions with BIA</text>
+    <text x="175" y="448"><tspan font-weight="bold">KPI</tspan><tspan> Assets with complete 5D</tspan></text>
+    <text x="175" y="475">protection-needs assessment</text>
+    <text x="175" y="502"><tspan font-weight="bold">KPI</tspan><tspan> BCP and DRP tests</tspan></text>
+    <text x="175" y="529">passed in cycle</text>
+    <text x="175" y="556"><tspan font-weight="bold">KRI</tspan><tspan> Risks above the</tspan></text>
+    <text x="175" y="583">risk appetite</text>
+
+    <text x="570" y="394"><tspan font-weight="bold">KPI</tspan><tspan> Reporting deadline adherence</tspan></text>
+    <text x="570" y="421">4 h / 72 h / 1 month</text>
+    <text x="570" y="448"><tspan font-weight="bold">KPI</tspan><tspan> Mean time to detect</tspan></text>
+    <text x="570" y="475">and mean time to restore</text>
+    <text x="570" y="502"><tspan font-weight="bold">KPI</tspan><tspan> Lessons learned transferred</tspan></text>
+    <text x="570" y="529">to the risk register</text>
+    <text x="570" y="556"><tspan font-weight="bold">KRI</tspan><tspan> Severe incidents</tspan></text>
+    <text x="570" y="583">per quarter</text>
+
+    <text x="965" y="394"><tspan font-weight="bold">KPI</tspan><tspan> Test plan fulfillment</tspan></text>
+    <text x="965" y="421">in the annual cycle</text>
+    <text x="965" y="448"><tspan font-weight="bold">KPI</tspan><tspan> TLPT cycle met,</tspan></text>
+    <text x="965" y="475">at least every 3 years</text>
+    <text x="965" y="502"><tspan font-weight="bold">KPI</tspan><tspan> Retest rate after</tspan></text>
+    <text x="965" y="529">remediation</text>
+    <text x="965" y="556"><tspan font-weight="bold">KRI</tspan><tspan> Open test findings</tspan></text>
+    <text x="965" y="583">by severity</text>
+
+    <text x="1375" y="394"><tspan font-weight="bold">KPI</tspan><tspan> Completeness and data</tspan></text>
+    <text x="1375" y="421">quality of information register</text>
+    <text x="1375" y="448"><tspan font-weight="bold">KPI</tspan><tspan> Contracts with complete</tspan></text>
+    <text x="1375" y="475">mandatory clauses per Art. 30</text>
+    <text x="1375" y="502"><tspan font-weight="bold">KPI</tspan><tspan> Providers with tested</tspan></text>
+    <text x="1375" y="529">exit strategy</text>
+    <text x="1375" y="556"><tspan font-weight="bold">KRI</tspan><tspan> Concentration risk per</tspan></text>
+    <text x="1375" y="583">provider and per CIF</text>
+
+    <text x="1795" y="428"><tspan font-weight="bold">KPI</tspan><tspan> Threat intel sources</tspan></text>
+    <text x="1795" y="455">used and evaluation rate</text>
+    <text x="1795" y="482"><tspan font-weight="bold">KPI</tspan><tspan> Time to assess after</tspan></text>
+    <text x="1795" y="509">external alert</text>
+    <text x="1795" y="536"><tspan font-weight="bold">KPI</tspan><tspan> Share of alerts with register</tspan></text>
+    <text x="1795" y="563">reconciliation within 24 h</text>
+  </g>
+</svg>
