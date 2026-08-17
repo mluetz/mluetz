@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { hasPermission, requirePermission } from "@/lib/authz";
-import { effectiveMaturity } from "@/lib/domain/dora-scoring";
+import { effectiveMaturity, FINDING_SEVERITY_RULES } from "@/lib/domain/dora-scoring";
 import { DORA_FINDING_STATUS, DORA_MATURITY } from "@/lib/domain/enums";
 import { EVIDENCE_REVIEW_STATUS_LABELS } from "@/features/evidence/labels";
 import { formatDate, isOverdue } from "@/lib/utils";
@@ -11,7 +11,6 @@ import { Badge, riskClassVariant } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { RequirementAssessmentForm } from "@/features/dora/catalog-panels";
-import { FINDING_SEVERITY_RULES } from "@/lib/domain/dora-scoring";
 
 export const dynamic = "force-dynamic";
 
