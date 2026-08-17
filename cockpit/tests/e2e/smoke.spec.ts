@@ -31,7 +31,10 @@ test("ICT Risk Manager: Dashboard, Risk Register und Detailseite", async ({ page
   await expect(page.getByText("Offene Risiken")).toBeVisible();
 
   // KPI-Kachel führt zum gefilterten Register
-  await page.getByRole("link", { name: /Über Risikoappetit/ }).first().click();
+  await page
+    .getByRole("link", { name: /Über Risikoappetit/ })
+    .first()
+    .click();
   await page.waitForURL("**/risks?aboveAppetite=1");
   await expect(page.getByRole("heading", { name: "Risk Register" })).toBeVisible();
 
@@ -74,7 +77,9 @@ test("DORA Wissensbasis: Akkordeon und Begriffs-Modal funktionieren", async ({ p
 
   // Säule 1 ist initial geöffnet und enthält klickbare Fachbegriffe.
   // Klick mit Retry, bis die React-Hydration die Handler angebunden hat.
-  await expect(page.getByText("IKT-Risikomanagementrahmen", { exact: false }).first()).toBeVisible();
+  await expect(
+    page.getByText("IKT-Risikomanagementrahmen", { exact: false }).first(),
+  ).toBeVisible();
   await expect(async () => {
     await page.getByRole("button", { name: "Leitungsorgan", exact: true }).first().click();
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 1000 });
@@ -90,7 +95,33 @@ test("DORA Wissensbasis: Akkordeon und Begriffs-Modal funktionieren", async ({ p
   await expect(page.getByRole("dialog")).toContainText("Critical Third-Party Provider");
 });
 
-test("DORA Compliance: Dashboard, Katalog mit Knockouts und Meldefristen-Monitor", async ({ page }) => {
+test("DORA Handbuch: Kapitelübersicht, Detailseite mit Abbildung und Navigation", async ({
+  page,
+}) => {
+  await login(page, "riskmanager@demo.example");
+  await page.goto("/dora-knowledge");
+
+  // Handbuch-Übersicht mit Kapitelkarten; Kap. 9 verweist auf den Katalog
+  await expect(page.getByText("Das vollständige Handbuch (FRWK-DORA-001)")).toBeVisible();
+  await expect(page.getByText("Anforderungskatalog – als interaktives Modul")).toBeVisible();
+
+  // Detailseite Kap. 11 öffnen: Abbildung 9 und Reifegradskala sichtbar
+  await page.getByRole("link", { name: /Reifegrad- und Scoring-Modell/ }).click();
+  await expect(page.getByRole("heading", { name: /Kap\. 11/ })).toBeVisible();
+  await expect(page.getByAltText(/Abbildung 9:/)).toBeVisible();
+  await expect(page.getByText("Tabelle 21: Reifegradskala mit Nachweisanforderung")).toBeVisible();
+
+  // Kapitelnavigation zum nächsten Kapitel (Kap. 12)
+  await page
+    .getByRole("navigation", { name: "Kapitelnavigation" })
+    .getByRole("link", { name: /Findings/ })
+    .click();
+  await expect(page.getByRole("heading", { name: /Kap\. 12/ })).toBeVisible();
+});
+
+test("DORA Compliance: Dashboard, Katalog mit Knockouts und Meldefristen-Monitor", async ({
+  page,
+}) => {
   await login(page, "iso@demo.example");
 
   // Dashboard: Index- und Knockout-Kachel

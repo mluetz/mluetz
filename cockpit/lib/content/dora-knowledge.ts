@@ -270,4 +270,34 @@ export const DORA_GLOSSARY: Record<string, { title: string; definition: string }
     definition:
       "Informationen über Bedrohungslagen, die zwischen Finanzunternehmen geteilt werden dürfen: Kompromittierungsindikatoren (IoCs), Taktiken/Techniken/Prozeduren von Angreifern, Warnungen und Härtungsempfehlungen. Der Austausch erfolgt in vertrauenswürdigen Gemeinschaften auf Basis geschützter Vereinbarungen; die Teilnahme ist der Aufsicht anzuzeigen.",
   },
+  "lex specialis": {
+    title: "Lex specialis derogat legi generali",
+    definition:
+      "Kollisionsregel des Rechts: Das speziellere Gesetz verdrängt das allgemeinere. Für den Finanzsektor bedeutet das, dass DORA als sektorspezifisches Recht die allgemeinen Anforderungen der NIS-2-Richtlinie verdrängt, soweit beide denselben Regelungsgegenstand betreffen. Praktische Konsequenz ist keine Befreiung, sondern eine Verschärfung: DORA übernimmt das NIS-2-Basisniveau und schneidet es auf den Finanzsektor zu.",
+  },
+  "RTS/ITS": {
+    title: "RTS / ITS – delegierte Rechtsakte",
+    definition:
+      "Regulatory Technical Standards (delegierte Verordnungen) und Implementing Technical Standards (Durchführungsverordnungen), entworfen von den Europäischen Aufsichtsbehörden und von der EU-Kommission erlassen. Sie konkretisieren die DORA operativ – u. a. Risikomanagementrahmen (DelVO 2024/1774), Vorfallklassifizierung (2024/1772), Meldeformulare (2025/301, 2025/302), Informationsregister (2024/2956) und TLPT (2025/1190) – und gelten unmittelbar.",
+  },
+  Maximumprinzip: {
+    title: "Maximumprinzip",
+    definition:
+      "Regel zur Ableitung des Gesamtschutzbedarfs eines Assets: Maßgeblich ist die höchste Einzelbewertung über die fünf Schutzdimensionen (Vertraulichkeit, Integrität, Verfügbarkeit, Authentizität, Verbindlichkeit) – nicht der Durchschnitt. Eine Mittelwertbildung ist unzulässig, weil sie einen kritischen Einzelbefund verdecken würde.",
+  },
+  "Time to Assess": {
+    title: "Time to Assess",
+    definition:
+      "Kennzahl KPI-K6-02: die mittlere Zeit vom Eingang eines externen Threat-Intelligence-Alerts bis zum abgeschlossenen Abgleich gegen Asset-Inventar und Informationsregister (Zielwert ≤ 24 Stunden). Sie ist der belastbarste Einzelindikator für die Reife des Zusammenspiels von DORA-Kapitel V und VI – ohne aktuelles Register ist die Frage „betrifft uns das?“ nicht beantwortbar.",
+  },
+  Wirksamkeitskriterium: {
+    title: "Wirksamkeitskriterium",
+    definition:
+      "Vorab definierter, messbarer Maßstab, an dem die Wirksamkeit einer CAPA-Maßnahme geprüft wird, bevor das zugehörige Finding geschlossen werden darf (FRWK-DORA-001, Kap. 12.1). Die Reihenfolge – erst Wirksamkeitsnachweis, dann Schließung, erst danach Neubewertung des Reifegrads – verhindert, dass Maßnahmen formal abgeschlossen werden, ohne die Ursache zu beseitigen.",
+  },
+  "Drei-Linien-Modell": {
+    title: "Modell der drei Verteidigungslinien",
+    definition:
+      "Governance-Modell zur Trennung von Ausführung, Kontrolle und Prüfung: Erste Linie sind die operativen Einheiten (Fachbereiche, IT-Betrieb, SOC), zweite Linie die unabhängige Kontrollfunktion für das IKT-Risiko nach Art. 6 Abs. 4 DORA (CISO/IKT-Risikomanagement, Compliance), dritte Linie die Interne Revision mit der Prüfpflicht nach Art. 6 Abs. 6. Die Revision darf nirgends operativ verantwortlich (R/A) sein.",
+  },
 };

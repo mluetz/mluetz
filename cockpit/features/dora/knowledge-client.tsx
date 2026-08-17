@@ -6,11 +6,7 @@ import { BookOpen, ChevronDown, ExternalLink, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { cn } from "@/lib/utils";
-import {
-  DORA_GLOSSARY,
-  DORA_PILLARS,
-  type DoraPillar,
-} from "@/lib/content/dora-knowledge";
+import { DORA_GLOSSARY, DORA_PILLARS, type DoraPillar } from "@/lib/content/dora-knowledge";
 
 /**
  * Interaktive DORA-Wissensbasis:
@@ -19,8 +15,8 @@ import {
  *   die ein Erklär-Modal im Bankenkontext öffnen.
  */
 
-/** Zerlegt einen Absatz in Text- und Glossar-Segmente. */
-function renderWithTerms(text: string, onTerm: (key: string) => void): React.ReactNode[] {
+/** Zerlegt einen Absatz in Text- und Glossar-Segmente (auch vom Handbuch genutzt). */
+export function renderWithTerms(text: string, onTerm: (key: string) => void): React.ReactNode[] {
   const parts = text.split(/\[\[(.+?)\]\]/g);
   return parts.map((part, i) => {
     // Ungerade Indizes sind die Capture-Gruppen (= Begriffe)
@@ -115,13 +111,21 @@ function PillarAccordion({
             </span>
           ) : null}
           <ChevronDown
-            className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")}
+            className={cn(
+              "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+              open && "rotate-180",
+            )}
             aria-hidden
           />
         </button>
       </h2>
       {open ? (
-        <div id={panelId} role="region" aria-labelledby={buttonId} className="space-y-4 border-t p-4">
+        <div
+          id={panelId}
+          role="region"
+          aria-labelledby={buttonId}
+          className="space-y-4 border-t p-4"
+        >
           <div className="space-y-3 text-sm leading-relaxed">
             {pillar.paragraphs.map((p, i) => (
               <p key={i}>{renderWithTerms(p, onTerm)}</p>
@@ -135,7 +139,10 @@ function PillarAccordion({
             <ul className="space-y-1.5 text-sm">
               {pillar.isrmTasks.map((task, i) => (
                 <li key={i} className="flex gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
+                  <span
+                    className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                    aria-hidden
+                  />
                   <span>{renderWithTerms(task, onTerm)}</span>
                 </li>
               ))}
@@ -169,11 +176,7 @@ function PillarAccordion({
   );
 }
 
-export function DoraKnowledgeBase({
-  scores,
-}: {
-  scores?: Record<string, PillarScore>;
-}) {
+export function DoraKnowledgeBase({ scores }: { scores?: Record<string, PillarScore> }) {
   const [openId, setOpenId] = React.useState<string | null>(DORA_PILLARS[0]?.id ?? null);
   const [term, setTerm] = React.useState<string | null>(null);
   const entry = term ? DORA_GLOSSARY[term] : undefined;
