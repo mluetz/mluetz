@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission } from "@/lib/authz";
+import { getLocale } from "@/lib/i18n/server";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 import { formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Badge, riskClassVariant } from "@/components/ui/badge";
@@ -9,25 +11,14 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
 export const dynamic = "force-dynamic";
 
-const SEVERITY_LABELS: Record<string, string> = {
-  LOW: "Niedrig",
-  MEDIUM: "Mittel",
-  HIGH: "Hoch",
-  CRITICAL: "Kritisch",
-};
-
-const PB_EXECUTION_STATUS: Record<string, string> = {
-  ACTIVE: "Aktiv",
-  CLOSED: "Geschlossen",
-  ABORTED: "Abgebrochen",
-};
-
 function truncate(s: string, n = 160): string {
   return s.length > n ? s.slice(0, n).trimEnd() + "…" : s;
 }
 
 export default async function PlaybooksPage() {
   await requirePermission("runbook:read");
+  const locale = await getLocale();
+  const t = TPRM_MESSAGES[locale];
 
   const [playbooks, active, closed] = await Promise.all([
     db.playbook.findMany({ orderBy: { code: "asc" } }),
@@ -54,9 +45,9 @@ export default async function PlaybooksPage() {
   return (
     <div>
       <PageHeader
-        title="Playbooks"
-        description="Ereignisgesteuerte Reaktionsleitfäden für definierte Szenarien – Aktivierung mit Severity und optionaler Verknüpfung zu Risiko, Drittpartei oder Kontrolle."
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "Playbooks" }]}
+        title={t.pb.list.title}
+        description={t.pb.list.description}
+        crumbs={[{ label: t.tp.list.crumbOverview, href: "/overview" }, { label: "Playbooks" }]}
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -74,7 +65,9 @@ export default async function PlaybooksPage() {
               <CardContent className="space-y-2 text-xs text-muted-foreground">
                 <p>{truncate(pb.objective)}</p>
                 <p>
-                  <span className="font-medium text-foreground">Severity-Leitlinie:</span>{" "}
+                  <span className="font-medium text-foreground">
+                    {t.pb.list.severityGuidance}:
+                  </span>{" "}
                   {truncate(pb.severityGuidance, 120)}
                 </p>
               </CardContent>
@@ -82,25 +75,25 @@ export default async function PlaybooksPage() {
           </Link>
         ))}
         {playbooks.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Keine Playbooks vorhanden.</p>
+          <p className="text-sm text-muted-foreground">{t.pb.list.noPlaybooks}</p>
         ) : null}
       </div>
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Aktive Playbook-Ausführungen</CardTitle>
-          <CardDescription>Alle aktuell aktivierten Playbooks.</CardDescription>
+          <CardTitle>{t.pb.list.activeTitle}</CardTitle>
+          <CardDescription>{t.pb.list.activeDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <THead>
               <TR>
-                <TH>Playbook</TH>
-                <TH>Severity</TH>
-                <TH>Bezug (Risiko / Drittpartei)</TH>
-                <TH>Gestartet von</TH>
-                <TH>Gestartet am</TH>
-                <TH>Aktion</TH>
+                <TH>{t.pb.list.colPlaybook}</TH>
+                <TH>{t.pb.list.colSeverity}</TH>
+                <TH>{t.pb.list.colReference}</TH>
+                <TH>{t.common.startedBy}</TH>
+                <TH>{t.common.startedAt}</TH>
+                <TH>{t.common.action}</TH>
               </TR>
             </THead>
             <TBody>
@@ -111,7 +104,7 @@ export default async function PlaybooksPage() {
                   </TD>
                   <TD>
                     <Badge variant={riskClassVariant(e.severity)}>
-                      {SEVERITY_LABELS[e.severity] ?? e.severity}
+                      {t.labels.severity[e.severity] ?? e.severity}
                     </Badge>
                   </TD>
                   <TD className="text-xs">{linkedRef(e)}</TD>
@@ -122,7 +115,7 @@ export default async function PlaybooksPage() {
                       href={`/playbooks/executions/${e.id}`}
                       className="text-xs text-primary hover:underline"
                     >
-                      Öffnen
+                      {t.common.open}
                     </Link>
                   </TD>
                 </TR>
@@ -130,7 +123,7 @@ export default async function PlaybooksPage() {
               {active.length === 0 ? (
                 <TR>
                   <TD colSpan={6} className="text-center text-muted-foreground">
-                    Keine aktiven Ausführungen.
+                    {t.pb.list.noActive}
                   </TD>
                 </TR>
               ) : null}
@@ -141,22 +134,20 @@ export default async function PlaybooksPage() {
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Abgeschlossene Ausführungen</CardTitle>
-          <CardDescription>
-            Die letzten 10 geschlossenen bzw. abgebrochenen Ausführungen.
-          </CardDescription>
+          <CardTitle>{t.pb.list.closedTitle}</CardTitle>
+          <CardDescription>{t.pb.list.closedDescription}</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <THead>
               <TR>
-                <TH>Playbook</TH>
-                <TH>Severity</TH>
-                <TH>Status</TH>
-                <TH>Bezug (Risiko / Drittpartei)</TH>
-                <TH>Gestartet von</TH>
-                <TH>Geschlossen am</TH>
-                <TH>Aktion</TH>
+                <TH>{t.pb.list.colPlaybook}</TH>
+                <TH>{t.pb.list.colSeverity}</TH>
+                <TH>{t.common.status}</TH>
+                <TH>{t.pb.list.colReference}</TH>
+                <TH>{t.common.startedBy}</TH>
+                <TH>{t.common.closedAt}</TH>
+                <TH>{t.common.action}</TH>
               </TR>
             </THead>
             <TBody>
@@ -167,12 +158,12 @@ export default async function PlaybooksPage() {
                   </TD>
                   <TD>
                     <Badge variant={riskClassVariant(e.severity)}>
-                      {SEVERITY_LABELS[e.severity] ?? e.severity}
+                      {t.labels.severity[e.severity] ?? e.severity}
                     </Badge>
                   </TD>
                   <TD>
                     <Badge variant={e.status === "CLOSED" ? "low" : "critical"}>
-                      {PB_EXECUTION_STATUS[e.status] ?? e.status}
+                      {t.labels.pbExecutionStatus[e.status] ?? e.status}
                     </Badge>
                   </TD>
                   <TD className="text-xs">{linkedRef(e)}</TD>
@@ -183,7 +174,7 @@ export default async function PlaybooksPage() {
                       href={`/playbooks/executions/${e.id}`}
                       className="text-xs text-primary hover:underline"
                     >
-                      Öffnen
+                      {t.common.open}
                     </Link>
                   </TD>
                 </TR>
@@ -191,7 +182,7 @@ export default async function PlaybooksPage() {
               {closed.length === 0 ? (
                 <TR>
                   <TD colSpan={7} className="text-center text-muted-foreground">
-                    Noch keine abgeschlossenen Ausführungen.
+                    {t.pb.list.noClosed}
                   </TD>
                 </TR>
               ) : null}

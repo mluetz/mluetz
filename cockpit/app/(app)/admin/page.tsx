@@ -1,5 +1,7 @@
 import { requirePermission } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { getLocale } from "@/lib/i18n/server";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 import { getMitigationCap, getRiskThresholds } from "@/lib/settings";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +20,9 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const currentUser = await requirePermission("admin");
+  const locale = await getLocale();
+  const t = TPRM_MESSAGES[locale];
+  const a = t.admin.page;
 
   const [
     users,
@@ -49,31 +54,27 @@ export default async function AdminPage() {
   return (
     <div>
       <PageHeader
-        title="Administration"
-        description="Benutzer & Rollen, Risikomethodik, Risikoappetit und Stammdaten"
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "Administration" }]}
+        title={a.title}
+        description={a.description}
+        crumbs={[{ label: t.tp.list.crumbOverview, href: "/overview" }, { label: a.title }]}
       />
 
       <div className="space-y-6">
         {/* (a) Benutzer & Rollen */}
         <Card>
           <CardHeader>
-            <CardTitle>Benutzer & Rollen</CardTitle>
-            <CardDescription>
-              Rollenzuweisung (RBAC, Least Privilege) und Aktivierung. Änderungen werden im Audit
-              Trail protokolliert. Der eigene Account kann weder deaktiviert werden noch die eigene
-              ADMIN-Rolle verlieren.
-            </CardDescription>
+            <CardTitle>{a.usersRolesTitle}</CardTitle>
+            <CardDescription>{a.usersRolesDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <THead>
                 <TR>
-                  <TH>Name</TH>
-                  <TH>E-Mail</TH>
-                  <TH>Aktiv</TH>
-                  <TH>Rollen</TH>
-                  <TH>Aktion</TH>
+                  <TH>{a.colName}</TH>
+                  <TH>{a.colEmail}</TH>
+                  <TH>{a.colActive}</TH>
+                  <TH>{a.colRoles}</TH>
+                  <TH>{a.colAction}</TH>
                 </TR>
               </THead>
               <TBody>
@@ -82,13 +83,13 @@ export default async function AdminPage() {
                     <TD className="whitespace-nowrap font-medium">
                       {u.name}
                       {u.id === currentUser.id ? (
-                        <span className="ml-1 text-xs text-muted-foreground">(Sie)</span>
+                        <span className="ml-1 text-xs text-muted-foreground">{a.you}</span>
                       ) : null}
                     </TD>
                     <TD className="whitespace-nowrap">{u.email}</TD>
                     <TD>
                       <Badge variant={u.active ? "low" : "critical"}>
-                        {u.active ? "aktiv" : "inaktiv"}
+                        {u.active ? a.active : a.inactive}
                       </Badge>
                     </TD>
                     <TD className="min-w-80">
@@ -96,6 +97,7 @@ export default async function AdminPage() {
                         userId={u.id}
                         allRoles={roles.map((r) => ({ key: r.key, name: r.name }))}
                         currentRoleKeys={u.roles.map((r) => r.role.key)}
+                        locale={locale}
                       />
                     </TD>
                     <TD>
@@ -103,6 +105,7 @@ export default async function AdminPage() {
                         userId={u.id}
                         active={u.active}
                         isSelf={u.id === currentUser.id}
+                        locale={locale}
                       />
                     </TD>
                   </TR>
@@ -115,15 +118,8 @@ export default async function AdminPage() {
         {/* (b) Risikomethodik */}
         <Card>
           <CardHeader>
-            <CardTitle>Risikomethodik</CardTitle>
-            <CardDescription>
-              Formel: Inherent = Likelihood × Impact (1–25); Residual = round(Inherent × (1 −
-              Kontrollwirksamkeit × Mitigation Cap)), mindestens 1. Die Schwellwerte bestimmen die
-              Klassifizierung: Score ≤ Low-Max → LOW, ≤ Medium-Max → MEDIUM, ≤ High-Max → HIGH,
-              darüber CRITICAL. Der Mitigation Cap begrenzt die maximal anrechenbare Risikominderung
-              (Restrisiko-Prinzip: auch eine zu 100 % wirksame Kontrolle eliminiert ein Risiko nie
-              vollständig).
-            </CardDescription>
+            <CardTitle>{a.methodologyTitle}</CardTitle>
+            <CardDescription>{a.methodologyDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <ThresholdsForm
@@ -131,6 +127,7 @@ export default async function AdminPage() {
               mediumMax={thresholds.mediumMax}
               highMax={thresholds.highMax}
               mitigationCap={mitigationCap}
+              locale={locale}
             />
           </CardContent>
         </Card>
@@ -138,20 +135,17 @@ export default async function AdminPage() {
         {/* (c) Risikoappetit je Kategorie */}
         <Card>
           <CardHeader>
-            <CardTitle>Risikoappetit je Kategorie</CardTitle>
-            <CardDescription>
-              Residual-Score, ab dessen Überschreitung ein Risiko der Kategorie als „über
-              Appetit&ldquo; gilt (sofern kein risikoindividueller Override gesetzt ist).
-            </CardDescription>
+            <CardTitle>{a.appetiteTitle}</CardTitle>
+            <CardDescription>{a.appetiteDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <THead>
                 <TR>
-                  <TH>Kategorie</TH>
-                  <TH>Beschreibung</TH>
-                  <TH>Aktueller Appetit</TH>
-                  <TH>Ändern</TH>
+                  <TH>{a.colCategory}</TH>
+                  <TH>{a.colDescription}</TH>
+                  <TH>{a.colCurrentAppetite}</TH>
+                  <TH>{a.colChange}</TH>
                 </TR>
               </THead>
               <TBody>
@@ -166,6 +160,7 @@ export default async function AdminPage() {
                       <CategoryAppetiteForm
                         categoryId={c.id}
                         appetiteThreshold={c.appetiteThreshold}
+                        locale={locale}
                       />
                     </TD>
                   </TR>
@@ -178,23 +173,20 @@ export default async function AdminPage() {
         {/* (d) Stammdaten */}
         <Card>
           <CardHeader>
-            <CardTitle>Stammdaten (Übersicht)</CardTitle>
-            <CardDescription>
-              Read-only-Überblick über Organisationseinheiten, Standorte, Kategorien und
-              Mengengerüste.
-            </CardDescription>
+            <CardTitle>{a.masterDataTitle}</CardTitle>
+            <CardDescription>{a.masterDataDescription}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 md:grid-cols-2">
             <div>
               <h3 className="mb-2 text-xs font-semibold text-muted-foreground">
-                Organisationseinheiten ({ous.length})
+                {a.orgUnits} ({ous.length})
               </h3>
               <ul className="space-y-1 text-sm">
                 {ous.map((ou) => (
                   <li key={ou.id}>
                     {ou.name}{" "}
                     <span className="text-xs text-muted-foreground">
-                      ({ou.kind === "COMPANY" ? "Gesellschaft" : "Geschäftsbereich"})
+                      ({ou.kind === "COMPANY" ? a.company : a.businessUnit})
                     </span>
                   </li>
                 ))}
@@ -202,7 +194,7 @@ export default async function AdminPage() {
             </div>
             <div>
               <h3 className="mb-2 text-xs font-semibold text-muted-foreground">
-                Standorte ({locations.length})
+                {a.locations} ({locations.length})
               </h3>
               <ul className="space-y-1 text-sm">
                 {locations.map((l) => (
@@ -214,7 +206,7 @@ export default async function AdminPage() {
             </div>
             <div>
               <h3 className="mb-2 text-xs font-semibold text-muted-foreground">
-                Risikokategorien ({categories.length})
+                {a.riskCategories} ({categories.length})
               </h3>
               <ul className="space-y-1 text-sm">
                 {categories.map((c) => (
@@ -223,12 +215,20 @@ export default async function AdminPage() {
               </ul>
             </div>
             <div>
-              <h3 className="mb-2 text-xs font-semibold text-muted-foreground">Mengengerüst</h3>
+              <h3 className="mb-2 text-xs font-semibold text-muted-foreground">{a.volumes}</h3>
               <ul className="space-y-1 text-sm">
-                <li>Assets: {assetCount}</li>
-                <li>Geschäftsprozesse: {processCount}</li>
-                <li>ICT-Services: {serviceCount}</li>
-                <li>Rollen: {roles.map((r) => ROLES[r.key as RoleKey] ?? r.name).join(", ")}</li>
+                <li>
+                  {a.assets}: {assetCount}
+                </li>
+                <li>
+                  {a.businessProcesses}: {processCount}
+                </li>
+                <li>
+                  {a.ictServices}: {serviceCount}
+                </li>
+                <li>
+                  {a.roles}: {roles.map((r) => ROLES[r.key as RoleKey] ?? r.name).join(", ")}
+                </li>
               </ul>
             </div>
           </CardContent>

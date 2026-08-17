@@ -1,16 +1,26 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { thirdPartyColumns, type ThirdPartyRow } from "./columns";
+import type { Locale } from "@/lib/i18n/config";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
+import { createThirdPartyColumns, type ThirdPartyRow } from "./columns";
 
-export function ThirdPartiesTableClient({ rows }: { rows: ThirdPartyRow[] }) {
+export function ThirdPartiesTableClient({
+  rows,
+  locale,
+}: {
+  rows: ThirdPartyRow[];
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
   return (
     <DataTable
-      columns={thirdPartyColumns}
+      columns={createThirdPartyColumns(locale)}
       data={rows}
-      searchPlaceholder="Drittparteien durchsuchen (ID, Name, Leistung …)"
+      searchPlaceholder={t.tp.list.searchPlaceholder}
       getRowHref={(r) => `/third-parties/${r.id}`}
-      emptyMessage="Keine Drittparteien für die gewählten Filter."
+      emptyMessage={t.tp.list.emptyMessage}
+      locale={locale}
     />
   );
 }

@@ -4,8 +4,18 @@ import { useActionState } from "react";
 import { completeExecution, type ActionResult } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
+import type { Locale } from "@/lib/i18n/config";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 
-export function CompleteExecutionForm({ executionId }: { executionId: string }) {
+export function CompleteExecutionForm({
+  executionId,
+  locale,
+}: {
+  executionId: string;
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
+  const cf = t.rb.completeForm;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     completeExecution,
     {},
@@ -14,21 +24,21 @@ export function CompleteExecutionForm({ executionId }: { executionId: string }) 
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="executionId" value={executionId} />
       <div className="min-w-56">
-        <Label htmlFor="outcome">Ergebnis</Label>
+        <Label htmlFor="outcome">{cf.outcome}</Label>
         <Select id="outcome" name="outcome" required defaultValue="">
           <option value="" disabled>
-            Bitte wählen
+            {t.common.pleaseSelect}
           </option>
-          <option value="COMPLETED">Erfolgreich abschließen</option>
-          <option value="ABORTED">Abbrechen</option>
+          <option value="COMPLETED">{cf.completeSuccessfully}</option>
+          <option value="ABORTED">{cf.abort}</option>
         </Select>
       </div>
       <div className="min-w-72 flex-1">
-        <Label htmlFor="complete-comment">Kommentar (Pflicht bei Abbruch)</Label>
+        <Label htmlFor="complete-comment">{cf.commentLabel}</Label>
         <Input id="complete-comment" name="comment" maxLength={2000} />
       </div>
       <Button type="submit" disabled={pending}>
-        {pending ? "Wird gespeichert…" : "Ausführung beenden"}
+        {pending ? cf.saving : cf.submit}
       </Button>
       <div className="w-full">
         {state.error ? (
@@ -36,7 +46,7 @@ export function CompleteExecutionForm({ executionId }: { executionId: string }) 
             {state.error}
           </p>
         ) : null}
-        {state.ok ? <p className="text-sm text-risk-low">Gespeichert.</p> : null}
+        {state.ok ? <p className="text-sm text-risk-low">{t.common.saved}</p> : null}
       </div>
     </form>
   );

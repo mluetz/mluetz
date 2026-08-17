@@ -9,22 +9,17 @@ import {
 } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Label, Select, Textarea } from "@/components/ui/input";
+import type { Locale } from "@/lib/i18n/config";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 
-export const SEVERITY_LABELS: Record<string, string> = {
-  LOW: "Niedrig",
-  MEDIUM: "Mittel",
-  HIGH: "Hoch",
-  CRITICAL: "Kritisch",
-};
-
-function ErrorLine({ state }: { state: ActionResult }) {
+function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
   if (state.error)
     return (
       <p role="alert" className="text-sm text-destructive">
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">Gespeichert.</p>;
+  if (state.ok) return <p className="text-sm text-risk-low">{TPRM_MESSAGES[locale].common.saved}</p>;
   return null;
 }
 
@@ -40,12 +35,15 @@ export function StartPlaybookForm({
   risks,
   controls,
   thirdParties,
+  locale,
 }: {
   playbookId: string;
   risks: OptionDto[];
   controls: OptionDto[];
   thirdParties: OptionDto[];
+  locale: Locale;
 }) {
+  const t = TPRM_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     startPlaybookExecution,
     {},
@@ -54,21 +52,21 @@ export function StartPlaybookForm({
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="playbookId" value={playbookId} />
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Severity" htmlFor="severity" required>
+        <Field label={t.pb.panels.severity} htmlFor="severity" required>
           <Select id="severity" name="severity" required defaultValue="">
             <option value="" disabled>
-              Bitte wählen
+              {t.common.pleaseSelect}
             </option>
-            {Object.entries(SEVERITY_LABELS).map(([k, v]) => (
+            {Object.entries(t.labels.severity).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>
             ))}
           </Select>
         </Field>
-        <Field label="Verknüpftes Risiko (optional)" htmlFor="riskId">
+        <Field label={t.pb.panels.linkedRiskOptional} htmlFor="riskId">
           <Select id="riskId" name="riskId" defaultValue="">
-            <option value="">– keine Verknüpfung –</option>
+            <option value="">{t.pb.panels.noLink}</option>
             {risks.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.label}
@@ -76,19 +74,19 @@ export function StartPlaybookForm({
             ))}
           </Select>
         </Field>
-        <Field label="Verknüpfte Drittpartei (optional)" htmlFor="thirdPartyId">
+        <Field label={t.pb.panels.linkedThirdPartyOptional} htmlFor="thirdPartyId">
           <Select id="thirdPartyId" name="thirdPartyId" defaultValue="">
-            <option value="">– keine Verknüpfung –</option>
-            {thirdParties.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
+            <option value="">{t.pb.panels.noLink}</option>
+            {thirdParties.map((tp) => (
+              <option key={tp.id} value={tp.id}>
+                {tp.label}
               </option>
             ))}
           </Select>
         </Field>
-        <Field label="Verknüpfte Kontrolle (optional)" htmlFor="controlId">
+        <Field label={t.pb.panels.linkedControlOptional} htmlFor="controlId">
           <Select id="controlId" name="controlId" defaultValue="">
-            <option value="">– keine Verknüpfung –</option>
+            <option value="">{t.pb.panels.noLink}</option>
             {controls.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.label}
@@ -97,12 +95,12 @@ export function StartPlaybookForm({
           </Select>
         </Field>
       </div>
-      <Field label="Erste Notizen (optional)" htmlFor="pb-notes">
+      <Field label={t.pb.panels.initialNotes} htmlFor="pb-notes">
         <Textarea id="pb-notes" name="notes" rows={2} maxLength={4000} />
       </Field>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" disabled={pending}>
-        {pending ? "Aktiviere…" : "Playbook aktivieren"}
+        {pending ? t.pb.panels.activating : t.pb.panels.activate}
       </Button>
     </form>
   );
@@ -114,11 +112,14 @@ export function UpdateExecutionForm({
   executionId,
   severity,
   notes,
+  locale,
 }: {
   executionId: string;
   severity: string;
   notes: string | null;
+  locale: Locale;
 }) {
+  const t = TPRM_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     updatePlaybookExecution,
     {},
@@ -127,20 +128,16 @@ export function UpdateExecutionForm({
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="executionId" value={executionId} />
       <div className="max-w-56">
-        <Label htmlFor="upd-severity">Severity</Label>
+        <Label htmlFor="upd-severity">{t.pb.panels.severity}</Label>
         <Select id="upd-severity" name="severity" required defaultValue={severity}>
-          {Object.entries(SEVERITY_LABELS).map(([k, v]) => (
+          {Object.entries(t.labels.severity).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
             </option>
           ))}
         </Select>
       </div>
-      <Field
-        label="Notizen"
-        htmlFor="upd-notes"
-        hint="Laufende Dokumentation der Lagebeurteilung, Entscheidungen und Maßnahmen. Der Inhalt ersetzt den bisherigen Stand."
-      >
+      <Field label={t.pb.panels.notes} htmlFor="upd-notes" hint={t.pb.panels.notesHint}>
         <Textarea
           id="upd-notes"
           name="notes"
@@ -149,9 +146,9 @@ export function UpdateExecutionForm({
           defaultValue={notes ?? ""}
         />
       </Field>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" variant="secondary" disabled={pending}>
-        {pending ? "Speichern…" : "Notizen speichern"}
+        {pending ? t.common.saving : t.pb.panels.saveNotes}
       </Button>
     </form>
   );
@@ -159,7 +156,14 @@ export function UpdateExecutionForm({
 
 // ---------------- Abschluss ----------------
 
-export function ClosePlaybookForm({ executionId }: { executionId: string }) {
+export function ClosePlaybookForm({
+  executionId,
+  locale,
+}: {
+  executionId: string;
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     closePlaybookExecution,
     {},
@@ -168,24 +172,24 @@ export function ClosePlaybookForm({ executionId }: { executionId: string }) {
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="executionId" value={executionId} />
       <div className="min-w-56">
-        <Label htmlFor="close-outcome">Ergebnis</Label>
+        <Label htmlFor="close-outcome">{t.pb.panels.outcome}</Label>
         <Select id="close-outcome" name="outcome" required defaultValue="">
           <option value="" disabled>
-            Bitte wählen
+            {t.common.pleaseSelect}
           </option>
-          <option value="CLOSED">Schließen (Abschlusskriterien erfüllt)</option>
-          <option value="ABORTED">Abbrechen</option>
+          <option value="CLOSED">{t.pb.panels.close}</option>
+          <option value="ABORTED">{t.pb.panels.abort}</option>
         </Select>
       </div>
       <div className="min-w-72 flex-1">
-        <Label htmlFor="close-comment">Abschlusskommentar (Pflicht)</Label>
+        <Label htmlFor="close-comment">{t.pb.panels.closingComment}</Label>
         <Input id="close-comment" name="comment" required minLength={3} maxLength={2000} />
       </div>
       <Button type="submit" disabled={pending}>
-        {pending ? "Wird gespeichert…" : "Ausführung beenden"}
+        {pending ? t.pb.panels.saving : t.pb.panels.endExecution}
       </Button>
       <div className="w-full">
-        <ErrorLine state={state} />
+        <ErrorLine state={state} locale={locale} />
       </div>
     </form>
   );

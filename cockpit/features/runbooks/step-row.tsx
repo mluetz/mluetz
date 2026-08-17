@@ -5,13 +5,8 @@ import { updateStepResult, type ActionResult } from "./actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
-
-export const STEP_STATUS_LABELS: Record<string, string> = {
-  OPEN: "Offen",
-  DONE: "Erledigt",
-  SKIPPED: "Übersprungen",
-  BLOCKED: "Blockiert",
-};
+import type { Locale } from "@/lib/i18n/config";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 
 function stepStatusVariant(
   status: string,
@@ -50,12 +45,16 @@ export function StepRow({
   step,
   result,
   editable,
+  locale,
 }: {
   executionId: string;
   step: StepDto;
   result: StepResultDto | null;
   editable: boolean;
+  locale: Locale;
 }) {
+  const t = TPRM_MESSAGES[locale];
+  const sr = t.rb.stepRow;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(updateStepResult, {});
   const status = result?.status ?? "OPEN";
   return (
@@ -66,7 +65,7 @@ export function StepRow({
             {step.sortOrder}. {step.title}
             {step.isDecisionPoint ? (
               <span className="ml-2 text-xs font-semibold text-risk-medium">
-                ◆ Entscheidungspunkt
+                {sr.decisionPoint}
               </span>
             ) : null}
           </p>
@@ -74,17 +73,21 @@ export function StepRow({
             {step.description}
           </p>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            Rolle: {step.responsibleRole}
-            {step.requiredEvidence ? ` · Erforderlicher Nachweis: ${step.requiredEvidence}` : ""}
+            {sr.role}: {step.responsibleRole}
+            {step.requiredEvidence ? ` · ${sr.requiredEvidence}: ${step.requiredEvidence}` : ""}
           </p>
         </div>
-        <Badge variant={stepStatusVariant(status)}>{STEP_STATUS_LABELS[status] ?? status}</Badge>
+        <Badge variant={stepStatusVariant(status)}>{t.labels.stepStatus[status] ?? status}</Badge>
       </div>
 
-      {result?.comment ? <p className="mt-2 text-sm">Kommentar: {result.comment}</p> : null}
+      {result?.comment ? (
+        <p className="mt-2 text-sm">
+          {sr.commentPrefix}: {result.comment}
+        </p>
+      ) : null}
       {result?.completedByName && result.completedAt ? (
         <p className="mt-1 text-xs text-muted-foreground">
-          Erledigt von {result.completedByName} am {result.completedAt}
+          {sr.completedBy(result.completedByName, result.completedAt)}
         </p>
       ) : null}
 
@@ -93,9 +96,9 @@ export function StepRow({
           <input type="hidden" name="executionId" value={executionId} />
           <input type="hidden" name="stepId" value={step.id} />
           <div className="min-w-40">
-            <Label htmlFor={`status-${step.id}`}>Status</Label>
+            <Label htmlFor={`status-${step.id}`}>{sr.status}</Label>
             <Select id={`status-${step.id}`} name="status" defaultValue={status}>
-              {Object.entries(STEP_STATUS_LABELS).map(([k, v]) => (
+              {Object.entries(t.labels.stepStatus).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}
                 </option>
@@ -103,17 +106,17 @@ export function StepRow({
             </Select>
           </div>
           <div className="min-w-56 flex-1">
-            <Label htmlFor={`comment-${step.id}`}>Kommentar</Label>
+            <Label htmlFor={`comment-${step.id}`}>{sr.comment}</Label>
             <Input
               id={`comment-${step.id}`}
               name="comment"
               maxLength={2000}
               defaultValue={result?.comment ?? ""}
-              placeholder="z. B. Ergebnis, Nachweis-Link, Blocker"
+              placeholder={sr.commentPlaceholder}
             />
           </div>
           <Button type="submit" variant="secondary" size="sm" disabled={pending}>
-            {pending ? "Speichern…" : "Speichern"}
+            {pending ? t.common.saving : t.common.save}
           </Button>
           {state.error ? (
             <p role="alert" className="w-full text-sm text-destructive">

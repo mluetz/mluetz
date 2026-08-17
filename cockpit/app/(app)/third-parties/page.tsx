@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { requirePermission, hasPermission } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { getLocale } from "@/lib/i18n/server";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
 import { isOverdue } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,8 @@ export default async function ThirdPartiesPage({
   searchParams: Promise<Search>;
 }) {
   const user = await requirePermission("thirdparty:read");
+  const locale = await getLocale();
+  const t = TPRM_MESSAGES[locale];
   const sp = await searchParams;
 
   const thirdParties = await db.thirdParty.findMany({
@@ -100,14 +104,17 @@ export default async function ThirdPartiesPage({
   return (
     <div>
       <PageHeader
-        title="Third Party Register"
-        description="Register aller ICT-Drittparteien inkl. Kritikalität, Verträgen und Exit-Strategien"
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "Third Parties" }]}
+        title={t.tp.list.title}
+        description={t.tp.list.description}
+        crumbs={[
+          { label: t.tp.list.crumbOverview, href: "/overview" },
+          { label: t.tp.list.crumbThirdParties },
+        ]}
         actions={
           hasPermission(user, "thirdparty:write") ? (
             <Link href="/third-parties/new">
               <Button>
-                <Plus className="h-4 w-4" aria-hidden /> Neue Drittpartei
+                <Plus className="h-4 w-4" aria-hidden /> {t.tp.list.newButton}
               </Button>
             </Link>
           ) : null
@@ -118,41 +125,41 @@ export default async function ThirdPartiesPage({
         <FilterChip
           href="/third-parties?critical=1"
           active={sp.critical === "1"}
-          label="Kritische Drittparteien"
+          label={t.tp.list.filterCritical}
         />
         <FilterChip
           href="/third-parties?expiringContracts=1"
           active={sp.expiringContracts === "1"}
-          label="Auslaufende Verträge (< 180 Tage)"
+          label={t.tp.list.filterExpiringContracts}
         />
         <FilterChip
           href="/third-parties?missingAssessment=1"
           active={sp.missingAssessment === "1"}
-          label="Fehlende Assessments"
+          label={t.tp.list.filterMissingAssessment}
         />
         <FilterChip
           href="/third-parties?concentration=1"
           active={sp.concentration === "1"}
-          label="Konzentrationsrisiken"
+          label={t.tp.list.filterConcentration}
         />
         <FilterChip
           href="/third-parties?missingExit=1"
           active={sp.missingExit === "1"}
-          label="Fehlende Exit-Strategien"
+          label={t.tp.list.filterMissingExit}
         />
         <FilterChip
           href="/third-parties?untestedExit=1"
           active={sp.untestedExit === "1"}
-          label="Ungeprüfte Exit-Pläne"
+          label={t.tp.list.filterUntestedExit}
         />
         <FilterChip
           href="/third-parties?overdueActions=1"
           active={sp.overdueActions === "1"}
-          label="Überfällige Maßnahmen"
+          label={t.tp.list.filterOverdueActions}
         />
       </div>
 
-      <ThirdPartiesTableClient rows={rows} />
+      <ThirdPartiesTableClient rows={rows} locale={locale} />
     </div>
   );
 }
