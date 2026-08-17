@@ -8,6 +8,8 @@ import { Label, Select } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { FRAMEWORKS } from "@/lib/domain/enums";
 import { formatDate } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n/server";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 import { ComplianceDisclaimer } from "@/features/governance/disclaimer";
 import { complianceStatusLabel, complianceStatusVariant } from "@/features/governance/status";
 
@@ -20,6 +22,9 @@ export default async function GovernancePage({
   searchParams: Promise<{ framework?: string }>;
 }) {
   await requirePermission("compliance:read");
+  const locale = await getLocale();
+  const m = OPS_MESSAGES[locale];
+  const t = m.governance.list;
   const sp = await searchParams;
   const framework = sp.framework && sp.framework in FRAMEWORKS ? sp.framework : undefined;
 
@@ -38,22 +43,22 @@ export default async function GovernancePage({
   return (
     <div>
       <PageHeader
-        title="Governance & Compliance"
-        description="Regulatorische Anforderungen und deren dokumentierter Umsetzungsstand"
-        crumbs={[{ label: "Overview", href: "/overview" }, { label: "Governance" }]}
+        title={t.title}
+        description={t.description}
+        crumbs={[{ label: m.common.overview, href: "/overview" }, { label: t.crumb }]}
       />
 
-      <ComplianceDisclaimer />
+      <ComplianceDisclaimer locale={locale} />
 
       <form
         method="GET"
         className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-card p-3"
       >
         <div className="min-w-56">
-          <Label htmlFor="f-framework">Framework</Label>
+          <Label htmlFor="f-framework">{t.frameworkLabel}</Label>
           <Select id="f-framework" name="framework" defaultValue={framework ?? ""}>
-            <option value="">Alle</option>
-            {Object.entries(FRAMEWORKS).map(([k, v]) => (
+            <option value="">{m.common.all}</option>
+            {Object.entries(m.labels.frameworks).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>
@@ -61,42 +66,40 @@ export default async function GovernancePage({
           </Select>
         </div>
         <Button type="submit" variant="secondary">
-          Filtern
+          {m.common.filter}
         </Button>
         <Link href="/governance">
           <Button type="button" variant="ghost">
-            Zurücksetzen
+            {m.common.reset}
           </Button>
         </Link>
-        <span className="text-xs text-muted-foreground">
-          {requirements.length} Anforderung{requirements.length === 1 ? "" : "en"}
-        </span>
+        <span className="text-xs text-muted-foreground">{t.count(requirements.length)}</span>
       </form>
 
       <Table>
         <THead>
           <TR>
-            <TH>Ref-ID</TH>
-            <TH>Framework</TH>
-            <TH>Anforderung</TH>
-            <TH>Status</TH>
-            <TH>Begründung</TH>
-            <TH>Owner</TH>
-            <TH>Reviewer</TH>
-            <TH>Nachweis</TH>
-            <TH>Nächstes Review</TH>
+            <TH>{t.refId}</TH>
+            <TH>{t.framework}</TH>
+            <TH>{t.requirement}</TH>
+            <TH>{t.status}</TH>
+            <TH>{t.justification}</TH>
+            <TH>{t.owner}</TH>
+            <TH>{t.reviewer}</TH>
+            <TH>{t.evidence}</TH>
+            <TH>{t.nextReview}</TH>
           </TR>
         </THead>
         <TBody>
           {requirements.length === 0 ? (
             <TR>
               <TD colSpan={9} className="h-20 text-center text-muted-foreground">
-                Keine Anforderungen gefunden.
+                {t.empty}
               </TD>
             </TR>
           ) : (
             requirements.map((req) => {
-              const m = req.mappings[0] ?? null;
+              const mapping = req.mappings[0] ?? null;
               return (
                 <TR key={req.id}>
                   <TD className="whitespace-nowrap font-medium">
@@ -105,7 +108,7 @@ export default async function GovernancePage({
                     </Link>
                   </TD>
                   <TD className="whitespace-nowrap">
-                    {FRAMEWORKS[req.framework as keyof typeof FRAMEWORKS] ?? req.framework}
+                    {m.labels.frameworks[req.framework] ?? req.framework}
                   </TD>
                   <TD>
                     <Link href={`/governance/${req.id}`} className="hover:underline">
@@ -113,30 +116,30 @@ export default async function GovernancePage({
                     </Link>
                   </TD>
                   <TD>
-                    <Badge variant={complianceStatusVariant(m?.status ?? "NOT_ASSESSED")}>
-                      {complianceStatusLabel(m?.status ?? "NOT_ASSESSED")}
+                    <Badge variant={complianceStatusVariant(mapping?.status ?? "NOT_ASSESSED")}>
+                      {complianceStatusLabel(mapping?.status ?? "NOT_ASSESSED")}
                     </Badge>
                   </TD>
-                  <TD className="max-w-72 truncate" title={m?.justification ?? undefined}>
-                    {m?.justification ?? "–"}
+                  <TD className="max-w-72 truncate" title={mapping?.justification ?? undefined}>
+                    {mapping?.justification ?? "–"}
                   </TD>
-                  <TD className="whitespace-nowrap">{m?.owner?.name ?? "–"}</TD>
-                  <TD className="whitespace-nowrap">{m?.reviewer?.name ?? "–"}</TD>
+                  <TD className="whitespace-nowrap">{mapping?.owner?.name ?? "–"}</TD>
+                  <TD className="whitespace-nowrap">{mapping?.reviewer?.name ?? "–"}</TD>
                   <TD className="whitespace-nowrap">
-                    {m?.evidence ? (
+                    {mapping?.evidence ? (
                       <a
-                        href={m.evidence.link}
+                        href={mapping.evidence.link}
                         target="_blank"
                         rel="noreferrer"
                         className="text-primary hover:underline"
                       >
-                        {m.evidence.evidenceId}
+                        {mapping.evidence.evidenceId}
                       </a>
                     ) : (
                       "–"
                     )}
                   </TD>
-                  <TD className="whitespace-nowrap">{formatDate(m?.nextReviewDate)}</TD>
+                  <TD className="whitespace-nowrap">{formatDate(mapping?.nextReviewDate)}</TD>
                 </TR>
               );
             })

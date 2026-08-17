@@ -5,8 +5,9 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { FRAMEWORKS } from "@/lib/domain/enums";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n/server";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 import { ComplianceDisclaimer } from "@/features/governance/disclaimer";
 import { MappingForm } from "@/features/governance/panels";
 import { complianceStatusLabel, complianceStatusVariant } from "@/features/governance/status";
@@ -20,6 +21,9 @@ export default async function RequirementDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const user = await requirePermission("compliance:read");
+  const locale = await getLocale();
+  const m = OPS_MESSAGES[locale];
+  const t = m.governance.detail;
   const { id } = await params;
 
   const requirement = await db.regulatoryRequirement.findUnique({
@@ -47,28 +51,28 @@ export default async function RequirementDetailPage({
     take: 100,
   });
 
+  const frameworkLabel = m.labels.frameworks[requirement.framework] ?? requirement.framework;
+
   return (
     <div>
       <PageHeader
         title={`${requirement.refId} – ${requirement.title}`}
-        description={`${FRAMEWORKS[requirement.framework as keyof typeof FRAMEWORKS] ?? requirement.framework} · Referenz: ${requirement.reference}`}
+        description={t.description(frameworkLabel, requirement.reference)}
         crumbs={[
-          { label: "Overview", href: "/overview" },
-          { label: "Governance", href: "/governance" },
+          { label: m.common.overview, href: "/overview" },
+          { label: m.governance.list.crumb, href: "/governance" },
           { label: requirement.refId },
         ]}
       />
 
-      <ComplianceDisclaimer />
+      <ComplianceDisclaimer locale={locale} />
 
       <div className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>Anforderung</CardTitle>
+            <CardTitle>{t.requirementCard}</CardTitle>
             <CardDescription>
-              {FRAMEWORKS[requirement.framework as keyof typeof FRAMEWORKS] ??
-                requirement.framework}{" "}
-              · {requirement.reference}
+              {frameworkLabel} · {requirement.reference}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -78,16 +82,14 @@ export default async function RequirementDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Aktueller Umsetzungsstand</CardTitle>
-            <CardDescription>
-              Dokumentierte Selbsteinschätzung – kein automatisches Compliance-Urteil.
-            </CardDescription>
+            <CardTitle>{t.currentCard}</CardTitle>
+            <CardDescription>{t.currentCardDesc}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             {mapping ? (
               <dl className="grid gap-x-6 gap-y-2 md:grid-cols-2">
                 <div>
-                  <dt className="text-xs text-muted-foreground">Status</dt>
+                  <dt className="text-xs text-muted-foreground">{t.status}</dt>
                   <dd>
                     <Badge variant={complianceStatusVariant(mapping.status)}>
                       {complianceStatusLabel(mapping.status)}
@@ -95,23 +97,23 @@ export default async function RequirementDetailPage({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted-foreground">Bewertet am</dt>
+                  <dt className="text-xs text-muted-foreground">{t.assessedAt}</dt>
                   <dd>{formatDateTime(mapping.assessedAt)}</dd>
                 </div>
                 <div className="md:col-span-2">
-                  <dt className="text-xs text-muted-foreground">Begründung</dt>
+                  <dt className="text-xs text-muted-foreground">{t.justification}</dt>
                   <dd>{mapping.justification}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted-foreground">Owner</dt>
+                  <dt className="text-xs text-muted-foreground">{t.owner}</dt>
                   <dd>{mapping.owner?.name ?? "–"}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted-foreground">Reviewer</dt>
+                  <dt className="text-xs text-muted-foreground">{t.reviewer}</dt>
                   <dd>{mapping.reviewer?.name ?? "–"}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted-foreground">Nachweis</dt>
+                  <dt className="text-xs text-muted-foreground">{t.evidence}</dt>
                   <dd>
                     {mapping.evidence ? (
                       <a
@@ -128,14 +130,12 @@ export default async function RequirementDetailPage({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted-foreground">Nächstes Review</dt>
+                  <dt className="text-xs text-muted-foreground">{t.nextReview}</dt>
                   <dd>{formatDate(mapping.nextReviewDate)}</dd>
                 </div>
               </dl>
             ) : (
-              <p className="text-muted-foreground">
-                Für diese Anforderung liegt noch keine Bewertung vor (Status: Not Assessed).
-              </p>
+              <p className="text-muted-foreground">{t.noAssessment}</p>
             )}
           </CardContent>
         </Card>
@@ -143,10 +143,8 @@ export default async function RequirementDetailPage({
         {canWrite ? (
           <Card>
             <CardHeader>
-              <CardTitle>Bewertung {mapping ? "aktualisieren" : "erfassen"}</CardTitle>
-              <CardDescription>
-                Statusänderungen werden mit altem und neuem Wert im Audit Trail protokolliert.
-              </CardDescription>
+              <CardTitle>{t.assessmentCard(mapping != null)}</CardTitle>
+              <CardDescription>{t.assessmentCardDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               <MappingForm
@@ -159,6 +157,7 @@ export default async function RequirementDetailPage({
                   mapping?.nextReviewDate ? mapping.nextReviewDate.toISOString().slice(0, 10) : null
                 }
                 evidenceOptions={evidenceOptions}
+                locale={locale}
               />
             </CardContent>
           </Card>
@@ -166,23 +165,21 @@ export default async function RequirementDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Historie (Audit Trail)</CardTitle>
-            <CardDescription>
-              Alle Statusänderungen dieser Anforderung (append-only, nicht editierbar).
-            </CardDescription>
+            <CardTitle>{t.historyCard}</CardTitle>
+            <CardDescription>{t.historyCardDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             {history.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Noch keine Änderungen protokolliert.</p>
+              <p className="text-sm text-muted-foreground">{t.noHistory}</p>
             ) : (
               <Table>
                 <THead>
                   <TR>
-                    <TH>Zeitpunkt</TH>
-                    <TH>Benutzer</TH>
-                    <TH>Alt</TH>
-                    <TH>Neu</TH>
-                    <TH>Kommentar</TH>
+                    <TH>{t.timestamp}</TH>
+                    <TH>{t.user}</TH>
+                    <TH>{t.oldValue}</TH>
+                    <TH>{t.newValue}</TH>
+                    <TH>{t.comment}</TH>
                   </TR>
                 </THead>
                 <TBody>

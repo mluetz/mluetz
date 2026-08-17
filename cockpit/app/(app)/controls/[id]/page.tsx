@@ -3,15 +3,10 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission, hasPermission } from "@/lib/authz";
 import { formatDate, formatDateTime, isOverdue } from "@/lib/utils";
-import { EFFECTIVENESS_RATING, RISK_STATUS, type RiskStatus } from "@/lib/domain/enums";
-import {
-  AUTOMATION_LABELS,
-  CONTROL_TYPE_LABELS,
-  FREQUENCY_LABELS,
-  TEST_RESULT_LABELS,
-  effectivenessVariant,
-  testResultVariant,
-} from "@/features/controls/labels";
+import { RISK_STATUS, type RiskStatus } from "@/lib/domain/enums";
+import { effectivenessVariant, testResultVariant } from "@/features/controls/labels";
+import { getLocale } from "@/lib/i18n/server";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -23,6 +18,9 @@ export const dynamic = "force-dynamic";
 
 export default async function ControlDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePermission("control:read");
+  const locale = await getLocale();
+  const m = OPS_MESSAGES[locale];
+  const t = m.controls.detail;
   const { id } = await params;
   const control = await db.control.findUnique({
     where: { id },
@@ -57,35 +55,34 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
         title={`${control.controlId} – ${control.name}`}
         description={control.objective}
         crumbs={[
-          { label: "Overview", href: "/overview" },
-          { label: "Controls", href: "/controls" },
+          { label: m.common.overview, href: "/overview" },
+          { label: m.controls.list.crumb, href: "/controls" },
           { label: control.controlId },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={effectivenessVariant(control.designEffectiveness)}>
-              Design:{" "}
-              {EFFECTIVENESS_RATING[
-                control.designEffectiveness as keyof typeof EFFECTIVENESS_RATING
-              ] ?? control.designEffectiveness}
+              {t.designBadge(
+                m.labels.effectiveness[control.designEffectiveness] ?? control.designEffectiveness,
+              )}
             </Badge>
             <Badge variant={effectivenessVariant(control.operatingEffectiveness)}>
-              Operativ:{" "}
-              {EFFECTIVENESS_RATING[
-                control.operatingEffectiveness as keyof typeof EFFECTIVENESS_RATING
-              ] ?? control.operatingEffectiveness}
+              {t.operatingBadge(
+                m.labels.effectiveness[control.operatingEffectiveness] ??
+                  control.operatingEffectiveness,
+              )}
             </Badge>
-            {testOverdue ? <Badge variant="high">Test überfällig</Badge> : null}
+            {testOverdue ? <Badge variant="high">{t.testOverdue}</Badge> : null}
           </div>
         }
       />
 
       <Tabs defaultValue="overview">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="overview">Übersicht</TabsTrigger>
-          <TabsTrigger value="risks">Verknüpfte Risiken ({control.risks.length})</TabsTrigger>
-          <TabsTrigger value="tests">Testhistorie ({control.assessments.length})</TabsTrigger>
-          {canTest ? <TabsTrigger value="newtest">Neuer Test</TabsTrigger> : null}
+          <TabsTrigger value="overview">{t.tabOverview}</TabsTrigger>
+          <TabsTrigger value="risks">{t.tabRisks(control.risks.length)}</TabsTrigger>
+          <TabsTrigger value="tests">{t.tabTests(control.assessments.length)}</TabsTrigger>
+          {canTest ? <TabsTrigger value="newtest">{t.tabNewTest}</TabsTrigger> : null}
         </TabsList>
 
         {/* ---------- Übersicht ---------- */}
@@ -93,48 +90,38 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Kontrollbeschreibung</CardTitle>
+                <CardTitle>{t.descriptionCard}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <Info label="Kontrollziel" value={control.objective} />
-                <Info label="Beschreibung" value={control.description} />
+                <Info label={t.objective} value={control.objective} />
+                <Info label={t.descriptionLabel} value={control.description} />
                 <div className="grid grid-cols-2 gap-3">
                   <Info
-                    label="Typ"
-                    value={
-                      CONTROL_TYPE_LABELS[
-                        control.controlType as keyof typeof CONTROL_TYPE_LABELS
-                      ] ?? control.controlType
-                    }
+                    label={t.typeLabel}
+                    value={m.labels.controlType[control.controlType] ?? control.controlType}
                   />
                   <Info
-                    label="Automatisierung"
-                    value={
-                      AUTOMATION_LABELS[control.automation as keyof typeof AUTOMATION_LABELS] ??
-                      control.automation
-                    }
+                    label={t.automationLabel}
+                    value={m.labels.automation[control.automation] ?? control.automation}
                   />
                   <Info
-                    label="Frequenz"
-                    value={
-                      FREQUENCY_LABELS[control.frequency as keyof typeof FREQUENCY_LABELS] ??
-                      control.frequency
-                    }
+                    label={t.frequencyLabel}
+                    value={m.labels.frequency[control.frequency] ?? control.frequency}
                   />
-                  <Info label="Control Owner" value={control.owner?.name ?? "⚠ nicht benannt"} />
+                  <Info label={t.controlOwner} value={control.owner?.name ?? m.common.ownerNotNamed} />
                   <Info
-                    label="Nächster Test"
-                    value={`${formatDate(control.nextTestDate)}${testOverdue ? " (überfällig)" : ""}`}
+                    label={t.nextTest}
+                    value={`${formatDate(control.nextTestDate)}${testOverdue ? m.common.overdueSuffix : ""}`}
                   />
-                  <Info label="Letzte Änderung" value={formatDateTime(control.updatedAt)} />
+                  <Info label={m.common.lastModified} value={formatDateTime(control.updatedAt)} />
                 </div>
                 <TagList
-                  label="Regulatorische Mappings"
+                  label={t.regulatoryMappings}
                   items={control.regulatoryRequirements.map((r) => `${r.refId} (${r.framework})`)}
                 />
-                <TagList label="Betroffene Assets" items={control.assets.map((a) => a.name)} />
+                <TagList label={t.affectedAssets} items={control.assets.map((a) => a.name)} />
                 <TagList
-                  label="Betroffene Geschäftsprozesse"
+                  label={t.affectedProcesses}
                   items={control.processes.map((p) => p.name)}
                 />
               </CardContent>
@@ -142,8 +129,8 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
             {canWrite ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>Kontrolle bearbeiten</CardTitle>
-                  <CardDescription>Änderungen werden im Audit Trail protokolliert.</CardDescription>
+                  <CardTitle>{t.editCard}</CardTitle>
+                  <CardDescription>{t.editCardDesc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <UpdateControlForm
@@ -156,6 +143,7 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
                       ownerId: control.ownerId,
                     }}
                     owners={owners.map((o) => ({ id: o.id, name: o.name }))}
+                    locale={locale}
                   />
                 </CardContent>
               </Card>
@@ -167,16 +155,16 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
         <TabsContent value="risks">
           <Card>
             <CardHeader>
-              <CardTitle>Verknüpfte Risiken</CardTitle>
+              <CardTitle>{t.linkedRisksCard}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <THead>
                   <TR>
-                    <TH>Risk ID</TH>
-                    <TH>Titel</TH>
-                    <TH>Status</TH>
-                    <TH>Risk Owner</TH>
+                    <TH>{t.riskId}</TH>
+                    <TH>{t.riskTitle}</TH>
+                    <TH>{t.riskStatus}</TH>
+                    <TH>{t.riskOwner}</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -200,7 +188,7 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
                   {control.risks.length === 0 ? (
                     <TR>
                       <TD colSpan={4} className="text-center text-muted-foreground">
-                        Keine Risiken verknüpft.
+                        {t.noRisksLinked}
                       </TD>
                     </TR>
                   ) : null}
@@ -214,18 +202,18 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
         <TabsContent value="tests">
           <Card>
             <CardHeader>
-              <CardTitle>Testhistorie</CardTitle>
+              <CardTitle>{t.testHistoryCard}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <THead>
                   <TR>
-                    <TH>Datum</TH>
-                    <TH>Tester</TH>
-                    <TH>Ergebnis</TH>
-                    <TH>Design</TH>
-                    <TH>Operativ</TH>
-                    <TH>Findings</TH>
+                    <TH>{t.testDate}</TH>
+                    <TH>{t.tester}</TH>
+                    <TH>{t.testResult}</TH>
+                    <TH>{t.design}</TH>
+                    <TH>{t.operating}</TH>
+                    <TH>{t.findings}</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -235,19 +223,15 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
                       <TD className="text-xs">{a.testedBy.name}</TD>
                       <TD>
                         <Badge variant={testResultVariant(a.testResult)}>
-                          {TEST_RESULT_LABELS[a.testResult as keyof typeof TEST_RESULT_LABELS] ??
-                            a.testResult}
+                          {m.labels.testResult[a.testResult] ?? a.testResult}
                         </Badge>
                       </TD>
                       <TD className="text-xs">
-                        {EFFECTIVENESS_RATING[
-                          a.designEffectiveness as keyof typeof EFFECTIVENESS_RATING
-                        ] ?? a.designEffectiveness}
+                        {m.labels.effectiveness[a.designEffectiveness] ?? a.designEffectiveness}
                       </TD>
                       <TD className="text-xs">
-                        {EFFECTIVENESS_RATING[
-                          a.operatingEffectiveness as keyof typeof EFFECTIVENESS_RATING
-                        ] ?? a.operatingEffectiveness}
+                        {m.labels.effectiveness[a.operatingEffectiveness] ??
+                          a.operatingEffectiveness}
                       </TD>
                       <TD className="max-w-[320px] text-xs">{a.findings ?? "–"}</TD>
                     </TR>
@@ -255,7 +239,7 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
                   {control.assessments.length === 0 ? (
                     <TR>
                       <TD colSpan={6} className="text-center text-muted-foreground">
-                        Noch keine Kontrolltests dokumentiert.
+                        {t.noTests}
                       </TD>
                     </TR>
                   ) : null}
@@ -270,14 +254,11 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
           <TabsContent value="newtest">
             <Card>
               <CardHeader>
-                <CardTitle>Neuen Kontrolltest erfassen</CardTitle>
-                <CardDescription>
-                  Der Test aktualisiert die Design- und operative Wirksamkeit der Kontrolle und wird
-                  im Audit Trail protokolliert.
-                </CardDescription>
+                <CardTitle>{t.newTestCard}</CardTitle>
+                <CardDescription>{t.newTestCardDesc}</CardDescription>
               </CardHeader>
               <CardContent>
-                <ControlTestForm controlId={control.id} />
+                <ControlTestForm controlId={control.id} locale={locale} />
               </CardContent>
             </Card>
           </TabsContent>

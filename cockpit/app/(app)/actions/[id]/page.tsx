@@ -3,7 +3,9 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requirePermission, hasPermission } from "@/lib/authz";
 import { formatDate, formatDateTime, isOverdue } from "@/lib/utils";
-import { ACTION_STATUS, ACTION_TRANSITIONS, PRIORITY, type ActionStatus } from "@/lib/domain/enums";
+import { ACTION_TRANSITIONS, type ActionStatus } from "@/lib/domain/enums";
+import { getLocale } from "@/lib/i18n/server";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,21 +13,11 @@ import { EscalationForm, ProgressForm, StatusForm } from "@/features/actions-mgm
 
 export const dynamic = "force-dynamic";
 
-const VALIDATION_STATUS: Record<string, string> = {
-  NOT_VALIDATED: "Nicht validiert",
-  VALIDATED: "Validiert",
-  REJECTED: "Abgelehnt",
-};
-
-const ESCALATION_LABELS: Record<number, string> = {
-  0: "keine",
-  1: "Stufe 1 – Teamleitung",
-  2: "Stufe 2 – Bereich",
-  3: "Stufe 3 – Management",
-};
-
 export default async function ActionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requirePermission("action:read");
+  const locale = await getLocale();
+  const m = OPS_MESSAGES[locale];
+  const t = m.actions.detail;
   const { id } = await params;
   const action = await db.action.findUnique({
     where: { id },
@@ -53,18 +45,21 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
     <div>
       <PageHeader
         title={`${action.actionId} – ${action.title}`}
-        description={`Maßnahme zu Risiko ${action.risk.riskId}`}
+        description={t.description(action.risk.riskId)}
         crumbs={[
-          { label: "Overview", href: "/overview" },
-          { label: "Maßnahmen", href: "/actions" },
+          { label: m.common.overview, href: "/overview" },
+          { label: m.actions.list.crumb, href: "/actions" },
           { label: action.actionId },
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">{ACTION_STATUS[status] ?? action.status}</Badge>
+            <Badge variant="secondary">{m.labels.actionStatus[status] ?? action.status}</Badge>
             {action.escalationLevel > 0 ? (
               <Badge variant={action.escalationLevel >= 3 ? "critical" : "high"}>
-                Eskalation {ESCALATION_LABELS[action.escalationLevel]}
+                {t.escalationBadge(
+                  m.labels.escalationLevels[action.escalationLevel] ??
+                    String(action.escalationLevel),
+                )}
               </Badge>
             ) : null}
           </div>
@@ -73,16 +68,18 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
 
       {/* KPI-Zeile */}
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
-        <Kpi label="Status" value={ACTION_STATUS[status] ?? action.status} />
+        <Kpi label={t.kpiStatus} value={m.labels.actionStatus[status] ?? action.status} />
+        <Kpi label={t.kpiPriority} value={m.labels.priority[action.priority] ?? action.priority} />
         <Kpi
-          label="Priorität"
-          value={PRIORITY[action.priority as keyof typeof PRIORITY] ?? action.priority}
+          label={t.kpiDue}
+          value={formatDate(action.dueDate)}
+          warn={overdue}
+          warnSuffix={m.common.overdueSuffix}
         />
-        <Kpi label="Fälligkeit" value={formatDate(action.dueDate)} warn={overdue} />
-        <Kpi label="Fortschritt" value={`${action.progress} %`} />
+        <Kpi label={t.kpiProgress} value={`${action.progress} %`} />
         <Kpi
-          label="Eskalationsstufe"
-          value={ESCALATION_LABELS[action.escalationLevel] ?? String(action.escalationLevel)}
+          label={t.kpiEscalation}
+          value={m.labels.escalationLevels[action.escalationLevel] ?? String(action.escalationLevel)}
           warn={action.escalationLevel > 0}
         />
       </div>
@@ -90,31 +87,31 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Beschreibung &amp; Details</CardTitle>
+            <CardTitle>{t.detailsCard}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <Info label="Beschreibung" value={action.description} />
+            <Info label={t.descriptionLabel} value={action.description} />
             <div>
-              <p className="text-[11px] font-medium text-muted-foreground">Zugehöriges Risiko</p>
+              <p className="text-[11px] font-medium text-muted-foreground">{t.linkedRisk}</p>
               <Link href={`/risks/${action.risk.id}`} className="text-primary hover:underline">
                 <span className="font-mono text-xs">{action.risk.riskId}</span> –{" "}
                 {action.risk.title}
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Info label="Action Owner" value={action.owner?.name ?? "⚠ nicht benannt"} />
-              <Info label="Startdatum" value={formatDate(action.startDate)} />
-              <Info label="Budget" value={action.budget ?? "–"} />
-              <Info label="Abhängigkeiten" value={action.dependencies ?? "–"} />
-              <Info label="Erwartete Risikoreduktion" value={action.expectedRiskReduction ?? "–"} />
+              <Info label={t.actionOwner} value={action.owner?.name ?? m.common.ownerNotNamed} />
+              <Info label={t.startDate} value={formatDate(action.startDate)} />
+              <Info label={t.budget} value={action.budget ?? "–"} />
+              <Info label={t.dependencies} value={action.dependencies ?? "–"} />
+              <Info label={t.expectedRiskReduction} value={action.expectedRiskReduction ?? "–"} />
               <Info
-                label="Validierungsstatus"
-                value={VALIDATION_STATUS[action.validationStatus] ?? action.validationStatus}
+                label={t.validationStatus}
+                value={m.labels.validationStatus[action.validationStatus] ?? action.validationStatus}
               />
-              <Info label="Wirksamkeitsprüfung" value={action.effectivenessCheck ?? "–"} />
-              <Info label="Nachweis / Evidence" value={action.evidenceNote ?? "–"} />
-              <Info label="Erstellt am" value={formatDate(action.createdAt)} />
-              <Info label="Letzte Änderung" value={formatDateTime(action.updatedAt)} />
+              <Info label={t.effectivenessCheck} value={action.effectivenessCheck ?? "–"} />
+              <Info label={t.evidenceNote} value={action.evidenceNote ?? "–"} />
+              <Info label={m.common.createdAt} value={formatDate(action.createdAt)} />
+              <Info label={m.common.lastModified} value={formatDateTime(action.updatedAt)} />
             </div>
           </CardContent>
         </Card>
@@ -122,27 +119,26 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Fortschritt aktualisieren</CardTitle>
-              <CardDescription>
-                Fortschritt in Prozent mit optionalem Nachweis; jede Änderung wird protokolliert.
-              </CardDescription>
+              <CardTitle>{t.progressCard}</CardTitle>
+              <CardDescription>{t.progressCardDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               {canWrite ? (
-                <ProgressForm actionId={action.id} currentProgress={action.progress} />
+                <ProgressForm
+                  actionId={action.id}
+                  currentProgress={action.progress}
+                  locale={locale}
+                />
               ) : (
-                <p className="text-sm text-muted-foreground">Keine Schreibberechtigung.</p>
+                <p className="text-sm text-muted-foreground">{m.common.noWritePermission}</p>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Statuswechsel</CardTitle>
-              <CardDescription>
-                Nur entlang der erlaubten Workflow-Übergänge; Abschluss (Closed) erst nach der
-                Wirksamkeitsprüfung.
-              </CardDescription>
+              <CardTitle>{t.statusCard}</CardTitle>
+              <CardDescription>{t.statusCardDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               {canWrite ? (
@@ -150,9 +146,10 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
                   actionId={action.id}
                   currentStatus={action.status}
                   allowedTargets={allowedTargets}
+                  locale={locale}
                 />
               ) : (
-                <p className="text-sm text-muted-foreground">Keine Schreibberechtigung.</p>
+                <p className="text-sm text-muted-foreground">{m.common.noWritePermission}</p>
               )}
             </CardContent>
           </Card>
@@ -160,14 +157,15 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
           {canEscalate ? (
             <Card>
               <CardHeader>
-                <CardTitle>Eskalation</CardTitle>
-                <CardDescription>
-                  Eskalation an Teamleitung (1), Bereich (2) oder Management (3) mit
-                  Pflichtbegründung.
-                </CardDescription>
+                <CardTitle>{t.escalationCard}</CardTitle>
+                <CardDescription>{t.escalationCardDesc}</CardDescription>
               </CardHeader>
               <CardContent>
-                <EscalationForm actionId={action.id} currentLevel={action.escalationLevel} />
+                <EscalationForm
+                  actionId={action.id}
+                  currentLevel={action.escalationLevel}
+                  locale={locale}
+                />
               </CardContent>
             </Card>
           ) : null}
@@ -176,7 +174,7 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Audit Trail (Auszug)</CardTitle>
+          <CardTitle>{t.auditCard}</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-2 text-xs">
@@ -195,7 +193,7 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
               </li>
             ))}
             {auditEntries.length === 0 ? (
-              <li className="text-muted-foreground">Keine Einträge.</li>
+              <li className="text-muted-foreground">{t.noEntries}</li>
             ) : null}
           </ul>
         </CardContent>
@@ -204,13 +202,23 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
   );
 }
 
-function Kpi({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+function Kpi({
+  label,
+  value,
+  warn,
+  warnSuffix,
+}: {
+  label: string;
+  value: string;
+  warn?: boolean;
+  warnSuffix?: string;
+}) {
   return (
     <div className="rounded-lg border bg-card p-3">
       <p className="text-[11px] text-muted-foreground">{label}</p>
       <p className={`text-sm font-semibold ${warn ? "text-risk-high" : ""}`}>
         {value}
-        {warn && label === "Fälligkeit" ? " (überfällig)" : ""}
+        {warn && warnSuffix ? warnSuffix : ""}
       </p>
     </div>
   );

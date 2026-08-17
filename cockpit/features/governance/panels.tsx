@@ -4,16 +4,17 @@ import { useActionState } from "react";
 import { upsertComplianceMapping, type ActionResult } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
-import { COMPLIANCE_STATUS } from "@/lib/domain/enums";
+import type { Locale } from "@/lib/i18n/config";
+import { OPS_MESSAGES } from "@/lib/i18n/messages/ops";
 
-function ErrorLine({ state }: { state: ActionResult }) {
+function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
   if (state.error)
     return (
       <p role="alert" className="text-sm text-destructive">
         {state.error}
       </p>
     );
-  if (state.ok) return <p className="text-sm text-risk-low">Gespeichert.</p>;
+  if (state.ok) return <p className="text-sm text-risk-low">{OPS_MESSAGES[locale].common.saved}</p>;
   return null;
 }
 
@@ -32,6 +33,7 @@ export function MappingForm({
   currentEvidenceId,
   currentNextReviewDate,
   evidenceOptions,
+  locale,
 }: {
   requirementId: string;
   mappingId?: string;
@@ -40,7 +42,10 @@ export function MappingForm({
   currentEvidenceId?: string | null;
   currentNextReviewDate?: string | null; // yyyy-mm-dd
   evidenceOptions: EvidenceOption[];
+  locale: Locale;
 }) {
+  const m = OPS_MESSAGES[locale];
+  const t = m.governance.panels;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     upsertComplianceMapping,
     {},
@@ -50,21 +55,21 @@ export function MappingForm({
       <input type="hidden" name="requirementId" value={requirementId} />
       {mappingId ? <input type="hidden" name="mappingId" value={mappingId} /> : null}
       <div className="grid gap-4 md:grid-cols-3">
-        <Field label="Umsetzungsstatus" htmlFor="cm-status" required>
+        <Field label={t.status} htmlFor="cm-status" required>
           <Select id="cm-status" name="status" required defaultValue={currentStatus ?? ""}>
             <option value="" disabled>
-              Bitte wählen
+              {m.common.pleaseSelect}
             </option>
-            {Object.entries(COMPLIANCE_STATUS).map(([k, v]) => (
+            {Object.entries(m.labels.complianceStatus).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>
             ))}
           </Select>
         </Field>
-        <Field label="Nachweis (Evidence)" htmlFor="cm-evidence">
+        <Field label={t.evidence} htmlFor="cm-evidence">
           <Select id="cm-evidence" name="evidenceId" defaultValue={currentEvidenceId ?? ""}>
-            <option value="">– kein Nachweis –</option>
+            <option value="">{t.noEvidenceOption}</option>
             {evidenceOptions.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.evidenceId} – {e.title}
@@ -72,7 +77,7 @@ export function MappingForm({
             ))}
           </Select>
         </Field>
-        <Field label="Nächstes Review" htmlFor="cm-review">
+        <Field label={t.nextReview} htmlFor="cm-review">
           <Input
             id="cm-review"
             type="date"
@@ -81,7 +86,7 @@ export function MappingForm({
           />
         </Field>
       </div>
-      <Field label="Begründung der Einstufung" htmlFor="cm-just" required>
+      <Field label={t.justification} htmlFor="cm-just" required>
         <Textarea
           id="cm-just"
           name="justification"
@@ -91,9 +96,9 @@ export function MappingForm({
           defaultValue={currentJustification ?? ""}
         />
       </Field>
-      <ErrorLine state={state} />
+      <ErrorLine state={state} locale={locale} />
       <Button type="submit" disabled={pending}>
-        {pending ? "Speichern…" : "Bewertung speichern"}
+        {pending ? m.common.saving : t.submit}
       </Button>
     </form>
   );

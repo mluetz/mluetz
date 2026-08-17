@@ -1,0 +1,274 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2047 1209" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="2047" height="1209" fill="#ffffff"/>
+  <rect x="0" y="0" width="2047" height="1209" fill="#eef1f5"/>
+
+  <!-- ===================== Sidebar ===================== -->
+  <rect x="0" y="0" width="269" height="1209" fill="#1c4966"/>
+  <text x="27" y="42" font-size="24" font-weight="bold" fill="#ffffff">DORA Dashboard</text>
+  <text x="27" y="68" font-size="14.5" fill="#a9c1d1">Digital Operational Resilience</text>
+  <line x1="0" y1="102" x2="269" y2="102" stroke="#2d5b7a" stroke-width="1.5"/>
+  <!-- active item -->
+  <rect x="0" y="116" width="269" height="40" fill="#2d5f80"/>
+  <rect x="0" y="116" width="5" height="40" fill="#e2a53d"/>
+  <g font-size="17">
+    <text x="30" y="142" fill="#ffffff" font-weight="bold">Overview</text>
+    <text x="30" y="185" fill="#cfdde8">Requirements Catalog</text>
+    <text x="30" y="228" fill="#cfdde8">Findings &amp; CAPA</text>
+    <text x="30" y="271" fill="#cfdde8">Third Party / Register</text>
+    <text x="30" y="314" fill="#cfdde8">Incidents &amp; Reports</text>
+    <text x="30" y="357" fill="#cfdde8">Testing &amp; TLPT</text>
+    <text x="30" y="400" fill="#cfdde8">Threat Intelligence</text>
+    <text x="30" y="443" fill="#cfdde8">Reporting &amp; Export</text>
+    <text x="30" y="486" fill="#cfdde8">Administration</text>
+  </g>
+  <line x1="0" y1="530" x2="269" y2="530" stroke="#2d5b7a" stroke-width="1.5"/>
+  <g font-size="15" fill="#a9c1d1">
+    <text x="27" y="565">Role: CISO</text>
+    <text x="27" y="589">Tenant: Institut DE</text>
+    <text x="27" y="613">As of: 30 Jun 2026</text>
+  </g>
+
+  <!-- ===================== Header ===================== -->
+  <text x="298" y="52" font-size="28" font-weight="bold" fill="#12293a">Executive Overview &#8212; Chapters II to VI</text>
+  <text x="2010" y="50" font-size="15.5" fill="#45586e" text-anchor="end">Data as of 30 Jun 2026&#160;&#160;|&#160;&#160;Next report to the management body: 15 Jul 2026</text>
+
+  <!-- Filter chips -->
+  <g>
+    <rect x="298" y="78" width="118" height="32" rx="16" fill="#1c4966"/>
+    <text x="357" y="99" font-size="15" fill="#ffffff" text-anchor="middle">All chapters</text>
+    <rect x="430" y="78" width="152" height="32" rx="16" fill="#ffffff" stroke="#c3ccd6"/>
+    <text x="506" y="99" font-size="15" fill="#33465c" text-anchor="middle">Critical functions</text>
+    <rect x="596" y="78" width="212" height="32" rx="16" fill="#ffffff" stroke="#c3ccd6"/>
+    <text x="702" y="99" font-size="15" fill="#33465c" text-anchor="middle">MUST requirements only</text>
+    <rect x="822" y="78" width="146" height="32" rx="16" fill="#ffffff" stroke="#c3ccd6"/>
+    <text x="895" y="99" font-size="15" fill="#33465c" text-anchor="middle">Open knockouts</text>
+    <rect x="982" y="78" width="106" height="32" rx="16" fill="#ffffff" stroke="#c3ccd6"/>
+    <text x="1035" y="99" font-size="15" fill="#33465c" text-anchor="middle">Owner: all</text>
+    <rect x="1102" y="78" width="150" height="32" rx="16" fill="#ffffff" stroke="#c3ccd6"/>
+    <text x="1177" y="99" font-size="15" fill="#33465c" text-anchor="middle">Period: Q2/2026</text>
+  </g>
+
+  <!-- ===================== KPI tiles ===================== -->
+  <g>
+    <!-- Tile 1 -->
+    <rect x="298" y="133" width="329" height="142" rx="8" fill="#ffffff" stroke="#e2e7ee"/>
+    <text x="322" y="163" font-size="14.5" font-weight="bold" fill="#5b6b7c" letter-spacing="0.5">DORA RESILIENCE INDEX</text>
+    <text x="320" y="207" font-size="40" font-weight="bold" fill="#c2611e">72 %</text>
+    <rect x="322" y="222" width="281" height="8" rx="4" fill="#e4e8ee"/>
+    <rect x="322" y="222" width="202" height="8" rx="4" fill="#c2611e"/>
+    <text x="322" y="256" font-size="14.5" fill="#6b7a8a">Prior quarter 64 %&#160;&#160;&#9650; +8 pp</text>
+    <!-- Tile 2 -->
+    <rect x="643" y="133" width="329" height="142" rx="8" fill="#ffffff" stroke="#e2e7ee"/>
+    <text x="667" y="163" font-size="14.5" font-weight="bold" fill="#5b6b7c" letter-spacing="0.5">OPEN KNOCKOUTS</text>
+    <text x="665" y="207" font-size="40" font-weight="bold" fill="#b3261e">3</text>
+    <rect x="667" y="222" width="281" height="8" rx="4" fill="#e4e8ee"/>
+    <rect x="667" y="222" width="264" height="8" rx="4" fill="#b3261e"/>
+    <text x="667" y="256" font-size="14.5" fill="#6b7a8a">MUST requirements &#60; maturity level 3</text>
+    <!-- Tile 3 -->
+    <rect x="988" y="133" width="329" height="142" rx="8" fill="#ffffff" stroke="#e2e7ee"/>
+    <text x="1012" y="163" font-size="14.5" font-weight="bold" fill="#5b6b7c" letter-spacing="0.5">OVERDUE CAPA</text>
+    <text x="1010" y="207" font-size="40" font-weight="bold" fill="#b3261e">7</text>
+    <rect x="1012" y="222" width="281" height="8" rx="4" fill="#e4e8ee"/>
+    <rect x="1012" y="222" width="68" height="8" rx="4" fill="#b3261e"/>
+    <text x="1012" y="256" font-size="14.5" fill="#6b7a8a">of 29 open actions</text>
+    <!-- Tile 4 -->
+    <rect x="1333" y="133" width="329" height="142" rx="8" fill="#ffffff" stroke="#e2e7ee"/>
+    <text x="1357" y="163" font-size="14" font-weight="bold" fill="#5b6b7c" letter-spacing="0.3">REPORTING-DEADLINE ADHERENCE</text>
+    <text x="1355" y="207" font-size="40" font-weight="bold" fill="#1e7145">100 %</text>
+    <rect x="1357" y="222" width="281" height="8" rx="4" fill="#e4e8ee"/>
+    <rect x="1357" y="222" width="281" height="8" rx="4" fill="#1e7145"/>
+    <text x="1357" y="256" font-size="14.5" fill="#6b7a8a">4 h / 72 h / 1 month, 12 reports</text>
+    <!-- Tile 5 -->
+    <rect x="1678" y="133" width="329" height="142" rx="8" fill="#ffffff" stroke="#e2e7ee"/>
+    <text x="1702" y="163" font-size="14.5" font-weight="bold" fill="#5b6b7c" letter-spacing="0.5">REGISTER COMPLETENESS</text>
+    <text x="1700" y="207" font-size="40" font-weight="bold" fill="#c2611e">94 %</text>
+    <rect x="1702" y="222" width="281" height="8" rx="4" fill="#e4e8ee"/>
+    <rect x="1702" y="222" width="264" height="8" rx="4" fill="#c2611e"/>
+    <text x="1702" y="256" font-size="14.5" fill="#6b7a8a">18 of 312 contracts incomplete</text>
+  </g>
+
+  <!-- ===================== Compliance per chapter (traffic light) ===================== -->
+  <rect x="298" y="296" width="908" height="442" rx="10" fill="#ffffff" stroke="#e2e7ee"/>
+  <text x="322" y="332" font-size="21" font-weight="bold" fill="#12293a">Compliance level per DORA chapter</text>
+  <text x="322" y="359" font-size="15.5" fill="#6b7a8a">Weighted maturity score; traffic light is overridden by open knockouts</text>
+
+  <g font-size="16.5" font-weight="bold" fill="#24313f">
+    <text x="322" y="398">Ch. II &#8211; ICT risk</text>
+    <text x="322" y="418">management</text>
+    <text x="322" y="454">Ch. III &#8211; Incident</text>
+    <text x="322" y="474">management</text>
+    <text x="322" y="510">Ch. IV &#8211; Resilience</text>
+    <text x="322" y="530">testing</text>
+    <text x="322" y="566">Ch. V &#8211; Third-party</text>
+    <text x="322" y="586">risk</text>
+    <text x="322" y="622">Ch. VI &#8211; Information</text>
+    <text x="322" y="642">sharing</text>
+  </g>
+  <!-- bars -->
+  <g>
+    <rect x="555" y="398" width="460" height="10" rx="5" fill="#e4e8ee"/>
+    <rect x="555" y="398" width="373" height="10" rx="5" fill="#c2611e"/>
+    <rect x="555" y="454" width="460" height="10" rx="5" fill="#e4e8ee"/>
+    <rect x="555" y="454" width="409" height="10" rx="5" fill="#1e7145"/>
+    <rect x="555" y="510" width="460" height="10" rx="5" fill="#e4e8ee"/>
+    <rect x="555" y="510" width="267" height="10" rx="5" fill="#b3261e"/>
+    <rect x="555" y="566" width="460" height="10" rx="5" fill="#e4e8ee"/>
+    <rect x="555" y="566" width="308" height="10" rx="5" fill="#b3261e"/>
+    <rect x="555" y="622" width="460" height="10" rx="5" fill="#e4e8ee"/>
+    <rect x="555" y="622" width="423" height="10" rx="5" fill="#1e7145"/>
+  </g>
+  <g font-size="17" font-weight="bold" fill="#24313f">
+    <text x="1042" y="410">81 %</text>
+    <text x="1042" y="466">89 %</text>
+    <text x="1042" y="522">58 %</text>
+    <text x="1042" y="578">67 %</text>
+    <text x="1042" y="634">92 %</text>
+  </g>
+  <!-- traffic-light badges -->
+  <g font-size="13" font-weight="bold" text-anchor="middle">
+    <rect x="1102" y="390" width="80" height="26" rx="13" fill="#fdf3dc"/>
+    <text x="1142" y="408" fill="#b07818">YELLOW</text>
+    <rect x="1102" y="446" width="80" height="26" rx="13" fill="#e3f1e7"/>
+    <text x="1142" y="464" fill="#1e7145">GREEN</text>
+    <rect x="1102" y="502" width="80" height="26" rx="13" fill="#f9e2e0"/>
+    <text x="1142" y="520" fill="#b3261e">RED</text>
+    <rect x="1102" y="558" width="80" height="26" rx="13" fill="#f9e2e0"/>
+    <text x="1142" y="576" fill="#b3261e">RED</text>
+    <rect x="1102" y="614" width="80" height="26" rx="13" fill="#e3f1e7"/>
+    <text x="1142" y="632" fill="#1e7145">GREEN</text>
+  </g>
+  <text x="322" y="700" font-size="15" fill="#6b7a8a">Ch. V RED despite 67 %: two open knockouts on exit strategies for CIF providers (Art. 28(8)).</text>
+
+  <!-- ===================== Maturity trend + CAPA status ===================== -->
+  <rect x="1224" y="296" width="786" height="442" rx="10" fill="#ffffff" stroke="#e2e7ee"/>
+  <text x="1248" y="332" font-size="21" font-weight="bold" fill="#12293a">Maturity trend</text>
+  <text x="1248" y="359" font-size="15.5" fill="#6b7a8a">DORA Resilience Index per quarter, target corridor from Q4/2026 &#8805; 85 %</text>
+
+  <!-- bar chart -->
+  <g>
+    <rect x="1252" y="465" width="105" height="80" fill="#1c4966"/>
+    <rect x="1399" y="444" width="105" height="101" fill="#1c4966"/>
+    <rect x="1546" y="421" width="105" height="124" fill="#1c4966"/>
+    <rect x="1693" y="405" width="105" height="140" fill="#1c4966"/>
+    <rect x="1840" y="380" width="105" height="165" fill="#ccd4dd"/>
+  </g>
+  <g font-size="15" font-weight="bold" fill="#24313f" text-anchor="middle">
+    <text x="1304" y="455">41 %</text>
+    <text x="1451" y="434">52 %</text>
+    <text x="1598" y="411">64 %</text>
+    <text x="1745" y="395">72 %</text>
+    <text x="1892" y="370">85 %</text>
+  </g>
+  <g font-size="15" fill="#45586e" text-anchor="middle">
+    <text x="1304" y="570">Q3/25</text>
+    <text x="1451" y="570">Q4/25</text>
+    <text x="1598" y="570">Q1/26</text>
+    <text x="1745" y="570">Q2/26</text>
+    <text x="1892" y="570">Target Q4/26</text>
+  </g>
+
+  <!-- CAPA status -->
+  <text x="1248" y="620" font-size="19" font-weight="bold" fill="#12293a">CAPA status</text>
+  <text x="1248" y="644" font-size="15" fill="#6b7a8a">Corrective and preventive actions in the reporting period</text>
+  <g text-anchor="middle">
+    <rect x="1248" y="658" width="176" height="64" rx="6" fill="#ffffff" stroke="#dfe4ea"/>
+    <text x="1336" y="688" font-size="26" font-weight="bold" fill="#1c4966">12</text>
+    <text x="1336" y="710" font-size="12.5" fill="#5b6b7c" letter-spacing="0.5">NEW</text>
+    <rect x="1436" y="658" width="176" height="64" rx="6" fill="#ffffff" stroke="#dfe4ea"/>
+    <text x="1524" y="688" font-size="26" font-weight="bold" fill="#c2611e">17</text>
+    <text x="1524" y="710" font-size="12.5" fill="#5b6b7c" letter-spacing="0.5">IN PROGRESS</text>
+    <rect x="1624" y="658" width="176" height="64" rx="6" fill="#ffffff" stroke="#dfe4ea"/>
+    <text x="1712" y="688" font-size="26" font-weight="bold" fill="#b3261e">7</text>
+    <text x="1712" y="710" font-size="12.5" fill="#5b6b7c" letter-spacing="0.5">OVERDUE</text>
+    <rect x="1812" y="658" width="176" height="64" rx="6" fill="#ffffff" stroke="#dfe4ea"/>
+    <text x="1900" y="688" font-size="26" font-weight="bold" fill="#1e7145">41</text>
+    <text x="1900" y="710" font-size="12.5" fill="#5b6b7c" letter-spacing="0.5">CLOSED</text>
+  </g>
+
+  <!-- ===================== Heatmap ===================== -->
+  <rect x="298" y="760" width="908" height="360" rx="10" fill="#ffffff" stroke="#e2e7ee"/>
+  <text x="322" y="796" font-size="21" font-weight="bold" fill="#12293a">Heatmap &#8212; chapters vs. critical or important functions</text>
+  <text x="322" y="823" font-size="15.5" fill="#6b7a8a">Maturity 1 to 5 per intersection; red marks need for action with CIF relevance</text>
+
+  <g font-size="14.5" font-weight="bold" fill="#45586e">
+    <text x="322" y="862">Critical / important function</text>
+    <text x="598" y="862" text-anchor="middle">Ch. II</text>
+    <text x="730" y="862" text-anchor="middle">Ch. III</text>
+    <text x="862" y="862" text-anchor="middle">Ch. IV</text>
+    <text x="994" y="862" text-anchor="middle">Ch. V</text>
+    <text x="1126" y="862" text-anchor="middle">Ch. VI</text>
+  </g>
+  <!-- row labels -->
+  <g font-size="15" fill="#24313f">
+    <text x="322" y="898">SEPA payments</text>
+    <text x="322" y="934">Securities settlement</text>
+    <text x="322" y="970">Core banking system</text>
+    <text x="322" y="999" font-size="14">Online banking /</text>
+    <text x="322" y="1014" font-size="14">customer portal</text>
+    <text x="322" y="1042">Custody accounts</text>
+    <text x="322" y="1078">Regulatory reporting</text>
+  </g>
+  <!-- cells: colors 5=#1e7145 4=#4f9563 3=#e0a63f 2=#d3792c 1=#b3261e -->
+  <g>
+    <rect x="534" y="876" width="128" height="32" fill="#4f9563"/><rect x="666" y="876" width="128" height="32" fill="#1e7145"/><rect x="798" y="876" width="128" height="32" fill="#e0a63f"/><rect x="930" y="876" width="128" height="32" fill="#d3792c"/><rect x="1062" y="876" width="128" height="32" fill="#1e7145"/>
+    <rect x="534" y="912" width="128" height="32" fill="#4f9563"/><rect x="666" y="912" width="128" height="32" fill="#4f9563"/><rect x="798" y="912" width="128" height="32" fill="#d3792c"/><rect x="930" y="912" width="128" height="32" fill="#e0a63f"/><rect x="1062" y="912" width="128" height="32" fill="#4f9563"/>
+    <rect x="534" y="948" width="128" height="32" fill="#1e7145"/><rect x="666" y="948" width="128" height="32" fill="#1e7145"/><rect x="798" y="948" width="128" height="32" fill="#e0a63f"/><rect x="930" y="948" width="128" height="32" fill="#e0a63f"/><rect x="1062" y="948" width="128" height="32" fill="#1e7145"/>
+    <rect x="534" y="984" width="128" height="32" fill="#4f9563"/><rect x="666" y="984" width="128" height="32" fill="#4f9563"/><rect x="798" y="984" width="128" height="32" fill="#e0a63f"/><rect x="930" y="984" width="128" height="32" fill="#b3261e"/><rect x="1062" y="984" width="128" height="32" fill="#4f9563"/>
+    <rect x="534" y="1020" width="128" height="32" fill="#e0a63f"/><rect x="666" y="1020" width="128" height="32" fill="#4f9563"/><rect x="798" y="1020" width="128" height="32" fill="#d3792c"/><rect x="930" y="1020" width="128" height="32" fill="#d3792c"/><rect x="1062" y="1020" width="128" height="32" fill="#4f9563"/>
+    <rect x="534" y="1056" width="128" height="32" fill="#4f9563"/><rect x="666" y="1056" width="128" height="32" fill="#e0a63f"/><rect x="798" y="1056" width="128" height="32" fill="#e0a63f"/><rect x="930" y="1056" width="128" height="32" fill="#e0a63f"/><rect x="1062" y="1056" width="128" height="32" fill="#1e7145"/>
+  </g>
+  <g font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle">
+    <text x="598" y="897">4</text><text x="730" y="897">5</text><text x="862" y="897">3</text><text x="994" y="897">2</text><text x="1126" y="897">5</text>
+    <text x="598" y="933">4</text><text x="730" y="933">4</text><text x="862" y="933">2</text><text x="994" y="933">3</text><text x="1126" y="933">4</text>
+    <text x="598" y="969">5</text><text x="730" y="969">5</text><text x="862" y="969">3</text><text x="994" y="969">3</text><text x="1126" y="969">5</text>
+    <text x="598" y="1005">4</text><text x="730" y="1005">4</text><text x="862" y="1005">3</text><text x="994" y="1005">1</text><text x="1126" y="1005">4</text>
+    <text x="598" y="1041">3</text><text x="730" y="1041">4</text><text x="862" y="1041">2</text><text x="994" y="1041">2</text><text x="1126" y="1041">4</text>
+    <text x="598" y="1077">4</text><text x="730" y="1077">3</text><text x="862" y="1077">3</text><text x="994" y="1077">3</text><text x="1126" y="1077">5</text>
+  </g>
+
+  <!-- ===================== Reporting-deadline monitor ===================== -->
+  <rect x="1224" y="760" width="786" height="360" rx="10" fill="#ffffff" stroke="#e2e7ee"/>
+  <text x="1248" y="796" font-size="21" font-weight="bold" fill="#12293a">Reporting-deadline monitor</text>
+  <text x="1248" y="823" font-size="15" fill="#6b7a8a">Ongoing incidents with remaining time under Art. 19 in conjunction with RTS (EU) 2025/301</text>
+
+  <g stroke="#eceff3" stroke-width="1.5">
+    <line x1="1248" y1="912" x2="1986" y2="912"/>
+    <line x1="1248" y1="974" x2="1986" y2="974"/>
+    <line x1="1248" y1="1036" x2="1986" y2="1036"/>
+  </g>
+
+  <!-- Row 1 -->
+  <text x="1248" y="880" font-size="15" fill="#45586e" letter-spacing="1">INC-2026-0142</text>
+  <text x="1392" y="871" font-size="15.5" fill="#24313f">DDoS on customer portal &#8212; classified</text>
+  <text x="1392" y="891" font-size="15.5" fill="#24313f">as major</text>
+  <text x="1712" y="871" font-size="15.5" font-weight="bold" fill="#b3261e">Initial report 4 h</text>
+  <text x="1712" y="891" font-size="15.5" font-weight="bold" fill="#b3261e">01:12 left</text>
+  <rect x="1880" y="866" width="106" height="27" rx="4" fill="#f9e2e0"/>
+  <text x="1933" y="885" font-size="13" font-weight="bold" fill="#b3261e" text-anchor="middle">CRITICAL</text>
+
+  <!-- Row 2 -->
+  <text x="1248" y="942" font-size="15" fill="#45586e" letter-spacing="1">INC-2026-0139</text>
+  <text x="1392" y="933" font-size="15.5" fill="#24313f">Cloud provider outage &#8212;</text>
+  <text x="1392" y="953" font-size="15.5" fill="#24313f">intermediate report open</text>
+  <text x="1712" y="933" font-size="15.5" font-weight="bold" fill="#c2611e">Intermediate 72 h</text>
+  <text x="1712" y="953" font-size="15.5" font-weight="bold" fill="#c2611e">41:08 left</text>
+  <rect x="1880" y="928" width="106" height="27" rx="4" fill="#fdf3dc"/>
+  <text x="1933" y="947" font-size="13" font-weight="bold" fill="#b07818" text-anchor="middle">HIGH</text>
+
+  <!-- Row 3 -->
+  <text x="1248" y="1004" font-size="15" fill="#45586e" letter-spacing="1">INC-2026-0131</text>
+  <text x="1392" y="995" font-size="15.5" fill="#24313f">Data leak at service provider &#8212;</text>
+  <text x="1392" y="1015" font-size="15.5" fill="#24313f">GDPR track in parallel</text>
+  <text x="1712" y="995" font-size="15.5" font-weight="bold" fill="#c2611e">Final report 1 mo.</text>
+  <text x="1712" y="1015" font-size="15.5" font-weight="bold" fill="#c2611e">12 days left</text>
+  <rect x="1880" y="990" width="106" height="27" rx="4" fill="#fdf3dc"/>
+  <text x="1933" y="1009" font-size="13" font-weight="bold" fill="#b07818" text-anchor="middle">HIGH</text>
+
+  <!-- Row 4 -->
+  <text x="1248" y="1066" font-size="15" fill="#45586e" letter-spacing="1">INC-2026-0128</text>
+  <text x="1392" y="1057" font-size="15.5" fill="#24313f">API gateway misconfiguration &#8212;</text>
+  <text x="1392" y="1077" font-size="15.5" fill="#24313f">not reportable</text>
+  <text x="1712" y="1067" font-size="15.5" font-weight="bold" fill="#1e7145">Completed</text>
+  <rect x="1880" y="1052" width="106" height="27" rx="4" fill="#e3f1e7"/>
+  <text x="1933" y="1071" font-size="13" font-weight="bold" fill="#1e7145" text-anchor="middle">DONE</text>
+</svg>

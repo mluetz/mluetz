@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2046 1133" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="12" markerHeight="10" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#45586e"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="2046" height="1133" fill="#ffffff"/>
+
+  <!-- Layer 4 container -->
+  <rect x="598" y="10" width="1222" height="226" fill="#f6f8fb" stroke="#c8cdd8" stroke-width="1.5"/>
+  <text x="1209" y="34" font-size="22" fill="#1f2937" text-anchor="middle">Layer 4 - Management &amp; Supervisory Reporting</text>
+
+  <!-- Supervisory Reporting -->
+  <rect x="640" y="46" width="352" height="152" fill="#fdf0d9" stroke="#c1651c" stroke-width="3"/>
+  <text x="816" y="80" font-size="22" font-weight="bold" fill="#1f2937" text-anchor="middle">Supervisory Reporting</text>
+  <text x="816" y="112" font-size="20" fill="#1f2937" text-anchor="middle">Structured DORA reports,</text>
+  <text x="816" y="140" font-size="20" fill="#1f2937" text-anchor="middle">register of information (xBRL),</text>
+  <text x="816" y="168" font-size="20" fill="#1f2937" text-anchor="middle">evidence packages for audits</text>
+
+  <!-- Management Dashboard -->
+  <rect x="1310" y="46" width="330" height="152" fill="#fdf0d9" stroke="#c1651c" stroke-width="3"/>
+  <text x="1475" y="80" font-size="22" font-weight="bold" fill="#1f2937" text-anchor="middle">Management Dashboard</text>
+  <text x="1475" y="112" font-size="20" fill="#1f2937" text-anchor="middle">Compliance level per chapter,</text>
+  <text x="1475" y="140" font-size="20" fill="#1f2937" text-anchor="middle">risk-appetite monitoring,</text>
+  <text x="1475" y="168" font-size="20" fill="#1f2937" text-anchor="middle">KPI / KRI, trend analysis</text>
+
+  <!-- Layer 3 container -->
+  <rect x="567" y="307" width="1250" height="458" fill="#f6f8fb" stroke="#c8cdd8" stroke-width="1.5"/>
+  <text x="1192" y="331" font-size="22" fill="#1f2937" text-anchor="middle">Layer 3 - Operational GRC Modules with DORA Mapping</text>
+
+  <!-- Module boxes -->
+  <g stroke="#2f6b4f" stroke-width="3" fill="#e3efe6">
+    <rect x="610" y="345" width="288" height="122"/>
+    <rect x="955" y="345" width="280" height="122"/>
+    <rect x="1294" y="345" width="232" height="122"/>
+    <rect x="1655" y="345" width="235" height="122"/>
+    <rect x="1545" y="608" width="230" height="122"/>
+  </g>
+  <g fill="#1f2937" text-anchor="middle">
+    <text x="754" y="382" font-size="22" font-weight="bold">Incident Response Hub</text>
+    <text x="754" y="412" font-size="20">Chapter III</text>
+    <text x="754" y="440" font-size="20">Art. 17-23</text>
+    <text x="1095" y="382" font-size="22" font-weight="bold">Audit &amp; Testing Hub</text>
+    <text x="1095" y="412" font-size="20">Chapter IV</text>
+    <text x="1095" y="440" font-size="20">Art. 24-27</text>
+    <text x="1410" y="382" font-size="21" font-weight="bold">Third-Party Portal</text>
+    <text x="1410" y="412" font-size="20">Chapter V</text>
+    <text x="1410" y="440" font-size="20">Art. 28-30</text>
+    <text x="1772" y="382" font-size="21" font-weight="bold">Risk Management</text>
+    <text x="1772" y="412" font-size="20">Chapter II</text>
+    <text x="1772" y="440" font-size="20">Art. 5-16</text>
+    <text x="1660" y="645" font-size="21" font-weight="bold">Threat Intel Feed</text>
+    <text x="1660" y="675" font-size="20">Chapter VI</text>
+    <text x="1660" y="703" font-size="20">Art. 45</text>
+  </g>
+
+  <!-- Layer 2 container -->
+  <rect x="10" y="572" width="530" height="196" fill="#f6f8fb" stroke="#c8cdd8" stroke-width="1.5"/>
+  <text x="275" y="596" font-size="22" fill="#1f2937" text-anchor="middle">Layer 2 - Business Context</text>
+
+  <!-- CIF box -->
+  <rect x="52" y="610" width="446" height="122" fill="#e9edf6" stroke="#1f3864" stroke-width="4"/>
+  <text x="275" y="646" font-size="21" font-weight="bold" fill="#1f2937" text-anchor="middle">Critical or important functions (CIF)</text>
+  <text x="275" y="677" font-size="20" fill="#1f2937" text-anchor="middle">Business impact analysis, RTO / RPO,</text>
+  <text x="275" y="705" font-size="20" fill="#1f2937" text-anchor="middle">process map, protection needs 5D</text>
+
+  <!-- Layer 1 container -->
+  <rect x="45" y="872" width="460" height="250" fill="#f6f8fb" stroke="#c8cdd8" stroke-width="1.5"/>
+  <text x="275" y="896" font-size="19" fill="#1f2937" text-anchor="middle">Layer 1 - Core Foundation - Single Source of Truth</text>
+
+  <!-- CMDB cylinder -->
+  <path d="M 120 948 L 120 1078 A 155 26 0 0 0 430 1078 L 430 948" fill="#eef2f8" stroke="#33475e" stroke-width="3"/>
+  <ellipse cx="275" cy="948" rx="155" ry="26" fill="#eef2f8" stroke="#33475e" stroke-width="3"/>
+  <text x="275" y="1000" font-size="21" font-weight="bold" fill="#1f2937" text-anchor="middle">CMDB / Asset Inventory</text>
+  <text x="275" y="1031" font-size="20" fill="#1f2937" text-anchor="middle">Servers, applications, data,</text>
+  <text x="275" y="1059" font-size="20" fill="#1f2937" text-anchor="middle">APIs, cloud instances, locations</text>
+
+  <!-- Arrows -->
+  <g fill="none" stroke="#45586e" stroke-width="1.8">
+    <!-- CMDB -> CIF -->
+    <path d="M 275 920 L 275 740" marker-end="url(#arr)"/>
+    <!-- CIF -> Layer 3 modules -->
+    <path d="M 320 606 C 420 560, 680 530, 740 475" marker-end="url(#arr)"/>
+    <path d="M 350 606 C 500 545, 1000 545, 1080 475" marker-end="url(#arr)"/>
+    <path d="M 380 606 C 560 530, 1300 560, 1395 475" marker-end="url(#arr)"/>
+    <path d="M 498 650 C 900 590, 1700 570, 1810 475" marker-end="url(#arr)"/>
+    <!-- Threat Intel -> Risk Management -->
+    <path d="M 1655 604 C 1660 560, 1690 520, 1722 475" marker-end="url(#arr)"/>
+    <!-- Layer 3 -> Layer 4 -->
+    <path d="M 745 341 C 740 290, 750 250, 760 206" marker-end="url(#arr)"/>
+    <path d="M 1345 341 C 1180 280, 990 300, 935 205" marker-end="url(#arr)"/>
+    <path d="M 1180 341 C 1250 290, 1290 260, 1320 206" marker-end="url(#arr)"/>
+    <path d="M 1440 341 C 1450 300, 1455 250, 1462 206" marker-end="url(#arr)"/>
+    <path d="M 1800 341 C 1810 280, 1740 230, 1648 190" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- Relationship labels -->
+  <g font-size="21" fill="#1f2937">
+    <text x="290" y="825">Asset mapping</text>
+    <text x="740" y="520" text-anchor="middle">prioritizes incidents</text>
+    <text x="1080" y="520" text-anchor="middle">prioritizes test scope</text>
+    <text x="1400" y="520" text-anchor="middle">shows dependencies</text>
+    <text x="1650" y="520" text-anchor="middle">enriches risks</text>
+    <text x="1890" y="520" text-anchor="middle">inherits business impact</text>
+  </g>
+</svg>
