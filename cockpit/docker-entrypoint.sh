@@ -17,11 +17,19 @@ case "$DATABASE_URL" in
       cp /app/seed-template.db "$DB_PATH"
       echo "SQLite-Datenbank mit synthetischen Demo-Daten angelegt: $DB_PATH"
     else
-      # Bestehende Installation: Schema additiv aktualisieren und neue
-      # Inhaltsbausteine (z. B. DORA-Katalog) idempotent nachziehen.
+      # Bestehende Installation: Schema über versionierte SQL-Updates
+      # aktualisieren (bewusst ohne Prisma-CLI – läuft über die Query-
+      # Engine der Anwendung selbst) und neue Inhaltsbausteine
+      # (z. B. DORA-Katalog) idempotent nachziehen.
       echo "Bestehende Datenbank gefunden – prüfe Schema- und Datenupdates …"
-      ./node_modules/.bin/prisma db push --skip-generate --schema=/app/prisma/schema.prisma \
-        || echo "WARNUNG: Schema-Update fehlgeschlagen – Anwendung startet mit bestehendem Schema."
+      if ! node /app/scripts/ensure-schema.mjs; then
+        echo "================================================================"
+        echo "FEHLER: Schema-Update fehlgeschlagen. Start wird abgebrochen,"
+        echo "damit kein halb-migrierter Zustand bedient wird."
+        echo "Log oben prüfen; Notfall-Reset: Volume löschen (Demo-Daten)."
+        echo "================================================================"
+        exit 1
+      fi
       node /app/scripts/seed-dora.mjs \
         || echo "WARNUNG: Daten-Update (DORA-Katalog) fehlgeschlagen – siehe Log oben."
     fi
