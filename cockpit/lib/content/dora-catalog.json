@@ -1,0 +1,2436 @@
+{
+ "source": "FRWK-DORA-001 v1.0 (17.08.2026), Kapitel 9 und 10",
+ "chapters": [
+  {
+   "key": "K2",
+   "roman": "II",
+   "title": "IKT-Risikomanagement und Governance",
+   "articles": "Art. 5–16",
+   "weight": 30
+  },
+  {
+   "key": "K3",
+   "roman": "III",
+   "title": "Behandlung, Klassifizierung und Meldung IKT-bezogener Vorfälle",
+   "articles": "Art. 17–23",
+   "weight": 25
+  },
+  {
+   "key": "K4",
+   "roman": "IV",
+   "title": "Testen der digitalen operationalen Resilienz",
+   "articles": "Art. 24–27",
+   "weight": 15
+  },
+  {
+   "key": "K5",
+   "roman": "V",
+   "title": "Management des IKT-Drittparteienrisikos",
+   "articles": "Art. 28–44",
+   "weight": 25
+  },
+  {
+   "key": "K6",
+   "roman": "VI",
+   "title": "Vereinbarungen über den Austausch von Informationen",
+   "articles": "Art. 45",
+   "weight": 5
+  }
+ ],
+ "requirements": [
+  {
+   "reqId": "DORA-K2-001",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 1",
+   "title": "Interner Governance- und Kontrollrahmen",
+   "requirement": "Das Finanzunternehmen verfügt über einen internen Governance- und Kontrollrahmen, der ein wirksames und umsichtiges Management des IKT-Risikos sicherstellt und ein hohes Niveau der digitalen operationalen Resilienz gewährleistet.",
+   "evidence": "Organisationsrichtlinie IKT-Governance, Organigramm, Geschäftsverteilungsplan",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Leitungsorgan",
+   "crosswalk": {
+    "iso27001": "5.1, 5.3, A.5.1, A.5.2",
+    "iso22301": "5.1, 5.3",
+    "nis2Bsig": "§ 30 Abs. 1, § 38 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-002",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 2 lit. a und d",
+   "title": "Letztverantwortung des Leitungsorgans",
+   "requirement": "Das Leitungsorgan trägt die letzte Verantwortung für das Management des IKT-Risikos, definiert und genehmigt die Strategie für die digitale operationale Resilienz und überwacht deren Umsetzung.",
+   "evidence": "Beschlussprotokoll des Leitungsorgans, genehmigte Resilienzstrategie mit Freigabedatum",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Leitungsorgan",
+   "crosswalk": {
+    "iso27001": "5.1, 5.2, 9.3",
+    "iso22301": "5.1, 5.2, 9.3",
+    "nis2Bsig": "§ 38 Abs. 1 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-003",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 2 lit. c",
+   "title": "Rollen und Verantwortlichkeiten für IKT-Funktionen",
+   "requirement": "Für alle IKT-bezogenen Funktionen sind Rollen und Verantwortlichkeiten klar festgelegt, dokumentiert und mit angemessenen Governance-Regelungen zur wirksamen und zeitnahen Kommunikation und Zusammenarbeit unterlegt.",
+   "evidence": "RACI-Matrix, Stellen- und Rollenbeschreibungen, Vertretungsregelungen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "5.3, A.5.2, A.5.3",
+    "iso22301": "5.3",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-004",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 2 lit. d i. V. m. Art. 6 Abs. 8 lit. b",
+   "title": "Risikotoleranzschwelle und Risikoappetit",
+   "requirement": "Das Leitungsorgan legt die Risikotoleranzschwelle für das IKT-Risiko im Einklang mit dem Risikoappetit des Unternehmens fest und genehmigt sie; die Auswirkungstoleranz für Betriebsunterbrechungen ist quantitativ definiert.",
+   "evidence": "Risikoappetit-Statement mit Schwellenwerten, Genehmigungsbeschluss, Eskalationsregeln",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Leitungsorgan",
+   "crosswalk": {
+    "iso27001": "6.1.2, 6.1.3",
+    "iso22301": "8.2.2",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 3"
+   }
+  },
+  {
+   "reqId": "DORA-K2-005",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 2 lit. f",
+   "title": "Genehmigung und Überwachung der Prüfpläne",
+   "requirement": "Das Leitungsorgan genehmigt und überprüft regelmäßig die IKT-Prüfpläne, die IKT-Audits und die daraus abgeleiteten wesentlichen Änderungen.",
+   "evidence": "Genehmigter Prüfplan, Auditberichte, Beschlussfassung zu Änderungen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Leitungsorgan",
+   "crosswalk": {
+    "iso27001": "9.2, 9.3",
+    "iso22301": "9.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 9 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-006",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 2 lit. g",
+   "title": "Budget für digitale operationale Resilienz",
+   "requirement": "Es sind angemessene Budgetmittel zur Erfüllung der Anforderungen an die digitale operationale Resilienz zugewiesen, einschließlich Schulungen, IKT-Werkzeugen und Sicherheitsressourcen; die Angemessenheit wird jährlich überprüft.",
+   "evidence": "Budgetplanung IKT-Sicherheit, Beschluss, Ist-Soll-Vergleich",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Leitungsorgan",
+   "crosswalk": {
+    "iso27001": "7.1",
+    "iso22301": "7.1",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-007",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 2 lit. h",
+   "title": "Genehmigung der Auslagerungspolitik",
+   "requirement": "Die Leitlinie für die Nutzung von IKT-Dienstleistungen durch IKT-Drittdienstleister ist vom Leitungsorgan genehmigt und wird regelmäßig überprüft.",
+   "evidence": "Genehmigte Auslagerungs- bzw. IKT-Drittparteienrichtlinie mit Versionsstand",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Leitungsorgan",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.5.20",
+    "iso22301": "8.1",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2024/1773"
+   }
+  },
+  {
+   "reqId": "DORA-K2-008",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 2 lit. i",
+   "title": "Kommunikationswege zu Vorfällen",
+   "requirement": "Es bestehen Berichtswege, über die das Leitungsorgan über IKT-bezogene Vorfälle, Meldungen an die Aufsicht und wesentliche Änderungen der Vertragslage mit IKT-Drittdienstleistern zeitnah unterrichtet wird.",
+   "evidence": "Eskalations- und Berichtsmatrix, Managementberichte, Sitzungsprotokolle",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.5, A.6.8",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-009",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 3",
+   "title": "Regelmäßige Überprüfung der Resilienzstrategie",
+   "requirement": "Die Strategie für die digitale operationale Resilienz und der IKT-Risikomanagementrahmen werden mindestens jährlich sowie anlassbezogen nach schwerwiegenden Vorfällen, Prüfungen oder aufsichtlichen Anweisungen überprüft und fortgeschrieben.",
+   "evidence": "Reviewprotokolle mit Datum, Versionshistorie der Strategie, Änderungsnachweis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "9.3, 10.2",
+    "iso22301": "9.3, 10.2",
+    "nis2Bsig": "§ 30 Abs. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-010",
+   "chapter": "K2",
+   "article": "Art. 5 Abs. 4",
+   "title": "Fortbildungspflicht des Leitungsorgans",
+   "requirement": "Die Mitglieder des Leitungsorgans halten Kenntnisse und Fähigkeiten zum Verständnis und zur Bewertung des IKT-Risikos aktuell und nehmen hierzu regelmäßig an spezifischen Schulungen teil.",
+   "evidence": "Schulungsnachweise mit Datum und Inhalt, Teilnahmeliste, Schulungsplan",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Leitungsorgan",
+   "crosswalk": {
+    "iso27001": "7.2, 7.3, A.6.3",
+    "iso22301": "7.2",
+    "nis2Bsig": "§ 38 Abs. 3 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-011",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 1",
+   "title": "IKT-Risikomanagementrahmen",
+   "requirement": "Es besteht ein solider, umfassender und gut dokumentierter IKT-Risikomanagementrahmen als Teil des Gesamtrisikomanagements, der ein rasches, effizientes und umfassendes Vorgehen gegen IKT-Risiken ermöglicht.",
+   "evidence": "Dokumentierter Rahmen (Richtlinie, Verfahren, Methodik) mit Freigabe und Versionsstand",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "4.4, 6.1, 8.1",
+    "iso22301": "4.4, 8.1",
+    "nis2Bsig": "§ 30 Abs. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-012",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 2",
+   "title": "Strategien, Verfahren, Protokolle und Werkzeuge",
+   "requirement": "Der Rahmen umfasst mindestens Strategien, Leitlinien, Verfahren sowie IKT-Protokolle und -Werkzeuge, die zum Schutz aller Informations- und IKT-Assets, einschließlich Software, Hardware, Server, physischer Komponenten und Infrastrukturen, erforderlich sind.",
+   "evidence": "Richtlinienlandkarte, Verfahrensanweisungen, Werkzeugverzeichnis mit Zweckbindung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.1, A.8.1, A.8.9",
+    "iso22301": "8.1",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 2-5"
+   }
+  },
+  {
+   "reqId": "DORA-K2-013",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 3",
+   "title": "Minimierung von Auswirkungen",
+   "requirement": "Der Rahmen ist darauf ausgerichtet, die Auswirkungen des IKT-Risikos zu minimieren; er umfasst Strategien zur Informationssicherheit mit Regeln zum Schutz von Vertraulichkeit, Integrität, Verfügbarkeit, Authentizität und Nachvollziehbarkeit von Daten.",
+   "evidence": "Informationssicherheitsleitlinie mit definierten Schutzzielen und Ableitungslogik",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.1, A.5.10, A.8.24",
+    "iso22301": "8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-014",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 4",
+   "title": "Unabhängige Kontrollfunktion",
+   "requirement": "Die Verantwortung für das Management und die Überwachung des IKT-Risikos ist einer unabhängigen Kontrollfunktion zugewiesen; die Trennung von Ausführungs-, Kontroll- und Revisionsaufgaben ist sichergestellt und Interessenkonflikte sind vermieden.",
+   "evidence": "Funktionsbeschreibung, Organigramm mit Berichtslinien, Konfliktanalyse, Bestellungsurkunde",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Leitungsorgan",
+   "crosswalk": {
+    "iso27001": "5.3, A.5.2, A.5.3",
+    "iso22301": "5.3",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 1"
+   }
+  },
+  {
+   "reqId": "DORA-K2-015",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 5",
+   "title": "Jährliche Überprüfung und Anpassung",
+   "requirement": "Der IKT-Risikomanagementrahmen wird mindestens einmal jährlich sowie nach schwerwiegenden IKT-bezogenen Vorfällen und nach aufsichtlichen Anweisungen oder Prüfungsfeststellungen dokumentiert überprüft und angepasst.",
+   "evidence": "Reviewbericht mit Datum, Feststellungen, abgeleiteten Maßnahmen und Freigabe",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "9.3, 10.2",
+    "iso22301": "9.3",
+    "nis2Bsig": "§ 30 Abs. 1 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-016",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 6",
+   "title": "Interne Revision des IKT-Rahmens",
+   "requirement": "Der IKT-Risikomanagementrahmen wird regelmäßig einer internen Revision durch Prüfer unterzogen, die über ausreichende Kenntnisse, Fähigkeiten und Fachwissen im Bereich IKT-Risiko verfügen und unabhängig sind.",
+   "evidence": "Revisionsplan, Prüfberichte, Qualifikationsnachweise der Prüfer, Unabhängigkeitserklärung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Interne Revision",
+   "crosswalk": {
+    "iso27001": "9.2",
+    "iso22301": "9.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 9 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-017",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 7",
+   "title": "Formales Follow-up-Verfahren",
+   "requirement": "Für die Feststellungen aus IKT-Prüfungen besteht ein formales Follow-up-Verfahren einschließlich Regeln für die rechtzeitige Überprüfung und Behebung kritischer Feststellungen.",
+   "evidence": "CAPA-Register mit Fälligkeiten, Wirksamkeitsnachweisen und Eskalationsstufen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "10.1, 10.2",
+    "iso22301": "10.1",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-018",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 8",
+   "title": "Digitale Resilienzstrategie mit Zielen",
+   "requirement": "Die Strategie für digitale operationale Resilienz legt dar, wie der Rahmen umgesetzt wird; sie definiert Toleranzniveaus für IKT-Störungen, Sicherheitsziele, die IKT-Referenzarchitektur und die erforderlichen Kontrollmechanismen.",
+   "evidence": "Resilienzstrategie mit messbaren Zielen, Architekturüberblick und Vendor-Strategie",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "6.2, A.5.1",
+    "iso22301": "6.2, 8.3",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-019",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 9",
+   "title": "Multi-Vendor-Strategie und Abhängigkeiten",
+   "requirement": "Sofern eine Multi-Vendor-Strategie verfolgt wird, sind die daraus resultierenden Abhängigkeiten von IKT-Drittdienstleistern analysiert und die Gründe für den gewählten Anbietermix dokumentiert.",
+   "evidence": "Vendor-Strategie mit Abhängigkeitsanalyse und Begründungsdokumentation",
+   "bindingness": "SOLL",
+   "weight": 2,
+   "knockout": false,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2024/1773"
+   }
+  },
+  {
+   "reqId": "DORA-K2-020",
+   "chapter": "K2",
+   "article": "Art. 6 Abs. 10",
+   "title": "Delegation der Verifizierung",
+   "requirement": "Sofern die Verifizierung der Einhaltung der IKT-Risikomanagementanforderungen an konzerninterne oder externe Stellen delegiert wird, bleibt die Verantwortung beim Finanzunternehmen und die Delegation ist vertraglich geregelt.",
+   "evidence": "Delegationsvereinbarung, Nachweis der fortbestehenden Steuerungsfähigkeit",
+   "bindingness": "KANN",
+   "weight": 1,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.19",
+    "iso22301": "8.1",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-021",
+   "chapter": "K2",
+   "article": "Art. 7",
+   "title": "Angemessenheit von IKT-Systemen und -Werkzeugen",
+   "requirement": "Die eingesetzten IKT-Systeme, -Protokolle und -Werkzeuge sind dem Umfang der Tätigkeiten angemessen, technologisch zuverlässig, verfügen über ausreichende Kapazität und sind technologisch resilient gegenüber Spitzenlasten und widrigen Umständen.",
+   "evidence": "Kapazitätsplanung, Lasttestberichte, Architekturbewertung, Lifecycle-Übersicht",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.6, A.8.14, A.8.27",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 7"
+   }
+  },
+  {
+   "reqId": "DORA-K2-022",
+   "chapter": "K2",
+   "article": "Art. 8 Abs. 1",
+   "title": "Identifizierung von Funktionen, Assets und Abhängigkeiten",
+   "requirement": "Alle IKT-gestützten Unternehmensfunktionen, Rollen und Zuständigkeiten sowie die diese Funktionen unterstützenden Informations- und IKT-Assets und deren Abhängigkeiten sind identifiziert, klassifiziert und dokumentiert.",
+   "evidence": "CMDB bzw. Asset-Inventar mit Klassifizierung und Abhängigkeitsbeziehungen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.5.9, A.5.12, A.8.1",
+    "iso22301": "8.2.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 4"
+   }
+  },
+  {
+   "reqId": "DORA-K2-023",
+   "chapter": "K2",
+   "article": "Art. 8 Abs. 1 i. V. m. Art. 11 Abs. 5",
+   "title": "Bestimmung kritischer und wichtiger Funktionen",
+   "requirement": "Kritische oder wichtige Funktionen (CIF) sind auf Basis einer dokumentierten Business Impact Analysis bestimmt; für jede CIF sind Auswirkungstoleranz, RTO und RPO festgelegt und genehmigt.",
+   "evidence": "BIA-Bericht je CIF, RTO/RPO-Festlegung, Genehmigung durch die Geschäftsleitung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "BCM",
+   "crosswalk": {
+    "iso27001": "A.5.30",
+    "iso22301": "8.2.2, 8.2.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-024",
+   "chapter": "K2",
+   "article": "Art. 8 Abs. 2",
+   "title": "Kontinuierliche Risikoidentifikation",
+   "requirement": "Alle Quellen von IKT-Risiken, insbesondere die Risikoexposition gegenüber anderen Finanzunternehmen und Dienstleistern, werden kontinuierlich identifiziert und mindestens jährlich sowie bei wesentlichen Änderungen bewertet.",
+   "evidence": "Risikoregister mit Bewertungsdatum, Methodik, Bewertungshistorie",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "6.1.2, 8.2",
+    "iso22301": "8.2.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 3"
+   }
+  },
+  {
+   "reqId": "DORA-K2-025",
+   "chapter": "K2",
+   "article": "Art. 8 Abs. 3",
+   "title": "Risikobewertung bei wesentlichen Änderungen",
+   "requirement": "Bei jeder wesentlichen Änderung der Netzwerk- und Informationssystem-Infrastruktur, an Prozessen oder Verfahren wird eine Risikobewertung durchgeführt, die die Auswirkungen auf kritische oder wichtige Funktionen einschließt.",
+   "evidence": "Change-Management-Aufzeichnungen mit Risikobewertung und Freigabevermerk",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "8.1, A.8.32",
+    "iso22301": "8.1",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 17"
+   }
+  },
+  {
+   "reqId": "DORA-K2-026",
+   "chapter": "K2",
+   "article": "Art. 8 Abs. 4 und 6",
+   "title": "Vollständiges und aktuelles Asset-Register",
+   "requirement": "Ein Verzeichnis aller Informations- und IKT-Assets wird geführt, ist stets aktuell und enthält die Zuordnung zu kritischen oder wichtigen Funktionen sowie zu den verantwortlichen Rollen.",
+   "evidence": "Asset-Register mit Aktualisierungsdatum, Owner-Zuordnung und CIF-Verknüpfung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.5.9, A.5.10",
+    "iso22301": "8.2.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 4"
+   }
+  },
+  {
+   "reqId": "DORA-K2-027",
+   "chapter": "K2",
+   "article": "Art. 8 Abs. 5",
+   "title": "Register der Prozesse mit Drittparteienbezug",
+   "requirement": "Alle Prozesse, die von IKT-Drittdienstleistern abhängen, sind identifiziert und die Verbindungen zu den erbringenden Dienstleistern sind dokumentiert.",
+   "evidence": "Prozess-Provider-Mapping, Verknüpfung zum Informationsregister",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "ITS 2024/2956"
+   }
+  },
+  {
+   "reqId": "DORA-K2-028",
+   "chapter": "K2",
+   "article": "Art. 8 Abs. 6",
+   "title": "Jährliche Aktualisierung der Identifizierung",
+   "requirement": "Die Identifizierung nach Art. 8 wird mindestens jährlich sowie nach jedem schwerwiegenden IKT-bezogenen Vorfall und bei wesentlichen Änderungen der Architektur vollständig überprüft.",
+   "evidence": "Prüfprotokoll mit Datum und Umfang der Überprüfung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "9.3",
+    "iso22301": "9.3",
+    "nis2Bsig": "§ 30 Abs. 1 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-029",
+   "chapter": "K2",
+   "article": "Art. 8 Abs. 7",
+   "title": "Bewertung von Legacy-Systemen",
+   "requirement": "Finanzunternehmen, die keine Kleinstunternehmen sind, führen regelmäßig und mindestens jährlich eine Bewertung der Altsysteme (Legacy) durch, insbesondere vor und nach der Anbindung neuer Technologien.",
+   "evidence": "Legacy-Assessment mit Risikoeinstufung und Ablöse- bzw. Kompensationsplan",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.8, A.8.19",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-030",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 1",
+   "title": "Kontinuierliche Überwachung und Kontrolle",
+   "requirement": "Sicherheit und Funktionsfähigkeit der IKT-Systeme werden kontinuierlich überwacht und kontrolliert; die Auswirkungen des IKT-Risikos werden durch geeignete IKT-Sicherheitswerkzeuge, -Strategien und -Verfahren minimiert.",
+   "evidence": "Monitoring-Konzept, Toolnachweis, Auswertungen und Alarmierungsregeln",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.8.16, A.8.15",
+    "iso22301": "8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 9-15"
+   }
+  },
+  {
+   "reqId": "DORA-K2-031",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 2 und Abs. 3 lit. b-d",
+   "title": "Schutz vor Missbrauch und Beeinträchtigung",
+   "requirement": "Es sind IKT-Sicherheitswerkzeuge und -verfahren implementiert, die Verfügbarkeit, Authentizität, Integrität und Vertraulichkeit der Daten gewährleisten und Datenverlust sowie unbefugte Änderungen verhindern.",
+   "evidence": "Technische Kontrollnachweise (Verschlüsselung, DLP, Integritätssicherung), Konfigurationsstandards",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.5, A.8.11, A.8.12, A.8.24",
+    "iso22301": "8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 8 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 6-8"
+   }
+  },
+  {
+   "reqId": "DORA-K2-032",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 3 i. V. m. Abs. 4 lit. d",
+   "title": "Sicherheit von Datenübertragung und -speicherung",
+   "requirement": "Die Sicherheit der übermittelten und gespeicherten Daten ist gewährleistet; Verschlüsselungsverfahren entsprechen dem Stand der Technik und werden regelmäßig auf Angemessenheit überprüft.",
+   "evidence": "Kryptokonzept, Schlüsselverwaltungsverfahren, Verfahrensüberprüfung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.24",
+    "iso22301": "8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 8 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 6-7"
+   }
+  },
+  {
+   "reqId": "DORA-K2-033",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 4 lit. c",
+   "title": "Identitäts- und Zugriffsmanagement",
+   "requirement": "Es bestehen Strategien für Zugangs-, Zugriffs- und Identitätsmanagement, die den Zugriff nach dem Prinzip der geringsten Rechte und der Kenntnis nur bei Bedarf begrenzen; privilegierte Zugriffe werden gesondert überwacht.",
+   "evidence": "IAM-Richtlinie, Rezertifizierungsnachweise, PAM-Protokolle, Rollenkonzept",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.5.15, A.5.16, A.5.18, A.8.2",
+    "iso22301": "8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 8 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 20-21"
+   }
+  },
+  {
+   "reqId": "DORA-K2-034",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 4 lit. d",
+   "title": "Starke Authentifizierung",
+   "requirement": "Für den Zugriff auf Systeme, die kritische oder wichtige Funktionen unterstützen, werden Verfahren der starken Authentifizierung nach dem Stand der Technik eingesetzt.",
+   "evidence": "MFA-Abdeckungsnachweis je System, Ausnahmeliste mit Begründung und Befristung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.5.17, A.8.5",
+    "iso22301": "8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 10 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 20"
+   }
+  },
+  {
+   "reqId": "DORA-K2-035",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 4 lit. e und f",
+   "title": "Change- und Patch-Management",
+   "requirement": "Es bestehen dokumentierte Verfahren für IKT-Änderungsmanagement und Patch-Management einschließlich Notfalländerungen; Änderungen an Produktionssystemen sind nachvollziehbar genehmigt und getestet.",
+   "evidence": "Change-Records, Patch-Reports mit Fristeinhaltung, Notfalländerungsprotokolle",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.8, A.8.19, A.8.32",
+    "iso22301": "8.1",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 10, 17"
+   }
+  },
+  {
+   "reqId": "DORA-K2-036",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 4 lit. b",
+   "title": "Netzwerksegmentierung",
+   "requirement": "Netzwerke sind so segmentiert und abgesichert, dass die Ausbreitung von Angriffen begrenzt wird; die Segmentierung ist an der Kritikalität der unterstützten Funktionen ausgerichtet und dokumentiert.",
+   "evidence": "Netzwerkarchitekturdiagramm, Segmentierungskonzept, Firewall-Regelwerksprüfung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.20, A.8.21, A.8.22",
+    "iso22301": "8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 13"
+   }
+  },
+  {
+   "reqId": "DORA-K2-037",
+   "chapter": "K2",
+   "article": "Art. 10 Abs. 1",
+   "title": "Mechanismen zur Erkennung anomaler Aktivitäten",
+   "requirement": "Es sind Mechanismen implementiert, um anomale Aktivitäten, einschließlich Leistungsproblemen von IKT-Netzwerken und IKT-bezogenen Vorfällen, unverzüglich zu erkennen und potenzielle einzelne wesentliche Schwachstellen zu identifizieren.",
+   "evidence": "SIEM-/Detection-Konzept, Use-Case-Katalog, Alarmierungsstatistik",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.8.16",
+    "iso22301": "8.4.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 23"
+   }
+  },
+  {
+   "reqId": "DORA-K2-038",
+   "chapter": "K2",
+   "article": "Art. 10 Abs. 2",
+   "title": "Mehrfache Kontrollebenen und Alarmschwellen",
+   "requirement": "Die Erkennungsmechanismen ermöglichen mehrere Kontrollebenen, definieren Alarmschwellen und Kriterien zur Auslösung von Reaktionsprozessen einschließlich automatischer Alarmmechanismen.",
+   "evidence": "Dokumentierte Schwellenwerte, Eskalationsmatrix, Testnachweis der Alarmierung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.8.16",
+    "iso22301": "8.4.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 23"
+   }
+  },
+  {
+   "reqId": "DORA-K2-039",
+   "chapter": "K2",
+   "article": "Art. 10 Abs. 3",
+   "title": "Ressourcen für die Überwachung",
+   "requirement": "Es werden ausreichende Ressourcen und Fähigkeiten zur Überwachung von Benutzeraktivitäten, IKT-Anomalien und IKT-Vorfällen, insbesondere Cyberangriffen, bereitgestellt.",
+   "evidence": "Personal- und Schichtplan SOC, Skill-Matrix, Dienstleistervertrag bei Auslagerung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "7.1, 7.2",
+    "iso22301": "7.1",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-040",
+   "chapter": "K2",
+   "article": "Art. 11 Abs. 1 i. V. m. Art. 5 Abs. 2 lit. e",
+   "title": "IKT-Geschäftsfortführungsleitlinie",
+   "requirement": "Es besteht eine umfassende IKT-Geschäftsfortführungsleitlinie, die als eigenständige Leitlinie oder integraler Bestandteil der allgemeinen Geschäftsfortführungsleitlinie umgesetzt und genehmigt ist.",
+   "evidence": "Genehmigte BCM-Leitlinie mit IKT-Bezug, Freigabedatum, Geltungsbereich",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "BCM",
+   "crosswalk": {
+    "iso27001": "A.5.29, A.5.30",
+    "iso22301": "5.2, 8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 24-26"
+   }
+  },
+  {
+   "reqId": "DORA-K2-041",
+   "chapter": "K2",
+   "article": "Art. 11 Abs. 2",
+   "title": "Fortführung kritischer Funktionen",
+   "requirement": "Die IKT-Geschäftsfortführungspläne stellen die Fortführung kritischer oder wichtiger Funktionen sicher, reagieren rasch auf IKT-Vorfälle, begrenzen Schäden und aktivieren Wiederherstellungsmaßnahmen und Notfallpläne.",
+   "evidence": "BCP/DRP je CIF mit Aktivierungskriterien, Rollen, Workarounds und Kontaktlisten",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "BCM",
+   "crosswalk": {
+    "iso27001": "A.5.29, A.5.30",
+    "iso22301": "8.4.4, 8.4.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 24"
+   }
+  },
+  {
+   "reqId": "DORA-K2-042",
+   "chapter": "K2",
+   "article": "Art. 11 Abs. 6 lit. a",
+   "title": "Testen der Fortführungspläne",
+   "requirement": "Die IKT-Geschäftsfortführungspläne und die IKT-Reaktions- und Wiederherstellungspläne werden mindestens jährlich sowie nach wesentlichen Änderungen getestet; die Tests umfassen Szenarien für Cyberangriffe und Umschaltvorgänge.",
+   "evidence": "Testplan, Testprotokolle mit Datum, Szenario, Teilnehmern und Ergebnis, Maßnahmenableitung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "BCM",
+   "crosswalk": {
+    "iso27001": "A.5.29",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 25-26"
+   }
+  },
+  {
+   "reqId": "DORA-K2-043",
+   "chapter": "K2",
+   "article": "Art. 11 Abs. 7",
+   "title": "Krisenmanagementfunktion",
+   "requirement": "Es besteht eine Krisenmanagementfunktion mit klaren Verfahren für die interne und externe Krisenkommunikation einschließlich der Kommunikation gegenüber Kunden, Gegenparteien und der Aufsicht.",
+   "evidence": "Krisenstabsordnung, Alarmierungsplan, Kommunikationsvorlagen, Übungsnachweis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "BCM",
+   "crosswalk": {
+    "iso27001": "A.5.24, A.5.29",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 24"
+   }
+  },
+  {
+   "reqId": "DORA-K2-044",
+   "chapter": "K2",
+   "article": "Art. 11 Abs. 8",
+   "title": "Aufzeichnung von Störungen",
+   "requirement": "Alle Tätigkeiten vor und während einer Störung sowie bei Aktivierung der Fortführungspläne werden leicht zugänglich, nachvollziehbar und revisionssicher aufgezeichnet.",
+   "evidence": "Krisenlogbuch, Zeitstempel, unveränderbare Ablage",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "BCM",
+   "crosswalk": {
+    "iso27001": "A.5.28, A.8.15",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-045",
+   "chapter": "K2",
+   "article": "Art. 11 Abs. 9 i. V. m. Art. 12 Abs. 6",
+   "title": "Meldung von BCM-Testergebnissen",
+   "requirement": "Die Ergebnisse der Tests der Fortführungs- und Wiederherstellungspläne werden dem Leitungsorgan berichtet; Wiederherstellungszeit- und Wiederherstellungspunktziele sind je Funktion nach Art. 12 Abs. 6 festgelegt. Zentralverwahrer übermitteln die Testergebnisse zusätzlich der zuständigen Behörde.",
+   "evidence": "Testbericht mit RTO/RPO-Auswertung, Vorlage an das Leitungsorgan",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "BCM",
+   "crosswalk": {
+    "iso27001": "9.3",
+    "iso22301": "9.1, 9.3",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-046",
+   "chapter": "K2",
+   "article": "Art. 12 Abs. 1",
+   "title": "Backup-Strategie und Wiederherstellungsverfahren",
+   "requirement": "Es bestehen eine Backup-Strategie mit Festlegung von Umfang und Häufigkeit der Sicherungen sowie Wiederherstellungs- und Wiedergewinnungsverfahren, die auf der Kritikalität der Daten und dem Schutzbedarf beruhen.",
+   "evidence": "Backup-Konzept mit Frequenzen, Aufbewahrungsfristen, Rollenzuweisung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.13",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 12"
+   }
+  },
+  {
+   "reqId": "DORA-K2-047",
+   "chapter": "K2",
+   "article": "Art. 12 Abs. 3",
+   "title": "Physische und logische Trennung der Backups",
+   "requirement": "Backup-Systeme sind von den Quellsystemen physisch und logisch getrennt und so abgesichert, dass sie durch einen Angriff auf die Produktionsumgebung nicht kompromittiert werden können.",
+   "evidence": "Architekturnachweis der Trennung, Offline- bzw. Immutable-Backup-Nachweis, Zugriffskonzept",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.13, A.8.22",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 12"
+   }
+  },
+  {
+   "reqId": "DORA-K2-048",
+   "chapter": "K2",
+   "article": "Art. 12 Abs. 3",
+   "title": "Wiederherstellungstests und Datenintegrität",
+   "requirement": "Die Wiederherstellung aus Backups wird regelmäßig getestet; dabei wird sichergestellt, dass die wiederhergestellten Daten vollständig, integer und für den produktiven Einsatz geeignet sind.",
+   "evidence": "Restore-Testprotokolle mit Datum, Umfang, Dauer und Integritätsprüfung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.13",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 12"
+   }
+  },
+  {
+   "reqId": "DORA-K2-049",
+   "chapter": "K2",
+   "article": "Art. 12 Abs. 4",
+   "title": "Redundante Kapazitäten",
+   "requirement": "Es werden redundante IKT-Kapazitäten mit angemessenen Ressourcen und Funktionen vorgehalten, um die Fortführung der Geschäftstätigkeit sicherzustellen; Standortredundanz ist am Risikoprofil ausgerichtet.",
+   "evidence": "Redundanzkonzept, Standortübersicht, Failover-Testnachweis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.14",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 12"
+   }
+  },
+  {
+   "reqId": "DORA-K2-050",
+   "chapter": "K2",
+   "article": "Art. 13 Abs. 1",
+   "title": "Sammlung von Informationen zu Schwachstellen",
+   "requirement": "Es werden Fähigkeiten und Personal vorgehalten, um Informationen über Schwachstellen, Cyberbedrohungen und IKT-bezogene Vorfälle, insbesondere Cyberangriffe, zu sammeln und deren Auswirkungen zu analysieren.",
+   "evidence": "Vulnerability-Management-Verfahren, Scanberichte, Bedrohungsanalysen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.5.7, A.8.8",
+    "iso22301": "8.2.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 10"
+   }
+  },
+  {
+   "reqId": "DORA-K2-051",
+   "chapter": "K2",
+   "article": "Art. 13 Abs. 2",
+   "title": "Post-Incident-Reviews",
+   "requirement": "Nach schwerwiegenden IKT-bezogenen Vorfällen werden Überprüfungen durchgeführt, die Ursachen analysieren und feststellen, ob die etablierten Verfahren eingehalten wurden und die getroffenen Maßnahmen wirksam waren.",
+   "evidence": "Post-Incident-Review-Bericht mit Root Cause, Wirksamkeitsbewertung und Maßnahmen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.27, 10.1",
+    "iso22301": "10.1",
+    "nis2Bsig": "§ 32 Abs. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-052",
+   "chapter": "K2",
+   "article": "Art. 13 Abs. 3",
+   "title": "Einbeziehung der Erkenntnisse in den Rahmen",
+   "requirement": "Die aus den Post-Incident-Reviews und aus Tests gewonnenen Erkenntnisse werden in die Risikobewertung, den IKT-Risikomanagementrahmen und die Schutzmaßnahmen einbezogen und dem Leitungsorgan berichtet.",
+   "evidence": "Nachweis der Überführung in das Risikoregister, Managementbericht",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "10.1, 10.2",
+    "iso22301": "10.2",
+    "nis2Bsig": "§ 30 Abs. 1 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-053",
+   "chapter": "K2",
+   "article": "Art. 13 Abs. 6",
+   "title": "Sensibilisierungsprogramme und Schulungen",
+   "requirement": "Für alle Mitarbeitenden und die Geschäftsleitung bestehen Programme zur Sensibilisierung für IKT-Sicherheit und Schulungen zur digitalen operationalen Resilienz als verbindlicher Bestandteil des Schulungsplans.",
+   "evidence": "Schulungsplan, Teilnahmequoten, Inhaltsnachweis, Erfolgskontrolle",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "7.2, 7.3, A.6.3",
+    "iso22301": "7.2, 7.3",
+    "nis2Bsig": "§ 38 Abs. 3 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-054",
+   "chapter": "K2",
+   "article": "Art. 13 Abs. 7",
+   "title": "Beobachtung technologischer Entwicklungen",
+   "requirement": "Technologische Entwicklungen werden fortlaufend beobachtet und bewertet, um die Auswirkungen neuer Technologien auf die Sicherheitsanforderungen und die digitale operationale Resilienz zu verstehen.",
+   "evidence": "Technologie-Radar, Bewertungsvermerke, Aufnahme in die Architekturplanung",
+   "bindingness": "SOLL",
+   "weight": 2,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.7",
+    "iso22301": "8.2.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-055",
+   "chapter": "K2",
+   "article": "Art. 14 Abs. 1",
+   "title": "Kommunikationspläne für Vorfälle",
+   "requirement": "Es bestehen Kommunikationspläne, die eine verantwortungsvolle Offenlegung von IKT-bezogenen Vorfällen oder wesentlichen Schwachstellen gegenüber Kunden, Gegenparteien und der Öffentlichkeit ermöglichen.",
+   "evidence": "Kommunikationsplan mit Freigabewegen, Textbausteinen und Zuständigkeiten",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Kommunikation",
+   "crosswalk": {
+    "iso27001": "A.5.5, A.5.6",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 35 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-056",
+   "chapter": "K2",
+   "article": "Art. 14 Abs. 3",
+   "title": "Benannte Person für Krisenkommunikation",
+   "requirement": "Mindestens eine Person ist benannt und beauftragt, die Strategie für die Kommunikation gegenüber der Öffentlichkeit und den Medien umzusetzen und als Ansprechpartner für die Aufsicht zu fungieren.",
+   "evidence": "Benennungsschreiben, Vertretungsregelung, Kontaktdatenpflege",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Kommunikation",
+   "crosswalk": {
+    "iso27001": "A.5.5",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K2-057",
+   "chapter": "K2",
+   "article": "Art. 16",
+   "title": "Prüfung des vereinfachten Rahmens",
+   "requirement": "Für Unternehmen, die unter Art. 16 fallen, ist dokumentiert geprüft und begründet, ob der vereinfachte IKT-Risikomanagementrahmen anwendbar ist; die Anwendung ist vom Leitungsorgan genehmigt.",
+   "evidence": "Anwendbarkeitsprüfung mit Begründung und Genehmigungsvermerk",
+   "bindingness": "KANN",
+   "weight": 1,
+   "knockout": false,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": "4.3",
+    "iso22301": "4.3",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2024/1774 Titel II"
+   }
+  },
+  {
+   "reqId": "DORA-K2-058",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 2 i. V. m. Art. 8 Abs. 1",
+   "title": "Fünfdimensionale Schutzbedarfsbewertung",
+   "requirement": "Für jedes Asset, das eine kritische oder wichtige Funktion unterstützt, werden die Schutzziele Vertraulichkeit, Integrität, Verfügbarkeit, Authentizität und Verbindlichkeit einzeln bewertet und der Gesamtschutzbedarf nach dem Maximumprinzip abgeleitet.",
+   "evidence": "Schutzbedarfsfeststellung je Asset mit allen fünf Dimensionen und Begründung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.12, A.8.24, A.8.15",
+    "iso22301": "8.2.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774"
+   }
+  },
+  {
+   "reqId": "DORA-K2-059",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 3 i. V. m. Art. 17 Abs. 2",
+   "title": "Unveränderliche Audit-Trails",
+   "requirement": "Für Systeme, die kritische oder wichtige Funktionen unterstützen, werden manipulationssichere und vollständige Protokolle geführt, die eine Post-Incident-Forensik und den Nachweis der Nichtabstreitbarkeit ermöglichen.",
+   "evidence": "Logging-Konzept, WORM- bzw. Append-only-Nachweis, Aufbewahrungsfristen, Zugriffsschutz",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.8.15, A.8.16",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 12"
+   }
+  },
+  {
+   "reqId": "DORA-K2-060",
+   "chapter": "K2",
+   "article": "Art. 9 Abs. 4 lit. c",
+   "title": "Physische Sicherheit und Umgebungsschutz",
+   "requirement": "Rechenzentren und sonstige Standorte, an denen IKT-Assets betrieben werden, sind gegen unbefugten Zutritt sowie gegen Umwelt- und Versorgungsrisiken abgesichert; die Wirksamkeit wird regelmäßig überprüft.",
+   "evidence": "Zutrittskonzept, Zutrittsprotokolle, Nachweise zu USV, Brandschutz und Klimatisierung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.7.1-A.7.14",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 18"
+   }
+  },
+  {
+   "reqId": "DORA-K3-001",
+   "chapter": "K3",
+   "article": "Art. 17 Abs. 1",
+   "title": "Prozess für das Management von IKT-Vorfällen",
+   "requirement": "Es besteht ein dokumentierter Prozess zur Erkennung, Behandlung und Meldung IKT-bezogener Vorfälle, der Frühwarnindikatoren definiert und die Ermittlung, Verfolgung, Protokollierung, Kategorisierung und Klassifizierung von Vorfällen regelt.",
+   "evidence": "Incident-Response-Richtlinie und -Verfahren mit Freigabe und Versionsstand",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.5.24, A.5.25, A.5.26",
+    "iso22301": "8.4.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 2, § 32 BSIG",
+    "rtsIts": "DelVO 2024/1772"
+   }
+  },
+  {
+   "reqId": "DORA-K3-002",
+   "chapter": "K3",
+   "article": "Art. 17 Abs. 3 lit. b",
+   "title": "Rollen und Verantwortlichkeiten im Vorfallmanagement",
+   "requirement": "Rollen und Verantwortlichkeiten für unterschiedliche Vorfallarten und Szenarien sind festgelegt, einschließlich Rufbereitschaft, Vertretung und Eskalationswegen bis zum Leitungsorgan.",
+   "evidence": "Rollen- und Eskalationsmatrix, Rufbereitschaftsplan, Kontaktverzeichnis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.5.24",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K3-003",
+   "chapter": "K3",
+   "article": "Art. 17 Abs. 3 lit. a",
+   "title": "Frühwarnindikatoren",
+   "requirement": "Es sind Frühwarnindikatoren definiert und implementiert, die eine frühzeitige Erkennung sich anbahnender IKT-Vorfälle ermöglichen.",
+   "evidence": "Indikatorenkatalog, Schwellenwerte, Auswertungsnachweis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.8.16",
+    "iso22301": "8.4.2",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": "DelVO 2024/1774 Art. 23"
+   }
+  },
+  {
+   "reqId": "DORA-K3-004",
+   "chapter": "K3",
+   "article": "Art. 17 Abs. 2",
+   "title": "Root-Cause-Analyse",
+   "requirement": "Für jeden schwerwiegenden Vorfall wird eine Ursachenanalyse durchgeführt und dokumentiert; die Ergebnisse fließen in Maßnahmen zur Verhinderung des erneuten Auftretens ein.",
+   "evidence": "RCA-Bericht je schwerwiegendem Vorfall, abgeleitete CAPA mit Termin",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.27, 10.1",
+    "iso22301": "10.1",
+    "nis2Bsig": "§ 32 Abs. 1 Nr. 3 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K3-005",
+   "chapter": "K3",
+   "article": "Art. 17 Abs. 3 lit. f/g",
+   "title": "Interne und externe Kommunikationsverfahren",
+   "requirement": "Es bestehen Verfahren zur Information des Personals, der betroffenen internen Stellen sowie externer Interessenträger über schwerwiegende Vorfälle und deren Auswirkungen.",
+   "evidence": "Kommunikationsverfahren, Verteilerlisten, Musterbenachrichtigungen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Kommunikation",
+   "crosswalk": {
+    "iso27001": "A.5.5, A.5.6",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 35 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K3-006",
+   "chapter": "K3",
+   "article": "Art. 18 Abs. 1",
+   "title": "Klassifizierung IKT-bezogener Vorfälle",
+   "requirement": "IKT-bezogene Vorfälle werden anhand der Kriterien betroffene Kunden und Gegenparteien, Reputationsauswirkung, Dauer und Ausfallzeit, geografische Ausbreitung, Datenverluste, Kritikalität der betroffenen Dienste und wirtschaftliche Auswirkungen klassifiziert.",
+   "evidence": "Klassifizierungsverfahren mit den sieben Kriterien, Klassifizierungsprotokolle je Vorfall",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.25",
+    "iso22301": "8.4.2",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": "DelVO 2024/1772 Art. 1-8"
+   }
+  },
+  {
+   "reqId": "DORA-K3-007",
+   "chapter": "K3",
+   "article": "Art. 18 Abs. 1 i. V. m. RTS",
+   "title": "Schwellenwerte für schwerwiegende Vorfälle",
+   "requirement": "Die Wesentlichkeitsschwellen nach der DelVO (EU) 2024/1772 sind operationalisiert; ein Vorfall gilt als schwerwiegend, wenn kritische Dienste betroffen sind und entweder erfolgreicher böswilliger Zugriff mit möglichem Datenverlust vorliegt oder mindestens zwei weitere Kriterien ihre Schwelle erreichen, unter anderem wirtschaftliche Auswirkungen über 100.000 EUR.",
+   "evidence": "Konfigurierte Schwellenwerte im Tool, Entscheidungsbaum, Prüfprotokolle",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.25",
+    "iso22301": "8.4.2",
+    "nis2Bsig": "§ 32 Abs. 1 BSIG",
+    "rtsIts": "DelVO 2024/1772 Art. 8"
+   }
+  },
+  {
+   "reqId": "DORA-K3-008",
+   "chapter": "K3",
+   "article": "Art. 18 Abs. 2",
+   "title": "Einstufung erheblicher Cyberbedrohungen",
+   "requirement": "Cyberbedrohungen werden anhand der Kritikalität der gefährdeten Dienste und der potenziellen Auswirkungen als erheblich eingestuft; die Einstufung ist dokumentiert.",
+   "evidence": "Bewertungsverfahren für Cyberbedrohungen, Einstufungsprotokolle",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.5.7",
+    "iso22301": "8.2.3",
+    "nis2Bsig": "§ 32 Abs. 2 BSIG",
+    "rtsIts": "DelVO 2024/1772 Art. 11"
+   }
+  },
+  {
+   "reqId": "DORA-K3-009",
+   "chapter": "K3",
+   "article": "Art. 19 Abs. 1",
+   "title": "Meldepflicht für schwerwiegende Vorfälle",
+   "requirement": "Schwerwiegende IKT-bezogene Vorfälle werden der zuständigen Behörde gemeldet; für deutsche Finanzunternehmen erfolgt die Meldung an die BaFin über das Melde- und Veröffentlichungsportal (MVP).",
+   "evidence": "Meldenachweise mit Zeitstempel, Einreichungsbestätigungen, Meldeverzeichnis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.5, A.5.25",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": "DelVO 2025/301, DfVO 2025/302"
+   }
+  },
+  {
+   "reqId": "DORA-K3-010",
+   "chapter": "K3",
+   "article": "Art. 19 Abs. 4 lit. a",
+   "title": "Erstmeldung binnen 4 Stunden",
+   "requirement": "Die Erstmeldung erfolgt unverzüglich, spätestens vier Stunden nach der Klassifizierung des Vorfalls als schwerwiegend und in keinem Fall später als 24 Stunden nach Kenntniserlangung von dem Vorfall.",
+   "evidence": "Zeitstempel Kenntnis, Klassifizierung und Einreichung; Fristenprotokoll",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.25",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 32 Abs. 1 Nr. 1 BSIG (24 h)",
+    "rtsIts": "DelVO 2025/301 Art. 4-5"
+   }
+  },
+  {
+   "reqId": "DORA-K3-011",
+   "chapter": "K3",
+   "article": "Art. 19 Abs. 4 lit. b",
+   "title": "Zwischenmeldung binnen 72 Stunden",
+   "requirement": "Die Zwischenmeldung erfolgt spätestens 72 Stunden nach der Erstmeldung, auch wenn sich Status oder Bewertung nicht geändert haben; bei zwischenzeitlicher Wiederherstellung des Regelbetriebs ist unverzüglich zu melden.",
+   "evidence": "Zwischenmeldung mit Zeitstempel, Aktualisierungsstand, Einreichungsbestätigung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.25",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 32 Abs. 1 Nr. 2 BSIG",
+    "rtsIts": "DelVO 2025/301 Art. 6"
+   }
+  },
+  {
+   "reqId": "DORA-K3-012",
+   "chapter": "K3",
+   "article": "Art. 19 Abs. 4 lit. c",
+   "title": "Abschlussmeldung binnen eines Monats",
+   "requirement": "Die Abschlussmeldung erfolgt spätestens einen Monat nach der letzten aktualisierten Zwischenmeldung und enthält die abgeschlossene Ursachenanalyse, die tatsächlichen Auswirkungen und die ergriffenen Abhilfemaßnahmen.",
+   "evidence": "Abschlussmeldung mit RCA, Schadensbilanz und Maßnahmenübersicht",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.25, 10.1",
+    "iso22301": "10.1",
+    "nis2Bsig": "§ 32 Abs. 1 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2025/301 Art. 7"
+   }
+  },
+  {
+   "reqId": "DORA-K3-013",
+   "chapter": "K3",
+   "article": "Art. 19 Abs. 2",
+   "title": "Freiwillige Meldung erheblicher Cyberbedrohungen",
+   "requirement": "Für die freiwillige Meldung erheblicher Cyberbedrohungen an die zuständige Behörde besteht ein definierter Entscheidungs- und Freigabeprozess.",
+   "evidence": "Verfahrensbeschreibung, Entscheidungsvermerke, Meldenachweise",
+   "bindingness": "SOLL",
+   "weight": 2,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.5",
+    "iso22301": null,
+    "nis2Bsig": "§ 32 Abs. 2 BSIG",
+    "rtsIts": "DelVO 2025/301"
+   }
+  },
+  {
+   "reqId": "DORA-K3-014",
+   "chapter": "K3",
+   "article": "Art. 19 Abs. 3",
+   "title": "Information betroffener Kunden",
+   "requirement": "Betroffene Kunden werden unverzüglich über schwerwiegende IKT-bezogene Vorfälle und über die Maßnahmen zur Minderung nachteiliger Auswirkungen informiert, sofern der Vorfall ihre finanziellen Interessen berührt.",
+   "evidence": "Kundeninformationen mit Versanddatum, Textvorlagen, Freigabeprotokoll",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Kommunikation",
+   "crosswalk": {
+    "iso27001": "A.5.5, A.5.6",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 35 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K3-015",
+   "chapter": "K3",
+   "article": "Art. 19 Abs. 6",
+   "title": "Delegation der Meldepflicht",
+   "requirement": "Sofern die Meldung durch einen Dritten vorgenommen wird, ist die Beauftragung dokumentiert; die Verantwortung für Vollständigkeit und Fristwahrung verbleibt beim Finanzunternehmen.",
+   "evidence": "Beauftragungsvereinbarung, Nachweis der Fristenüberwachung",
+   "bindingness": "KANN",
+   "weight": 1,
+   "knockout": false,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": "A.5.19",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/301"
+   }
+  },
+  {
+   "reqId": "DORA-K3-016",
+   "chapter": "K3",
+   "article": "Art. 20 i. V. m. DfVO 2025/302",
+   "title": "Verwendung der Meldeformulare",
+   "requirement": "Für alle Meldungen werden ausschließlich die harmonisierten Formulare, Muster und Verfahren der Durchführungsverordnung (EU) 2025/302 verwendet; die Datenfelder sind vollständig zu befüllen.",
+   "evidence": "Ausgefüllte Meldeformulare, Validierungsprotokolle, Feldabdeckungsprüfung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.25",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": "DfVO 2025/302"
+   }
+  },
+  {
+   "reqId": "DORA-K3-017",
+   "chapter": "K3",
+   "article": "Art. 21",
+   "title": "Zentralisierung der Meldung",
+   "requirement": "Die Entwicklung einer zentralen EU-Meldeplattform wird beobachtet; Art. 21 verpflichtet die Europäischen Aufsichtsbehörden zunächst nur zu einem Machbarkeitsbericht. Auswirkungen auf die internen Meldeverfahren sind bei Vorliegen zu bewerten.",
+   "evidence": "Bewertungsvermerk, Anpassungsplan des Meldeprozesses",
+   "bindingness": "KANN",
+   "weight": 1,
+   "knockout": false,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": null,
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K3-018",
+   "chapter": "K3",
+   "article": "Art. 22",
+   "title": "Umgang mit aufsichtlichem Feedback",
+   "requirement": "Rückmeldungen und Leitlinien der zuständigen Behörde zu gemeldeten Vorfällen werden dokumentiert bewertet und in die internen Verfahren sowie in das Risikoregister überführt.",
+   "evidence": "Feedback-Register, Bewertungsvermerke, Änderungsnachweis der Verfahren",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": "10.2",
+    "iso22301": "10.2",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K3-019",
+   "chapter": "K3",
+   "article": "Art. 23",
+   "title": "Zahlungsbezogene Betriebs- oder Sicherheitsvorfälle",
+   "requirement": "Für zahlungsbezogene Betriebs- oder Sicherheitsvorfälle gelten die Vorschriften der Kapitel III entsprechend; die Abgrenzung zu Meldepflichten nach der Zahlungsdiensterichtlinie ist geregelt.",
+   "evidence": "Abgrenzungsmatrix der Meldepflichten, Verfahrensbeschreibung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": "A.5.25",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K3-020",
+   "chapter": "K3",
+   "article": "Art. 17 / Art. 19",
+   "title": "Parallele Pflichtenstränge DORA, NIS-2 und DSGVO",
+   "requirement": "Der Vorfallprozess prüft für jeden Vorfall systematisch, ob neben der DORA-Meldung zusätzlich eine Meldung nach dem BSIG oder nach Art. 33 DSGVO auszulösen ist, und dokumentiert die Prüfentscheidung.",
+   "evidence": "Entscheidungsmatrix, Prüfvermerk je Vorfall, Nachweis der parallelen Meldungen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": "A.5.31, A.5.34",
+    "iso22301": "8.4.3",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K3-021",
+   "chapter": "K3",
+   "article": "Art. 17 Abs. 3",
+   "title": "Vorfallregister mit Aufbewahrung",
+   "requirement": "Alle IKT-bezogenen Vorfälle und erheblichen Cyberbedrohungen werden in einem Register erfasst und revisionssicher aufbewahrt; das Register ist der Aufsicht auf Verlangen vorzulegen.",
+   "evidence": "Vorfallregister mit vollständigen Datenfeldern, Aufbewahrungsnachweis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.5.25, A.5.28",
+    "iso22301": "8.4.4",
+    "nis2Bsig": "§ 32 BSIG",
+    "rtsIts": "DelVO 2024/1772"
+   }
+  },
+  {
+   "reqId": "DORA-K4-001",
+   "chapter": "K4",
+   "article": "Art. 24 Abs. 1",
+   "title": "Programm für Resilienztests",
+   "requirement": "Es besteht ein solides und umfassendes Programm für das Testen der digitalen operationalen Resilienz als integraler Bestandteil des IKT-Risikomanagementrahmens, das risikobasiert und dokumentiert ist.",
+   "evidence": "Testprogramm mit Geltungsbereich, Methodik, Frequenzen und Freigabe",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.8.29, 9.1",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 6 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K4-002",
+   "chapter": "K4",
+   "article": "Art. 24 Abs. 2",
+   "title": "Bewertungen, Tests und Methodiken",
+   "requirement": "Das Testprogramm umfasst Bewertungen, Prüfungen, Methodiken, Praktiken und Werkzeuge zur Ermittlung von Schwachstellen und Mängeln in der digitalen operationalen Resilienz.",
+   "evidence": "Methodenbeschreibung, Werkzeugverzeichnis, Testkatalog",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.8.8, A.8.29",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 6 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K4-003",
+   "chapter": "K4",
+   "article": "Art. 24 Abs. 3",
+   "title": "Risikobasierter Testansatz",
+   "requirement": "Der Testansatz ist risikobasiert und berücksichtigt die sich wandelnde IKT-Risikolandschaft, spezifische Risiken des Unternehmens, die Kritikalität der Assets sowie die Verhältnismäßigkeit.",
+   "evidence": "Begründete Testpriorisierung, Risikobezug je Testobjekt",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "6.1.2, A.8.29",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 1 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K4-004",
+   "chapter": "K4",
+   "article": "Art. 24 Abs. 4",
+   "title": "Unabhängigkeit der Tester",
+   "requirement": "Tests werden von unabhängigen internen oder externen Parteien durchgeführt; bei internen Testern sind Interessenkonflikte durch organisatorische Trennung ausgeschlossen.",
+   "evidence": "Unabhängigkeitserklärung, Organigramm, Beauftragungsunterlagen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.3, A.8.29",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 6 BSIG",
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K4-005",
+   "chapter": "K4",
+   "article": "Art. 24 Abs. 5",
+   "title": "Behebung festgestellter Schwachstellen",
+   "requirement": "Für alle bei Tests festgestellten Probleme, Mängel und Schwachstellen bestehen Verfahren zur vollständigen und fristgerechten Behebung sowie zur Verifikation der Wirksamkeit.",
+   "evidence": "Befundregister mit Fälligkeiten, Nachtestnachweise, Wirksamkeitsbestätigung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "10.1, A.8.8",
+    "iso22301": "10.1",
+    "nis2Bsig": "§ 30 Abs. 2 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K4-006",
+   "chapter": "K4",
+   "article": "Art. 24 Abs. 6",
+   "title": "Jährliche Tests kritischer Systeme",
+   "requirement": "Alle IKT-Systeme und -Anwendungen, die kritische oder wichtige Funktionen unterstützen, werden mindestens jährlich angemessenen Tests unterzogen.",
+   "evidence": "Jahrestestplan mit Abdeckungsnachweis je CIF-System, Testberichte",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.8.8, A.8.29",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 6 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K4-007",
+   "chapter": "K4",
+   "article": "Art. 25 Abs. 1",
+   "title": "Testarten",
+   "requirement": "Das Testprogramm umfasst mindestens Schwachstellenbewertungen und -scans, Analysen quelloffener Software, Bewertungen der Netzwerksicherheit, Gap-Analysen, Überprüfungen der physischen Sicherheit, Fragebögen, Softwarelösungen zur Prüfung, Quellcodeprüfungen, Szenariotests, Kompatibilitätstests, Leistungstests, End-to-End-Tests und Penetrationstests.",
+   "evidence": "Nachweis je Testart mit Datum, Umfang und Ergebnis; Abdeckungsmatrix",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.8.8, A.8.25, A.8.29, A.8.31",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 6 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K4-008",
+   "chapter": "K4",
+   "article": "Art. 8 Abs. 3 i. V. m. Art. 24 Abs. 6",
+   "title": "Tests vor Produktivsetzung",
+   "requirement": "Vor der Einführung neuer oder wesentlich geänderter IKT-Systeme und -Anwendungen, die kritische oder wichtige Funktionen unterstützen, werden eine Risikobewertung und geeignete Tests durchgeführt und dokumentiert freigegeben. Zentralverwahrer und zentrale Gegenparteien führen zusätzlich Schwachstellenbewertungen nach Art. 25 Abs. 2 durch.",
+   "evidence": "Abnahmetestberichte, Freigabeprotokolle, Trennung von Test- und Produktivumgebung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "IT-Betrieb",
+   "crosswalk": {
+    "iso27001": "A.8.29, A.8.31, A.8.33",
+    "iso22301": "8.5",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K4-009",
+   "chapter": "K4",
+   "article": "Art. 26 Abs. 1",
+   "title": "Durchführung von TLPT",
+   "requirement": "Sofern das Unternehmen von der zuständigen Behörde benannt ist, werden mindestens alle drei Jahre bedrohungsgeleitete Penetrationstests (TLPT) durchgeführt.",
+   "evidence": "TLPT-Zyklusnachweis, Benennungsschreiben der Behörde, Testberichte",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.8.29",
+    "iso22301": "8.5",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K4-010",
+   "chapter": "K4",
+   "article": "Art. 26 Abs. 2",
+   "title": "Scope-Bestimmung und behördliche Validierung",
+   "requirement": "Der TLPT-Scope umfasst alle IKT-Systeme, die kritische oder wichtige Funktionen unterstützen, einschließlich ausgelagerter Leistungen; der Scope wird vor Testbeginn von der zuständigen Behörde validiert.",
+   "evidence": "Scope-Dokument, Validierungsbestätigung der Behörde, CIF-Abdeckungsnachweis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.8.29",
+    "iso22301": "8.5",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K4-011",
+   "chapter": "K4",
+   "article": "Art. 26 Abs. 3/4",
+   "title": "Einbezug von IKT-Drittdienstleistern",
+   "requirement": "IKT-Drittdienstleister, die kritische oder wichtige Funktionen unterstützen, werden in den TLPT einbezogen; alternativ wird ein gebündelter TLPT mehrerer Finanzunternehmen durchgeführt, sofern die Dienstleistungsqualität oder die Vertraulichkeit dies erfordert.",
+   "evidence": "Vertragliche Zustimmung des Providers, Scope-Vereinbarung, Nachweis des Pooled Testing",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.8.29",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K4-012",
+   "chapter": "K4",
+   "article": "Art. 26 Abs. 5",
+   "title": "Kontrollen zum Schutz des Produktivbetriebs",
+   "requirement": "Während der TLPT-Durchführung bestehen wirksame Risikomanagementkontrollen, um das Risiko von Beeinträchtigungen produktiver Systeme, Datenverlusten und ungeplanten Auswirkungen zu begrenzen.",
+   "evidence": "Rules of Engagement, Abbruchkriterien, White-Team-Protokoll",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.8.29",
+    "iso22301": "8.5",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K4-013",
+   "chapter": "K4",
+   "article": "Art. 26 Abs. 6",
+   "title": "Abschluss, Abhilfepläne und Berichte",
+   "requirement": "Nach Testabschluss werden Zusammenfassungen der Ergebnisse, Abhilfepläne und Nachweise der Behebung erstellt und der zuständigen Behörde vorgelegt.",
+   "evidence": "Testabschlussbericht, Remediation Plan mit Terminen, Vorlagenachweis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "10.1",
+    "iso22301": "10.1",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K4-014",
+   "chapter": "K4",
+   "article": "Art. 26 Abs. 7",
+   "title": "Bescheinigung der TLPT-Durchführung",
+   "requirement": "Die zuständige Behörde stellt eine Bescheinigung über die ordnungsgemäße Durchführung des TLPT aus; die Bescheinigung wird zur gegenseitigen Anerkennung revisionssicher abgelegt.",
+   "evidence": "Bescheinigung mit Ausstellungsdatum, Ablage im Nachweisarchiv",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": "A.5.28",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K4-015",
+   "chapter": "K4",
+   "article": "Art. 27 Abs. 1",
+   "title": "Anforderungen an TLPT-Tester",
+   "requirement": "Eingesetzte Tester verfügen über nachgewiesene Eignung, fachliche Reputation, technische und organisatorische Fähigkeiten sowie eine Berufshaftpflichtversicherung; die Auswahl ist dokumentiert.",
+   "evidence": "Qualifikationsnachweise, Zertifikate, Versicherungsnachweis, Auswahlvermerk",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.8.29",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K4-016",
+   "chapter": "K4",
+   "article": "Art. 26 Abs. 8 UAbs. 1",
+   "title": "Einsatz interner Tester",
+   "requirement": "Beim Einsatz interner Tester wird mindestens jeder dritte Test von einem externen Tester durchgeführt; bedeutende Kreditinstitute setzen ausschließlich externe Tester ein.",
+   "evidence": "Testhistorie mit Kennzeichnung intern bzw. extern, Begründungsvermerk",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.8.29",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K5-001",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 1",
+   "title": "Grundsatz der Steuerung des Drittparteienrisikos",
+   "requirement": "Das IKT-Drittparteienrisiko wird als integraler Bestandteil des IKT-Risikos gesteuert; die Verantwortung für die Einhaltung der DORA-Anforderungen verbleibt vollumfänglich beim Finanzunternehmen.",
+   "evidence": "Richtlinie IKT-Drittparteienrisiko, Verantwortungsklarstellung im Vertragswerk",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.5.20, A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2024/1773"
+   }
+  },
+  {
+   "reqId": "DORA-K5-002",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 2",
+   "title": "Strategie für IKT-Drittparteienrisiko",
+   "requirement": "Es besteht eine vom Leitungsorgan genehmigte Strategie für das IKT-Drittparteienrisiko einschließlich einer Leitlinie für die Nutzung von IKT-Dienstleistungen zur Unterstützung kritischer oder wichtiger Funktionen; sie wird regelmäßig überprüft.",
+   "evidence": "Genehmigte Strategie mit Reviewnachweis und Versionsstand",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2024/1773 Art. 1-3"
+   }
+  },
+  {
+   "reqId": "DORA-K5-003",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 3",
+   "title": "Führung des Informationsregisters",
+   "requirement": "Ein Informationsregister über alle vertraglichen Vereinbarungen zur Nutzung von IKT-Dienstleistungen wird geführt; es unterscheidet zwischen Dienstleistungen, die kritische oder wichtige Funktionen unterstützen, und sonstigen Dienstleistungen.",
+   "evidence": "Informationsregister mit allen Pflichtfeldern nach ITS (EU) 2024/2956, Aktualisierungsnachweis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DfVO 2024/2956"
+   }
+  },
+  {
+   "reqId": "DORA-K5-004",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 3 UAbs. 2",
+   "title": "Jährliche Einreichung des Registers",
+   "requirement": "Das Informationsregister wird der zuständigen Behörde mindestens jährlich übermittelt; für deutsche Finanzunternehmen erfolgt die Einreichung über das MVP-Portal der BaFin im xBRL-Format oder mittels der bereitgestellten Excel-Vorlage.",
+   "evidence": "Einreichungsbestätigung, Validierungsprotokoll der ESAs, Fehlerprotokollbearbeitung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": "DfVO 2024/2956"
+   }
+  },
+  {
+   "reqId": "DORA-K5-005",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 3",
+   "title": "Datenqualität des Informationsregisters",
+   "requirement": "Die Daten des Informationsregisters sind vollständig, richtig und aktuell; die Einhaltung der Validierungsregeln der Europäischen Aufsichtsbehörden wird vor Einreichung geprüft.",
+   "evidence": "Validierungsläufe, Fehlerprotokolle mit Bereinigungsnachweis, Vier-Augen-Freigabe",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.8.10",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": "DfVO 2024/2956"
+   }
+  },
+  {
+   "reqId": "DORA-K5-006",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 3 lit. c",
+   "title": "Meldung geplanter Auslagerungen",
+   "requirement": "Geplante vertragliche Vereinbarungen über IKT-Dienstleistungen zur Unterstützung kritischer oder wichtiger Funktionen sowie wesentliche Änderungen der Kategorisierung werden der zuständigen Behörde rechtzeitig angezeigt.",
+   "evidence": "Anzeigenachweise mit Datum, Anzeigenverzeichnis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-007",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 4",
+   "title": "Vorvertragliche Due Diligence",
+   "requirement": "Vor Abschluss einer vertraglichen Vereinbarung werden die Eignung des Dienstleisters, sein Sicherheitsniveau, seine Reputation, seine finanzielle Stabilität und die Einhaltung der Informationssicherheitsstandards geprüft und dokumentiert.",
+   "evidence": "Due-Diligence-Bericht, Zertifikate, Prüfberichte (z. B. ISAE 3402, SOC 2), Bewertungsvermerk",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.5.20, A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2024/1773"
+   }
+  },
+  {
+   "reqId": "DORA-K5-008",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 4 lit. c",
+   "title": "Vermeidung von Interessenkonflikten",
+   "requirement": "Bei der Auswahl und Beauftragung von IKT-Drittdienstleistern werden potenzielle Interessenkonflikte identifiziert, bewertet und dokumentiert vermieden oder gemindert.",
+   "evidence": "Konfliktanalyse, Erklärungen, Genehmigungsvermerke",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Einkauf",
+   "crosswalk": {
+    "iso27001": "A.5.19",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-009",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 5",
+   "title": "Laufende Überwachung der Leistungserbringung",
+   "requirement": "Die Leistungserbringung der IKT-Drittdienstleister wird laufend überwacht; SLA-Erfüllung, Sicherheitsniveau und wesentliche Änderungen werden regelmäßig bewertet und dokumentiert.",
+   "evidence": "SLA-Reports, Provider-Reviews mit Datum, Rezertifizierungsnachweise",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.22",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2024/1773"
+   }
+  },
+  {
+   "reqId": "DORA-K5-010",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 7",
+   "title": "Kündigungsrechte",
+   "requirement": "Die Verträge sehen Kündigungsrechte mindestens für die Fälle erheblicher Verstöße gegen Rechtsvorschriften, festgestellter Schwächen im IKT-Risikomanagement des Dienstleisters, behördlicher Anordnung sowie fehlender wirksamer Aufsichtsmöglichkeit vor.",
+   "evidence": "Vertragsklauselprüfung mit Nachweis je Vertrag, Klausel-Checkliste",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-011",
+   "chapter": "K5",
+   "article": "Art. 28 Abs. 8",
+   "title": "Ausstiegsstrategien",
+   "requirement": "Für IKT-Dienstleistungen, die kritische oder wichtige Funktionen unterstützen, bestehen dokumentierte und getestete Ausstiegsstrategien, die einen Übergang ohne Unterbrechung der Geschäftstätigkeit und ohne Verstoß gegen regulatorische Anforderungen ermöglichen.",
+   "evidence": "Exit-Plan je CIF-Dienstleister, Testnachweis, Datenrückgabekonzept, Übergangsplanung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.22",
+    "iso22301": "8.3, 8.4",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2024/1773"
+   }
+  },
+  {
+   "reqId": "DORA-K5-012",
+   "chapter": "K5",
+   "article": "Art. 29 Abs. 1",
+   "title": "Bewertung des Konzentrationsrisikos",
+   "requirement": "Vor Vertragsschluss wird bewertet, ob ein IKT-Konzentrationsrisiko auf Ebene des Unternehmens entsteht, insbesondere bei schwer substituierbaren Anbietern oder bei mehreren Verträgen mit demselben Anbieter oder eng verbundenen Anbietern.",
+   "evidence": "Konzentrationsanalyse je Vorhaben, Substituierbarkeitsbewertung, Genehmigungsvermerk",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2024/1773"
+   }
+  },
+  {
+   "reqId": "DORA-K5-013",
+   "chapter": "K5",
+   "article": "Art. 29 Abs. 2",
+   "title": "Bewertung von Unterauftragsverhältnissen",
+   "requirement": "Bei Unterauftragsvergabe im Zusammenhang mit kritischen oder wichtigen Funktionen werden Nutzen und Risiken bewertet, insbesondere bei Unterauftragnehmern in Drittländern, einschließlich Insolvenzrisiken und Durchsetzbarkeit von Verträgen.",
+   "evidence": "Subunternehmerverzeichnis bis zur vierten Ebene, Risikobewertung, Länderbewertung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2025/532"
+   }
+  },
+  {
+   "reqId": "DORA-K5-014",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 1",
+   "title": "Schriftform und Dokumentation der Verträge",
+   "requirement": "Alle vertraglichen Vereinbarungen über die Nutzung von IKT-Dienstleistungen liegen schriftlich vor und werden vollständig in einem zentralen Vertragsverzeichnis dokumentiert.",
+   "evidence": "Zentrales Vertragsverzeichnis mit Dokumentenverknüpfung und Fristenüberwachung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-015",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 2 lit. a",
+   "title": "Beschreibung der Dienstleistungen",
+   "requirement": "Der Vertrag enthält eine klare und vollständige Beschreibung aller Funktionen und IKT-Dienstleistungen sowie die Angabe, ob eine Unterauftragsvergabe zulässig ist und unter welchen Bedingungen.",
+   "evidence": "Vertragsklausel mit Leistungsbeschreibung, Sub-Vergaberegelung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/532"
+   }
+  },
+  {
+   "reqId": "DORA-K5-016",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 2 lit. b",
+   "title": "Angabe der Leistungs- und Datenstandorte",
+   "requirement": "Der Vertrag benennt die Regionen und Länder, in denen die Dienstleistungen erbracht und die Daten verarbeitet und gespeichert werden, sowie die Pflicht zur Vorabinformation bei geplanten Änderungen.",
+   "evidence": "Vertragsklausel mit Standortangabe, Änderungsanzeigepflicht, Standortverzeichnis",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.34",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-017",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 2 lit. c",
+   "title": "Verfügbarkeit, Integrität und Vertraulichkeit der Daten",
+   "requirement": "Der Vertrag enthält Bestimmungen zum Schutz der Verfügbarkeit, Authentizität, Integrität und Vertraulichkeit der Daten sowie zum Zugang zu personenbezogenen und sonstigen Daten.",
+   "evidence": "Vertragsklausel zu Schutzzielen, technische und organisatorische Maßnahmen als Anlage",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.34, A.8.24",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-018",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 2 lit. d",
+   "title": "Datenrückgabe bei Vertragsende",
+   "requirement": "Der Vertrag gewährleistet den Zugang zu, die Wiederherstellung und die Rückgabe aller Daten in einem leicht zugänglichen Format bei Insolvenz, Abwicklung oder Einstellung der Geschäftstätigkeit des Dienstleisters.",
+   "evidence": "Vertragsklausel zur Datenrückgabe, Formatvereinbarung, Testnachweis der Rückführbarkeit",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.8.10",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-019",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 2 lit. e",
+   "title": "Service Level Descriptions",
+   "requirement": "Der Vertrag enthält Dienstgütebeschreibungen mit präzisen quantitativen und qualitativen Leistungszielen, die eine wirksame Überwachung und rechtzeitige Korrekturmaßnahmen ermöglichen.",
+   "evidence": "SLA-Anlage mit messbaren Kennzahlen, Berichtspflichten und Sanktionen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.22",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-020",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 2 lit. f/g",
+   "title": "Unterstützung bei Vorfällen und Kündigungsfristen",
+   "requirement": "Der Vertrag verpflichtet den Dienstleister zur Unterstützung bei IKT-bezogenen Vorfällen ohne zusätzliche Kosten oder zu vorab vereinbarten Kosten und regelt die Kündigungsfristen sowie die Mitwirkungspflichten des Dienstleisters.",
+   "evidence": "Vertragsklausel zu Vorfallunterstützung, Kündigungs- und Übergangsregelungen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-021",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 3 lit. a",
+   "title": "Vollständige Dienstgütebeschreibungen mit Aktualisierungspflicht",
+   "requirement": "Für Dienstleistungen zur Unterstützung kritischer oder wichtiger Funktionen enthält der Vertrag vollständige Dienstgütebeschreibungen mit präzisen Leistungszielen und der Pflicht zur Aktualisierung bei wesentlichen Änderungen.",
+   "evidence": "SLA-Anlage mit Aktualisierungsklausel und Nachweis der Aktualität",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.22",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-022",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 3 lit. b",
+   "title": "Meldepflichten des Dienstleisters",
+   "requirement": "Der Vertrag verpflichtet den Dienstleister, das Finanzunternehmen unverzüglich über Entwicklungen zu unterrichten, die die Erbringung der Dienstleistung wesentlich beeinträchtigen könnten, insbesondere über IKT-Vorfälle.",
+   "evidence": "Vertragsklausel mit Meldefristen, Eskalationskontakten und Meldewegen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.24",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-023",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 3 lit. d",
+   "title": "Mitwirkung an Resilienztests",
+   "requirement": "Der Vertrag verpflichtet den Dienstleister zur uneingeschränkten Mitwirkung an den Programmen für Resilienztests des Finanzunternehmens einschließlich TLPT.",
+   "evidence": "Vertragsklausel zur Testmitwirkung, Nachweis der tatsächlichen Beteiligung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.8.29",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/1190"
+   }
+  },
+  {
+   "reqId": "DORA-K5-024",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 3 lit. e",
+   "title": "Uneingeschränkte Zugangs-, Inspektions- und Auditrechte",
+   "requirement": "Der Vertrag räumt dem Finanzunternehmen, der zuständigen Behörde und benannten Dritten uneingeschränkte Zugangs-, Inspektions- und Auditrechte ein, einschließlich Vor-Ort-Prüfungen und Zugang zu relevanten Dokumenten.",
+   "evidence": "Vertragsklausel zu Auditrechten, Nachweis wahrgenommener Prüfungen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.35",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-025",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 3 lit. f",
+   "title": "Ausstiegsstrategien im Vertrag",
+   "requirement": "Der Vertrag enthält Ausstiegsstrategien mit einem angemessenen verbindlichen Übergangszeitraum, in dem der Dienstleister die Leistungen weiter erbringt, um Störungen zu vermeiden.",
+   "evidence": "Vertragsklausel Exit mit Übergangszeitraum, Unterstützungspflichten und Vergütungsregelung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-026",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 2 lit. i",
+   "title": "Schulungsteilnahme des Dienstleisters",
+   "requirement": "Der Vertrag verpflichtet den Dienstleister zur Teilnahme an Schulungen des Finanzunternehmens zu IKT-Sicherheit und digitaler operationaler Resilienz, sofern dies der Kritikalität der Leistung entspricht.",
+   "evidence": "Vertragsklausel, Teilnahmenachweise",
+   "bindingness": "SOLL",
+   "weight": 2,
+   "knockout": false,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.6.3",
+    "iso22301": "7.2",
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K5-027",
+   "chapter": "K5",
+   "article": "Art. 31 ff.",
+   "title": "Umgang mit kritischen IKT-Drittdienstleistern (CTPP)",
+   "requirement": "Für Dienstleister, die als kritische IKT-Drittdienstleister eingestuft sind, sind die Auswirkungen des Überwachungsrahmens bewertet und die Empfehlungen des federführenden Überwachers werden dokumentiert berücksichtigt.",
+   "evidence": "CTPP-Kennzeichnung im Register, Bewertungsvermerk, Umgang mit Empfehlungen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2024/1502, DelVO 2025/295"
+   }
+  },
+  {
+   "reqId": "DORA-K5-028",
+   "chapter": "K5",
+   "article": "Art. 42",
+   "title": "Folgemaßnahmen bei Nichtbeachtung von Empfehlungen",
+   "requirement": "Beachtet ein kritischer IKT-Drittdienstleister die Empfehlungen des federführenden Überwachers nicht, wird dies bewertet; erforderlichenfalls wird die Nutzung der Dienstleistung ausgesetzt oder der Vertrag beendet.",
+   "evidence": "Bewertungsvermerk, Beschlussfassung, Nachweis der Umsetzung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.19, A.5.22",
+    "iso22301": "8.3",
+    "nis2Bsig": null,
+    "rtsIts": "DelVO 2025/295"
+   }
+  },
+  {
+   "reqId": "DORA-K5-029",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 2 lit. a i. V. m. DelVO 2025/532",
+   "title": "Steuerung der Unterauftragskette",
+   "requirement": "Die Bedingungen für die Unterauftragsvergabe bei Dienstleistungen zur Unterstützung kritischer oder wichtiger Funktionen sind vertraglich geregelt; die gesamte Kette bis zu den wesentlichen Unterauftragnehmern ist bekannt und wird überwacht.",
+   "evidence": "Subunternehmerverzeichnis, Zustimmungsvorbehalte, Überwachungsnachweise",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "TPRM",
+   "crosswalk": {
+    "iso27001": "A.5.21",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": "DelVO 2025/532"
+   }
+  },
+  {
+   "reqId": "DORA-K5-030",
+   "chapter": "K5",
+   "article": "Art. 30 Abs. 3 lit. c",
+   "title": "Notfallpläne und Sicherheitsmaßnahmen des Dienstleisters",
+   "requirement": "Der Vertrag verpflichtet den IKT-Drittdienstleister, Notfallpläne zu implementieren und zu testen sowie IKT-Sicherheitsmaßnahmen, -Werkzeuge und -Richtlinien vorzuhalten, die ein angemessenes Sicherheitsniveau für die Erbringung der Dienstleistungen gewährleisten.",
+   "evidence": "Vertragsklausel, Testnachweise des Dienstleisters, Nachweis der Sicherheitsmaßnahmen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Recht",
+   "crosswalk": {
+    "iso27001": "A.5.20, A.5.22",
+    "iso22301": "8.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 4 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K6-001",
+   "chapter": "K6",
+   "article": "Art. 45 Abs. 1",
+   "title": "Teilnahme am Informationsaustausch",
+   "requirement": "Das Finanzunternehmen kann untereinander Informationen und Erkenntnisse über Cyberbedrohungen austauschen, um die digitale operationale Resilienz zu stärken; die Teilnahme ist bewertet und entschieden.",
+   "evidence": "Entscheidungsvermerk, Mitgliedschaften (z. B. FS-ISAC), Teilnahmenachweise",
+   "bindingness": "SOLL",
+   "weight": 2,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.6, A.5.7",
+    "iso22301": null,
+    "nis2Bsig": "§ 34 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K6-002",
+   "chapter": "K6",
+   "article": "Art. 45 Abs. 1 lit. a",
+   "title": "Zweckbindung des Austauschs",
+   "requirement": "Der Informationsaustausch dient ausschließlich der Verbesserung der digitalen operationalen Resilienz, insbesondere durch Sensibilisierung für Cyberbedrohungen, Eindämmung von Verbreitungswegen und Unterstützung der Abwehrfähigkeiten.",
+   "evidence": "Vereinbarung mit Zweckbeschreibung, interne Nutzungsregelung",
+   "bindingness": "SOLL",
+   "weight": 2,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.6",
+    "iso22301": null,
+    "nis2Bsig": "§ 34 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K6-003",
+   "chapter": "K6",
+   "article": "Art. 45 Abs. 1 lit. b",
+   "title": "Vertrauenswürdige Gemeinschaften",
+   "requirement": "Der Austausch findet innerhalb vertrauenswürdiger Gemeinschaften statt; die Aufnahme und der Ausschluss von Teilnehmern sind geregelt und dokumentiert.",
+   "evidence": "Teilnahmevereinbarung, Regelwerk der Gemeinschaft, Teilnehmerverzeichnis",
+   "bindingness": "SOLL",
+   "weight": 2,
+   "knockout": false,
+   "ownerRole": "CISO",
+   "crosswalk": {
+    "iso27001": "A.5.6",
+    "iso22301": null,
+    "nis2Bsig": "§ 34 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K6-004",
+   "chapter": "K6",
+   "article": "Art. 45 Abs. 1 lit. c",
+   "title": "Schutz sensibler Informationen",
+   "requirement": "Die Vereinbarungen zum Informationsaustausch schützen die Vertraulichkeit potenziell sensibler Informationen, wahren Geschäftsgeheimnisse und beachten die wettbewerbsrechtlichen sowie datenschutzrechtlichen Vorgaben.",
+   "evidence": "Vertraulichkeitsvereinbarung, TLP-Klassifizierung, datenschutzrechtliche Bewertung",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": "A.5.6, A.5.13, A.5.34",
+    "iso22301": null,
+    "nis2Bsig": "§ 34 BSIG",
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K6-005",
+   "chapter": "K6",
+   "article": "Art. 45 Abs. 2",
+   "title": "Anzeige der Teilnahme an die Behörde",
+   "requirement": "Die Teilnahme an Vereinbarungen über den Informationsaustausch sowie deren Beendigung werden der zuständigen Behörde nach Bestätigung der Mitgliedschaft angezeigt.",
+   "evidence": "Anzeigenachweis mit Datum, Bestätigung der Mitgliedschaft",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": false,
+   "ownerRole": "Compliance",
+   "crosswalk": {
+    "iso27001": "A.5.5",
+    "iso22301": null,
+    "nis2Bsig": null,
+    "rtsIts": null
+   }
+  },
+  {
+   "reqId": "DORA-K6-006",
+   "chapter": "K6",
+   "article": "Art. 45 i. V. m. Art. 13",
+   "title": "Operative Verwertung der Threat Intelligence",
+   "requirement": "Eingehende Threat Intelligence wird systematisch gegen das Asset-Inventar und das Informationsregister abgeglichen; betroffene Risiken werden neu bewertet und erforderliche Maßnahmen werden ausgelöst.",
+   "evidence": "Abgleichprotokolle, Time-to-Assess-Kennzahl, ausgelöste Risikoeinträge und Maßnahmen",
+   "bindingness": "MUSS",
+   "weight": 3,
+   "knockout": true,
+   "ownerRole": "SOC",
+   "crosswalk": {
+    "iso27001": "A.5.7, A.8.8",
+    "iso22301": "8.2.3",
+    "nis2Bsig": "§ 30 Abs. 2 Nr. 1 BSIG",
+    "rtsIts": null
+   }
+  }
+ ]
+}

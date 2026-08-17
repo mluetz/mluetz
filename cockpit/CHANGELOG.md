@@ -4,6 +4,35 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ## [Unreleased]
 
+## [0.2.0] – 2026-08-17
+
+### Added
+- **DORA-Compliance-Modul** auf Basis des Rahmenwerks FRWK-DORA-001:
+  Anforderungskatalog mit 133 prüfbaren Anforderungen (Kap. II–VI, 122 MUSS,
+  98 Knockouts) inkl. Crosswalk zu ISO/IEC 27001:2022, ISO 22301, NIS-2/BSIG
+  und den delegierten Rechtsakten; Reifegrad-Bewertung (0–5, historisiert)
+- Score-Engine nach Kap. 11: Gewichte MUSS 3/SOLL 2/KANN 1, Kapitel-Scores,
+  DORA Resilience Index (Kapitelgewichte 30/25/15/25/5 %), Knockout-Übersteuerung,
+  Nachweissperre (ohne gültigen Nachweis max. Reifegrad 2), Ampellogik 85/60 –
+  vollständig unit-getestet
+- Findings-Register mit fünf Quellen, Schweregrad-Fristen (Tabelle 24),
+  Eskalationsstufen und CAPA-Verknüpfung in das bestehende Maßnahmen-Modul;
+  Schließung nur mit Wirksamkeitskriterium
+- Vorfallsmodul mit Meldefristen-Monitor: Kenntniserlangung/Klassifizierung,
+  DORA-Meldekette 4 h/24 h → 72 h → 1 Monat, parallele Stränge NIS-2 und
+  DSGVO Art. 33 (deterministische, getestete Fristenberechnung)
+- DORA-Dashboard nach der Zielansicht (Abb. 14): Index- und Knockout-Kachel
+  gleichrangig, Kapitelampel, Reifegradverlauf, KPI-/KRI-Katalog (Tabelle 25),
+  Heatmap Kapitel × kritische Funktionen
+- Verwebung: Wissensbasis-Säulen zeigen Live-Scores und verlinken in den
+  Katalog; Anforderungen verlinken auf Runbooks/Playbooks; neue Runbooks
+  RB-21 (Vorfall klassifizieren und melden), RB-22 (Informationsregister
+  einreichen), RB-23 (Threat-Intel-Abgleich) und Playbook PB-17 (Offener
+  Knockout); 12. Bewertungsdimension „Verbindlichkeit (Non-Repudiation)“
+- DORA-Readiness-Report um Resilience Index und Kapitelübersicht erweitert
+- Update-Pfad für bestehende Installationen: Container-Entrypoint führt
+  additive Schema-Updates und den idempotenten DORA-Seed automatisch aus
+
 ## [0.1.0] – 2026-08-13
 
 ### Added

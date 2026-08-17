@@ -60,6 +60,9 @@ model User {
   auditLogs          AuditLog[]
   savedFilters       SavedFilter[]
   ownedAssets        Asset[]
+  doraAssessments    DoraAssessment[]
+  doraFindings       DoraFinding[]
+  incidents          Incident[]
 }
 
 model Role {
@@ -144,6 +147,7 @@ model CriticalFunction {
   risks        Risk[]
   ictServices  IctService[]
   thirdParties ThirdParty[]
+  incidents    Incident[]
 }
 
 model Asset {
@@ -393,8 +397,9 @@ model Action {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  comments  Comment[]
-  approvals Approval[]
+  comments     Comment[]
+  approvals    Approval[]
+  doraFindings DoraFinding[]
 
   @@index([status])
 }
@@ -445,6 +450,7 @@ model ThirdParty {
   comments               Comment[]
   approvals              Approval[]
   playbookExecutions     PlaybookExecution[]
+  incidents              Incident[]
 
   @@index([status])
   @@index([criticality])
@@ -522,6 +528,8 @@ model Evidence {
   version        String    @default("1.0")
   contentHash    String? // optionales Integritätsmerkmal
   createdAt      DateTime  @default(now())
+  doraRequirementId String?
+  doraRequirement   DoraRequirement? @relation(fields: [doraRequirementId], references: [id])
 
   complianceMappings ComplianceMapping[]
 }
@@ -777,4 +785,123 @@ model SavedFilter {
   page      String // z. B. "risks"
   query     String // Query-String der gespeicherten Filteransicht
   createdAt DateTime @default(now())
+}
+
+// ------------------------------------------------------------------
+// DORA-Anforderungskatalog (FRWK-DORA-001): Katalog, Reifegrad-
+// Bewertung, Findings/CAPA und Vorfälle mit Meldefristen
+// ------------------------------------------------------------------
+
+model DoraChapter {
+  id            String @id @default(cuid())
+  key           String @unique // K2 … K6
+  roman         String // II … VI
+  title         String
+  articleRange  String
+  weightPercent Int // Kapitelgewicht im DORA Resilience Index
+
+  requirements DoraRequirement[]
+}
+
+model DoraRequirement {
+  id              String  @id @default(cuid())
+  reqId           String  @unique // DORA-K2-001 …
+  chapterId       String
+  chapter         DoraChapter @relation(fields: [chapterId], references: [id])
+  article         String
+  title           String
+  requirementText String
+  evidenceSpec    String // geforderter Nachweis laut Katalog
+  bindingness     String // MUSS | SOLL | KANN
+  weight          Int // 3 | 2 | 1
+  knockout        Boolean @default(false)
+  ownerRole       String // Rolle laut Katalog (Leitungsorgan, CISO, TPRM …)
+  // Crosswalk (FRWK-DORA-001 Kap. 10) – 1:1 je Anforderung
+  cwIso27001      String?
+  cwIso22301      String?
+  cwNis2Bsig      String?
+  cwRtsIts        String?
+  // Verwebung ins Cockpit: Runbook-/Playbook-Codes, kommasepariert
+  linkedProcesses String?
+
+  assessments DoraAssessment[]
+  findings    DoraFinding[]
+  evidence    Evidence[]
+
+  @@index([chapterId])
+}
+
+model DoraAssessment {
+  id            String   @id @default(cuid())
+  requirementId String
+  requirement   DoraRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  maturity      Int // Roh-Reifegrad 0–5 (Selbsteinschätzung); wirksamer Wert ggf. durch Nachweissperre gedeckelt
+  justification String
+  assessorId    String
+  assessor      User     @relation(fields: [assessorId], references: [id])
+  assessedAt    DateTime @default(now())
+  isCurrent     Boolean  @default(true)
+
+  @@index([requirementId, isCurrent])
+}
+
+model DoraFinding {
+  id                    String    @id @default(cuid())
+  findingId             String    @unique // FND-2026-0001
+  requirementId         String?
+  requirement           DoraRequirement? @relation(fields: [requirementId], references: [id])
+  source                String // SELF_ASSESSMENT | TEST | INCIDENT | PROVIDER | AUDIT
+  severity              String // CRITICAL | HIGH | MEDIUM | LOW
+  title                 String
+  description           String
+  detectedAt            DateTime  @default(now())
+  responseDueAt         DateTime?
+  remediationDueAt      DateTime?
+  status                String    @default("OPEN") // OPEN | IN_PROGRESS | EFFECTIVENESS_CHECK | CLOSED
+  effectivenessCriterion String?
+  escalatedTo           String?
+  actionId              String? // CAPA im Maßnahmen-Modul
+  action                Action?   @relation(fields: [actionId], references: [id])
+  closedAt              DateTime?
+  createdById           String
+  createdBy             User      @relation(fields: [createdById], references: [id])
+
+  @@index([status])
+}
+
+model Incident {
+  id                 String    @id @default(cuid())
+  incidentId         String    @unique // INC-2026-0001
+  title              String
+  description        String
+  awarenessAt        DateTime // Kenntniserlangung – Startpunkt aller Fristen
+  classifiedAt       DateTime? // Zeitpunkt der Klassifizierung als schwerwiegend
+  isMajor            Boolean   @default(false) // schwerwiegend i. S. v. Art. 18
+  classificationNote String?
+  status             String    @default("OPEN") // OPEN | CONTAINED | RESTORED | CLOSED
+  gdprRelevant       Boolean   @default(false)
+  nis2Relevant       Boolean   @default(false)
+  criticalFunctionId String?
+  criticalFunction   CriticalFunction? @relation(fields: [criticalFunctionId], references: [id])
+  thirdPartyId       String?
+  thirdParty         ThirdParty? @relation(fields: [thirdPartyId], references: [id])
+  createdById        String
+  createdBy          User      @relation(fields: [createdById], references: [id])
+  createdAt          DateTime  @default(now())
+
+  reports IncidentReport[]
+
+  @@index([status])
+}
+
+model IncidentReport {
+  id          String    @id @default(cuid())
+  incidentId  String
+  incident    Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  reportType  String // DORA_INITIAL | DORA_INTERMEDIATE | DORA_FINAL | NIS2_EARLY_WARNING | NIS2_REPORT | NIS2_FINAL | GDPR_NOTIFICATION | CUSTOMER_INFO
+  dueAt       DateTime
+  submittedAt DateTime?
+  reference   String?
+
+  @@unique([incidentId, reportType])
 }

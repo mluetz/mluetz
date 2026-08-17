@@ -240,6 +240,31 @@ export const DORA_GLOSSARY: Record<string, { title: string; definition: string }
     definition:
       "Sammelbegriff für EBA (Banken), EIOPA (Versicherungen) und ESMA (Wertpapiermärkte). Unter DORA erarbeiten sie gemeinsam die technischen Regulierungs- und Durchführungsstandards (RTS/ITS), betreiben den Überwachungsrahmen für kritische IKT-Drittdienstleister und benennen die Lead Overseer.",
   },
+  Reifegrad: {
+    title: "Reifegrad (0–5)",
+    definition:
+      "Sechsstufige Bewertungsskala je Anforderung (FRWK-DORA-001, Kap. 11): 0 nicht vorhanden, 1 initial, 2 wiederholbar, 3 definiert, 4 gesteuert, 5 optimiert. Maßgeblich ist der belegbare Zustand zum Stichtag – ohne gültigen, geprüften Nachweis begrenzt die Nachweissperre den wirksamen Reifegrad auf höchstens 2.",
+  },
+  Nachweissperre: {
+    title: "Nachweissperre",
+    definition:
+      "Berechnungsregel des Anforderungskatalogs: Fehlt einer Anforderung ein gültiger, geprüfter Nachweis, wird ihr wirksamer Reifegrad systemseitig auf höchstens 2 begrenzt – unabhängig von der Selbsteinschätzung. Sie erzwingt das DORA-Prinzip, dass nicht die Absicht zählt, sondern der belegbare Zustand.",
+  },
+  Knockout: {
+    title: "Knockout (KO)",
+    definition:
+      "Kennzeichnung derjenigen MUSS-Anforderungen, deren Nichterfüllung in einer aufsichtlichen Prüfung mit hoher Wahrscheinlichkeit unmittelbar zu einer Feststellung führt oder eine kritische Funktion direkt gefährdet (98 von 133 Anforderungen). Steht eine KO-Anforderung wirksam unter Reifegrad 3, wird der Kapitelstatus auf ROT gesetzt – unabhängig vom rechnerischen Durchschnitt. Reaktion: Playbook PB-17.",
+  },
+  CAPA: {
+    title: "CAPA – Korrektur- und Vorbeugemaßnahme",
+    definition:
+      "Corrective and Preventive Action: Maßnahme zu einem Finding mit Owner, Fälligkeit und vorab definiertem Wirksamkeitskriterium. Ein Finding darf erst geschlossen werden, wenn die Wirksamkeit nachgewiesen ist – erst danach wird der Reifegrad der zugehörigen Anforderung neu bewertet (FRWK-DORA-001, Kap. 12).",
+  },
+  "DORA Resilience Index": {
+    title: "DORA Resilience Index",
+    definition:
+      "Gesamtkennzahl des Anforderungskatalogs: der nach Kapitelgewichten (Kap. II 30 %, III 25 %, IV 15 %, V 25 %, VI 5 %) gewichtete Mittelwert der Kapitel-Scores, übersteuert durch offene Knockouts. Zielwert ≥ 85 % (GRÜN); 60–84 % GELB; darunter oder bei offenem Knockout ROT.",
+  },
   Cyberbedrohungsinformationen: {
     title: "Cyberbedrohungsinformationen (Threat Intelligence)",
     definition:

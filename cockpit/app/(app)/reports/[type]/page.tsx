@@ -455,9 +455,54 @@ async function DoraReadiness() {
   });
   const counts: Record<string, number> = {};
   for (const m of mappings) counts[m.status] = (counts[m.status] ?? 0) + 1;
+  const { getDoraOverview } = await import("@/features/dora/queries");
+  const overview = await getDoraOverview();
+  const lightLabel = { GREEN: "GRÜN", YELLOW: "GELB", RED: "ROT" } as const;
   return (
     <div className="space-y-6">
       <ComplianceDisclaimer />
+      <section>
+        <h2 className="mb-3 text-sm font-semibold">
+          DORA Resilience Index (Anforderungskatalog FRWK-DORA-001)
+        </h2>
+        <p className="mb-2 text-sm">
+          Gesamtindex: <span className="font-semibold">{overview.index.indexPercent} %</span> ·
+          Status: <span className="font-semibold">{lightLabel[overview.index.status]}</span> ·
+          Offene Knockouts: <span className="font-semibold">{overview.index.totalOpenKnockouts}</span>
+        </p>
+        <Table>
+          <THead>
+            <TR>
+              <TH>Kapitel</TH>
+              <TH>Artikel</TH>
+              <TH>Gewicht</TH>
+              <TH>Score</TH>
+              <TH>Status</TH>
+              <TH>Bewertet</TH>
+              <TH>Offene Knockouts</TH>
+            </TR>
+          </THead>
+          <TBody>
+            {overview.chapters.map((c) => (
+              <TR key={c.key}>
+                <TD>Kap. {c.roman} – {c.title}</TD>
+                <TD className="text-xs">{c.articleRange}</TD>
+                <TD>{c.weightPercent} %</TD>
+                <TD className="font-semibold">{c.result.scorePercent} %</TD>
+                <TD>{lightLabel[c.result.status]}</TD>
+                <TD className="text-xs">{c.result.assessedCount}/{c.result.totalCount}</TD>
+                <TD className="text-xs">
+                  {c.result.openKnockouts.length ? c.result.openKnockouts.join(", ") : "–"}
+                </TD>
+              </TR>
+            ))}
+          </TBody>
+        </Table>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Methodik: Gewichte MUSS 3 / SOLL 2 / KANN 1; Nachweissperre begrenzt unbelegte
+          Bewertungen auf Reifegrad 2; Knockouts (Reifegrad &lt; 3) setzen das Kapitel auf ROT.
+        </p>
+      </section>
       <section>
         <h2 className="mb-3 text-sm font-semibold">Statusverteilung</h2>
         <CountBadges
