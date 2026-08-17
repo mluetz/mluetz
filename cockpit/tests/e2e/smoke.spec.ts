@@ -89,3 +89,27 @@ test("DORA Wissensbasis: Akkordeon und Begriffs-Modal funktionieren", async ({ p
   await page.getByRole("button", { name: "CTPP", exact: true }).first().click();
   await expect(page.getByRole("dialog")).toContainText("Critical Third-Party Provider");
 });
+
+test("DORA Compliance: Dashboard, Katalog mit Knockouts und Meldefristen-Monitor", async ({ page }) => {
+  await login(page, "iso@demo.example");
+
+  // Dashboard: Index- und Knockout-Kachel
+  await page.goto("/dora");
+  await expect(page.getByText("DORA Resilience Index").first()).toBeVisible();
+  await expect(page.getByText("Offene Knockouts").first()).toBeVisible();
+
+  // Katalog: Filter auf offene Knockouts → DORA-K5-011 sichtbar
+  await page.goto("/dora/requirements?openKnockouts=1");
+  await expect(page.getByText("DORA-K5-011").first()).toBeVisible();
+
+  // Anforderungsdetail: Crosswalk und Bewertung
+  await page.getByRole("link", { name: "DORA-K5-011" }).first().click();
+  await expect(page.getByText(/Ausstiegsstrategien/).first()).toBeVisible();
+  await expect(page.getByText(/ISO\/IEC 27001/).first()).toBeVisible();
+
+  // Vorfall mit laufenden Fristen
+  await page.goto("/dora/incidents");
+  await expect(page.getByText("INC-2026-0001").first()).toBeVisible();
+  await page.getByRole("link", { name: "INC-2026-0001" }).first().click();
+  await expect(page.getByText("DORA-Zwischenmeldung", { exact: false }).first()).toBeVisible();
+});
