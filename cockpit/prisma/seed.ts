@@ -2831,6 +2831,107 @@ async function main() {
   });
   await db.riskAssessment.updateMany({ data: { methodologyVersionId: mv1.id } });
 
+  // ---------- Welle 5/6: Testprogramm, Threat Intel, Berichtspflichten ----------
+  const rtDefs: Array<{
+    testId: string;
+    title: string;
+    testType: string;
+    plannedInDays: number;
+    performedDaysAgo: number | null;
+    status: string;
+    result: string | null;
+    tester: string;
+    external: boolean;
+    includesProviders: boolean;
+    cfIdx: number[];
+  }> = [
+    { testId: "RT-2026-001", title: "Schwachstellenscan Kernbanken-Umgebung", testType: "VULNERABILITY_SCAN", plannedInDays: -120, performedDaysAgo: 115, status: "COMPLETED", result: "PASSED_WITH_FINDINGS", tester: "SOC (TP-007)", external: true, includesProviders: false, cfIdx: [0, 1] },
+    { testId: "RT-2026-002", title: "Restore-Test Zahlungsverkehr (RB-05)", testType: "RESTORE_TEST", plannedInDays: -60, performedDaysAgo: 55, status: "COMPLETED", result: "PASSED", tester: "IT Operations", external: false, includesProviders: true, cfIdx: [0] },
+    { testId: "RT-2026-003", title: "Tabletop Cyber-Krisenstab (Szenario Ransomware)", testType: "TABLETOP", plannedInDays: 20, performedDaysAgo: null, status: "PLANNED", result: null, tester: "ISO / Krisenstab", external: false, includesProviders: false, cfIdx: [0, 2, 4] },
+    { testId: "RT-2026-004", title: "Penetrationstest Kundenportal", testType: "PENTEST", plannedInDays: 45, performedDaysAgo: null, status: "PLANNED", result: null, tester: "extern (beauftragt)", external: true, includesProviders: true, cfIdx: [2] },
+    { testId: "TLPT-2024-001", title: "Threat-Led Penetration Test (Art. 26/27)", testType: "THREAT_LED", plannedInDays: -700, performedDaysAgo: 690, status: "COMPLETED", result: "PASSED_WITH_FINDINGS", tester: "externer TLPT-Anbieter", external: true, includesProviders: true, cfIdx: [0, 2, 4] },
+  ];
+  for (const rt of rtDefs) {
+    await db.resilienceTest.create({
+      data: {
+        testId: rt.testId,
+        title: rt.title,
+        testType: rt.testType,
+        plannedFor: daysFromNow(rt.plannedInDays),
+        performedAt: rt.performedDaysAgo != null ? daysFromNow(-rt.performedDaysAgo) : null,
+        status: rt.status,
+        result: rt.result,
+        tester: rt.tester,
+        testerExternal: rt.external,
+        includesProviders: rt.includesProviders,
+        criticalFunctions: { connect: rt.cfIdx.map((i) => ({ id: cfs[i]! })) },
+      },
+    });
+  }
+
+  const tiDefs: Array<[string, string, number, number | null, string | null, string | null]> = [
+    ["BSI CERT-Bund", "Aktive Ausnutzung CVE in Web-Framework", 6, 5.8, "ACTION_REQUIRED", "Kundenportal betroffen; Patch eingeplant, WAF-Regel aktiv (RISK-Verknüpfung)."],
+    ["FS-ISAC", "Phishing-Kampagne gegen EU-Banken", 12, 11.5, "MONITOR", "Keine eigenen Indikatoren; Awareness-Hinweis versendet."],
+    ["Herstelleradvisory", "Sicherheitsupdate Hypervisor", 30, 29, "NOT_RELEVANT", "Version nicht im Einsatz."],
+    ["BSI Lagebild", "DDoS-Welle gegen Finanzsektor", 1, null, null, null],
+  ];
+  for (const [source, title, daysAgo, assessedAfterH, relevance, assessment] of tiDefs) {
+    const receivedAt = daysFromNow(-daysAgo);
+    await db.threatIntelAlert.create({
+      data: {
+        source,
+        title,
+        receivedAt,
+        assessedAt:
+          assessedAfterH != null ? new Date(receivedAt.getTime() + assessedAfterH * 3_600_000) : null,
+        relevance,
+        assessment,
+      },
+    });
+  }
+
+  const dutyDefs: Array<[string, string, string, string, number | null, number | null, string | null, string]> = [
+    ["IKT-Risikobericht an den Vorstand", "Art. 5 Abs. 2 DORA", "quartalsweise", "Vorstand", 25, -66, "Vorstandsprotokoll 2026-06-24, TOP 4", "PRESENTED"],
+    ["Bericht über IKT-Drittparteirisiken", "Art. 13 Abs. 5 / Art. 28 DORA", "jährlich", "Vorstand", 95, -270, "Vorstandsprotokoll 2025-12-03, TOP 7", "PRESENTED"],
+    ["Bericht über schwerwiegende IKT-Vorfälle", "Art. 17/19 DORA", "anlassbezogen", "Vorstand / Aufsichtsrat", -3, null, null, "OPEN"],
+    ["Ergebnisbericht Resilienz-Testprogramm", "Art. 24 DORA", "jährlich", "Vorstand", 140, -225, "Umlaufbeschluss 2026-01-16", "PRESENTED"],
+  ];
+  for (const [title, legalBasis, frequency, addressee, dueIn, lastAgo, evidence, status] of dutyDefs) {
+    await db.governanceReportDuty.create({
+      data: {
+        title,
+        legalBasis,
+        frequency,
+        addressee,
+        nextDueAt: dueIn != null ? daysFromNow(dueIn) : null,
+        lastPresentedAt: lastAgo != null ? daysFromNow(lastAgo) : null,
+        presentationEvidence: evidence,
+        status,
+      },
+    });
+  }
+
+  // Selbstregistrierung (Review v3, P3-13): Das Cockpit ist selbst ein
+  // schützenswerter ICT-Service mit eigener Risikobewertung.
+  const cockpitAsset = await db.asset.create({
+    data: {
+      name: "ICT & TPRM Cockpit (dieses System)",
+      assetType: "APPLICATION",
+      classification: "CONFIDENTIAL",
+      ownerId: uIso,
+    },
+  });
+  await db.ictService.create({
+    data: {
+      name: "ICT & TPRM Cockpit",
+      description:
+        "Eigenbetriebenes Steuerungs- und Nachweissystem für IKT- und Drittparteirisiken (Selbstregistrierung nach P3-13).",
+      category: "INTERNAL_PLATFORM",
+      providerId: null,
+    },
+  });
+  void cockpitAsset;
+
   // ---------- Beispiel-Audit-Einträge (hash-verkettet, Review v3 P1-05) ----------
   // Feldgenaue Historie über mehrere Entitätstypen, damit die Detailseiten-
   // Auszüge im Demo-Stand gefüllt sind (u. a. Incident, ThirdParty, Contract).

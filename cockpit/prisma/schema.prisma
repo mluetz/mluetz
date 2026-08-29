@@ -124,6 +124,63 @@ model PeriodSnapshot {
   registerChecksum    String
 }
 
+// ------------------------------------------------------------------
+// Testprogramm digitale Resilienz Art. 24–27 (Review v3, P2-05)
+// ------------------------------------------------------------------
+
+// Jahresplan + Durchführung; Testabdeckung je CIF über die Relation.
+// TLPT: testType THREAT_LED, Dreijahreszyklus inkl. Einbeziehung von
+// CIF-Dienstleistern nach Art. 26 Abs. 3 (includesProviders).
+model ResilienceTest {
+  id              String    @id @default(cuid())
+  testId          String    @unique // RT-2026-001
+  title           String
+  testType        String // VULNERABILITY_SCAN | SCENARIO | TABLETOP | PENTEST | THREAT_LED | RESTORE_TEST
+  plannedFor      DateTime
+  performedAt     DateTime?
+  status          String    @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | CANCELLED
+  result          String? // PASSED | PASSED_WITH_FINDINGS | FAILED
+  tester          String? // intern / externer Dienstleister (Art. 26/27-Anforderungen)
+  testerExternal  Boolean   @default(false)
+  includesProviders Boolean @default(false) // CIF-Dienstleister einbezogen (Art. 26 Abs. 3)
+  summary         String?
+  criticalFunctions CriticalFunction[]
+  createdAt       DateTime  @default(now())
+}
+
+// ------------------------------------------------------------------
+// Threat Intelligence Kap. VI / Art. 45 (Review v3, P2-07)
+// ------------------------------------------------------------------
+
+model ThreatIntelAlert {
+  id            String    @id @default(cuid())
+  source        String // Quelle/Community (BSI, FS-ISAC, CERT ...)
+  title         String
+  receivedAt    DateTime
+  assessedAt    DateTime? // "Time to Assess" = assessedAt - receivedAt
+  relevance     String? // NOT_RELEVANT | MONITOR | ACTION_REQUIRED
+  assessment    String?
+  linkedRiskId  String?
+  createdAt     DateTime  @default(now())
+}
+
+// ------------------------------------------------------------------
+// Berichtspflichten-Kalender ggü. Leitungsorgan (Review v3, P2-10;
+// Art. 5 Abs. 2, Art. 13 Abs. 5)
+// ------------------------------------------------------------------
+
+model GovernanceReportDuty {
+  id            String    @id @default(cuid())
+  title         String
+  legalBasis    String // z. B. "Art. 5 Abs. 2 DORA"
+  frequency     String // z. B. "quartalsweise", "jährlich", "anlassbezogen"
+  addressee     String // z. B. "Vorstand", "Aufsichtsrat"
+  nextDueAt     DateTime?
+  lastPresentedAt DateTime?
+  presentationEvidence String? // Protokoll-/Beschlussreferenz
+  status        String    @default("OPEN") // OPEN | PRESENTED | OVERDUE
+}
+
 // Strukturierte Vorfallsklassifizierung nach Art. 18 i. V. m.
 // RTS (EU) 2025/301 (Review v3, P1-04): je Kriterium Schwellwert,
 // Ist-Wert, erfüllt j/n, Begründung; Ergebnis nach Einfrieren
@@ -331,11 +388,12 @@ model CriticalFunction {
   // Funktions-Identifikationscode für das Informationsregister (ITS)
   functionIdCode     String?
 
-  assessments  CifAssessment[]
-  risks        Risk[]
-  ictServices  IctService[]
-  thirdParties ThirdParty[]
-  incidents    Incident[]
+  assessments     CifAssessment[]
+  risks           Risk[]
+  ictServices     IctService[]
+  thirdParties    ThirdParty[]
+  incidents       Incident[]
+  resilienceTests ResilienceTest[]
 }
 
 // Versioniertes Bewertungsverfahren je CIF: Kriterien mit Schwellen- und

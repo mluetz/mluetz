@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { assertPermission } from "@/lib/authz";
 import { SETTING_KEYS, getMitigationCap, getRiskThresholds } from "@/lib/settings";
+import { sodConflicts } from "@/lib/domain/sod";
+import type { RoleKey } from "@/lib/domain/enums";
 
 export interface ActionResult {
   error?: string;
@@ -287,6 +289,14 @@ export async function setUserRoles(_prev: ActionResult, formData: FormData): Pro
 
     if (userId === user.id && oldKeys.includes("ADMIN") && !newKeys.includes("ADMIN")) {
       return { error: "Die eigene ADMIN-Rolle kann nicht entfernt werden." };
+    }
+
+    // Harte SoD-Constraints (Review v3, P2-09): blockierende Validierung.
+    const conflicts = sodConflicts(newKeys as RoleKey[]);
+    if (conflicts.length > 0) {
+      return {
+        error: `Funktionstrennung verletzt: ${conflicts.map((c) => c.rule).join("; ")}.`,
+      };
     }
 
     const roleIds = allRoles.filter((r) => newKeys.includes(r.key)).map((r) => r.id);

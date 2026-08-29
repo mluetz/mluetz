@@ -39,6 +39,7 @@ export default async function GovernancePage({
     },
     orderBy: { refId: "asc" },
   });
+  const duties = await db.governanceReportDuty.findMany({ orderBy: { nextDueAt: "asc" } });
 
   return (
     <div>
@@ -144,6 +145,54 @@ export default async function GovernancePage({
               );
             })
           )}
+        </TBody>
+      </Table>
+
+      {/* Berichtspflichten-Kalender ggü. Leitungsorgan (Review v3, P2-10) */}
+      <h2 className="mb-2 mt-8 text-sm font-semibold">
+        {locale === "de"
+          ? "Berichtspflichten gegenüber dem Leitungsorgan (Art. 5 Abs. 2, Art. 13 Abs. 5)"
+          : "Reporting duties towards the management body (Art. 5(2), Art. 13(5))"}
+      </h2>
+      <Table>
+        <THead>
+          <TR>
+            <TH>{locale === "de" ? "Pflicht" : "Duty"}</TH>
+            <TH>{locale === "de" ? "Rechtsgrundlage" : "Legal basis"}</TH>
+            <TH>{locale === "de" ? "Turnus" : "Frequency"}</TH>
+            <TH>{locale === "de" ? "Adressat" : "Addressee"}</TH>
+            <TH>{locale === "de" ? "Fällig" : "Due"}</TH>
+            <TH>{locale === "de" ? "Zuletzt vorgelegt" : "Last presented"}</TH>
+            <TH>{locale === "de" ? "Vorlage-Nachweis" : "Evidence"}</TH>
+            <TH>Status</TH>
+          </TR>
+        </THead>
+        <TBody>
+          {duties.map((d) => {
+            const overdue = d.nextDueAt != null && d.nextDueAt.getTime() < Date.now();
+            return (
+              <TR key={d.id}>
+                <TD className="max-w-[260px] font-medium">{d.title}</TD>
+                <TD className="whitespace-nowrap text-xs">{d.legalBasis}</TD>
+                <TD className="whitespace-nowrap text-xs">{d.frequency}</TD>
+                <TD className="whitespace-nowrap text-xs">{d.addressee}</TD>
+                <TD className="whitespace-nowrap text-xs tabular-nums">
+                  {formatDate(d.nextDueAt)}
+                </TD>
+                <TD className="whitespace-nowrap text-xs tabular-nums">
+                  {formatDate(d.lastPresentedAt)}
+                </TD>
+                <TD className="max-w-[200px] truncate text-xs" title={d.presentationEvidence ?? undefined}>
+                  {d.presentationEvidence ?? "–"}
+                </TD>
+                <TD>
+                  <Badge variant={overdue ? "critical" : d.status === "PRESENTED" ? "low" : "medium"}>
+                    {overdue ? (locale === "de" ? "überfällig" : "overdue") : d.status}
+                  </Badge>
+                </TD>
+              </TR>
+            );
+          })}
         </TBody>
       </Table>
     </div>

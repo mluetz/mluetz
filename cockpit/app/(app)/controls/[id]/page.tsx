@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ControlTestForm, UpdateControlForm } from "@/features/controls/panels";
+import { effectiveOperatingRating } from "@/lib/domain/control-effectiveness";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +32,13 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
       regulatoryRequirements: true,
       risks: { include: { risk: { include: { riskOwner: true } } } },
       assessments: { include: { testedBy: true }, orderBy: { testDate: "desc" } },
+      evidence: { select: { validUntil: true, reviewStatus: true } },
     },
   });
   if (!control) notFound();
+
+  // Nachweisverfall kappt die wirksame Bewertung (Review v3, P2-04).
+  const effective = effectiveOperatingRating(control.operatingEffectiveness, control.evidence);
 
   const canTest = hasPermission(user, "control:test");
   const canWrite = hasPermission(user, "control:write");
@@ -66,12 +71,20 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
                 m.labels.effectiveness[control.designEffectiveness] ?? control.designEffectiveness,
               )}
             </Badge>
-            <Badge variant={effectivenessVariant(control.operatingEffectiveness)}>
-              {t.operatingBadge(
-                m.labels.effectiveness[control.operatingEffectiveness] ??
-                  control.operatingEffectiveness,
-              )}
+            <Badge variant={effectivenessVariant(effective.rating)}>
+              {t.operatingBadge(m.labels.effectiveness[effective.rating] ?? effective.rating)}
             </Badge>
+            {effective.capped ? (
+              <Badge variant="critical">
+                {locale === "de"
+                  ? effective.reason === "EVIDENCE_EXPIRED"
+                    ? "Gekappt: Nachweis abgelaufen/nicht reviewt (P2-04)"
+                    : "Gekappt: kein Nachweis verknüpft (P2-04)"
+                  : effective.reason === "EVIDENCE_EXPIRED"
+                    ? "Capped: evidence expired/not reviewed (P2-04)"
+                    : "Capped: no evidence linked (P2-04)"}
+              </Badge>
+            ) : null}
             {testOverdue ? <Badge variant="high">{t.testOverdue}</Badge> : null}
           </div>
         }

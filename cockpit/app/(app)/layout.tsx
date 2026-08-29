@@ -96,6 +96,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           icon: "findings",
           badge: openFindings,
         },
+        { href: "/dora/tests", label: de ? "Testprogramm" : "Testing", icon: "assessments" },
+        {
+          href: "/dora/threat-intel",
+          label: "Threat Intel",
+          icon: "findings",
+        },
         { href: "/dora-knowledge", label: t.nav.doraKnowledge, icon: "dora" },
         { href: "/runbooks", label: t.nav.runbooks, icon: "runbooks" },
         { href: "/playbooks", label: t.nav.playbooks, icon: "playbooks" },

@@ -52,6 +52,28 @@ export function classify(score: number, t: RiskThresholds = DEFAULT_THRESHOLDS):
   return "CRITICAL";
 }
 
+const CLASS_ORDER: RiskClass[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+
+/**
+ * Impact-Dominanz-Regel (Review v3, P2-01): korrigiert die Rangverzerrung
+ * der reinen Multiplikationsmatrix (L2×I5=10 darf nicht schwächer wirken
+ * als L4×I2=8). Impact 5 => mindestens HIGH; Impact 5 mit CIF-Bezug =>
+ * CRITICAL. Die Regel hebt nur an, nie ab.
+ */
+export function classifyWithDominance(
+  score: number,
+  impact: number | null,
+  cifRelated: boolean,
+  t: RiskThresholds = DEFAULT_THRESHOLDS,
+): RiskClass {
+  const base = classify(score, t);
+  if (impact === 5) {
+    const floor: RiskClass = cifRelated ? "CRITICAL" : "HIGH";
+    return CLASS_ORDER.indexOf(base) < CLASS_ORDER.indexOf(floor) ? floor : base;
+  }
+  return base;
+}
+
 /** Überschreitet der Residual-Score den Risikoappetit? */
 export function isAboveAppetite(residual: number, appetiteThreshold: number): boolean {
   return residual > appetiteThreshold;

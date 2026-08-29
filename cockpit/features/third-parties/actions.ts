@@ -8,6 +8,7 @@ import { audit } from "@/lib/audit";
 import { assertPermission } from "@/lib/authz";
 import { TP_STATUS, TP_TRANSITIONS, type TpStatus } from "@/lib/domain/enums";
 import { CLAUSE_STATUS, requiredClausesFor } from "@/lib/domain/art30";
+import { isValidLei } from "@/lib/domain/lei";
 
 export interface ActionResult {
   error?: string;
@@ -43,12 +44,34 @@ export async function createThirdParty(
       };
     }
     const d = parsed.data;
+
+    // Dublettenprüfung (Review v3, P2-11): primär über LEI, sekundär über
+    // normalisierten Namen + Land — nie über bloße Namensgleichheit.
+    const lei = String(formData.get("lei") ?? "").toUpperCase().trim() || null;
+    if (lei) {
+      if (!isValidLei(lei)) return { error: "LEI ungültig (ISO-17442-Prüfziffer)." };
+      const dupLei = await db.thirdParty.findFirst({ where: { lei } });
+      if (dupLei) return { error: `Dublette: LEI bereits erfasst als ${dupLei.tpId} (${dupLei.name}).` };
+    }
+    const normalized = d.name.trim().toLowerCase().replace(/\s+/g, " ");
+    const sameCountry = await db.thirdParty.findMany({
+      where: { registeredCountry: d.registeredCountry },
+      select: { tpId: true, name: true },
+    });
+    const dupName = sameCountry.find(
+      (t) => t.name.trim().toLowerCase().replace(/\s+/g, " ") === normalized,
+    );
+    if (dupName) {
+      return { error: `Mögliche Dublette: ${dupName.tpId} (${dupName.name}) im selben Land.` };
+    }
+
     const count = await db.thirdParty.count();
     const tpId = `TP-${String(count + 1).padStart(3, "0")}`;
     const tp = await db.thirdParty.create({
       data: {
         tpId,
         name: d.name,
+        lei,
         providedService: d.providedService,
         registeredCountry: d.registeredCountry,
         serviceLocations: d.serviceLocations,

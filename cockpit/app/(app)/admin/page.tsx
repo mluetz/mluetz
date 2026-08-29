@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ROLES, type RoleKey } from "@/lib/domain/enums";
+import { sodConflicts } from "@/lib/domain/sod";
 import {
   CategoryAppetiteForm,
   ThresholdsForm,
@@ -56,6 +57,15 @@ export default async function AdminPage() {
     where: { status: "PENDING_APPROVAL" },
     include: { requestedBy: { select: { email: true } } },
   });
+
+  // SoD-Konfliktbericht (Review v3, P2-09): Bestandskonflikte sichtbar
+  // machen — Neuvergabe ist blockiert (setUserRoles), Bestand wird gemeldet.
+  const sodReport = users
+    .map((u) => ({
+      email: u.email,
+      conflicts: sodConflicts(u.roles.map((r) => r.role.key as RoleKey)),
+    }))
+    .filter((u) => u.conflicts.length > 0);
 
   return (
     <div>
@@ -125,6 +135,36 @@ export default async function AdminPage() {
                 ))}
               </TBody>
             </Table>
+          </CardContent>
+        </Card>
+
+        {/* (a2) SoD-Konfliktbericht (P2-09) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {locale === "de" ? "Funktionstrennung (SoD)" : "Segregation of duties (SoD)"}
+            </CardTitle>
+            <CardDescription>
+              {locale === "de"
+                ? "Harte Constraints blockieren neue Konflikt-Vergaben; Bestandskonflikte werden hier gemeldet."
+                : "Hard constraints block new conflicting assignments; existing conflicts are reported here."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {sodReport.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {locale === "de" ? "Keine SoD-Konflikte im Bestand." : "No SoD conflicts found."}
+              </p>
+            ) : (
+              <ul className="space-y-1 text-sm">
+                {sodReport.map((u) => (
+                  <li key={u.email}>
+                    <span className="font-medium">{u.email}</span>:{" "}
+                    {u.conflicts.map((c) => `${c.rule} (${c.roles.join(" + ")})`).join("; ")}
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
 
