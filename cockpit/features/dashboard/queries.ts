@@ -18,8 +18,11 @@ export interface DashboardData {
     expiringContracts: number;
     risksWithoutOwner: number;
     risksWithoutAssessment: number;
+    /** Überfällige Reviews über ALLE Objektarten (P3-01). */
+    overdueReviewsTotal: number;
   };
-  heatmap: number[][]; // [likelihood-1][impact-1] = Anzahl (aktuelle Bewertungen)
+  heatmap: number[][]; // [likelihood-1][impact-1] = Anzahl (aktuelle Bewertungen, inhärent)
+  heatmapResidual: number[][]; // Residual-Näherung: L unverändert, I aus Residual-Score
   byCategory: Array<{ name: string; count: number; aboveAppetite: number }>;
   byOu: Array<{ name: string; count: number }>;
   byThirdParty: Array<{ name: string; count: number }>;
@@ -70,13 +73,32 @@ export async function getDashboardData(filters: RiskFilters = {}): Promise<Dashb
   const openActions = actions.filter((a) => !["CLOSED", "COMPLETED"].includes(a.status));
   const overdueActions = openActions.filter((a) => isOverdue(a.dueDate));
 
-  // Heatmap über aktuelle Bewertungen der gefilterten Risiken
+  // Heatmap über aktuelle Bewertungen der gefilterten Risiken.
+  // Inhärent: Zelle (L, I). Residual: L bleibt, wirksames I aus dem
+  // Residual-Score zurückgerechnet (I' = clamp(round(res/L), 1..5)) —
+  // zeigt, was die Kontrollen leisten (D-03; Näherung, dokumentiert).
   const heatmap: number[][] = Array.from({ length: 5 }, () => Array(5).fill(0) as number[]);
+  const heatmapResidual: number[][] = Array.from(
+    { length: 5 },
+    () => Array(5).fill(0) as number[],
+  );
   for (const r of openRows) {
     if (r.likelihood && r.impact) {
       heatmap[r.likelihood - 1]![r.impact - 1]! += 1;
+      if (r.residualScore != null) {
+        const iRes = Math.min(5, Math.max(1, Math.round(r.residualScore / r.likelihood)));
+        heatmapResidual[r.likelihood - 1]![iRes - 1]! += 1;
+      }
     }
   }
+
+  // Überfällige Reviews GESAMT über alle Objektarten (P3-01)
+  const now = new Date();
+  const [overdueTpReviews, overdueControlTests, expiredEvidence] = await Promise.all([
+    db.thirdParty.count({ where: { status: { not: "EXIT" }, nextReviewDate: { lt: now } } }),
+    db.control.count({ where: { nextTestDate: { lt: now } } }),
+    db.evidence.count({ where: { validUntil: { lt: now } } }),
+  ]);
 
   const countBy = (items: string[]): Map<string, number> => {
     const m = new Map<string, number>();
@@ -145,8 +167,14 @@ export async function getDashboardData(filters: RiskFilters = {}): Promise<Dashb
       risksWithoutOwner: openRows.filter((r) => !r.ownerName).length,
       risksWithoutAssessment: rows.filter((r) => r.residualScore === null && r.status !== "CLOSED")
         .length,
+      overdueReviewsTotal:
+        openRows.filter((r) => r.reviewOverdue).length +
+        overdueTpReviews +
+        overdueControlTests +
+        expiredEvidence,
     },
     heatmap,
+    heatmapResidual,
     byCategory: [...byCategoryMap.entries()]
       .map(([name, v]) => ({ name, ...v }))
       .sort((a, b) => b.count - a.count),

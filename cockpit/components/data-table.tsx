@@ -26,6 +26,8 @@ interface DataTableProps<TData, TValue> {
   emptyMessage?: string;
   /** UI-Sprache für die eingebauten Beschriftungen (Standard: Deutsch). */
   locale?: "de" | "en";
+  /** Erste Spalte fixieren (D-05): horizontaler Scroll statt Clipping. */
+  stickyFirstColumn?: boolean;
 }
 
 const TABLE_TEXT = {
@@ -57,6 +59,7 @@ export function DataTable<TData, TValue>({
   pageSize = 25,
   emptyMessage,
   locale = "de",
+  stickyFirstColumn = false,
 }: DataTableProps<TData, TValue>) {
   const text = TABLE_TEXT[locale];
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -89,7 +92,7 @@ export function DataTable<TData, TValue>({
           {text.ofEntries(table.getFilteredRowModel().rows.length, data.length)}
         </span>
       </div>
-      <Table>
+      <Table className={stickyFirstColumn ? "tbl-sticky-first" : undefined}>
         <THead>
           {table.getHeaderGroups().map((hg) => (
             <TR key={hg.id}>

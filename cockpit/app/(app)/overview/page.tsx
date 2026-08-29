@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requirePermission } from "@/lib/authz";
 import { db } from "@/lib/db";
 import { getDashboardData } from "@/features/dashboard/queries";
+import { getDoraOverview } from "@/features/dora/queries";
 import { getRiskThresholds } from "@/lib/settings";
 import { getLocale } from "@/lib/i18n/server";
 import { CORE_MESSAGES } from "@/lib/i18n/messages/core";
@@ -30,18 +31,29 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   const locale = await getLocale();
   const t = CORE_MESSAGES[locale];
   const sp = await searchParams;
-  const [data, thresholds, categories, ous, locations] = await Promise.all([
-    getDashboardData({
-      category: sp.category || undefined,
-      ouId: sp.ouId || undefined,
-      locationId: sp.locationId || undefined,
-    }),
-    getRiskThresholds(),
-    db.riskCategory.findMany({ orderBy: { name: "asc" } }),
-    db.organizationalUnit.findMany({ orderBy: { name: "asc" } }),
-    db.location.findMany({ orderBy: { name: "asc" } }),
-  ]);
+  const [data, thresholds, categories, ous, locations, dora, cifNoTestedExit, activeMv] =
+    await Promise.all([
+      getDashboardData({
+        category: sp.category || undefined,
+        ouId: sp.ouId || undefined,
+        locationId: sp.locationId || undefined,
+      }),
+      getRiskThresholds(),
+      db.riskCategory.findMany({ orderBy: { name: "asc" } }),
+      db.organizationalUnit.findMany({ orderBy: { name: "asc" } }),
+      db.location.findMany({ orderBy: { name: "asc" } }),
+      getDoraOverview(),
+      db.thirdParty.count({
+        where: {
+          criticalFunctions: { some: {} },
+          OR: [{ exitStrategy: null }, { exitStrategy: { status: { not: "TESTED" } } }],
+        },
+      }),
+      db.methodologyVersion.findFirst({ where: { status: "ACTIVE" } }),
+    ]);
   const k = data.kpi;
+  const de = locale === "de";
+  const overdueReportsCount = dora.incidentSummary.overdueReports;
 
   return (
     <div>
@@ -92,68 +104,97 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         </Link>
       </form>
 
-      {/* KPI-Kacheln */}
-      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
-        <KpiTile label={t.dashboard.kpi.openRisks} value={k.openRisks} href="/risks" />
-        <KpiTile
-          label={t.dashboard.kpi.highCritical}
-          value={k.highCritical}
-          href="/risks?klass=CRITICAL"
-          warn={k.highCritical > 0}
+      {/* ===== Ebene 1 „Lage" (D-01/D-02): drei Kennzahlen, Farbe NUR bei
+             Zielwertverletzung, jede mit „Ziel · Ist" ===== */}
+      <div className="mb-4 grid gap-3 md:grid-cols-3">
+        <LageTile
+          label="DORA Resilience Index"
+          value={`${dora.index.indexPercent} %`}
+          target={de ? "Ziel ≥ 85 %" : "Target ≥ 85 %"}
+          breach={dora.index.indexPercent < 85}
+          href="/dora"
         />
-        <KpiTile
-          label={t.dashboard.kpi.aboveAppetite}
-          value={k.aboveAppetite}
-          href="/risks?aboveAppetite=1"
-          warn={k.aboveAppetite > 0}
+        <LageTile
+          label={de ? "Offene Knockouts" : "Open knockouts"}
+          value={String(dora.index.totalOpenKnockouts)}
+          target={`${de ? "Ziel" : "Target"} 0 · ${de ? "Ist" : "Actual"} ${dora.index.totalOpenKnockouts}`}
+          breach={dora.index.totalOpenKnockouts > 0}
+          href="/dora"
         />
-        <KpiTile
-          label={t.dashboard.kpi.overdueReviews}
-          value={k.overdueReviews}
-          href="/risks?overdueReview=1"
-          warn={k.overdueReviews > 0}
+        <LageTile
+          label={de ? "Überfällige Meldungen" : "Overdue reports"}
+          value={String(overdueReportsCount)}
+          target={`${de ? "Ziel" : "Target"} 0 · ${de ? "Ist" : "Actual"} ${overdueReportsCount}`}
+          breach={overdueReportsCount > 0}
+          href="/dora/incidents"
         />
-        <KpiTile label={t.dashboard.kpi.openActions} value={k.openActions} href="/actions" />
-        <KpiTile
-          label={t.dashboard.kpi.overdueActions}
-          value={k.overdueActions}
-          href="/actions?overdue=1"
-          warn={k.overdueActions > 0}
-        />
-        <KpiTile
-          label={t.dashboard.kpi.openAcceptances}
-          value={k.openAcceptances}
-          href="/reports/ACCEPTANCES"
-          warn={k.openAcceptances > 0}
-        />
-        <KpiTile
-          label={t.dashboard.kpi.weakControls}
-          value={k.weakControls}
-          href="/controls?weak=1"
-          warn={k.weakControls > 0}
-        />
-        <KpiTile
-          label={t.dashboard.kpi.criticalThirdParties}
-          value={k.criticalThirdParties}
-          href="/third-parties?critical=1"
-        />
-        <KpiTile
-          label={t.dashboard.kpi.expiringContracts}
-          value={k.expiringContracts}
-          href="/third-parties?expiringContracts=1"
-          warn={k.expiringContracts > 0}
-        />
-        <KpiTile
-          label={t.dashboard.kpi.risksWithoutOwner}
-          value={k.risksWithoutOwner}
+      </div>
+
+      {/* ===== Ebene 2 „Handlungsbedarf": Zeilen mit Direktsprung ===== */}
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle className="text-base">
+            {de ? "Handlungsbedarf" : "Action required"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="divide-y p-0 [&>a]:flex [&>a]:items-center [&>a]:justify-between [&>a]:gap-4 [&>a]:px-5 [&>a]:py-2.5">
+          <ActionRow
+            href="/actions?overdue=1"
+            label={de ? "Überfällige Maßnahmen" : "Overdue actions"}
+            count={k.overdueActions}
+          />
+          <ActionRow
+            href="/risks?aboveAppetite=1"
+            label={de ? "Risiken über Risikoappetit" : "Risks above appetite"}
+            count={k.aboveAppetite}
+          />
+          <ActionRow
+            href="/controls?weak=1"
+            label={de ? "Kontrollen mit Schwächen" : "Controls with weaknesses"}
+            count={k.weakControls}
+          />
+          <ActionRow
+            href="/third-parties?untestedExit=1"
+            label={
+              de
+                ? "CIF-Drittparteien ohne getesteten Exit-Plan"
+                : "CIF third parties without tested exit plan"
+            }
+            count={cifNoTestedExit}
+          />
+          <ActionRow
+            href="/reports/ACCEPTANCES"
+            label={de ? "Offene Risikoakzeptanzen" : "Open risk acceptances"}
+            count={k.openAcceptances}
+            neutral
+          />
+        </CardContent>
+      </Card>
+
+      {/* ===== Ebene 3 „Datenqualität": kompakte neutrale Zeile ===== */}
+      <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-1 rounded-lg border bg-card px-4 py-2.5 text-xs text-muted-foreground">
+        <span className="font-semibold uppercase tracking-wide">
+          {de ? "Datenqualität" : "Data quality"}
+        </span>
+        <DqItem
           href="/risks?noOwner=1"
-          warn={k.risksWithoutOwner > 0}
+          label={de ? "Risiken ohne Owner" : "risks without owner"}
+          count={k.risksWithoutOwner}
         />
-        <KpiTile
-          label={t.dashboard.kpi.risksWithoutAssessment}
-          value={k.risksWithoutAssessment}
+        <DqItem
           href="/risks?noAssessment=1"
-          warn={k.risksWithoutAssessment > 0}
+          label={de ? "ohne aktuelle Bewertung" : "without current assessment"}
+          count={k.risksWithoutAssessment}
+        />
+        <DqItem
+          href="/risks?overdueReview=1"
+          label={de ? "überfällige Reviews gesamt" : "overdue reviews (all types)"}
+          count={k.overdueReviewsTotal}
+        />
+        <DqItem
+          href="/third-parties?expiringContracts=1"
+          label={de ? "auslaufende Verträge (180 T)" : "expiring contracts (180 d)"}
+          count={k.expiringContracts}
         />
       </div>
 
@@ -164,7 +205,18 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
             <CardDescription>{t.dashboard.cards.matrixDescription}</CardDescription>
           </CardHeader>
           <CardContent>
-            <RiskHeatmap matrix={data.heatmap} thresholds={thresholds} />
+            <RiskHeatmap
+              matrix={data.heatmap}
+              matrixResidual={data.heatmapResidual}
+              thresholds={thresholds}
+              methodologyLabel={
+                activeMv
+                  ? de
+                    ? `Methodikversion ${activeMv.version} (${activeMv.validFrom?.toISOString().slice(0, 10) ?? "–"})`
+                    : `Methodology version ${activeMv.version} (${activeMv.validFrom?.toISOString().slice(0, 10) ?? "–"})`
+                  : undefined
+              }
+            />
           </CardContent>
         </Card>
 
@@ -301,27 +353,77 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   );
 }
 
-function KpiTile({
+/** Ebene-1-Kachel: Farbe ausschließlich bei Zielwertverletzung (D-02). */
+function LageTile({
   label,
   value,
+  target,
+  breach,
   href,
-  warn,
 }: {
   label: string;
-  value: number;
+  value: string;
+  target: string;
+  breach: boolean;
   href: string;
-  warn?: boolean;
 }) {
   return (
     <Link
       href={href}
       className={cn(
-        "rounded-lg border bg-card p-3 transition-colors hover:bg-accent",
-        warn && "border-risk-high/50",
+        "rounded-lg border bg-card p-4 transition-colors hover:bg-accent",
+        breach && "border-l-4 border-l-status-overdue",
       )}
     >
-      <p className="text-[11px] leading-tight text-muted-foreground">{label}</p>
-      <p className={cn("mt-1 text-2xl font-semibold", warn && "text-risk-high")}>{value}</p>
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <p
+        className={cn(
+          "mt-1 text-3xl font-semibold tabular-nums",
+          breach && "text-status-overdue",
+        )}
+      >
+        {value}
+      </p>
+      <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">{target}</p>
+    </Link>
+  );
+}
+
+/** Ebene-2-Zeile: Handlungsposten mit Direktsprung. */
+function ActionRow({
+  href,
+  label,
+  count,
+  neutral,
+}: {
+  href: string;
+  label: string;
+  count: number;
+  neutral?: boolean;
+}) {
+  const alert = count > 0 && !neutral;
+  return (
+    <Link href={href} className="transition-colors hover:bg-accent/40">
+      <span className="text-sm">{label}</span>
+      <span
+        className={cn(
+          "inline-flex min-w-8 justify-center rounded-full px-2 py-0.5 text-sm font-bold tabular-nums",
+          alert
+            ? "bg-status-overdue-bg text-status-overdue"
+            : "bg-status-muted-bg text-status-muted",
+        )}
+      >
+        {count}
+      </span>
+    </Link>
+  );
+}
+
+/** Ebene-3-Eintrag: Datenqualität, bewusst neutral (D-01). */
+function DqItem({ href, label, count }: { href: string; label: string; count: number }) {
+  return (
+    <Link href={href} className="hover:text-foreground hover:underline">
+      <b className="text-foreground tabular-nums">{count}</b> {label}
     </Link>
   );
 }

@@ -47,6 +47,17 @@ const config: Config = {
           high: "hsl(var(--risk-high))",
           critical: "hsl(var(--risk-critical))",
         },
+        // Statussemantik (Redesign Welle 4): Farbe nur bei Zielwertverletzung
+        status: {
+          overdue: "hsl(var(--status-overdue))",
+          "overdue-bg": "hsl(var(--status-overdue-bg))",
+          "due-soon": "hsl(var(--status-due-soon))",
+          "due-soon-bg": "hsl(var(--status-due-soon-bg))",
+          ok: "hsl(var(--status-ok))",
+          "ok-bg": "hsl(var(--status-ok-bg))",
+          muted: "hsl(var(--signal-muted))",
+          "muted-bg": "hsl(var(--signal-muted-bg))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

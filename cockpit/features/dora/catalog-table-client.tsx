@@ -18,6 +18,7 @@ export function CatalogTableClient({
   const columns = useMemo(() => catalogColumns(locale), [locale]);
   return (
     <DataTable
+      stickyFirstColumn
       columns={columns}
       data={rows}
       searchPlaceholder={t.catalog.searchPlaceholder}
