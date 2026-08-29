@@ -4,6 +4,9 @@ export default defineConfig({
   testDir: "./tests/e2e",
   timeout: 60_000,
   retries: process.env.CI ? 1 : 0,
+  // Gemeinsame SQLite-Demo-DB und benutzerbezogene Zustände (z. B.
+  // persistierte Sprachwahl) vertragen keine parallelen Worker.
+  workers: 1,
   use: {
     baseURL: process.env.APP_BASE_URL ?? "http://localhost:3000",
     trace: "retain-on-failure",
@@ -18,5 +21,10 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      // E2E-Smoke-Tests laufen ohne MFA-Abfrage; der MFA-Flow selbst wird
+      // durch Unit-Tests (totp.test.ts) und manuell abgedeckt.
+      MFA_REQUIRED_ROLES: "none",
+    },
   },
 });

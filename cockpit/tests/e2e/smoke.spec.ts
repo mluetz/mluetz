@@ -28,20 +28,28 @@ test("Login-Seite erreichbar und Fehlermeldung bei falschen Zugangsdaten", async
 test("ICT Risk Manager: Dashboard, Risk Register und Detailseite", async ({ page }) => {
   await login(page, "riskmanager@demo.example");
   await expect(page.getByRole("heading", { name: "Executive Dashboard" })).toBeVisible();
-  await expect(page.getByText("Offene Risiken")).toBeVisible();
+  // Redesign Welle 4: drei Ebenen — Lage / Handlungsbedarf / Datenqualität
+  await expect(page.getByText("DORA Resilience Index").first()).toBeVisible();
+  await expect(page.getByText("Handlungsbedarf").first()).toBeVisible();
+  await expect(page.getByText("Datenqualität").first()).toBeVisible();
 
-  // KPI-Kachel führt zum gefilterten Register
+  // Handlungsbedarf-Zeile führt zum gefilterten Register
   await page
-    .getByRole("link", { name: /Über Risikoappetit/ })
+    .getByRole("link", { name: /Risiken über Risikoappetit/ })
     .first()
     .click();
   await page.waitForURL("**/risks?aboveAppetite=1");
   await expect(page.getByRole("heading", { name: "Risk Register" })).toBeVisible();
 
-  // Detailseite eines Risikos öffnen
+  // Detailseite eines Risikos öffnen. Klick mit Retry (Hydration) und
+  // großzügigem Timeout: Im Dev-Server kompiliert die Detailroute beim
+  // ersten Aufruf on demand.
   await page.goto("/risks");
-  await page.getByRole("link", { name: "RISK-2026-0001" }).click();
-  await expect(page.getByText("Inherent Risk")).toBeVisible();
+  await expect(async () => {
+    await page.getByRole("link", { name: "RISK-2026-0001" }).first().click();
+    await page.waitForURL("**/risks/*", { timeout: 3000 });
+  }).toPass({ timeout: 20000 });
+  await expect(page.getByText("Inherent Risk")).toBeVisible({ timeout: 15000 });
   await expect(page.getByRole("tab", { name: /Bewertung/ })).toBeVisible();
 });
 
@@ -105,9 +113,13 @@ test("DORA Handbuch: Kapitelübersicht, Detailseite mit Abbildung und Navigation
   await expect(page.getByText("Das vollständige Handbuch (FRWK-DORA-001)")).toBeVisible();
   await expect(page.getByText("Anforderungskatalog – als interaktives Modul")).toBeVisible();
 
-  // Detailseite Kap. 11 öffnen: Abbildung 9 und Reifegradskala sichtbar
-  await page.getByRole("link", { name: /Reifegrad- und Scoring-Modell/ }).click();
-  await expect(page.getByRole("heading", { name: /Kap\. 11/ })).toBeVisible();
+  // Detailseite Kap. 11 öffnen: Abbildung 9 und Reifegradskala sichtbar.
+  // Klick mit Retry (Hydration; Dev-Server kompiliert die Route on demand).
+  await expect(async () => {
+    await page.getByRole("link", { name: /Reifegrad- und Scoring-Modell/ }).first().click();
+    await page.waitForURL("**/dora-knowledge/*", { timeout: 5000 });
+  }).toPass({ timeout: 30000 });
+  await expect(page.getByRole("heading", { name: /Kap\. 11/ })).toBeVisible({ timeout: 15000 });
   await expect(page.getByAltText(/Abbildung 9:/)).toBeVisible();
   await expect(page.getByText("Tabelle 21: Reifegradskala mit Nachweisanforderung")).toBeVisible();
 
@@ -174,14 +186,19 @@ test("DORA Compliance: Dashboard, Katalog mit Knockouts und Meldefristen-Monitor
   // Klick mit Retry, bis die React-Hydration die Navigation angebunden hat.
   await expect(async () => {
     await page.getByRole("link", { name: "DORA-K5-011" }).first().click();
-    await page.waitForURL("**/dora/requirements/*", { timeout: 2000 });
-  }).toPass({ timeout: 15000 });
+    await page.waitForURL("**/dora/requirements/*", { timeout: 5000 });
+  }).toPass({ timeout: 30000 });
   await expect(page.getByText(/Ausstiegsstrategien/).first()).toBeVisible();
   await expect(page.getByText(/ISO\/IEC 27001/).first()).toBeVisible();
 
   // Vorfall mit laufenden Fristen
   await page.goto("/dora/incidents");
   await expect(page.getByText("INC-2026-0001").first()).toBeVisible();
-  await page.getByRole("link", { name: "INC-2026-0001" }).first().click();
-  await expect(page.getByText("DORA-Zwischenmeldung", { exact: false }).first()).toBeVisible();
+  await expect(async () => {
+    await page.getByRole("link", { name: "INC-2026-0001" }).first().click();
+    await page.waitForURL("**/dora/incidents/*", { timeout: 5000 });
+  }).toPass({ timeout: 30000 });
+  await expect(page.getByText("DORA-Zwischenmeldung", { exact: false }).first()).toBeVisible({
+    timeout: 15000,
+  });
 });
