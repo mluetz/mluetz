@@ -23,6 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: "/controls", label: t.nav.controls, icon: "controls" },
     { href: "/third-parties", label: t.nav.thirdParties, icon: "thirdparties" },
     { href: "/cif", label: locale === "de" ? "Kritische Funktionen" : "Critical Functions", icon: "cif" },
+    { href: "/register", label: locale === "de" ? "Informationsregister" : "Register of Information", icon: "register" },
     { href: "/assessments", label: t.nav.assessments, icon: "assessments" },
     { href: "/runbooks", label: t.nav.runbooks, icon: "runbooks" },
     { href: "/playbooks", label: t.nav.playbooks, icon: "playbooks" },

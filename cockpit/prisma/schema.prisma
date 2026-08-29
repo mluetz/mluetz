@@ -70,6 +70,77 @@ model User {
   ownedCifs          CriticalFunction[] @relation("CifOwner")
   cifAssessments     CifAssessment[]    @relation("CifAssessor")
   cifApprovals       CifAssessment[]    @relation("CifApprover")
+  preCaAssessments   PreContractAssessment[] @relation("PreCaAssessor")
+  preCaApprovals     PreContractAssessment[] @relation("PreCaApprover")
+  registerExports    RegisterExport[]
+}
+
+// ------------------------------------------------------------------
+// Informationsregister nach Art. 28 Abs. 3 / DVO (EU) 2024/2956
+// (Review v3, B-1/P1-01) — Mapping als DATEN, nie als Code.
+// ------------------------------------------------------------------
+
+// Eigene meldende Entitäten mit Hierarchie (Konsolidierungsebenen, 1.4).
+model ReportingEntity {
+  id                 String  @id @default(cuid())
+  name               String
+  lei                String?
+  nationalId         String?
+  nationalIdType     String?
+  // SOLO | PARTIAL_CONSOLIDATED | CONSOLIDATED
+  consolidationLevel String  @default("SOLO")
+  parentId           String?
+  parent             ReportingEntity?  @relation("EntityHierarchy", fields: [parentId], references: [id])
+  children           ReportingEntity[] @relation("EntityHierarchy")
+}
+
+// Fassungsstand der ITS-Meldebögen. Die Bezeichnungsschemata sind AM
+// VERBINDLICHEN TEXT der DVO (EU) 2024/2956 zu verifizieren; bis dahin
+// werden beide kursierenden Schemata als Datensätze mit Status
+// TO_VERIFY geführt — keines ist hartcodiert.
+model ItsTemplateVersion {
+  id        String    @id @default(cuid())
+  label     String    @unique // z. B. "B_01-Schema" / "RT-Schema"
+  source    String // Quelle/Fundstelle der Fassung
+  validFrom DateTime?
+  status    String    @default("TO_VERIFY") // VERIFIED | TO_VERIFY | DEPRECATED
+  notes     String?
+
+  mappings ItsFieldMapping[]
+  exports  RegisterExport[]
+}
+
+// Feld-Mapping Cockpit-Feld -> Meldebogen -> Feld-ID (Review v3, B-1).
+model ItsFieldMapping {
+  id             String             @id @default(cuid())
+  versionId      String
+  version        ItsTemplateVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  cockpitField   String // z. B. "ThirdParty.lei"
+  template       String // Meldebogen-Bezeichnung der Fassung
+  fieldId        String // Feld-ID im Meldebogen
+  dataType       String // STRING | DATE | ENUM | NUMBER | BOOLEAN | LEI | COUNTRY
+  codeList       String? // Name der Werteliste, falls ENUM/COUNTRY
+  required       Boolean @default(false)
+  transformation String? // Transformationsregel (beschrieben, nicht Code)
+
+  @@unique([versionId, template, fieldId])
+}
+
+// Erzeugungsprotokoll je Export (Review v3, 5.4): Stichtag, Ersteller,
+// Datensatzanzahl, Prüfsumme, Validierungsergebnis.
+model RegisterExport {
+  id               String             @id @default(cuid())
+  templateVersionId String
+  templateVersion  ItsTemplateVersion @relation(fields: [templateVersionId], references: [id])
+  asOfDate         DateTime
+  createdAt        DateTime           @default(now())
+  createdById      String
+  createdBy        User               @relation(fields: [createdById], references: [id])
+  recordCount      Int
+  errorCount       Int
+  checksum         String
+  format           String // CSV
+  validationReport String // JSON-Fehlerliste je Datensatz ("Probeeinreichung")
 }
 
 model Role {
@@ -188,6 +259,8 @@ model CriticalFunction {
 
   reassessmentMonths Int       @default(12)
   nextAssessmentDate DateTime?
+  // Funktions-Identifikationscode für das Informationsregister (ITS)
+  functionIdCode     String?
 
   assessments  CifAssessment[]
   risks        Risk[]
@@ -493,6 +566,11 @@ model ThirdParty {
   // ENTFERNT (Review v3, B-2): supportsCriticalFunction Boolean.
   // Die CIF-Einstufung wird ausschließlich aus der Relation
   // criticalFunctions abgeleitet — keine zweite Wahrheit.
+  // Registerpflichtfelder (Review v3, P1-01): LEI nach ISO 17442; bei
+  // fehlender LEI nationale Kennung mit Kennungstyp (EUID, HRB, ...).
+  lei                      String?
+  nationalId               String?
+  nationalIdType           String?
   ictServiceCategory       String
   criticality              String    @default("NOT_ASSESSED") // NOT_ASSESSED | LOW | MEDIUM | HIGH | CRITICAL
   inherentRiskScore        Int?
@@ -537,14 +615,27 @@ model ThirdPartyService {
   ictService   IctService? @relation(fields: [ictServiceId], references: [id])
 }
 
+// Rekursive Subunternehmerkette (Review v3, B-3/P2-06): Rang 1..n über
+// parentId; Kennzeichen, welches Glied den CIF-Dienst tatsächlich erbringt;
+// Land und Leistungsanteil je Glied. Bestandsdaten = Rang 1 (Update 0005).
 model Subcontractor {
   id           String     @id @default(cuid())
   thirdPartyId String
   thirdParty   ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  parentId     String?
+  parent       Subcontractor?  @relation("SubChain", fields: [parentId], references: [id])
+  children     Subcontractor[] @relation("SubChain")
+  rank         Int        @default(1)
   name         String
+  lei          String?
   country      String
   service      String
+  sharePercent Float?
+  providesCifService Boolean @default(false)
   critical     Boolean    @default(false)
+  // Weitervergabe-Workflow: NOTIFIED | CONSENT_REQUESTED | APPROVED | REJECTED
+  approvalStatus String?
+  approvalDate   DateTime?
 }
 
 model Contract {
@@ -552,13 +643,59 @@ model Contract {
   thirdPartyId          String
   thirdParty            ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
   title                 String
+  // Vertrags-Referenznummer für das Informationsregister (Review v3, P1-01)
+  contractRef           String?
   startDate             DateTime
   endDate               DateTime?
   noticePeriodDays      Int?
   auditRights           Boolean   @default(false)
   accessRights          Boolean   @default(false)
   incidentReporting     Boolean   @default(false)
+  // Länder der Leistungserbringung / Datenspeicherung / -verarbeitung
+  // (ISO 3166-1 alpha-2, kommagetrennt) — Registerpflichtfelder
+  countryOfProvision       String?
+  countryOfDataStorage     String?
+  countryOfDataProcessing  String?
   notes                 String?
+
+  clauses        ContractClause[]
+  preAssessment  PreContractAssessment?
+}
+
+// Klauselmatrix Art. 30 (Review v3, P1-03): je Vertrag einzeln quittierbare
+// Pflichtklauseln aus Abs. 2 lit. a-h (alle Verträge) und Abs. 3 lit. a-g
+// (CIF-Verträge). Katalog: lib/domain/art30.ts.
+model ContractClause {
+  id              String   @id @default(cuid())
+  contractId      String
+  contract        Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  clauseKey       String // z. B. ART30_2_A .. ART30_3_G
+  status          String   @default("MISSING") // FULFILLED | PARTIAL | MISSING | NOT_APPLICABLE
+  contractSection String? // Vertragsziffer
+  evidenceId      String?
+  comment         String?
+  updatedAt       DateTime @updatedAt
+
+  @@unique([contractId, clauseKey])
+}
+
+// Vorabbewertung nach Art. 29 (Review v3, P1-02/2.2): Ergebnis und Freigabe
+// VOR Vertragsschluss; am Vertrag persistiert.
+model PreContractAssessment {
+  id                        String   @id @default(cuid())
+  contractId                String   @unique
+  contract                  Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  concentrationRisk         String
+  substitutability          String
+  thirdCountryTransfer      String
+  businessContinuityImpact  String
+  result                    String // APPROVED | APPROVED_WITH_CONDITIONS | REJECTED
+  assessedById              String?
+  assessedBy                User?    @relation("PreCaAssessor", fields: [assessedById], references: [id])
+  assessedAt                DateTime @default(now())
+  approvedById              String?
+  approvedBy                User?    @relation("PreCaApprover", fields: [approvedById], references: [id])
+  approvedAt                DateTime?
 }
 
 model ExitStrategy {

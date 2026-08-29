@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import {
   changeTpStatus,
   createThirdParty,
+  saveContractClauses,
   setTpCriticalFunctions,
   updateTpAssessment,
   upsertExitStrategy,
@@ -207,6 +208,112 @@ export function TpAssessmentForm({
           <Button type="submit" disabled={pending}>
             {pending ? t.common.saving : t.tp.assessment.submit}
           </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------- Art.-30-Klauselmatrix (Review v3, P1-03) ----------------
+
+export interface ClauseRow {
+  key: string;
+  ref: string;
+  label: string;
+  status: string;
+  section: string;
+  comment: string;
+}
+
+export function ContractClauseMatrix({
+  contractId,
+  contractLabel,
+  rag,
+  clauses,
+  canWrite,
+  locale,
+}: {
+  contractId: string;
+  contractLabel: string;
+  rag: "GREEN" | "YELLOW" | "RED";
+  clauses: ClauseRow[];
+  canWrite: boolean;
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    saveContractClauses,
+    {},
+  );
+  const de = locale === "de";
+  const statusLabels: Record<string, string> = de
+    ? { FULFILLED: "erfüllt", PARTIAL: "teilweise", MISSING: "fehlt", NOT_APPLICABLE: "n. a." }
+    : { FULFILLED: "fulfilled", PARTIAL: "partial", MISSING: "missing", NOT_APPLICABLE: "n/a" };
+  const ragClass =
+    rag === "GREEN"
+      ? "bg-risk-low/15 text-risk-low"
+      : rag === "YELLOW"
+        ? "bg-risk-medium/15 text-risk-medium"
+        : "bg-risk-critical/15 text-risk-critical";
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          {de ? "Art.-30-Konformität" : "Art. 30 conformity"} — {contractLabel}
+          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${ragClass}`}>{rag}</span>
+        </CardTitle>
+        <CardDescription>
+          {de
+            ? "Pflichtklauseln nach Art. 30 Abs. 2 (alle Verträge) und Abs. 3 (CIF-Verträge), einzeln quittiert mit Vertragsziffer. Eine fehlende Pflichtklausel in einem CIF-Vertrag erzeugt automatisch ein Finding."
+            : "Mandatory clauses per Art. 30(2) (all contracts) and (3) (CIF contracts), individually acknowledged with the contract section. A missing mandatory clause in a CIF contract automatically raises a finding."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={formAction} className="space-y-3">
+          <input type="hidden" name="contractId" value={contractId} />
+          <div className="space-y-2">
+            {clauses.map((c) => (
+              <div
+                key={c.key}
+                className="grid items-center gap-2 rounded-md border p-2 text-sm md:grid-cols-[minmax(0,1fr)_130px_110px_minmax(0,220px)]"
+              >
+                <div>
+                  <span className="font-medium tabular-nums">{c.ref}</span>{" "}
+                  <span className="text-muted-foreground">{c.label}</span>
+                </div>
+                <Select
+                  name={`clause_${c.key}_status`}
+                  defaultValue={c.status}
+                  disabled={!canWrite}
+                  aria-label={c.ref}
+                >
+                  {Object.entries(statusLabels).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  name={`clause_${c.key}_section`}
+                  defaultValue={c.section}
+                  placeholder={de ? "Ziffer" : "Section"}
+                  disabled={!canWrite}
+                />
+                <Input
+                  name={`clause_${c.key}_comment`}
+                  defaultValue={c.comment}
+                  placeholder={de ? "Kommentar" : "Comment"}
+                  disabled={!canWrite}
+                />
+              </div>
+            ))}
+          </div>
+          <ErrorLine state={state} locale={locale} />
+          {canWrite ? (
+            <Button type="submit" disabled={pending}>
+              {pending ? t.common.saving : de ? "Klauselmatrix speichern" : "Save clause matrix"}
+            </Button>
+          ) : null}
         </form>
       </CardContent>
     </Card>

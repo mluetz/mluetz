@@ -13,11 +13,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import {
+  ContractClauseMatrix,
   ExitStrategyForm,
   TpAssessmentForm,
   TpCifLinkForm,
   TpWorkflowPanel,
 } from "@/features/third-parties/panels";
+import {
+  contractComplianceRag,
+  requiredClausesFor,
+  type ClauseStatus,
+} from "@/lib/domain/art30";
 
 export const dynamic = "force-dynamic";
 
@@ -43,8 +49,11 @@ export default async function ThirdPartyDetailPage({
       businessOwner: true,
       contractOwner: true,
       services: { include: { ictService: true } },
-      subcontractors: { orderBy: { name: "asc" } },
-      contracts: { orderBy: { startDate: "asc" } },
+      subcontractors: { include: { parent: true }, orderBy: [{ rank: "asc" }, { name: "asc" }] },
+      contracts: {
+        include: { clauses: true, preAssessment: true },
+        orderBy: { startDate: "asc" },
+      },
       exitStrategy: true,
       providedIctServices: true,
       criticalFunctions: true,
@@ -307,6 +316,85 @@ export default async function ThirdPartyDetailPage({
               </Table>
             </CardContent>
           </Card>
+
+          {/* Art.-30-Klauselmatrix + Art.-29-Vorabbewertung je Vertrag (Welle 2) */}
+          <div className="mt-4 space-y-4">
+            {tp.contracts.map((c) => {
+              const isCif = tp.criticalFunctions.length > 0;
+              const statuses = new Map(
+                c.clauses.map((cl) => [cl.clauseKey, cl.status as ClauseStatus]),
+              );
+              const rag = contractComplianceRag(isCif, statuses);
+              const rows = requiredClausesFor(isCif).map((clause) => {
+                const existing = c.clauses.find((cl) => cl.clauseKey === clause.key);
+                return {
+                  key: clause.key,
+                  ref: clause.ref,
+                  label: locale === "de" ? clause.de : clause.en,
+                  status: existing?.status ?? "MISSING",
+                  section: existing?.contractSection ?? "",
+                  comment: existing?.comment ?? "",
+                };
+              });
+              return (
+                <div key={c.id} className="space-y-4">
+                  <ContractClauseMatrix
+                    contractId={c.id}
+                    contractLabel={c.contractRef ?? c.title}
+                    rag={rag}
+                    clauses={rows}
+                    canWrite={canWrite}
+                    locale={locale}
+                  />
+                  {c.preAssessment ? (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>
+                          {locale === "de"
+                            ? "Vorabbewertung nach Art. 29"
+                            : "Pre-contract assessment (Art. 29)"}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="grid gap-3 text-sm md:grid-cols-2">
+                        <Info
+                          label={locale === "de" ? "Konzentrationsrisiko" : "Concentration risk"}
+                          value={c.preAssessment.concentrationRisk}
+                        />
+                        <Info
+                          label={locale === "de" ? "Substituierbarkeit" : "Substitutability"}
+                          value={c.preAssessment.substitutability}
+                        />
+                        <Info
+                          label={
+                            locale === "de" ? "Drittlandsverlagerung" : "Third-country transfer"
+                          }
+                          value={c.preAssessment.thirdCountryTransfer}
+                        />
+                        <Info
+                          label={
+                            locale === "de"
+                              ? "Auswirkung Geschäftsfortführung"
+                              : "Business continuity impact"
+                          }
+                          value={c.preAssessment.businessContinuityImpact}
+                        />
+                        <Info
+                          label={locale === "de" ? "Ergebnis / Freigabe" : "Result / approval"}
+                          value={`${c.preAssessment.result} · ${formatDate(c.preAssessment.approvedAt)}`}
+                        />
+                      </CardContent>
+                    </Card>
+                  ) : isCif ? (
+                    <p className="text-sm text-risk-high">
+                      {locale === "de"
+                        ? "Vorabbewertung nach Art. 29 nicht dokumentiert — bei CIF-Verträgen Pflicht vor Vertragsschluss."
+                        : "Art. 29 pre-contract assessment not documented — mandatory for CIF contracts."}
+                    </p>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
         </TabsContent>
 
         {/* ---------- Subdienstleister ---------- */}
@@ -316,33 +404,55 @@ export default async function ThirdPartyDetailPage({
               <CardTitle>{d.subcontractorsTitle}</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Rekursive Kette (Review v3, B-3): Rang, Land, Leistungsanteil,
+                  Kennzeichen "erbringt CIF-Dienst", Weitervergabe-Status. */}
               <Table>
                 <THead>
                   <TR>
+                    <TH>{locale === "de" ? "Rang" : "Rank"}</TH>
                     <TH>{d.subName}</TH>
+                    <TH>{locale === "de" ? "Übergeordnet" : "Parent"}</TH>
                     <TH>{d.subCountry}</TH>
                     <TH>{d.subService}</TH>
-                    <TH>{d.subCritical}</TH>
+                    <TH>{locale === "de" ? "Anteil" : "Share"}</TH>
+                    <TH>{locale === "de" ? "Erbringt CIF-Dienst" : "Provides CIF service"}</TH>
+                    <TH>{locale === "de" ? "Weitervergabe" : "Subcontracting"}</TH>
                   </TR>
                 </THead>
                 <TBody>
                   {tp.subcontractors.map((s) => (
                     <TR key={s.id}>
-                      <TD className="font-medium">{s.name}</TD>
+                      <TD className="tabular-nums">{s.rank}</TD>
+                      <TD className="font-medium" style={{ paddingLeft: `${s.rank * 12}px` }}>
+                        {s.name}
+                        {s.lei ? (
+                          <span className="ml-1 font-mono text-xs text-muted-foreground">
+                            {s.lei}
+                          </span>
+                        ) : null}
+                      </TD>
+                      <TD className="text-xs">{s.parent?.name ?? tp.name}</TD>
                       <TD className="text-xs">{s.country}</TD>
-                      <TD className="max-w-[320px] text-xs">{s.service}</TD>
+                      <TD className="max-w-[260px] text-xs">{s.service}</TD>
+                      <TD className="text-xs tabular-nums">
+                        {s.sharePercent != null ? `${s.sharePercent} %` : "–"}
+                      </TD>
                       <TD>
-                        {s.critical ? (
-                          <span className="text-xs font-medium text-risk-high">{t.common.yes}</span>
+                        {s.providesCifService ? (
+                          <Badge variant="critical">{t.common.yes}</Badge>
                         ) : (
                           <span className="text-xs">{t.common.no}</span>
                         )}
+                      </TD>
+                      <TD className="text-xs">
+                        {s.approvalStatus ?? "–"}
+                        {s.approvalDate ? ` · ${formatDate(s.approvalDate)}` : ""}
                       </TD>
                     </TR>
                   ))}
                   {tp.subcontractors.length === 0 ? (
                     <TR>
-                      <TD colSpan={4} className="text-center text-muted-foreground">
+                      <TD colSpan={8} className="text-center text-muted-foreground">
                         {d.noSubcontractors}
                       </TD>
                     </TR>

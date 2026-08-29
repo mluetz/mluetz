@@ -666,6 +666,136 @@ async function main() {
     });
   }
 
+  // ---------- Welle 2 (Review v3, P1-01/P1-03/P2-06): Registerfelder ----------
+  // LEIs (ISO-17442-prüfziffernvalide), Vertrags-Referenzen, Länderfelder,
+  // rekursive Subunternehmerkette, Art.-30-Klauseln, Art.-29-Vorabbewertung.
+  const tpLeis: Array<[number, string]> = [
+    [0, "529900CLOUDCOREXX170"],
+    [1, "529900PAYPROCESSX265"],
+    [2, "529900IAMSECUREXX333"],
+    [6, "529900SOCPROVIDER457"],
+    [9, "529900REGSAASXXXX530"],
+    [10, "529900WANPROVIDER663"],
+  ];
+  for (const [i, lei] of tpLeis) {
+    await db.thirdParty.update({ where: { id: tps[i]! }, data: { lei } });
+  }
+  // TP-006 ohne LEI: nationale Kennung als Fallback mit Kennungstyp
+  await db.thirdParty.update({
+    where: { id: tps[5]! },
+    data: { nationalId: "HRB 654321", nationalIdType: "HRB" },
+  });
+
+  const allContracts = await db.contract.findMany({ include: { thirdParty: true } });
+  for (const c of allContracts) {
+    const cif = tpCfLinks.some(([i]) => tps[i] === c.thirdPartyId);
+    await db.contract.update({
+      where: { id: c.id },
+      data: {
+        contractRef: `CTR-${c.thirdParty.tpId}-001`,
+        countryOfProvision: c.thirdParty.registeredCountry,
+        countryOfDataStorage: cif ? "DE" : c.thirdParty.registeredCountry,
+        countryOfDataProcessing: c.thirdParty.registeredCountry,
+      },
+    });
+  }
+
+  // Rekursive Kette an TP-001: vorhandene flache Glieder anreichern,
+  // darunter Rang-2-/Rang-3-Glieder (B-3: wer erbringt den CIF-Dienst?).
+  const tp1Subs = await db.subcontractor.findMany({ where: { thirdPartyId: tps[0]! } });
+  const firstSub = tp1Subs[0];
+  if (firstSub) {
+    await db.subcontractor.update({
+      where: { id: firstSub.id },
+      data: {
+        rank: 1,
+        lei: "529900NORDICDCXXX832",
+        sharePercent: 60,
+        providesCifService: true,
+        approvalStatus: "APPROVED",
+        approvalDate: daysFromNow(-180),
+      },
+    });
+    await db.subcontractor.create({
+      data: {
+        thirdPartyId: tps[0]!,
+        parentId: firstSub.id,
+        rank: 2,
+        name: "BalticFiber OÜ",
+        country: "EE",
+        service: "Netzanbindung Rechenzentrum",
+        sharePercent: 10,
+        providesCifService: false,
+        approvalStatus: "NOTIFIED",
+      },
+    });
+  }
+  if (tp1Subs[1]) {
+    await db.subcontractor.update({
+      where: { id: tp1Subs[1].id },
+      data: { rank: 1, sharePercent: 25, approvalStatus: "APPROVED", approvalDate: daysFromNow(-150) },
+    });
+  }
+
+  // Art.-30-Klauselmatrix: CIF-Vertrag TP-001 überwiegend erfüllt, zwei Lücken;
+  // Nicht-CIF-Vertrag TP-012 nur Abs.-2-Katalog.
+  const { ART30_CLAUSES } = await import("../lib/domain/art30");
+  const tp1Contract = allContracts.find((c) => c.thirdPartyId === tps[0]);
+  if (tp1Contract) {
+    for (const clause of ART30_CLAUSES) {
+      const gap = clause.key === "ART30_3_D" || clause.key === "ART30_3_G";
+      await db.contractClause.create({
+        data: {
+          contractId: tp1Contract.id,
+          clauseKey: clause.key,
+          status: gap ? "MISSING" : "FULFILLED",
+          contractSection: gap ? null : `§ ${ART30_CLAUSES.indexOf(clause) + 4}`,
+          comment: gap ? "In Nachverhandlung (Nachtrag 2026-02)" : null,
+        },
+      });
+    }
+    await db.preContractAssessment.create({
+      data: {
+        contractId: tp1Contract.id,
+        concentrationRisk:
+          "Hoch — drei kritische Funktionen auf einem Anbieter; gemeinsames RZ mit TP-007 (Nordic DC).",
+        substitutability: "Schwierig — Migration > 6 Monate, kein gleichwertiger Anbieter unter Vertrag.",
+        thirdCountryTransfer: "Keine Drittlandsverlagerung; Datenhaltung DE/DK (EU).",
+        businessContinuityImpact:
+          "Ausfall unterbricht Zahlungsverkehr und Kundenportal unmittelbar (RTO 4 h).",
+        result: "APPROVED_WITH_CONDITIONS",
+        assessedById: uTprm,
+        assessedAt: daysFromNow(-700),
+        approvedById: uSl,
+        approvedAt: daysFromNow(-695),
+      },
+    });
+  }
+  const tp12Contract = allContracts.find((c) => c.thirdPartyId === tps[11]);
+  if (tp12Contract) {
+    for (const clause of ART30_CLAUSES.filter((c) => !c.cifOnly)) {
+      await db.contractClause.create({
+        data: {
+          contractId: tp12Contract.id,
+          clauseKey: clause.key,
+          status: clause.key === "ART30_2_H" ? "PARTIAL" : "FULFILLED",
+        },
+      });
+    }
+  }
+
+  // Funktions-Identifikationscodes für das Register
+  for (let i = 0; i < cfs.length; i++) {
+    await db.criticalFunction.update({
+      where: { id: cfs[i]! },
+      data: { functionIdCode: `F-${String(i + 1).padStart(3, "0")}` },
+    });
+  }
+
+  // ITS-Fassungen (beide Schemata, TO_VERIFY) + meldende Entitäten
+  const { seedRegisterMapping } = await import("./register-seed.mjs");
+  await seedRegisterMapping(db, { log: (m: string) => console.log(`  ${m}`) });
+
   // ---------- ICT-Services (8) ----------
   const ictDefs: Array<[string, string, string, string | null, number[]]> = [
     ["Kundenportal-Hosting", "Betrieb der Portal-Infrastruktur", "CLOUD_HOSTING", tps[0]!, [2]],

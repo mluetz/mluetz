@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { audit } from "@/lib/audit";
 import { assertPermission } from "@/lib/authz";
 import { TP_STATUS, TP_TRANSITIONS, type TpStatus } from "@/lib/domain/enums";
+import { CLAUSE_STATUS, requiredClausesFor } from "@/lib/domain/art30";
 
 export interface ActionResult {
   error?: string;
@@ -243,6 +244,107 @@ export async function setTpCriticalFunctions(
     revalidatePath(`/third-parties/${tp.id}`);
     revalidatePath("/third-parties");
     revalidatePath("/dora");
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };
+  }
+}
+
+// ---------------------------------------------------------------
+// Klauselmatrix Art. 30 (Review v3, P1-03): einzeln quittierbare
+// Pflichtklauseln je Vertrag; automatisches Finding, wenn ein
+// CIF-Vertrag eine Pflichtklausel nicht erfüllt. Auditiert.
+// ---------------------------------------------------------------
+
+const clauseMatrixSchema = z.object({ contractId: z.string().min(1) });
+
+export async function saveContractClauses(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const user = await assertPermission("thirdparty:write");
+    const parsed = clauseMatrixSchema.safeParse({ contractId: formData.get("contractId") });
+    if (!parsed.success) return { error: "Ungültige Eingaben." };
+
+    const contract = await db.contract.findUnique({
+      where: { id: parsed.data.contractId },
+      include: {
+        thirdParty: { include: { _count: { select: { criticalFunctions: true } } } },
+        clauses: true,
+      },
+    });
+    if (!contract) return { error: "Vertrag nicht gefunden." };
+    const isCif = contract.thirdParty._count.criticalFunctions > 0;
+
+    const changes: string[] = [];
+    let missingMandatory = false;
+    for (const clause of requiredClausesFor(isCif)) {
+      const status = String(formData.get(`clause_${clause.key}_status`) ?? "MISSING");
+      if (!CLAUSE_STATUS.includes(status as (typeof CLAUSE_STATUS)[number]))
+        return { error: `Unzulässiger Status für ${clause.ref}.` };
+      const section = String(formData.get(`clause_${clause.key}_section`) ?? "").trim() || null;
+      const comment = String(formData.get(`clause_${clause.key}_comment`) ?? "").trim() || null;
+      const existing = contract.clauses.find((c) => c.clauseKey === clause.key);
+      if (status === "MISSING") missingMandatory = true;
+      if (
+        !existing ||
+        existing.status !== status ||
+        existing.contractSection !== section ||
+        existing.comment !== comment
+      ) {
+        await db.contractClause.upsert({
+          where: { contractId_clauseKey: { contractId: contract.id, clauseKey: clause.key } },
+          create: {
+            contractId: contract.id,
+            clauseKey: clause.key,
+            status,
+            contractSection: section,
+            comment,
+          },
+          update: { status, contractSection: section, comment },
+        });
+        changes.push(`${clause.key}: ${existing?.status ?? "–"} -> ${status}`);
+      }
+    }
+
+    if (changes.length > 0) {
+      await audit({
+        userId: user.id,
+        userEmail: user.email,
+        action: "UPDATE",
+        entityType: "Contract",
+        entityId: contract.id,
+        field: "art30Clauses",
+        oldValue: null,
+        newValue: changes.join("; "),
+        comment: `Art.-30-Klauselmatrix aktualisiert (${contract.contractRef ?? contract.title})`,
+      });
+    }
+
+    // Automatisches Finding bei Pflichtklausel-Lücke in CIF-Verträgen.
+    if (isCif && missingMandatory) {
+      const title = `Art.-30-Pflichtklausel fehlt: ${contract.contractRef ?? contract.title}`;
+      const open = await db.doraFinding.findFirst({
+        where: { title, status: { not: "CLOSED" } },
+      });
+      if (!open) {
+        const count = await db.doraFinding.count();
+        await db.doraFinding.create({
+          data: {
+            findingId: `FND-2026-${String(count + 1).padStart(4, "0")}`,
+            source: "SELF_ASSESSMENT",
+            severity: "HIGH",
+            title,
+            description:
+              "Automatisch erzeugt (P1-03): Mindestens eine Pflichtklausel nach Art. 30 ist in einem Vertrag über CIF-stützende IKT-Dienstleistungen als fehlend markiert. Vertrag nachverhandeln oder Klausel nachweisen.",
+            createdById: user.id,
+          },
+        });
+      }
+    }
+
+    revalidatePath(`/third-parties/${contract.thirdPartyId}`);
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };
