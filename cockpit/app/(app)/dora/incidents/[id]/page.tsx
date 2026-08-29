@@ -22,8 +22,8 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
   const locale = await getLocale();
   const t = DORA_MESSAGES[locale];
   const { id } = await params;
-  const incident = await db.incident.findUnique({
-    where: { id },
+  const incident = await db.incident.findFirst({
+    where: { OR: [{ id }, { incidentId: id }] },
     include: {
       criticalFunction: true,
       thirdParty: true,

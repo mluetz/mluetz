@@ -22,8 +22,8 @@ export default async function ControlDetailPage({ params }: { params: Promise<{ 
   const m = OPS_MESSAGES[locale];
   const t = m.controls.detail;
   const { id } = await params;
-  const control = await db.control.findUnique({
-    where: { id },
+  const control = await db.control.findFirst({
+    where: { OR: [{ id }, { controlId: id }] },
     include: {
       owner: true,
       assets: true,

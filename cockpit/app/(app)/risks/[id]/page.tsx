@@ -32,8 +32,8 @@ export default async function RiskDetailPage({ params }: { params: Promise<{ id:
   const t = CORE_MESSAGES[locale].riskDetail;
   const tEnums = CORE_MESSAGES[locale].enums;
   const { id } = await params;
-  const risk = await db.risk.findUnique({
-    where: { id },
+  const risk = await db.risk.findFirst({
+    where: { OR: [{ id }, { riskId: id }] },
     include: {
       category: true,
       riskOwner: true,

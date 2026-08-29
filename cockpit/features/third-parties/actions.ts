@@ -157,7 +157,9 @@ export async function updateTpAssessment(
       return { error: "Ungültiges Datum für das nächste Review." };
 
     const concentrationRisk = formData.get("concentrationRisk") === "on";
-    const supportsCriticalFunction = formData.get("supportsCriticalFunction") === "on";
+    // Hinweis (Review v3, B-2): Die CIF-Einstufung ist KEIN Assessment-Feld
+    // mehr — sie wird ausschließlich über die Relation criticalFunctions
+    // gepflegt (setTpCriticalFunctions) und daraus abgeleitet.
 
     await db.thirdParty.update({
       where: { id: d.thirdPartyId },
@@ -168,7 +170,6 @@ export async function updateTpAssessment(
         dueDiligenceStatus: d.dueDiligenceStatus,
         substitutability: d.substitutability,
         concentrationRisk,
-        supportsCriticalFunction,
         assessmentDate: new Date(),
         nextReviewDate,
       },
@@ -183,12 +184,65 @@ export async function updateTpAssessment(
       oldValue: `criticality=${tp.criticality}, inherent=${tp.inherentRiskScore ?? "–"}, residual=${tp.residualRiskScore ?? "–"}`,
       newValue:
         `criticality=${d.criticality}, inherent=${d.inherentRiskScore}, residual=${d.residualRiskScore}, ` +
-        `dd=${d.dueDiligenceStatus}, subst=${d.substitutability}, konzentration=${concentrationRisk ? "ja" : "nein"}, ` +
-        `kritFunktion=${supportsCriticalFunction ? "ja" : "nein"}`,
+        `dd=${d.dueDiligenceStatus}, subst=${d.substitutability}, konzentration=${concentrationRisk ? "ja" : "nein"}`,
     });
     revalidatePath(`/third-parties/${d.thirdPartyId}`);
     revalidatePath("/third-parties");
     revalidatePath("/overview");
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };
+  }
+}
+
+// ---------------------------------------------------------------
+// CIF-Verknüpfung (Review v3, P1-02): Pflege der Relation
+// ThirdParty <-> CriticalFunction — die einzige Quelle der
+// CIF-Einstufung einer Drittpartei. Auditiert mit alt -> neu.
+// ---------------------------------------------------------------
+
+const cifLinkSchema = z.object({ thirdPartyId: z.string().min(1) });
+
+export async function setTpCriticalFunctions(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const user = await assertPermission("thirdparty:write");
+    const parsed = cifLinkSchema.safeParse({ thirdPartyId: formData.get("thirdPartyId") });
+    if (!parsed.success) return { error: "Ungültige Eingaben." };
+    const cfIds = formData.getAll("cfIds").map(String).filter(Boolean);
+
+    const tp = await db.thirdParty.findUnique({
+      where: { id: parsed.data.thirdPartyId },
+      include: { criticalFunctions: { select: { id: true, cfId: true } } },
+    });
+    if (!tp) return { error: "Drittpartei nicht gefunden." };
+
+    const cfs = await db.criticalFunction.findMany({
+      where: { id: { in: cfIds } },
+      select: { id: true, cfId: true },
+    });
+    if (cfs.length !== cfIds.length) return { error: "Unbekannte kritische Funktion." };
+
+    await db.thirdParty.update({
+      where: { id: tp.id },
+      data: { criticalFunctions: { set: cfs.map((c) => ({ id: c.id })) } },
+    });
+    await audit({
+      userId: user.id,
+      userEmail: user.email,
+      action: "UPDATE",
+      entityType: "ThirdParty",
+      entityId: tp.id,
+      field: "criticalFunctions",
+      oldValue: tp.criticalFunctions.map((c) => c.cfId).join(", ") || "–",
+      newValue: cfs.map((c) => c.cfId).join(", ") || "–",
+      comment: "CIF-Verknüpfung aktualisiert (abgeleitete Einstufung)",
+    });
+    revalidatePath(`/third-parties/${tp.id}`);
+    revalidatePath("/third-parties");
+    revalidatePath("/dora");
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };

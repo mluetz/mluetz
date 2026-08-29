@@ -18,8 +18,8 @@ export default async function EvidenceDetailPage({ params }: { params: Promise<{
   const m = OPS_MESSAGES[locale];
   const t = m.evidence.detail;
   const { id } = await params;
-  const evidence = await db.evidence.findUnique({
-    where: { id },
+  const evidence = await db.evidence.findFirst({
+    where: { OR: [{ id }, { evidenceId: id }] },
     include: {
       owner: true,
       reviewer: true,

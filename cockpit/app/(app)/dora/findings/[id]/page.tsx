@@ -29,8 +29,8 @@ export default async function DoraFindingDetailPage({
   const locale = await getLocale();
   const t = DORA_MESSAGES[locale];
   const { id } = await params;
-  const finding = await db.doraFinding.findUnique({
-    where: { id },
+  const finding = await db.doraFinding.findFirst({
+    where: { OR: [{ id }, { findingId: id }] },
     include: {
       requirement: { select: { id: true, reqId: true, title: true } },
       action: { select: { id: true, actionId: true, title: true, status: true, dueDate: true } },

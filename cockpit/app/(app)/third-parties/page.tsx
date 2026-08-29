@@ -40,6 +40,7 @@ export default async function ThirdPartiesPage({
       contracts: { select: { endDate: true } },
       exitStrategy: true,
       risks: { select: { actions: { select: { status: true, dueDate: true } } } },
+      _count: { select: { criticalFunctions: true } },
     },
     orderBy: { tpId: "asc" },
   });
@@ -49,7 +50,9 @@ export default async function ThirdPartiesPage({
 
   let filtered = thirdParties;
   if (sp.critical === "1") {
-    filtered = filtered.filter((t) => t.criticality === "CRITICAL" || t.supportsCriticalFunction);
+    filtered = filtered.filter(
+      (t) => t.criticality === "CRITICAL" || t._count.criticalFunctions > 0,
+    );
   }
   if (sp.expiringContracts === "1") {
     filtered = filtered.filter((t) => t.contracts.some((c) => c.endDate && c.endDate < in180Days));
@@ -91,7 +94,7 @@ export default async function ThirdPartiesPage({
       name: t.name,
       providedService: t.providedService,
       criticality: t.criticality,
-      supportsCriticalFunction: t.supportsCriticalFunction,
+      supportsCriticalFunction: t._count.criticalFunctions > 0,
       residualRiskScore: t.residualRiskScore,
       status: t.status,
       concentrationRisk: t.concentrationRisk,

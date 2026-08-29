@@ -8,6 +8,7 @@ import {
   type TrafficLight,
 } from "@/lib/domain/dora-scoring";
 import { isOverdue } from "@/lib/utils";
+import { maxCifDependency } from "@/lib/domain/kri";
 
 /**
  * Aggregation des DORA-Anforderungskatalogs für Dashboard, Listen und
@@ -185,10 +186,11 @@ export async function getDoraOverview(): Promise<DoraOverview> {
   };
 
   // Berechenbare Kennzahlen aus dem Kennzahlenkatalog (Tabelle 25)
+  // CIF-Bezug ausschließlich aus der Relation (Review v3, B-2/P1-02).
   const [tpCritical, tpCriticalTestedExit, risksAboveAppetite, contractsTotal] = await Promise.all([
     db.thirdParty.findMany({
-      where: { supportsCriticalFunction: true },
-      include: { exitStrategy: true },
+      where: { criticalFunctions: { some: {} } },
+      include: { exitStrategy: true, _count: { select: { criticalFunctions: true } } },
     }),
     Promise.resolve(null),
     db.risk.findMany({
@@ -203,14 +205,9 @@ export async function getDoraOverview(): Promise<DoraOverview> {
     const a = r.assessments[0];
     return a && a.residualScore > (r.appetiteOverride ?? r.category.appetiteThreshold);
   }).length;
-  const maxCifPerProvider = Math.max(
-    0,
-    ...(
-      await db.thirdParty.findMany({
-        where: { supportsCriticalFunction: true },
-        include: { _count: { select: { criticalFunctions: true } } },
-      })
-    ).map((t) => t._count.criticalFunctions),
+  // Leere Relation => "nicht berechenbar" (null), NIE 0 mit Zielerreichung.
+  const maxCifPerProvider = maxCifDependency(
+    tpCritical.map((t) => t._count.criticalFunctions),
   );
 
   const kpis: DoraOverview["kpis"] = [
@@ -252,9 +249,9 @@ export async function getDoraOverview(): Promise<DoraOverview> {
     {
       id: "KRI-K5-04",
       label: "Max. CIF-Abhängigkeit je Provider",
-      value: String(maxCifPerProvider),
+      value: maxCifPerProvider === null ? "nicht berechenbar" : String(maxCifPerProvider),
       target: "≤ 2",
-      ok: maxCifPerProvider <= 2,
+      ok: maxCifPerProvider === null ? null : maxCifPerProvider <= 2,
     },
     {
       id: "KPI-K5-01",

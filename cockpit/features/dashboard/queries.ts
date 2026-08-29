@@ -50,7 +50,7 @@ export async function getDashboardData(filters: RiskFilters = {}): Promise<Dashb
       where: { operatingEffectiveness: { in: ["INEFFECTIVE", "PARTIALLY_EFFECTIVE"] } },
     }),
     db.thirdParty.count({
-      where: { OR: [{ criticality: "CRITICAL" }, { supportsCriticalFunction: true }] },
+      where: { OR: [{ criticality: "CRITICAL" }, { criticalFunctions: { some: {} } }] },
     }),
     db.contract.count({
       where: { endDate: { not: null, lte: new Date(Date.now() + 180 * 86400000) } },

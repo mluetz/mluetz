@@ -15,6 +15,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import {
   ExitStrategyForm,
   TpAssessmentForm,
+  TpCifLinkForm,
   TpWorkflowPanel,
 } from "@/features/third-parties/panels";
 
@@ -35,8 +36,9 @@ export default async function ThirdPartyDetailPage({
   const locale = await getLocale();
   const t = TPRM_MESSAGES[locale];
   const { id } = await params;
-  const tp = await db.thirdParty.findUnique({
-    where: { id },
+  // Sprechende IDs zusätzlich zur CUID auflösen (Review v3, P3-03).
+  const tp = await db.thirdParty.findFirst({
+    where: { OR: [{ id }, { tpId: id }] },
     include: {
       businessOwner: true,
       contractOwner: true,
@@ -51,6 +53,11 @@ export default async function ThirdPartyDetailPage({
     },
   });
   if (!tp) notFound();
+
+  const allCfs = await db.criticalFunction.findMany({
+    select: { id: true, cfId: true, name: true, isCritical: true },
+    orderBy: { cfId: "asc" },
+  });
 
   const status = tp.status as TpStatus;
   const allowedTargets = (TP_TRANSITIONS[status] ?? []) as string[];
@@ -76,9 +83,10 @@ export default async function ThirdPartyDetailPage({
             <Badge variant={riskClassVariant(tp.criticality)}>
               {t.labels.tpCriticality[tp.criticality] ?? tp.criticality}
             </Badge>
-            {tp.supportsCriticalFunction ? (
+            {tp.criticalFunctions.length > 0 ? (
               <Badge variant="high">
-                <AlertTriangle className="mr-1 h-3 w-3" aria-hidden /> {d.supportsCriticalFunction}
+                <AlertTriangle className="mr-1 h-3 w-3" aria-hidden /> {d.supportsCriticalFunction}{" "}
+                ({tp.criticalFunctions.length})
               </Badge>
             ) : null}
             {tp.concentrationRisk ? <Badge variant="high">{d.concentrationRisk}</Badge> : null}
@@ -216,20 +224,27 @@ export default async function ThirdPartyDetailPage({
         {/* ---------- Assessment ---------- */}
         <TabsContent value="assessment">
           {canWrite ? (
-            <TpAssessmentForm
-              thirdPartyId={tp.id}
-              locale={locale}
-              defaults={{
-                criticality: tp.criticality,
-                inherentRiskScore: tp.inherentRiskScore,
-                residualRiskScore: tp.residualRiskScore,
-                dueDiligenceStatus: tp.dueDiligenceStatus,
-                substitutability: tp.substitutability,
-                concentrationRisk: tp.concentrationRisk,
-                supportsCriticalFunction: tp.supportsCriticalFunction,
-                nextReviewDate: toDateInput(tp.nextReviewDate),
-              }}
-            />
+            <div className="space-y-4">
+              <TpAssessmentForm
+                thirdPartyId={tp.id}
+                locale={locale}
+                defaults={{
+                  criticality: tp.criticality,
+                  inherentRiskScore: tp.inherentRiskScore,
+                  residualRiskScore: tp.residualRiskScore,
+                  dueDiligenceStatus: tp.dueDiligenceStatus,
+                  substitutability: tp.substitutability,
+                  concentrationRisk: tp.concentrationRisk,
+                  nextReviewDate: toDateInput(tp.nextReviewDate),
+                }}
+              />
+              <TpCifLinkForm
+                thirdPartyId={tp.id}
+                allCfs={allCfs}
+                linkedCfIds={tp.criticalFunctions.map((c) => c.id)}
+                locale={locale}
+              />
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">{d.noWritePermissionAssessment}</p>
           )}

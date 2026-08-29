@@ -19,8 +19,8 @@ export default async function ActionDetailPage({ params }: { params: Promise<{ i
   const m = OPS_MESSAGES[locale];
   const t = m.actions.detail;
   const { id } = await params;
-  const action = await db.action.findUnique({
-    where: { id },
+  const action = await db.action.findFirst({
+    where: { OR: [{ id }, { actionId: id }] },
     include: {
       risk: { select: { id: true, riskId: true, title: true } },
       owner: true,

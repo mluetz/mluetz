@@ -153,17 +153,65 @@ async function main() {
   const locPar = await db.location.create({ data: { name: "Paris", country: "FR" } });
   const locLux = await db.location.create({ data: { name: "Luxemburg", country: "LU" } });
 
-  const cfDefs: Array<[string, string, boolean]> = [
-    ["Zahlungsverkehr", "Abwicklung des nationalen und internationalen Zahlungsverkehrs", true],
-    ["Wertpapierabwicklung", "Settlement und Verwahrung von Wertpapiergeschäften", true],
-    ["Kundenportal & Online Banking", "Digitaler Zugangskanal für Kunden", true],
-    ["Regulatorisches Meldewesen", "Aufsichtsrechtliche Meldungen und Berichte", true],
-    ["Handelsplattform", "Orderannahme und -ausführung", true],
-    ["Personalabrechnung", "Gehalts- und Personalprozesse", false],
+  // CIF-Register (Review v3, P1-02): sprechende ID, Eigentümer, Wieder-
+  // anlaufkenngrößen und ein aktuelles, begründetes Bewertungsverfahren.
+  const cfDefs: Array<{
+    cfId: string;
+    name: string;
+    description: string;
+    isCritical: boolean;
+    businessArea: string;
+    rtoHours: number;
+    rpoHours: number;
+    maxOutage: number;
+    recoveryOrder: number;
+  }> = [
+    { cfId: "CIF-01", name: "Zahlungsverkehr", description: "Abwicklung des nationalen und internationalen Zahlungsverkehrs", isCritical: true, businessArea: "Payments", rtoHours: 4, rpoHours: 0.25, maxOutage: 8, recoveryOrder: 1 },
+    { cfId: "CIF-02", name: "Wertpapierabwicklung", description: "Settlement und Verwahrung von Wertpapiergeschäften", isCritical: true, businessArea: "Securities Ops", rtoHours: 8, rpoHours: 1, maxOutage: 24, recoveryOrder: 2 },
+    { cfId: "CIF-03", name: "Kundenportal & Online Banking", description: "Digitaler Zugangskanal für Kunden", isCritical: true, businessArea: "Digital Banking", rtoHours: 8, rpoHours: 1, maxOutage: 24, recoveryOrder: 3 },
+    { cfId: "CIF-04", name: "Regulatorisches Meldewesen", description: "Aufsichtsrechtliche Meldungen und Berichte", isCritical: true, businessArea: "Finance/Regulatory", rtoHours: 24, rpoHours: 4, maxOutage: 48, recoveryOrder: 4 },
+    { cfId: "CIF-05", name: "Handelsplattform", description: "Orderannahme und -ausführung", isCritical: true, businessArea: "Trading", rtoHours: 2, rpoHours: 0.25, maxOutage: 4, recoveryOrder: 1 },
+    { cfId: "CIF-06", name: "Personalabrechnung", description: "Gehalts- und Personalprozesse", isCritical: false, businessArea: "HR", rtoHours: 72, rpoHours: 24, maxOutage: 120, recoveryOrder: 9 },
   ];
   const cfs: string[] = [];
-  for (const [name, description, isCritical] of cfDefs) {
-    const cf = await db.criticalFunction.create({ data: { name, description, isCritical } });
+  for (const d of cfDefs) {
+    const cf = await db.criticalFunction.create({
+      data: {
+        cfId: d.cfId,
+        name: d.name,
+        description: d.description,
+        isCritical: d.isCritical,
+        businessArea: d.businessArea,
+        ownerId: uIso,
+        rtoHours: d.rtoHours,
+        rpoHours: d.rpoHours,
+        maxTolerableOutageHours: d.maxOutage,
+        impactTolerance: d.isCritical
+          ? "Kein Zahlungs-/Serviceausfall > RTO; wesentliche Kundenauswirkung ab 25 % Transaktionsvolumen"
+          : "Verzögerung bis zum nächsten Abrechnungslauf tolerierbar",
+        recoveryOrder: d.recoveryOrder,
+        reassessmentMonths: 12,
+        nextAssessmentDate: daysFromNow(320),
+        assessments: {
+          create: {
+            version: 1,
+            isCritical: d.isCritical,
+            criteria: JSON.stringify([
+              { criterion: "Auswirkung auf Finanzdienstleistung bei Ausfall (Art. 3 Nr. 22)", threshold: "wesentlich", actualValue: d.isCritical ? "wesentlich" : "gering", met: d.isCritical },
+              { criterion: "Regulatorische Pflicht betroffen", threshold: "ja", actualValue: d.cfId === "CIF-04" ? "ja" : d.isCritical ? "mittelbar" : "nein", met: d.isCritical },
+              { criterion: "Maximal tolerierbare Ausfallzeit", threshold: "<= 48 h", actualValue: `${d.maxOutage} h`, met: d.maxOutage <= 48 },
+            ]),
+            rationale: d.isCritical
+              ? `Ausfall unterbricht ${d.name} unmittelbar; RTO ${d.rtoHours} h, maximal tolerierbare Ausfallzeit ${d.maxOutage} h.`
+              : "Unterstützender Prozess ohne unmittelbare Auswirkung auf Finanzdienstleistungen.",
+            assessedById: uIso,
+            approvedById: uSl,
+            approvedAt: daysFromNow(-40),
+            isCurrent: true,
+          },
+        },
+      },
+    });
     cfs.push(cf.id);
   }
 
@@ -521,7 +569,6 @@ async function main() {
         serviceLocations: t.serviceLocations,
         dataLocations: t.dataLocations,
         informationTypes: t.infoTypes,
-        supportsCriticalFunction: t.critical,
         ictServiceCategory: t.category,
         criticality: t.criticality,
         inherentRiskScore: t.inherent,
@@ -598,6 +645,25 @@ async function main() {
         },
       });
     }
+  }
+
+  // ---------- CIF-Verknüpfung der Drittparteien (Review v3, B-2/P1-02) ----------
+  // Die einzige Quelle der CIF-Einstufung: Relation ThirdParty <-> CriticalFunction.
+  // Index in tps[] = TP-00(i+1); Index in cfs[] = CIF-0(i+1).
+  const tpCfLinks: Array<[number, number[]]> = [
+    [0, [0, 2, 3]], // TP-001 Cloud-Hosting: Zahlungsverkehr, Kundenportal, Meldewesen
+    [1, [0]], // TP-002 Payment-Processing: Zahlungsverkehr
+    [2, [1, 4]], // TP-003 IAM: Wertpapierabwicklung, Handelsplattform
+    [5, [2]], // TP-006: Kundenportal
+    [6, [0, 4]], // TP-007 SOC: Zahlungsverkehr, Handelsplattform
+    [9, [3]], // TP-010 Melde-SaaS: Regulatorisches Meldewesen
+    [10, [0, 2]], // TP-011 WAN: Zahlungsverkehr, Kundenportal
+  ];
+  for (const [tpIdx, cfIdx] of tpCfLinks) {
+    await db.thirdParty.update({
+      where: { id: tps[tpIdx]! },
+      data: { criticalFunctions: { connect: cfIdx.map((i) => ({ id: cfs[i]! })) } },
+    });
   }
 
   // ---------- ICT-Services (8) ----------
@@ -2616,45 +2682,90 @@ async function main() {
     await db.appSetting.create({ data: { key, value, description } });
   }
 
-  // ---------- Beispiel-Audit-Einträge ----------
-  await db.auditLog.create({
-    data: {
-      userId: uRm,
-      userEmail: "riskmanager@demo.example",
-      action: "CREATE",
-      entityType: "Risk",
-      entityId: riskIds[0]!,
-      comment: "Seed: Ersterfassung",
-    },
-  });
-  await db.auditLog.create({
-    data: {
-      userId: uIso,
-      userEmail: "iso@demo.example",
-      action: "STATUS_CHANGE",
-      entityType: "Risk",
-      entityId: riskIds[0]!,
-      field: "status",
-      oldValue: "SECOND_LINE_REVIEW",
-      newValue: "TREATMENT",
-      comment: "Freigabe nach Second-Line-Review",
-    },
-  });
-  await db.auditLog.create({
-    data: {
-      userId: uMgmt,
-      userEmail: "management@demo.example",
-      action: "ACCEPTANCE_DECISION",
-      entityType: "RiskAcceptance",
-      entityId: riskIds[21]!,
-      newValue: "APPROVED",
-      comment: "Befristete Akzeptanz bis Q1/2027 mit Auflagen",
-    },
-  });
+  // ---------- Beispiel-Audit-Einträge (hash-verkettet, Review v3 P1-05) ----------
+  // Feldgenaue Historie über mehrere Entitätstypen, damit die Detailseiten-
+  // Auszüge im Demo-Stand gefüllt sind (u. a. Incident, ThirdParty, Contract).
+  const { createHash } = await import("node:crypto");
+  let auditSeq = 0;
+  let auditPrevHash: string | null = null;
+  async function seedAudit(e: {
+    userId: string | null;
+    userEmail: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    field?: string;
+    oldValue?: string;
+    newValue?: string;
+    comment?: string;
+    daysAgo?: number;
+  }) {
+    auditSeq += 1;
+    const timestamp = daysFromNow(-(e.daysAgo ?? 0));
+    const base = {
+      seq: auditSeq,
+      timestamp,
+      userId: e.userId,
+      userEmail: e.userEmail,
+      action: e.action,
+      entityType: e.entityType,
+      entityId: e.entityId,
+      field: e.field ?? null,
+      oldValue: e.oldValue ?? null,
+      newValue: e.newValue ?? null,
+      comment: e.comment ?? null,
+      prevHash: auditPrevHash,
+    };
+    const hash = createHash("sha256")
+      .update(
+        JSON.stringify([
+          base.seq,
+          base.timestamp.toISOString(),
+          base.userId,
+          base.userEmail,
+          base.action,
+          base.entityType,
+          base.entityId,
+          base.field,
+          base.oldValue,
+          base.newValue,
+          base.comment,
+          base.prevHash,
+        ]),
+        "utf8",
+      )
+      .digest("hex");
+    await db.auditLog.create({ data: { ...base, hash } });
+    auditPrevHash = hash;
+  }
+
+  await seedAudit({ userId: uRm, userEmail: "riskmanager@demo.example", action: "CREATE", entityType: "Risk", entityId: riskIds[0]!, comment: "Ersterfassung", daysAgo: 120 });
+  await seedAudit({ userId: uIso, userEmail: "iso@demo.example", action: "STATUS_CHANGE", entityType: "Risk", entityId: riskIds[0]!, field: "status", oldValue: "SECOND_LINE_REVIEW", newValue: "TREATMENT", comment: "Freigabe nach Second-Line-Review", daysAgo: 90 });
+  await seedAudit({ userId: uMgmt, userEmail: "management@demo.example", action: "ACCEPTANCE_DECISION", entityType: "RiskAcceptance", entityId: riskIds[21]!, newValue: "APPROVED", comment: "Befristete Akzeptanz bis Q1/2027 mit Auflagen", daysAgo: 60 });
+  await seedAudit({ userId: uTprm, userEmail: "tprm@demo.example", action: "ASSESS", entityType: "ThirdParty", entityId: tps[0]!, field: "assessment", oldValue: "criticality=HIGH, residual=14", newValue: "criticality=CRITICAL, residual=12", comment: "Jahres-Review: Hochstufung wegen CIF-Abdeckung", daysAgo: 75 });
+  await seedAudit({ userId: uTprm, userEmail: "tprm@demo.example", action: "UPDATE", entityType: "ThirdParty", entityId: tps[0]!, field: "criticalFunctions", oldValue: "CIF-01, CIF-03", newValue: "CIF-01, CIF-03, CIF-04", comment: "CIF-Verknüpfung um Meldewesen ergänzt", daysAgo: 74 });
+  await seedAudit({ userId: uTprm, userEmail: "tprm@demo.example", action: "UPDATE", entityType: "Contract", entityId: tps[0]!, field: "noticePeriodDays", oldValue: "90", newValue: "180", comment: "Kündigungsfrist an DORA-Exit-Anforderungen angepasst", daysAgo: 70 });
+  // Incident-/Finding-/Action-Historie folgt NACH seedDora (die Objekte
+  // entstehen dort) — siehe unten.
 
   // ---------- DORA-Anforderungskatalog (FRWK-DORA-001) ----------
   const { seedDora } = await import("./dora-seed-core.mjs");
   await seedDora(db, { log: (m: string) => console.log(`  ${m}`) });
+
+  // ---------- Feldgenaue Historie für DORA-Objekte (nach seedDora) ----------
+  const inc1 = await db.incident.findUnique({ where: { incidentId: "INC-2026-0001" } });
+  if (inc1) {
+    await seedAudit({ userId: uIso, userEmail: "iso@demo.example", action: "STATUS_CHANGE", entityType: "Incident", entityId: inc1.id, field: "status", oldValue: "DETECTED", newValue: "CLASSIFIED", comment: "Klassifizierung abgeschlossen; Meldefristen laufen", daysAgo: 4 });
+    await seedAudit({ userId: uIso, userEmail: "iso@demo.example", action: "UPDATE", entityType: "Incident", entityId: inc1.id, field: "isMajor", oldValue: "false", newValue: "true", comment: "Einstufung als schwerwiegend nach Art. 18", daysAgo: 4 });
+  }
+  const act24 = await db.action.findUnique({ where: { actionId: "ACT-2026-0024" } }).catch(() => null);
+  if (act24) {
+    await seedAudit({ userId: uAo, userEmail: "actionowner@demo.example", action: "UPDATE", entityType: "Action", entityId: act24.id, field: "dueDate", oldValue: "2026-08-15", newValue: "2026-09-30", comment: "Terminverschiebung nach Abstimmung mit Fachbereich", daysAgo: 20 });
+  }
+  const fnd2 = await db.doraFinding.findUnique({ where: { findingId: "FND-2026-0002" } }).catch(() => null);
+  if (fnd2) {
+    await seedAudit({ userId: uSl, userEmail: "secondline@demo.example", action: "APPROVE", entityType: "DoraFinding", entityId: fnd2.id, field: "status", oldValue: "IN_PROGRESS", newValue: fnd2.status, comment: "Wirksamkeitsnachweis geprüft", daysAgo: 12 });
+  }
 
   console.log("Seed abgeschlossen.");
   console.log(`Demo-Passwort für alle Konten: ${DEMO_PASSWORD}`);

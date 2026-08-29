@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { formatDateTime } from "@/lib/utils";
+import { verifyAuditChain } from "@/lib/audit-integrity";
 
 export const metadata = { title: "Audit Trail" };
 export const dynamic = "force-dynamic";
@@ -18,7 +19,13 @@ interface Search {
   action?: string;
   from?: string;
   to?: string;
+  /** "1" = Sicherheitsereignisse (LOGIN/LOGOUT/MFA) statt fachlicher Ereignisse. */
+  security?: string;
 }
+
+/** Anmelde-/MFA-Ereignisse — eigene Ansicht, damit sie die fachliche
+ *  Historie nicht verdrängen (Review v3, P1-05). */
+const SECURITY_ACTIONS = ["LOGIN", "LOGIN_FAILED", "LOGOUT", "MFA_ENROLL", "MFA_RESET"];
 
 export default async function AuditLogPage({ searchParams }: { searchParams: Promise<Search> }) {
   await requirePermission("audit:read");
@@ -43,10 +50,17 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Pro
   const from = sp.from ? new Date(sp.from) : undefined;
   const toExclusive = sp.to ? new Date(new Date(sp.to).getTime() + 86400000) : undefined;
 
+  const securityView = sp.security === "1";
   const entries = await db.auditLog.findMany({
     where: {
+      // Default-Filter: fachliche Ereignisse; Sicherheitsereignisse in
+      // eigener Ansicht (?security=1).
+      action: securityView
+        ? { in: SECURITY_ACTIONS }
+        : sp.action
+          ? sp.action
+          : { notIn: SECURITY_ACTIONS },
       ...(sp.entityType ? { entityType: sp.entityType } : {}),
-      ...(sp.action ? { action: sp.action } : {}),
       ...(from && !Number.isNaN(from.getTime()) ? { timestamp: { gte: from } } : {}),
       ...(toExclusive && !Number.isNaN(toExclusive.getTime())
         ? { timestamp: { ...(from ? { gte: from } : {}), lt: toExclusive } }
@@ -55,6 +69,8 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Pro
     orderBy: { timestamp: "desc" },
     take: 500,
   });
+
+  const integrity = await verifyAuditChain();
 
   return (
     <div>
@@ -69,7 +85,31 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Pro
         className="mb-4 flex items-start gap-2 rounded-md border bg-muted/40 p-3 text-xs"
       >
         <Lock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-        <p>{au.immutableNote}</p>
+        <p>
+          {au.immutableNote}{" "}
+          <span className={integrity.ok ? "text-muted-foreground" : "font-semibold text-destructive"}>
+            {locale === "de"
+              ? integrity.ok
+                ? `Hash-Kette geprüft: ${integrity.totalEntries} Einträge, keine Abweichungen.`
+                : `Hash-Kette verletzt: ${integrity.gaps.length} Lücken, ${integrity.brokenHashes.length} veränderte, ${integrity.brokenChain.length} Kettenbrüche.`
+              : integrity.ok
+                ? `Hash chain verified: ${integrity.totalEntries} entries, no deviations.`
+                : `Hash chain broken: ${integrity.gaps.length} gaps, ${integrity.brokenHashes.length} altered, ${integrity.brokenChain.length} chain breaks.`}
+          </span>
+        </p>
+      </div>
+
+      <div className="mb-4 flex gap-2">
+        <Link href="/audit-log">
+          <Button type="button" variant={securityView ? "ghost" : "secondary"} size="sm">
+            {locale === "de" ? "Fachliche Ereignisse" : "Business events"}
+          </Button>
+        </Link>
+        <Link href="/audit-log?security=1">
+          <Button type="button" variant={securityView ? "secondary" : "ghost"} size="sm">
+            {locale === "de" ? "Sicherheitsereignisse" : "Security events"}
+          </Button>
+        </Link>
       </div>
 
       <form

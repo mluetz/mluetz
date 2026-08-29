@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import {
   changeTpStatus,
   createThirdParty,
+  setTpCriticalFunctions,
   updateTpAssessment,
   upsertExitStrategy,
   type ActionResult,
@@ -86,7 +87,6 @@ export interface TpAssessmentDefaults {
   dueDiligenceStatus: string;
   substitutability: string;
   concentrationRisk: boolean;
-  supportsCriticalFunction: boolean;
   /** yyyy-mm-dd oder "" */
   nextReviewDate: string;
 }
@@ -202,19 +202,69 @@ export function TpAssessmentForm({
               />
               {t.tp.assessment.concentrationRisk}
             </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name="supportsCriticalFunction"
-                defaultChecked={defaults.supportsCriticalFunction}
-                className="h-4 w-4"
-              />
-              {t.tp.assessment.supportsCriticalFunction}
-            </label>
           </div>
           <ErrorLine state={state} locale={locale} />
           <Button type="submit" disabled={pending}>
             {pending ? t.common.saving : t.tp.assessment.submit}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------- CIF-Verknüpfung (eine Wahrheit, Review v3 P1-02) ----------------
+
+export function TpCifLinkForm({
+  thirdPartyId,
+  allCfs,
+  linkedCfIds,
+  locale,
+}: {
+  thirdPartyId: string;
+  allCfs: { id: string; cfId: string; name: string; isCritical: boolean }[];
+  linkedCfIds: string[];
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    setTpCriticalFunctions,
+    {},
+  );
+  const de = locale === "de";
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{de ? "Kritische / wichtige Funktionen" : "Critical / important functions"}</CardTitle>
+        <CardDescription>
+          {de
+            ? "Die CIF-Einstufung dieser Drittpartei wird ausschließlich aus dieser Verknüpfung abgeleitet."
+            : "This third party's CIF classification is derived exclusively from this linkage."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={formAction} className="space-y-4">
+          <input type="hidden" name="thirdPartyId" value={thirdPartyId} />
+          <div className="grid gap-2 md:grid-cols-2">
+            {allCfs.map((cf) => (
+              <label key={cf.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="cfIds"
+                  value={cf.id}
+                  defaultChecked={linkedCfIds.includes(cf.id)}
+                  className="h-4 w-4"
+                />
+                <span className="font-medium tabular-nums">{cf.cfId}</span> {cf.name}
+                <span className="text-xs text-muted-foreground">
+                  {cf.isCritical ? (de ? "kritisch" : "critical") : de ? "wichtig" : "important"}
+                </span>
+              </label>
+            ))}
+          </div>
+          <ErrorLine state={state} locale={locale} />
+          <Button type="submit" disabled={pending}>
+            {pending ? t.common.saving : de ? "Verknüpfung speichern" : "Save linkage"}
           </Button>
         </form>
       </CardContent>

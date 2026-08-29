@@ -404,14 +404,14 @@ async function Acceptances({ t }: { t: ReportsMessages }) {
 
 async function TprmOverview({ t }: { t: ReportsMessages }) {
   const tps = await db.thirdParty.findMany({
-    include: { exitStrategy: true },
+    include: { exitStrategy: true, _count: { select: { criticalFunctions: true } } },
     orderBy: { tpId: "asc" },
   });
   const critical = tps.filter((tp) => tp.criticality === "CRITICAL").length;
   const concentration = tps.filter((tp) => tp.concentrationRisk).length;
   const missingExit = tps.filter(
     (tp) =>
-      tp.supportsCriticalFunction && (!tp.exitStrategy || tp.exitStrategy.status === "MISSING"),
+      tp._count.criticalFunctions > 0 && (!tp.exitStrategy || tp.exitStrategy.status === "MISSING"),
   ).length;
   return (
     <div className="space-y-6">

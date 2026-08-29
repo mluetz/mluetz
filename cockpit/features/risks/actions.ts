@@ -13,6 +13,7 @@ import {
   type RiskStatus,
 } from "@/lib/domain/enums";
 import { inherentRisk, residualRisk } from "@/lib/domain/risk-calc";
+import { missingRiskFieldsForTransition } from "@/lib/domain/data-quality";
 import { getMitigationCap } from "@/lib/settings";
 
 export interface ActionResult {
@@ -205,13 +206,35 @@ export async function changeRiskStatus(
       return { error: "Statuswechsel benötigt einen Kommentar (mind. 3 Zeichen)." };
     const d = parsed.data;
 
-    const risk = await db.risk.findUnique({ where: { id: d.riskId } });
+    const risk = await db.risk.findUnique({
+      where: { id: d.riskId },
+      include: {
+        assessments: { where: { isCurrent: true }, take: 1, select: { id: true } },
+        controls: { take: 1 },
+        criticalFunctions: { select: { id: true }, take: 1 },
+      },
+    });
     if (!risk) return { error: "Risiko nicht gefunden." };
     const from = risk.status as RiskStatus;
     const to = d.newStatus as RiskStatus;
     if (!(to in RISK_STATUS)) return { error: "Ungültiger Zielstatus." };
     if (!RISK_TRANSITIONS[from]?.includes(to)) {
       return { error: `Übergang ${RISK_STATUS[from]} → ${RISK_STATUS[to]} ist nicht zulässig.` };
+    }
+    // Pflichtfeldlogik je Statusübergang (Review v3, P3-02) — blockierend.
+    const missing = missingRiskFieldsForTransition(to, {
+      ownerId: risk.riskOwnerId,
+      categoryId: risk.categoryId,
+      hasCurrentAssessment: risk.assessments.length > 0,
+      treatmentStrategy: risk.treatmentStrategy,
+      description: risk.description,
+      cifRelated: risk.criticalFunctions.length > 0,
+      hasLinkedControl: risk.controls.length > 0,
+    });
+    if (missing.length > 0) {
+      return {
+        error: `Übergang gesperrt — fehlende Pflichtangaben: ${missing.map((m) => m.field).join(", ")}.`,
+      };
     }
     // Funktionstrennung: Freigaben (Approval/Second-Line) erfordern eigene Berechtigungen
     if ((from === "APPROVAL_PENDING" || from === "SECOND_LINE_REVIEW") && to !== "IN_ASSESSMENT") {

@@ -67,6 +67,9 @@ model User {
   doraAssessments    DoraAssessment[]
   doraFindings       DoraFinding[]
   incidents          Incident[]
+  ownedCifs          CriticalFunction[] @relation("CifOwner")
+  cifAssessments     CifAssessment[]    @relation("CifAssessor")
+  cifApprovals       CifAssessment[]    @relation("CifApprover")
 }
 
 model Role {
@@ -163,16 +166,57 @@ model BusinessProcess {
   controls Control[]
 }
 
+// Kritische oder wichtige Funktion (CIF) i. S. v. Art. 3 Nr. 22 DORA.
+// Review v3, P1-02: EINE Wahrheit — die Einstufung einer Drittpartei wird
+// ausschließlich aus der Relation abgeleitet, nie aus einem Boolean.
 model CriticalFunction {
-  id          String  @id @default(cuid())
-  name        String
-  description String
-  isCritical  Boolean @default(true) // kritisch oder "wichtig" i. S. v. DORA
+  id           String  @id @default(cuid())
+  cfId         String  @unique // fachliche ID, z. B. CIF-01
+  name         String
+  description  String
+  isCritical   Boolean @default(true) // kritisch oder "wichtig" i. S. v. DORA
+  businessArea String?
+  ownerId      String?
+  owner        User?   @relation("CifOwner", fields: [ownerId], references: [id])
 
+  // Wiederanlaufkenngrößen (Art. 11 Abs. 2)
+  rtoHours                Float?
+  rpoHours                Float?
+  maxTolerableOutageHours Float?
+  impactTolerance         String? // Impact-Toleranzschwelle (Beschreibung/Kennzahl)
+  recoveryOrder           Int? // Wiederanlaufreihenfolge (1 = zuerst)
+
+  reassessmentMonths Int       @default(12)
+  nextAssessmentDate DateTime?
+
+  assessments  CifAssessment[]
   risks        Risk[]
   ictServices  IctService[]
   thirdParties ThirdParty[]
   incidents    Incident[]
+}
+
+// Versioniertes Bewertungsverfahren je CIF: Kriterien mit Schwellen- und
+// Ist-Werten, Begründung, Bewerter und Freigabe. Alte Bewertungen bleiben
+// als Versionen erhalten (isCurrent = false).
+model CifAssessment {
+  id                 String           @id @default(cuid())
+  criticalFunctionId String
+  criticalFunction   CriticalFunction @relation(fields: [criticalFunctionId], references: [id], onDelete: Cascade)
+  version            Int
+  isCritical         Boolean
+  // JSON-Array: [{ criterion, threshold, actualValue, met }]
+  criteria           String
+  rationale          String
+  assessedById       String?
+  assessedBy         User?            @relation("CifAssessor", fields: [assessedById], references: [id])
+  assessedAt         DateTime         @default(now())
+  approvedById       String?
+  approvedBy         User?            @relation("CifApprover", fields: [approvedById], references: [id])
+  approvedAt         DateTime?
+  isCurrent          Boolean          @default(true)
+
+  @@unique([criticalFunctionId, version])
 }
 
 model Asset {
@@ -446,7 +490,9 @@ model ThirdParty {
   serviceLocations         String
   dataLocations            String
   informationTypes         String // Art der verarbeiteten Informationen
-  supportsCriticalFunction Boolean   @default(false)
+  // ENTFERNT (Review v3, B-2): supportsCriticalFunction Boolean.
+  // Die CIF-Einstufung wird ausschließlich aus der Relation
+  // criticalFunctions abgeleitet — keine zweite Wahrheit.
   ictServiceCategory       String
   criticality              String    @default("NOT_ASSESSED") // NOT_ASSESSED | LOW | MEDIUM | HIGH | CRITICAL
   inherentRiskScore        Int?
@@ -776,6 +822,10 @@ model Report {
 
 model AuditLog {
   id         String   @id @default(cuid())
+  // Lückenlose Kettenposition (1..n) — Grundlage der Hash-Verkettung.
+  // Wird in lib/audit.ts transaktional als Vorgänger+1 vergeben
+  // (SQLite erlaubt autoincrement nur auf id-Feldern).
+  seq        Int      @unique
   timestamp  DateTime @default(now())
   userId     String?
   user       User?    @relation(fields: [userId], references: [id])
@@ -787,6 +837,11 @@ model AuditLog {
   oldValue   String?
   newValue   String?
   comment    String?
+  // Manipulationsschutz (Review v3, P1-05): SHA-256 über den Vorgänger-Hash
+  // plus die kanonischen Feldwerte dieses Eintrags. prevHash = null nur beim
+  // ersten Eintrag. Verifikation: lib/audit-integrity.ts / RB-Job.
+  prevHash   String?
+  hash       String?
 
   @@index([entityType, entityId])
   @@index([timestamp])

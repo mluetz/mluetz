@@ -3,7 +3,15 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-/** Leichtgewichtige, barrierearme Tabs (Rolle tablist/tab/tabpanel). */
+/**
+ * Leichtgewichtige, barrierearme Tabs (Rolle tablist/tab/tabpanel).
+ *
+ * Tab-Zustand in der URL (Review v3, P3-04): ?tab=<value> wird beim Laden
+ * gelesen und bei jedem Wechsel per history.replaceState gespiegelt —
+ * Deep-Links, Druck und Screenshot-Nachweise treffen damit den richtigen
+ * Tab. Bewusst ohne useSearchParams, damit keine Suspense-Grenze nötig ist;
+ * SSR rendert defaultValue, der Client korrigiert unmittelbar nach Mount.
+ */
 
 const TabsContext = React.createContext<{
   value: string;
@@ -14,12 +22,34 @@ export function Tabs({
   defaultValue,
   children,
   className,
+  urlParam = "tab",
 }: {
   defaultValue: string;
   children: React.ReactNode;
   className?: string;
+  /** Query-Parameter für den Tab-Zustand; null deaktiviert die URL-Kopplung. */
+  urlParam?: string | null;
 }) {
-  const [value, setValue] = React.useState(defaultValue);
+  const [value, setValueState] = React.useState(defaultValue);
+
+  React.useEffect(() => {
+    if (!urlParam) return;
+    const fromUrl = new URLSearchParams(window.location.search).get(urlParam);
+    if (fromUrl) setValueState(fromUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlParam]);
+
+  const setValue = React.useCallback(
+    (v: string) => {
+      setValueState(v);
+      if (!urlParam) return;
+      const url = new URL(window.location.href);
+      url.searchParams.set(urlParam, v);
+      window.history.replaceState(window.history.state, "", url);
+    },
+    [urlParam],
+  );
+
   return (
     <TabsContext.Provider value={{ value, setValue }}>
       <div className={className}>{children}</div>
