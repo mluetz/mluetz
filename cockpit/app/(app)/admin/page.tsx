@@ -11,6 +11,7 @@ import { ROLES, type RoleKey } from "@/lib/domain/enums";
 import {
   CategoryAppetiteForm,
   ThresholdsForm,
+  MethodologyApprovalPanel,
   ResetMfaButton,
   UserActiveToggle,
   UserRolesForm,
@@ -51,6 +52,10 @@ export default async function AdminPage() {
     db.businessProcess.count(),
     db.ictService.count(),
   ]);
+  const pendingMv = await db.methodologyVersion.findFirst({
+    where: { status: "PENDING_APPROVAL" },
+    include: { requestedBy: { select: { email: true } } },
+  });
 
   return (
     <div>
@@ -129,7 +134,7 @@ export default async function AdminPage() {
             <CardTitle>{a.methodologyTitle}</CardTitle>
             <CardDescription>{a.methodologyDescription}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <ThresholdsForm
               lowMax={thresholds.lowMax}
               mediumMax={thresholds.mediumMax}
@@ -137,6 +142,28 @@ export default async function AdminPage() {
               mitigationCap={mitigationCap}
               locale={locale}
             />
+            <div>
+              <h3 className="mb-2 text-sm font-semibold">
+                {locale === "de" ? "Offener Methodikantrag (Vier-Augen)" : "Pending methodology request (four-eyes)"}
+              </h3>
+              <MethodologyApprovalPanel
+                pending={
+                  pendingMv
+                    ? {
+                        id: pendingMv.id,
+                        version: pendingMv.version,
+                        lowMax: pendingMv.lowMax,
+                        mediumMax: pendingMv.mediumMax,
+                        highMax: pendingMv.highMax,
+                        mitigationCap: pendingMv.mitigationCap,
+                        rationale: pendingMv.rationale,
+                        requestedBy: pendingMv.requestedBy.email,
+                      }
+                    : null
+                }
+                locale={locale}
+              />
+            </div>
           </CardContent>
         </Card>
 

@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import {
+  approveMethodology,
+  rejectMethodology,
   resetUserMfa,
   setUserActive,
   setUserRoles,
@@ -192,11 +194,104 @@ export function ThresholdsForm({
           />
         </Field>
       </div>
+      <Field
+        label={locale === "de" ? "Begründung (Pflicht, Vier-Augen-Antrag)" : "Rationale (required, four-eyes request)"}
+        htmlFor="t-rationale"
+        required
+      >
+        <Input
+          id="t-rationale"
+          name="rationale"
+          required
+          minLength={10}
+          placeholder={
+            locale === "de"
+              ? "Warum wird die Methodik geändert?"
+              : "Why is the methodology being changed?"
+          }
+        />
+      </Field>
+      <p className="text-xs text-muted-foreground">
+        {locale === "de"
+          ? "Änderungen werden erst wirksam, wenn eine andere Person mit Second-Line-Berechtigung den Antrag freigibt (P1-06)."
+          : "Changes take effect only after a different person with second-line permission approves the request (P1-06)."}
+      </p>
       <ErrorLine state={state} locale={locale} />
       <Button type="submit" disabled={pending}>
-        {pending ? t.common.saving : t.admin.panels.saveMethodology}
+        {pending
+          ? t.common.saving
+          : locale === "de"
+            ? "Methodikänderung beantragen"
+            : "Request methodology change"}
       </Button>
     </form>
+  );
+}
+
+// ---------------- Methodik-Freigabe (Vier-Augen, P1-06) ----------------
+
+export function MethodologyApprovalPanel({
+  pending: pendingVersion,
+  locale,
+}: {
+  pending: {
+    id: string;
+    version: number;
+    lowMax: number;
+    mediumMax: number;
+    highMax: number;
+    mitigationCap: number;
+    rationale: string;
+    requestedBy: string;
+  } | null;
+  locale: Locale;
+}) {
+  const de = locale === "de";
+  const [aState, approveAction, aPending] = useActionState<ActionResult, FormData>(
+    approveMethodology,
+    {},
+  );
+  const [rState, rejectAction, rPending] = useActionState<ActionResult, FormData>(
+    rejectMethodology,
+    {},
+  );
+  if (!pendingVersion) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {de ? "Kein offener Methodikantrag." : "No pending methodology request."}
+      </p>
+    );
+  }
+  return (
+    <div className="space-y-2 rounded-md border p-3 text-sm">
+      <p className="font-medium">
+        {de ? "Antrag" : "Request"} v{pendingVersion.version} ·{" "}
+        <span className="tabular-nums">
+          low ≤ {pendingVersion.lowMax} · medium ≤ {pendingVersion.mediumMax} · high ≤{" "}
+          {pendingVersion.highMax} · cap {pendingVersion.mitigationCap}
+        </span>
+      </p>
+      <p className="text-muted-foreground">
+        {pendingVersion.rationale} — {de ? "beantragt von" : "requested by"}{" "}
+        {pendingVersion.requestedBy}
+      </p>
+      <div className="flex gap-2">
+        <form action={approveAction}>
+          <input type="hidden" name="versionId" value={pendingVersion.id} />
+          <Button type="submit" size="sm" disabled={aPending}>
+            {aPending ? "…" : de ? "Freigeben" : "Approve"}
+          </Button>
+        </form>
+        <form action={rejectAction}>
+          <input type="hidden" name="versionId" value={pendingVersion.id} />
+          <Button type="submit" size="sm" variant="outline" disabled={rPending}>
+            {rPending ? "…" : de ? "Ablehnen" : "Reject"}
+          </Button>
+        </form>
+      </div>
+      <ErrorLine state={aState} locale={locale} />
+      <ErrorLine state={rState} locale={locale} />
+    </div>
   );
 }
 

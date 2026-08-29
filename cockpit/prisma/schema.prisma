@@ -73,6 +73,75 @@ model User {
   preCaAssessments   PreContractAssessment[] @relation("PreCaAssessor")
   preCaApprovals     PreContractAssessment[] @relation("PreCaApprover")
   registerExports    RegisterExport[]
+  mvRequested        MethodologyVersion[] @relation("MvRequester")
+  mvApproved         MethodologyVersion[] @relation("MvApprover")
+  periodSnapshots    PeriodSnapshot[]
+  incidentClassifications IncidentClassification[]
+}
+
+// ------------------------------------------------------------------
+// Methodikversionierung + Stichtags-Snapshots (Review v3, P1-06)
+// ------------------------------------------------------------------
+
+// Vier-Augen-Prinzip: Antragsteller != Freigebender (in den Actions
+// erzwungen). Die "Live"-Werte in AppSetting werden ausschließlich bei
+// Freigabe einer Version geschrieben.
+model MethodologyVersion {
+  id            String    @id @default(cuid())
+  version       Int       @unique
+  lowMax        Int
+  mediumMax     Int
+  highMax       Int
+  mitigationCap Float
+  rationale     String
+  status        String    @default("PENDING_APPROVAL") // PENDING_APPROVAL | ACTIVE | SUPERSEDED | REJECTED
+  requestedById String
+  requestedBy   User      @relation("MvRequester", fields: [requestedById], references: [id])
+  requestedAt   DateTime  @default(now())
+  approvedById  String?
+  approvedBy    User?     @relation("MvApprover", fields: [approvedById], references: [id])
+  approvedAt    DateTime?
+  validFrom     DateTime?
+  validTo       DateTime?
+
+  assessments RiskAssessment[]
+}
+
+// Monatsabschluss-Snapshot (RB-17): eingefrorene Kennzahlen, Risikoliste
+// und Register-Prüfsumme — Trends und Berichte speisen sich hieraus;
+// der Registerstand ist zum Stichtag reproduzierbar.
+model PeriodSnapshot {
+  id                  String   @id @default(cuid())
+  period              String   @unique // z. B. "2026-08"
+  createdAt           DateTime @default(now())
+  createdById         String
+  createdBy           User     @relation(fields: [createdById], references: [id])
+  doraIndexPercent    Float?
+  openKnockouts       Int
+  kpis                String // JSON: eingefrorene Kennzahlenliste
+  riskList            String // JSON: Risiko-Snapshot (id, riskId, Scores, Status)
+  registerRecordCount Int
+  registerChecksum    String
+}
+
+// Strukturierte Vorfallsklassifizierung nach Art. 18 i. V. m.
+// RTS (EU) 2025/301 (Review v3, P1-04): je Kriterium Schwellwert,
+// Ist-Wert, erfüllt j/n, Begründung; Ergebnis nach Einfrieren
+// unveränderlich (frozenAt gesetzt -> keine Änderung mehr möglich).
+model IncidentClassification {
+  id                    String    @id @default(cuid())
+  incidentId            String    @unique
+  incident              Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  criteria              String // JSON: [{ key, criterion, threshold, actualValue, met, rationale }]
+  isMajor               Boolean
+  // Aggregationsregel für wiederkehrende Vorfälle (RTS Art. 8 Abs. 2)
+  aggregatedWith        String?
+  // Freiwillige Meldung erheblicher Cyberbedrohungen (Art. 19 Abs. 2)
+  voluntaryThreatNotice Boolean   @default(false)
+  classifiedById        String
+  classifiedBy          User      @relation(fields: [classifiedById], references: [id])
+  classifiedAt          DateTime  @default(now())
+  frozenAt              DateTime?
 }
 
 // ------------------------------------------------------------------
@@ -400,6 +469,11 @@ model RiskAssessment {
   residualScore        Int // berechnet, siehe lib/domain/risk-calc.ts
   justification        String
   isCurrent            Boolean  @default(true)
+  // Methodikversionierung (Review v3, P1-06): jede Bewertung referenziert
+  // die Version, unter der sie entstanden ist — Schwellwerte und Mitigation
+  // Cap wirken nie rückwirkend.
+  methodologyVersionId String?
+  methodologyVersion   MethodologyVersion? @relation(fields: [methodologyVersionId], references: [id])
 
   dimensionScores ImpactDimensionScore[]
 }
@@ -1106,7 +1180,8 @@ model Incident {
   createdBy          User      @relation(fields: [createdById], references: [id])
   createdAt          DateTime  @default(now())
 
-  reports IncidentReport[]
+  reports        IncidentReport[]
+  classification IncidentClassification?
 
   @@index([status])
 }

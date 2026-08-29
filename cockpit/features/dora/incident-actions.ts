@@ -375,3 +375,135 @@ export async function classifyIncident(
     return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };
   }
 }
+
+// ---------------------------------------------------------------
+// Strukturierter Klassifizierungsassistent nach Art. 18 i. V. m.
+// RTS (EU) 2025/301 (Review v3, P1-04): je Kriterium Schwellwert,
+// Ist-Wert, erfüllt j/n, Begründung; "schwerwiegend" wird ABGELEITET
+// (lib/domain/incident-classification.ts) und ist nach dem Einfrieren
+// unveränderlich.
+// ---------------------------------------------------------------
+
+const structuredSchema = z.object({
+  incidentId: z.string().min(1),
+  freeze: z.enum(["true", "false"]).default("false"),
+  aggregatedWith: z.string().max(500).optional(),
+});
+
+export async function classifyIncidentStructured(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const user = await assertPermission("incident:write");
+    const parsed = structuredSchema.safeParse({
+      incidentId: formData.get("incidentId"),
+      freeze: formData.get("freeze") ?? "false",
+      aggregatedWith: formData.get("aggregatedWith") ?? undefined,
+    });
+    if (!parsed.success) return { error: "Ungültige Eingaben." };
+    const d = parsed.data;
+
+    const incident = await db.incident.findUnique({
+      where: { id: d.incidentId },
+      include: { reports: true, classification: true },
+    });
+    if (!incident) return { error: "Vorfall nicht gefunden." };
+    if (incident.classification?.frozenAt) {
+      return {
+        error:
+          "Klassifizierung ist eingefroren und unveränderlich (Art. 18). Änderungen erfordern einen neuen, dokumentierten Vorgang.",
+      };
+    }
+
+    const { CLASSIFICATION_CRITERIA, deriveIsMajor } = await import(
+      "@/lib/domain/incident-classification"
+    );
+    const results = CLASSIFICATION_CRITERIA.map((c) => ({
+      key: c.key,
+      criterion: c.de,
+      threshold: String(formData.get(`crit_${c.key}_threshold`) ?? c.defaultThreshold),
+      actualValue: String(formData.get(`crit_${c.key}_actual`) ?? "").trim(),
+      met: formData.get(`crit_${c.key}_met`) === "on",
+      rationale: String(formData.get(`crit_${c.key}_rationale`) ?? "").trim(),
+    }));
+    for (const r of results) {
+      if (r.met && r.rationale.length < 3) {
+        return { error: `Begründung fehlt für erfülltes Kriterium "${r.criterion}".` };
+      }
+    }
+    const isMajor = deriveIsMajor(results);
+    const voluntaryThreatNotice = formData.get("voluntaryThreatNotice") === "on";
+    const freeze = d.freeze === "true";
+    const now = new Date();
+
+    await db.incidentClassification.upsert({
+      where: { incidentId: incident.id },
+      create: {
+        incidentId: incident.id,
+        criteria: JSON.stringify(results),
+        isMajor,
+        aggregatedWith: d.aggregatedWith?.trim() || null,
+        voluntaryThreatNotice,
+        classifiedById: user.id,
+        frozenAt: freeze ? now : null,
+      },
+      update: {
+        criteria: JSON.stringify(results),
+        isMajor,
+        aggregatedWith: d.aggregatedWith?.trim() || null,
+        voluntaryThreatNotice,
+        classifiedById: user.id,
+        classifiedAt: now,
+        frozenAt: freeze ? now : null,
+      },
+    });
+
+    if (freeze) {
+      await db.incident.update({
+        where: { id: incident.id },
+        data: { classifiedAt: now, isMajor },
+      });
+      if (isMajor) {
+        const { computeDeadlines: cd } = await import("@/lib/domain/incident-deadlines");
+        const deadlines = cd(
+          {
+            awarenessAt: incident.awarenessAt,
+            classifiedAt: now,
+            isMajor: true,
+            gdprRelevant: incident.gdprRelevant,
+            nis2Relevant: incident.nis2Relevant,
+            submitted: {},
+          },
+          now,
+        );
+        for (const dl of deadlines) {
+          const row = incident.reports.find((r) => r.reportType === dl.reportType);
+          if (!row) {
+            await db.incidentReport.create({
+              data: { incidentId: incident.id, reportType: dl.reportType, dueAt: dl.dueAt },
+            });
+          }
+        }
+      }
+    }
+
+    await audit({
+      userId: user.id,
+      userEmail: user.email,
+      action: "ASSESS",
+      entityType: "Incident",
+      entityId: incident.id,
+      field: "structuredClassification",
+      newValue: `${isMajor ? "schwerwiegend" : "nicht schwerwiegend"} (${results.filter((r) => r.met).length}/${results.length} Kriterien)${freeze ? " · EINGEFROREN" : ""}`,
+      comment: voluntaryThreatNotice
+        ? "Freiwillige Meldung erheblicher Cyberbedrohung vorgesehen (Art. 19 Abs. 2)"
+        : undefined,
+    });
+    revalidatePath(`/dora/incidents/${incident.id}`);
+    revalidatePath("/dora/incidents");
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };
+  }
+}

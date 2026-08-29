@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isValidLei, isValidLeiFormat } from "@/lib/domain/lei";
-import { contractComplianceRag, requiredClausesFor } from "@/lib/domain/art30";
+import { contractComplianceRag, requiredClausesFor, type ClauseStatus } from "@/lib/domain/art30";
 import { concentrationOverChain } from "@/lib/domain/concentration";
 
 describe("LEI-Validierung (ISO 17442, P1-01/1.3)", () => {
@@ -23,7 +23,7 @@ describe("Art.-30-Klauselmatrix (P1-03)", () => {
   });
   it("RAG: fehlende Pflichtklausel => RED, teilweise => YELLOW, sonst GREEN", () => {
     const all = requiredClausesFor(true);
-    const green = new Map(all.map((c) => [c.key, "FULFILLED" as const]));
+    const green = new Map<string, ClauseStatus>(all.map((c) => [c.key, "FULFILLED"]));
     expect(contractComplianceRag(true, green)).toBe("GREEN");
     const yellow = new Map(green);
     yellow.set("ART30_2_H", "PARTIAL");
@@ -34,7 +34,7 @@ describe("Art.-30-Klauselmatrix (P1-03)", () => {
     // Nicht-CIF-Vertrag ignoriert Abs.-3-Lücken
     expect(contractComplianceRag(false, red)).toBe("GREEN");
     // Unquittierte Klausel gilt als MISSING
-    const empty = new Map<string, "FULFILLED">();
+    const empty = new Map<string, ClauseStatus>();
     expect(contractComplianceRag(false, empty)).toBe("RED");
   });
 });

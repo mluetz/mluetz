@@ -294,3 +294,15 @@ Caddy-Service, `APP_BASE_URL` zeigt auf die DSM-HTTPS-Adresse.
 - Wiederherstellungslauf mindestens halbjährlich testen: Kopie der Sicherung in
   ein frisches Volume einspielen, Container starten, Login + Stichprobe prüfen,
   Ergebnis dokumentieren (Nachweis für S-04).
+
+## Fristen-Scan (Welle 3, P1-07)
+
+Stündlicher Aufruf über den DSM-Aufgabenplaner (Benutzerdefiniertes Skript):
+
+    curl -fsS -H "Authorization: Bearer <CRON_SECRET>" https://<NAS-IP>:8443/api/cron/deadlines
+
+Erzeugt In-App-Benachrichtigungen (T-30/T-7/T-0/überfällig an Owner, Eskalation
+überfälliger Posten und Tagesdigest an den ISO) und bedient optional den
+Webhook `NOTIFY_WEBHOOK_URL` (z. B. Mail-Relay oder Teams/Slack-Adapter).
+Vorfallsmeldefristen (4-h-/24-h-/72-h-Fenster) werden bei jedem Lauf geprüft.
+`CRON_SECRET` in der `.env` setzen.

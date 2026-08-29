@@ -30,6 +30,12 @@ const SETTING_DESCRIPTIONS: Record<string, string> = {
   [SETTING_KEYS.mitigationCap]: "Maximal anrechenbare Risikominderung (0–1, Restrisiko-Prinzip)",
 };
 
+/**
+ * Methodikänderung (Review v3, P1-06): Vier-Augen-Prinzip.
+ * updateThresholds legt nur noch einen ANTRAG (MethodologyVersion,
+ * PENDING_APPROVAL) an; wirksam werden die Werte erst mit der Freigabe
+ * durch eine ANDERE Person mit "risk:review" (approveMethodology).
+ */
 export async function updateThresholds(
   _prev: ActionResult,
   formData: FormData,
@@ -42,50 +48,132 @@ export async function updateThresholds(
     if (!(d.lowMax < d.mediumMax && d.mediumMax < d.highMax)) {
       return { error: "Reihenfolge verletzt: Low-Max < Medium-Max < High-Max erforderlich." };
     }
-
-    const current = await getRiskThresholds();
-    const currentCap = await getMitigationCap();
-    const changes: Array<{ key: string; oldValue: string; newValue: string }> = [
-      { key: SETTING_KEYS.lowMax, oldValue: String(current.lowMax), newValue: String(d.lowMax) },
-      {
-        key: SETTING_KEYS.mediumMax,
-        oldValue: String(current.mediumMax),
-        newValue: String(d.mediumMax),
-      },
-      { key: SETTING_KEYS.highMax, oldValue: String(current.highMax), newValue: String(d.highMax) },
-      {
-        key: SETTING_KEYS.mitigationCap,
-        oldValue: String(currentCap),
-        newValue: String(d.mitigationCap),
-      },
-    ];
-
-    for (const c of changes) {
-      await db.appSetting.upsert({
-        where: { key: c.key },
-        update: { value: c.newValue },
-        create: {
-          key: c.key,
-          value: c.newValue,
-          description: SETTING_DESCRIPTIONS[c.key] ?? c.key,
-        },
-      });
-      if (c.oldValue !== c.newValue) {
-        await audit({
-          userId: user.id,
-          userEmail: user.email,
-          action: "SETTING_CHANGE",
-          entityType: "AppSetting",
-          entityId: c.key,
-          field: c.key,
-          oldValue: c.oldValue,
-          newValue: c.newValue,
-        });
-      }
+    const rationale = String(formData.get("rationale") ?? "").trim();
+    if (rationale.length < 10) {
+      return { error: "Begründung der Methodikänderung erforderlich (mind. 10 Zeichen)." };
     }
+
+    const pending = await db.methodologyVersion.findFirst({
+      where: { status: "PENDING_APPROVAL" },
+    });
+    if (pending) return { error: "Es liegt bereits ein offener Methodikantrag vor." };
+
+    const last = await db.methodologyVersion.findFirst({ orderBy: { version: "desc" } });
+    const mv = await db.methodologyVersion.create({
+      data: {
+        version: (last?.version ?? 0) + 1,
+        lowMax: d.lowMax,
+        mediumMax: d.mediumMax,
+        highMax: d.highMax,
+        mitigationCap: d.mitigationCap,
+        rationale,
+        requestedById: user.id,
+      },
+    });
+    await audit({
+      userId: user.id,
+      userEmail: user.email,
+      action: "SETTING_CHANGE",
+      entityType: "MethodologyVersion",
+      entityId: mv.id,
+      field: "status",
+      newValue: "PENDING_APPROVAL",
+      comment: `Methodikantrag v${mv.version}: low<=${d.lowMax}, medium<=${d.mediumMax}, high<=${d.highMax}, cap=${d.mitigationCap} — ${rationale}`,
+    });
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };
+  }
+}
+
+const mvDecisionSchema = z.object({ versionId: z.string().min(1) });
+
+export async function approveMethodology(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const user = await assertPermission("risk:review");
+    const parsed = mvDecisionSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) return { error: "Ungültige Eingaben." };
+    const mv = await db.methodologyVersion.findUnique({ where: { id: parsed.data.versionId } });
+    if (!mv || mv.status !== "PENDING_APPROVAL") return { error: "Kein offener Antrag." };
+    if (mv.requestedById === user.id) {
+      return { error: "Vier-Augen-Prinzip: Antragsteller darf nicht selbst freigeben." };
+    }
+
+    const now = new Date();
+    await db.methodologyVersion.updateMany({
+      where: { status: "ACTIVE" },
+      data: { status: "SUPERSEDED", validTo: now },
+    });
+    await db.methodologyVersion.update({
+      where: { id: mv.id },
+      data: { status: "ACTIVE", approvedById: user.id, approvedAt: now, validFrom: now },
+    });
+    // Live-Werte ausschließlich bei Freigabe schreiben.
+    const values: Array<[string, string]> = [
+      [SETTING_KEYS.lowMax, String(mv.lowMax)],
+      [SETTING_KEYS.mediumMax, String(mv.mediumMax)],
+      [SETTING_KEYS.highMax, String(mv.highMax)],
+      [SETTING_KEYS.mitigationCap, String(mv.mitigationCap)],
+    ];
+    for (const [key, value] of values) {
+      await db.appSetting.upsert({
+        where: { key },
+        update: { value },
+        create: { key, value, description: SETTING_DESCRIPTIONS[key] ?? key },
+      });
+    }
+    await audit({
+      userId: user.id,
+      userEmail: user.email,
+      action: "APPROVE",
+      entityType: "MethodologyVersion",
+      entityId: mv.id,
+      field: "status",
+      oldValue: "PENDING_APPROVAL",
+      newValue: "ACTIVE",
+      comment: `Methodikversion v${mv.version} freigegeben (Vier-Augen; Antrag: ${mv.requestedById})`,
+    });
     revalidatePath("/admin");
     revalidatePath("/risks");
     revalidatePath("/overview");
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };
+  }
+}
+
+export async function rejectMethodology(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const user = await assertPermission("risk:review");
+    const parsed = mvDecisionSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) return { error: "Ungültige Eingaben." };
+    const mv = await db.methodologyVersion.findUnique({ where: { id: parsed.data.versionId } });
+    if (!mv || mv.status !== "PENDING_APPROVAL") return { error: "Kein offener Antrag." };
+    if (mv.requestedById === user.id) {
+      return { error: "Vier-Augen-Prinzip: Antragsteller darf nicht selbst entscheiden." };
+    }
+    await db.methodologyVersion.update({
+      where: { id: mv.id },
+      data: { status: "REJECTED", approvedById: user.id, approvedAt: new Date() },
+    });
+    await audit({
+      userId: user.id,
+      userEmail: user.email,
+      action: "REJECT",
+      entityType: "MethodologyVersion",
+      entityId: mv.id,
+      field: "status",
+      oldValue: "PENDING_APPROVAL",
+      newValue: "REJECTED",
+    });
+    revalidatePath("/admin");
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };

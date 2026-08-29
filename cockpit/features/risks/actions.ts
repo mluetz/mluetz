@@ -144,6 +144,9 @@ export async function assessRisk(_prev: ActionResult, formData: FormData): Promi
     const inh = inherentRisk(d.likelihood, impact);
     const res = residualRisk(inh, d.controlEffectiveness, cap);
 
+    // Methodikversionierung (P1-06): Bewertung an die aktive Version binden.
+    const activeMv = await db.methodologyVersion.findFirst({ where: { status: "ACTIVE" } });
+
     await db.$transaction([
       db.riskAssessment.updateMany({
         where: { riskId: d.riskId, isCurrent: true },
@@ -160,6 +163,7 @@ export async function assessRisk(_prev: ActionResult, formData: FormData): Promi
           residualScore: res,
           justification: d.justification,
           isCurrent: true,
+          methodologyVersionId: activeMv?.id ?? null,
           dimensionScores: { create: dimScores },
         },
       }),

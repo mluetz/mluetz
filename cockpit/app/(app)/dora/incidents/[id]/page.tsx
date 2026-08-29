@@ -14,6 +14,8 @@ import {
   type IncidentStatus,
 } from "@/features/dora/deadline-monitor";
 import { ClassifyForm, ReportSubmitForm, StatusForm } from "@/features/dora/incident-panels";
+import { ClassificationAssistant } from "@/features/dora/classification-assistant";
+import type { CriterionResult } from "@/lib/domain/incident-classification";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +31,7 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
       thirdParty: true,
       createdBy: true,
       reports: { orderBy: { dueAt: "asc" } },
+      classification: true,
     },
   });
   if (!incident) notFound();
@@ -197,8 +200,26 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
         </CardContent>
       </Card>
 
-      {/* Nachträgliche Klassifizierung */}
-      {!incident.classifiedAt && canWrite ? (
+      {/* Strukturierter Klassifizierungsassistent (Review v3, P1-04) */}
+      <div className="mt-4">
+        <ClassificationAssistant
+          incidentId={incident.id}
+          existing={
+            incident.classification
+              ? (JSON.parse(incident.classification.criteria) as CriterionResult[])
+              : null
+          }
+          frozenAt={incident.classification?.frozenAt?.toISOString().slice(0, 16) ?? null}
+          aggregatedWith={incident.classification?.aggregatedWith ?? null}
+          voluntaryThreatNotice={incident.classification?.voluntaryThreatNotice ?? false}
+          canWrite={canWrite}
+          locale={locale}
+        />
+      </div>
+
+      {/* Nachträgliche Klassifizierung (Alt-Formular, nur solange keine
+          strukturierte Klassifizierung existiert) */}
+      {!incident.classifiedAt && !incident.classification && canWrite ? (
         <Card className="mt-4">
           <CardHeader>
             <CardTitle>{t.incidentDetail.classifyTitle}</CardTitle>

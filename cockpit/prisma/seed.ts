@@ -2812,6 +2812,25 @@ async function main() {
     await db.appSetting.create({ data: { key, value, description } });
   }
 
+  // Methodikversion v1 (Review v3, P1-06): aktive Basisversion; alle
+  // Bewertungen referenzieren sie (rückwirkende Änderungen unmöglich).
+  const mv1 = await db.methodologyVersion.create({
+    data: {
+      version: 1,
+      lowMax: 4,
+      mediumMax: 9,
+      highMax: 16,
+      mitigationCap: 0.9,
+      rationale: "Initiale Methodik gemäß FRWK-DORA-001 Kap. 5.3 (Basisversion).",
+      status: "ACTIVE",
+      requestedById: uRm,
+      approvedById: uSl,
+      approvedAt: daysFromNow(-365),
+      validFrom: daysFromNow(-365),
+    },
+  });
+  await db.riskAssessment.updateMany({ data: { methodologyVersionId: mv1.id } });
+
   // ---------- Beispiel-Audit-Einträge (hash-verkettet, Review v3 P1-05) ----------
   // Feldgenaue Historie über mehrere Entitätstypen, damit die Detailseiten-
   // Auszüge im Demo-Stand gefüllt sind (u. a. Incident, ThirdParty, Contract).
