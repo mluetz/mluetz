@@ -34,5 +34,33 @@ services:
       - cockpit-data:/data
     restart: unless-stopped
 
+  # ----------------------------------------------------------
+  # TLS-Terminierung (Review v3, S-01): Caddy mit internem
+  # Zertifikat, HTTP -> HTTPS-Redirect, HSTS.
+  # Aufruf danach: https://<NAS-IP>:8443  — beim ersten Zugriff das
+  # Caddy-Root-Zertifikat im Browser/OS als vertrauenswürdig
+  # hinterlegen (docs/operations/synology.md, Abschnitt TLS).
+  # Alternativ kann statt Caddy der DSM-eigene Reverse Proxy mit
+  # einem Synology-Zertifikat verwendet werden.
+  #
+  # Wichtig: APP_BASE_URL in der .env auf "https://<NAS-IP>:8443"
+  # stellen, damit das Session-Cookie das Secure-Flag erhält.
+  # ----------------------------------------------------------
+  proxy:
+    image: caddy:2-alpine
+    container_name: ict-tprm-proxy
+    ports:
+      - "${HTTPS_PORT:-8443}:8443"
+      - "${HTTP_REDIRECT_PORT:-8080}:8080"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - cockpit
+    restart: unless-stopped
+
 volumes:
   cockpit-data:
+  caddy-data:
+  caddy-config:

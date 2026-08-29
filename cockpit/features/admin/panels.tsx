@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import {
+  resetUserMfa,
   setUserActive,
   setUserRoles,
   updateCategoryAppetite,
@@ -96,6 +97,29 @@ export function UserActiveToggle({
         title={isSelf && active ? t.admin.panels.cannotDeactivateSelf : undefined}
       >
         {pending ? "…" : active ? t.admin.panels.deactivate : t.admin.panels.activate}
+      </Button>
+      <ErrorLine state={state} locale={locale} />
+    </form>
+  );
+}
+
+/** MFA zurücksetzen: Neueinrichtung wird beim nächsten Login erzwungen. */
+export function ResetMfaButton({
+  userId,
+  mfaEnabled,
+  locale,
+}: {
+  userId: string;
+  mfaEnabled: boolean;
+  locale: Locale;
+}) {
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(resetUserMfa, {});
+  const label = locale === "de" ? "MFA zurücksetzen" : "Reset MFA";
+  return (
+    <form action={formAction} className="space-y-1">
+      <input type="hidden" name="userId" value={userId} />
+      <Button type="submit" size="sm" variant="outline" disabled={pending || !mfaEnabled}>
+        {pending ? "…" : label}
       </Button>
       <ErrorLine state={state} locale={locale} />
     </form>

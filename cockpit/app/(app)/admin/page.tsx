@@ -11,6 +11,7 @@ import { ROLES, type RoleKey } from "@/lib/domain/enums";
 import {
   CategoryAppetiteForm,
   ThresholdsForm,
+  ResetMfaButton,
   UserActiveToggle,
   UserRolesForm,
 } from "@/features/admin/panels";
@@ -101,12 +102,19 @@ export default async function AdminPage() {
                       />
                     </TD>
                     <TD>
-                      <UserActiveToggle
-                        userId={u.id}
-                        active={u.active}
-                        isSelf={u.id === currentUser.id}
-                        locale={locale}
-                      />
+                      <div className="flex flex-col gap-1">
+                        <UserActiveToggle
+                          userId={u.id}
+                          active={u.active}
+                          isSelf={u.id === currentUser.id}
+                          locale={locale}
+                        />
+                        <ResetMfaButton
+                          userId={u.id}
+                          mfaEnabled={u.mfaEnabledAt !== null}
+                          locale={locale}
+                        />
+                      </div>
                     </TD>
                   </TR>
                 ))}

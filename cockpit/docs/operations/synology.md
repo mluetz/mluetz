@@ -251,3 +251,46 @@ DSM bringt einen Reverse Proxy mit, der das vorhandene NAS-Zertifikat nutzt:
 | Seite nicht erreichbar, Container läuft                               | Port-Zuordnung 3000→3000 prüfen; DSM-Firewall (Systemsteuerung → Sicherheit → Firewall) für Port 3000 freigeben. |
 | „exec /app/docker-entrypoint.sh: permission denied“                   | Image mit altem Stand gebaut → Projekt neu bauen (Rechte werden jetzt im Dockerfile gesetzt).                    |
 | Anmeldung schlägt fehl                                                | Demo-Login benötigt `AUTH_DEMO_LOGIN=true` (Standard); Passwort ist `Demo!2026`.                                 |
+
+## TLS und MFA (Welle 0, Review v3)
+
+### TLS-Terminierung mit Caddy (S-01)
+
+`docker-compose.synology.yml` enthält einen Proxy-Service (`caddy:2-alpine`), der
+HTTPS auf Port **8443** terminiert (`deploy/Caddyfile`, internes Zertifikat) und
+HTTP auf Port **8080** ausschließlich umleitet. Einrichtung:
+
+1. `.env` ergänzen: `APP_BASE_URL=https://<NAS-IP>:8443` — dadurch erhält das
+   Session-Cookie automatisch das Secure-Flag (`lib/auth/cookie-policy.ts`).
+2. Stack neu starten: `docker compose -f docker-compose.synology.yml up -d --build`.
+3. Root-Zertifikat der Caddy-CA einmalig auf den Clients hinterlegen. Es liegt im
+   Volume `caddy-data` unter `/data/caddy/pki/authorities/local/root.crt`:
+   `docker cp ict-tprm-proxy:/data/caddy/pki/authorities/local/root.crt .`
+4. Der direkte App-Port (Standard 3000) sollte danach in der NAS-Firewall auf
+   `localhost`/Docker-Netz beschränkt oder das Port-Mapping entfernt werden.
+
+Alternative: DSM-eigener Reverse Proxy (Systemsteuerung → Anmeldeportal →
+Erweitert → Reverse Proxy) mit einem Synology-Zertifikat; dann entfällt der
+Caddy-Service, `APP_BASE_URL` zeigt auf die DSM-HTTPS-Adresse.
+
+### MFA (TOTP) und Login-Drossel (S-02)
+
+- Für die Rollen **ADMIN, ISO, SECOND_LINE** (konfigurierbar über
+  `MFA_REQUIRED_ROLES`) wird beim Login TOTP erzwungen; die Ersteinrichtung
+  erfolgt im Login-Flow (Secret/otpauth-URI anzeigen, ersten Code bestätigen).
+  Wiederherstellungscodes werden einmalig angezeigt — sicher verwahren.
+- MFA-Reset: Administration → Benutzer → „MFA zurücksetzen" (auditiert);
+  die Neueinrichtung wird beim nächsten Login erzwungen.
+- Die Login-Drossel (10 Fehlversuche / 15 Minuten je E-Mail) ist in der
+  Datenbank persistiert und übersteht Container-Neustarts.
+- Bestehende Datenbanken: einmalig
+  `sqlite3 /data/cockpit.db < prisma/updates/0003-welle0-mfa.sql` einspielen
+  (neue Installationen erhalten das Schema automatisch).
+
+### Backup und Wiederherstellung (S-04)
+
+- Sicherung: Volume `cockpit-data` (SQLite-Datei `/data/cockpit.db`) per
+  Hyper Backup oder `docker cp` sichern; Backup-Ziel verschlüsselt.
+- Wiederherstellungslauf mindestens halbjährlich testen: Kopie der Sicherung in
+  ein frisches Volume einspielen, Container starten, Login + Stichprobe prüfen,
+  Ergebnis dokumentieren (Nachweis für S-04).

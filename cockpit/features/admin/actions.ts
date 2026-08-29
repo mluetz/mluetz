@@ -138,6 +138,41 @@ export async function setUserActive(
 }
 
 // ---------------------------------------------------------------
+// MFA zurücksetzen (nur Admin; Neueinrichtung wird beim nächsten
+// Login erzwungen; Vorgang wird auditiert — Review v3, S-02)
+// ---------------------------------------------------------------
+
+const mfaResetSchema = z.object({ userId: z.string().min(1) });
+
+export async function resetUserMfa(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const user = await assertPermission("admin");
+    const parsed = mfaResetSchema.safeParse(Object.fromEntries(formData));
+    if (!parsed.success) return { error: "Ungültige Eingaben." };
+    const target = await db.user.findUnique({ where: { id: parsed.data.userId } });
+    if (!target) return { error: "Benutzer nicht gefunden." };
+
+    await db.mfaRecoveryCode.deleteMany({ where: { userId: target.id } });
+    await db.user.update({
+      where: { id: target.id },
+      data: { mfaSecret: null, mfaEnabledAt: null },
+    });
+    await audit({
+      userId: user.id,
+      userEmail: user.email,
+      action: "MFA_RESET",
+      entityType: "User",
+      entityId: target.id,
+      comment: `MFA für ${target.email} zurückgesetzt; Neueinrichtung beim nächsten Login`,
+    });
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Unbekannter Fehler." };
+  }
+}
+
+// ---------------------------------------------------------------
 // Rollen zuweisen
 // ---------------------------------------------------------------
 

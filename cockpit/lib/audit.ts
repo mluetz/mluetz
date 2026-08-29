@@ -27,7 +27,9 @@ export interface AuditEntry {
     | "ROLE_CHANGE"
     | "SETTING_CHANGE"
     | "COMPLIANCE_CHANGE"
-    | "EXECUTE";
+    | "EXECUTE"
+    | "MFA_ENROLL"
+    | "MFA_RESET";
   entityType: string;
   entityId: string;
   field?: string;

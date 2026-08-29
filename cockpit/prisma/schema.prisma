@@ -25,15 +25,19 @@ datasource db {
 // ------------------------------------------------------------------
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   name         String
   passwordHash String
-  active       Boolean  @default(true)
-  locale       String   @default("de")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  active       Boolean   @default(true)
+  locale       String    @default("de")
+  // MFA (TOTP nach RFC 6238): Secret in Base32; mfaEnabledAt = null -> nicht eingerichtet
+  mfaSecret    String?
+  mfaEnabledAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
+  mfaRecoveryCodes   MfaRecoveryCode[]
   roles              UserRole[]
   ownedRisks         Risk[]              @relation("RiskOwner")
   createdRisks       Risk[]              @relation("RiskCreator")
@@ -99,6 +103,27 @@ model RolePermission {
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
+}
+
+// Einmal verwendbare MFA-Wiederherstellungscodes (nur als Hash gespeichert).
+model MfaRecoveryCode {
+  id       String    @id @default(cuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash String
+  usedAt   DateTime?
+
+  @@index([userId])
+}
+
+// Persistente Login-Drossel (ersetzt die In-Memory-Map; übersteht Neustarts).
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
 }
 
 // ------------------------------------------------------------------
