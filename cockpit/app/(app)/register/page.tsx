@@ -8,7 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { concentrationOverChain } from "@/lib/domain/concentration";
 import { validateRoi, summarizeFindings } from "@/lib/domain/roi-validation";
+import { diffRegisters, parseRegisterPayload } from "@/lib/domain/roi-diff";
 import { findingHref, loadRoiInput } from "@/lib/register/roi-data";
+import {
+  DecideApprovalForm,
+  FreezeForm,
+  MarkSubmittedForm,
+  OverrideRequestForm,
+  RequestSubmissionForm,
+} from "@/features/register/panels";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata = { title: "Informationsregister" };
@@ -45,6 +53,30 @@ const TEXT = {
     colMessage: "Meldung",
     openRecord: "Öffnen",
     allValid: "Keine Befunde — das Register besteht alle Prüfregeln der Meldeschicht.",
+    pkgTitle: "Meldepaket & Meldestand",
+    pkgDesc:
+      "ZIP-Paket mit einer CSV je Meldebogen, Filing Indicators, Metadaten und Prüfbericht (ADR-0007). Jeder Export erzeugt einen unveränderlichen Meldestand; die Abgabe bleibt ein manueller, protokollierter Schritt mit Vier-Augen-Freigabe.",
+    pkgDownload: "Meldepaket erzeugen (ZIP)",
+    pkgBlocked: (n: number) =>
+      `Export gesperrt: ${n} REJECT-Befund(e). Übersteuerung nur mit begründeter Vier-Augen-Freigabe.`,
+    pkgOverrideReady: "Genehmigte Übersteuerung vorhanden — der nächste Export verbraucht sie.",
+    openApprovals: "Offene Meldeschicht-Anträge",
+    approvalRequestedBy: "beantragt von",
+    colSnapshot: "Meldestand",
+    colLevel: "Ebene",
+    colCreated: "Erzeugt",
+    snapStatus: { DRAFT: "Entwurf", FROZEN: "Eingefroren", SUBMITTED: "Abgegeben" } as Record<
+      string,
+      string
+    >,
+    snapDownload: "ZIP",
+    noSnapshots: "Noch kein Meldestand erzeugt.",
+    diffTitle: "Differenz zum vorherigen Meldestand",
+    diffNone: "Keine Unterschiede zwischen den letzten beiden Meldeständen.",
+    diffNeedTwo: "Für einen Differenzbericht werden mindestens zwei Meldestände benötigt.",
+    diffAdded: "neu",
+    diffChanged: "geändert",
+    diffRemoved: "entfallen",
     concTitle: "Konzentrationsrisiko über die Kette",
     concDesc:
       "Anzahl gestützter CIF je Anbieter — über die GESAMTE Subunternehmerkette gerechnet, nicht nur über Erstdienstleister. Gemeinsame Kettenglieder mehrerer Anbieter werden zusammengeführt (LEI, sonst Name).",
@@ -91,6 +123,30 @@ const TEXT = {
     colMessage: "Message",
     openRecord: "Open",
     allValid: "No findings — the register passes all reporting-layer rules.",
+    pkgTitle: "Reporting package & snapshots",
+    pkgDesc:
+      "ZIP package with one CSV per template, filing indicators, metadata and the findings report (ADR-0007). Every export creates an immutable snapshot; the submission itself remains a manual, audited step with four-eyes approval.",
+    pkgDownload: "Generate reporting package (ZIP)",
+    pkgBlocked: (n: number) =>
+      `Export blocked: ${n} REJECT finding(s). Override requires a justified four-eyes approval.`,
+    pkgOverrideReady: "Approved override available — the next export will consume it.",
+    openApprovals: "Open reporting-layer requests",
+    approvalRequestedBy: "requested by",
+    colSnapshot: "Snapshot",
+    colLevel: "Level",
+    colCreated: "Created",
+    snapStatus: { DRAFT: "Draft", FROZEN: "Frozen", SUBMITTED: "Submitted" } as Record<
+      string,
+      string
+    >,
+    snapDownload: "ZIP",
+    noSnapshots: "No snapshot created yet.",
+    diffTitle: "Difference to the previous snapshot",
+    diffNone: "No differences between the last two snapshots.",
+    diffNeedTwo: "A difference report needs at least two snapshots.",
+    diffAdded: "added",
+    diffChanged: "changed",
+    diffRemoved: "removed",
     concTitle: "Concentration risk across the chain",
     concDesc:
       "Number of supported CIFs per provider — computed across the FULL subcontracting chain, not just direct providers. Shared chain links are merged (LEI, else name).",
@@ -114,22 +170,36 @@ export default async function RegisterPage() {
   const locale = await getLocale();
   const t = TEXT[locale];
 
-  const [versions, roi, exports, tpsForConc] = await Promise.all([
-    db.itsTemplateVersion.findMany({
-      include: { _count: { select: { mappings: true } } },
-      orderBy: { label: "asc" },
-    }),
-    loadRoiInput(),
-    db.registerExport.findMany({
-      include: { createdBy: { select: { email: true } }, templateVersion: true },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-    db.thirdParty.findMany({
-      where: { criticalFunctions: { some: {} } },
-      include: { criticalFunctions: { select: { id: true } }, subcontractors: true },
-    }),
-  ]);
+  const [versions, roi, exports, tpsForConc, snapshots, openApprovals, readyOverride] =
+    await Promise.all([
+      db.itsTemplateVersion.findMany({
+        include: { _count: { select: { mappings: true } } },
+        orderBy: { label: "asc" },
+      }),
+      loadRoiInput(),
+      db.registerExport.findMany({
+        include: { createdBy: { select: { email: true } }, templateVersion: true },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      db.thirdParty.findMany({
+        where: { criticalFunctions: { some: {} } },
+        include: { criticalFunctions: { select: { id: true } }, subcontractors: true },
+      }),
+      db.roiSnapshot.findMany({
+        include: { approvals: true, createdBy: { select: { email: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      db.approval.findMany({
+        where: { approvalType: { startsWith: "ROI_" }, status: "PENDING" },
+        include: { requestedBy: { select: { email: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      db.approval.findFirst({
+        where: { approvalType: "ROI_EXPORT_OVERRIDE", status: "APPROVED", roiSnapshotId: null },
+      }),
+    ]);
 
   const findings = validateRoi(roi.input);
   const summary = summarizeFindings(findings);
@@ -141,6 +211,15 @@ export default async function RegisterPage() {
     roi.input.contracts.reduce((n, c) => n + c.ictServices.length, 0) +
     roi.input.subcontractors.length +
     roi.input.functions.length;
+
+  // Differenzbericht: letzte zwei Meldestände (ADR-0007 Nr. 6)
+  const diff =
+    snapshots.length >= 2
+      ? diffRegisters(
+          parseRegisterPayload(snapshots[1]!.payload),
+          parseRegisterPayload(snapshots[0]!.payload),
+        )
+      : null;
 
   const concentration = concentrationOverChain(
     tpsForConc.map((tp) => ({
@@ -268,6 +347,143 @@ export default async function RegisterPage() {
               </TBody>
             </Table>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>{t.pkgTitle}</CardTitle>
+          <CardDescription>{t.pkgDesc}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            {summary.reject === 0 || readyOverride ? (
+              <a href="/api/roi-export">
+                <Button size="sm" type="button">
+                  {t.pkgDownload}
+                </Button>
+              </a>
+            ) : null}
+            {summary.reject > 0 ? (
+              <p className="text-sm text-destructive">{t.pkgBlocked(summary.reject)}</p>
+            ) : null}
+            {summary.reject > 0 && readyOverride ? (
+              <p className="text-sm text-muted-foreground">{t.pkgOverrideReady}</p>
+            ) : null}
+            {summary.reject > 0 && !readyOverride ? <OverrideRequestForm locale={locale} /> : null}
+          </div>
+
+          {openApprovals.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{t.openApprovals}</p>
+              {openApprovals.map((a) => (
+                <div key={a.id} className="flex flex-wrap items-center gap-3 text-sm">
+                  <span className="font-mono text-xs">{a.approvalType}</span>
+                  <span className="text-muted-foreground">
+                    {t.approvalRequestedBy} {a.requestedBy.email}
+                    {a.comment ? ` — ${a.comment}` : ""}
+                  </span>
+                  <DecideApprovalForm approvalId={a.id} locale={locale} />
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {snapshots.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t.noSnapshots}</p>
+          ) : (
+            <Table>
+              <THead>
+                <TR>
+                  <TH>{t.colSnapshot}</TH>
+                  <TH>{t.colLevel}</TH>
+                  <TH>{t.colStatus}</TH>
+                  <TH>{t.colCreated}</TH>
+                  <TH>{t.colChecksum}</TH>
+                  <TH>{t.colAction}</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {snapshots.map((s) => {
+                  const hasApprovedSubmission = s.approvals.some(
+                    (a) => a.approvalType === "ROI_SUBMISSION" && a.status === "APPROVED",
+                  );
+                  const hasPendingSubmission = s.approvals.some(
+                    (a) => a.approvalType === "ROI_SUBMISSION" && a.status === "PENDING",
+                  );
+                  return (
+                    <TR key={s.id}>
+                      <TD className="whitespace-nowrap font-medium tabular-nums">
+                        v{s.version} · {s.referenceDate.toISOString().slice(0, 10)}
+                      </TD>
+                      <TD className="whitespace-nowrap text-sm">{s.reportingLevel}</TD>
+                      <TD>
+                        <Badge
+                          variant={
+                            s.status === "SUBMITTED"
+                              ? "low"
+                              : s.status === "FROZEN"
+                                ? "medium"
+                                : "high"
+                          }
+                        >
+                          {t.snapStatus[s.status] ?? s.status}
+                        </Badge>
+                        {s.submissionReference ? (
+                          <span className="ml-2 font-mono text-xs">{s.submissionReference}</span>
+                        ) : null}
+                      </TD>
+                      <TD className="whitespace-nowrap text-sm tabular-nums">
+                        {formatDateTime(s.createdAt)}
+                      </TD>
+                      <TD className="font-mono text-xs">{s.checksum.slice(0, 16)}…</TD>
+                      <TD>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <a href={`/api/roi-export?snapshot=${s.id}`}>
+                            <Button size="sm" variant="ghost" type="button">
+                              {t.snapDownload}
+                            </Button>
+                          </a>
+                          {s.status === "DRAFT" ? (
+                            <FreezeForm snapshotId={s.id} locale={locale} />
+                          ) : null}
+                          {s.status === "FROZEN" &&
+                          !hasApprovedSubmission &&
+                          !hasPendingSubmission ? (
+                            <RequestSubmissionForm snapshotId={s.id} locale={locale} />
+                          ) : null}
+                          {s.status === "FROZEN" && hasApprovedSubmission ? (
+                            <MarkSubmittedForm snapshotId={s.id} locale={locale} />
+                          ) : null}
+                        </div>
+                      </TD>
+                    </TR>
+                  );
+                })}
+              </TBody>
+            </Table>
+          )}
+
+          <div>
+            <p className="mb-1 text-sm font-medium">{t.diffTitle}</p>
+            {diff === null ? (
+              <p className="text-sm text-muted-foreground">{t.diffNeedTwo}</p>
+            ) : diff.templates.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t.diffNone}</p>
+            ) : (
+              <ul className="space-y-1 text-sm">
+                {diff.templates.map((d) => (
+                  <li key={d.template} className="tabular-nums">
+                    <span className="font-mono text-xs">{d.template}</span>{" "}
+                    <span className="text-muted-foreground">
+                      {d.added.length} {t.diffAdded} · {d.changed.length} {t.diffChanged} ·{" "}
+                      {d.removed.length} {t.diffRemoved}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </CardContent>
       </Card>
 

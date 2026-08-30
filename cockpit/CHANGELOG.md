@@ -6,6 +6,22 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ### Added
 
+- **Meldeschicht Welle 3 — Export und Meldestand (ADR-0007):** Meldepaket
+  als ZIP (`/api/roi-export`) mit einer CSV je Meldebogen, Filing
+  Indicators, Metadaten (`META-INF/report.json`, Taxonomieversion) und
+  menschenlesbarem Prüfbericht (`pruefbericht.csv`); Store-only-ZIP-Writer
+  mit Bordmitteln (`lib/domain/zip.ts`, keine neue Abhängigkeit).
+  REJECT-Befunde sperren den Export; Übersteuerung nur über eine
+  begründete Vier-Augen-Freigabe (`ROI_EXPORT_OVERRIDE`), die beim Export
+  verbraucht wird. Jeder Export erzeugt einen unveränderlichen
+  `RoiSnapshot` (SHA-256, Wiederabruf mit Prüfsummenabgleich);
+  Statuskette DRAFT → FROZEN → SUBMITTED mit Vier-Augen-Abgabefreigabe
+  (`ROI_SUBMISSION`, `Approval.roiSnapshotId`, Update 0009) und
+  Audit-Trail; Differenzbericht je Meldebogen (neu/geändert/entfallen)
+  zwischen den letzten Meldeständen auf der Registerseite. Seed
+  vervollständigt, sodass das Paket aus dem Seed-Bestand die eigene
+  Validierung ohne Befund besteht
+
 - **Meldeschicht Welle 2 — Validierungsengine (ADR-0006):**
   `lib/domain/roi-validation.ts` als reine, vollständig unit-getestete
   Engine über dem Registermodell: 17 Prüfregeln (`RV-…`) mit Regel-ID,

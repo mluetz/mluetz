@@ -947,6 +947,8 @@ model RoiSnapshot {
   submittedBy         User?     @relation("RoiSnapshotSubmitter", fields: [submittedById], references: [id])
   submissionReference String?
 
+  approvals Approval[]
+
   @@unique([referenceDate, reportingLevel, version])
 }
 
@@ -1199,6 +1201,10 @@ model Approval {
   action       Action?     @relation(fields: [actionId], references: [id], onDelete: Cascade)
   thirdPartyId String?
   thirdParty   ThirdParty? @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  // Meldeschicht Welle 3 (ADR-0007): Vier-Augen-Bezug auf einen Meldestand
+  // (ROI_SUBMISSION); ROI_EXPORT_OVERRIDE läuft ohne Snapshot-Bezug.
+  roiSnapshotId String?
+  roiSnapshot   RoiSnapshot? @relation(fields: [roiSnapshotId], references: [id], onDelete: Cascade)
 }
 
 model Comment {
