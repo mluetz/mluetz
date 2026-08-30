@@ -31,12 +31,21 @@ async function columnExists(table, column) {
   return rows.some((r) => r.name === column);
 }
 
-/** Zerlegt ein SQL-Skript in Einzelstatements (keine Semikolons in Strings enthalten). */
+/**
+ * Zerlegt ein SQL-Skript in Einzelstatements (keine Semikolons in Strings enthalten).
+ *
+ * BEGIN/COMMIT/ROLLBACK werden verworfen: Die Skripte ab 0004 klammern sich
+ * selbst in eine Transaktion, weil sie für den Aufruf über die sqlite3-CLI
+ * geschrieben sind. Hier läuft jedes Statement einzeln über die Query-Engine
+ * des Prisma-Clients, die ihre Transaktionen selbst verwaltet — ein explizites
+ * BEGIN würde entweder abgelehnt oder bliebe offen stehen.
+ */
 function splitStatements(sql) {
   return sql
     .split(/;\s*(?:\r?\n|$)/)
     .map((s) => s.replace(/^--[^\n]*$/gm, "").trim())
-    .filter((s) => s.length > 0);
+    .filter((s) => s.length > 0)
+    .filter((s) => !/^(BEGIN|COMMIT|ROLLBACK)\b/i.test(s));
 }
 
 /**
@@ -57,7 +66,8 @@ async function applyScript(file) {
       await db.$executeRawUnsafe(stmt);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      if (/already exists|duplicate column name/i.test(msg)) {
+      // "no such column" deckt den wiederholten DROP COLUMN aus 0004 ab.
+      if (/already exists|duplicate column name|no such column/i.test(msg)) {
         skipped += 1;
         continue;
       }
@@ -75,6 +85,53 @@ const UPDATES = [
     file: "0002-dora.sql",
     needed: async () =>
       !(await tableExists("DoraChapter")) || !(await columnExists("Evidence", "doraRequirementId")),
+  },
+  {
+    file: "0003-welle0-mfa.sql",
+    needed: async () =>
+      !(await columnExists("User", "mfaSecret")) ||
+      !(await tableExists("MfaRecoveryCode")) ||
+      !(await tableExists("LoginAttempt")),
+  },
+  {
+    file: "0004-welle1-cif-audit.sql",
+    // supportsCriticalFunction ist der umgekehrte Fall: Solange die Spalte noch
+    // existiert, steht die Boolean-Migration (B-2) aus.
+    needed: async () =>
+      !(await columnExists("CriticalFunction", "cfId")) ||
+      !(await tableExists("CifAssessment")) ||
+      (await columnExists("ThirdParty", "supportsCriticalFunction")) ||
+      !(await columnExists("AuditLog", "hash")),
+  },
+  {
+    file: "0005-welle2-register.sql",
+    needed: async () =>
+      !(await columnExists("ThirdParty", "lei")) ||
+      !(await columnExists("CriticalFunction", "functionIdCode")) ||
+      !(await columnExists("Contract", "contractRef")) ||
+      !(await columnExists("Subcontractor", "parentId")) ||
+      !(await tableExists("ContractClause")) ||
+      !(await tableExists("PreContractAssessment")) ||
+      !(await tableExists("ReportingEntity")) ||
+      !(await tableExists("ItsTemplateVersion")) ||
+      !(await tableExists("ItsFieldMapping")) ||
+      !(await tableExists("RegisterExport")),
+  },
+  {
+    file: "0006-welle3-methodik-fristen.sql",
+    needed: async () =>
+      !(await tableExists("MethodologyVersion")) ||
+      !(await columnExists("RiskAssessment", "methodologyVersionId")) ||
+      !(await tableExists("PeriodSnapshot")) ||
+      !(await tableExists("IncidentClassification")),
+  },
+  {
+    file: "0007-welle5-6-tests-ti-sod.sql",
+    needed: async () =>
+      !(await tableExists("ResilienceTest")) ||
+      !(await tableExists("_CriticalFunctionToResilienceTest")) ||
+      !(await tableExists("ThreatIntelAlert")) ||
+      !(await tableExists("GovernanceReportDuty")),
   },
 ];
 
