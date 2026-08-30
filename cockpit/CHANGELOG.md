@@ -6,6 +6,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ### Added
 
+- **Meldeschicht Welle 5 — Konzentrationsanalytik (ADR-0009):**
+  Auswertungsmodul über den Registerbestand (`lib/domain/roi-concentration.ts`,
+  reine Funktionen auf demselben Datenabzug wie Validierung/Export):
+  Exponierung je Dienstleister (CIF-Verträge/-Dienstleistungen, betroffene
+  Funktionen, Anteil an allen CIF-Diensten), Kettenkonzentration über
+  mehrere unabhängige Direktanbieter, geografische Konzentration nach
+  Speicher-/Verarbeitungsort mit Drittstaatenkennzeichen (EU/EWR-Stammdaten)
+  und CTPP-Exponierung mit Abgleich gegen die amtliche Liste — geführt als
+  gepflegte Stammdatendatei (`lib/content/ctpp-list.ts`, bewusst leer
+  ausgeliefert, keine erfundenen Regulierungsfakten). Neuer Berichtstyp
+  „IKT-Konzentrationsanalyse" unter Reports mit Recharts-Diagrammen
+
 - **Meldeschicht Welle 4 — Klauselbibliothek Art. 30 (ADR-0008):**
   pflegbares `ClauseTemplate`-Modell (Klausel-ID, Fundstelle,
   Anwendbarkeit ALL/CIF_ONLY, Pflichttext DE/EN als Arbeitsfassung),

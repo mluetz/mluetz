@@ -65,6 +65,11 @@ const de = {
       description:
         "Drittparteien mit Kritikalität, Residual-Score, Due-Diligence- und Exit-Status.",
     },
+    ROI_CONCENTRATION: {
+      title: "IKT-Konzentrationsanalyse",
+      description:
+        "Mehrstufige Konzentrationsanalytik über den Registerbestand: Exponierung je Dienstleister, Kettenkonzentration über unabhängige Direktanbieter, geografische Verteilung mit Drittstaatenkennzeichen, CTPP-Exponierung mit Listenabgleich.",
+    },
     DORA_READINESS: {
       title: "DORA Readiness",
       description:
@@ -152,6 +157,41 @@ const de = {
     validUntil: "Befristet bis",
     compensatingControls: "Kompensierende Kontrollen",
     empty: "Keine Risikoakzeptanzen vorhanden.",
+  },
+  roiConc: {
+    kpiCifServices: "CIF-gestützte Dienstleistungen",
+    kpiThirdCountry: "Drittstaaten mit Datenhaltung",
+    kpiCrossChain: "Kettenglieder unter mehreren Direktanbietern",
+    exposureTitle: "Exponierung je Dienstleister",
+    provider: "Dienstleister",
+    cifContracts: "CIF-Verträge",
+    cifServices: "CIF-Dienstleistungen",
+    functions: "Betroffene Funktionen",
+    share: "Anteil an allen CIF-Diensten",
+    chainTitle: "Kettenkonzentration (mehrere unabhängige Direktanbieter)",
+    chainMember: "Kettenglied",
+    country: "Land",
+    directProviders: "Direktanbieter",
+    providesCif: "Erbringt CIF-Dienst",
+    chainEmpty: "Kein Subdienstleister tritt unter mehreren Direktanbietern auf.",
+    geoTitle: "Geografische Konzentration (Speicher-/Verarbeitungsorte)",
+    storage: "Speicherort (Dienste)",
+    processing: "Verarbeitungsort (Dienste)",
+    cifCol: "davon CIF",
+    thirdCountry: "Drittstaat",
+    ctppTitle: "CTPP-Exponierung (Abgleich amtliche Liste)",
+    ctppMatch: {
+      CONFIRMED: "Bestätigt (Kennzeichen + Liste)",
+      FLAGGED_ONLY: "Nur im Cockpit gekennzeichnet",
+      LISTED_ONLY: "Nur auf der Liste (Kennzeichen fehlt)",
+    } as Record<string, string>,
+    ctppEmpty: "Keine CTPP-Exponierung erfasst.",
+    ctppListHint: (version: string) =>
+      version === "ungepflegt"
+        ? "Hinweis: Die amtliche CTPP-Liste ist noch nicht eingepflegt (lib/content/ctpp-list.ts) — angezeigt werden nur die im Cockpit gekennzeichneten CTPPs."
+        : `CTPP-Listenstand: ${version}`,
+    yes: "Ja",
+    no: "Nein",
   },
   tprm: {
     criticalThirdParties: "Kritische Drittparteien",
@@ -298,6 +338,11 @@ const en: typeof de = {
       title: "Third-Party Overview",
       description: "Third parties with criticality, residual score, due diligence and exit status.",
     },
+    ROI_CONCENTRATION: {
+      title: "ICT concentration analysis",
+      description:
+        "Multi-level concentration analytics over the register: provider exposure, chain concentration across independent direct providers, geographic distribution with third-country flag, CTPP exposure with list reconciliation.",
+    },
     DORA_READINESS: {
       title: "DORA Readiness",
       description:
@@ -384,6 +429,41 @@ const en: typeof de = {
     validUntil: "Valid until",
     compensatingControls: "Compensating controls",
     empty: "No risk acceptances available.",
+  },
+  roiConc: {
+    kpiCifServices: "CIF-supporting services",
+    kpiThirdCountry: "Third countries holding data",
+    kpiCrossChain: "Chain links under multiple direct providers",
+    exposureTitle: "Provider exposure",
+    provider: "Provider",
+    cifContracts: "CIF arrangements",
+    cifServices: "CIF services",
+    functions: "Affected functions",
+    share: "Share of all CIF services",
+    chainTitle: "Chain concentration (multiple independent direct providers)",
+    chainMember: "Chain link",
+    country: "Country",
+    directProviders: "Direct providers",
+    providesCif: "Provides CIF service",
+    chainEmpty: "No subcontractor appears under multiple direct providers.",
+    geoTitle: "Geographic concentration (storage/processing locations)",
+    storage: "Storage location (services)",
+    processing: "Processing location (services)",
+    cifCol: "of which CIF",
+    thirdCountry: "Third country",
+    ctppTitle: "CTPP exposure (official list reconciliation)",
+    ctppMatch: {
+      CONFIRMED: "Confirmed (flag + list)",
+      FLAGGED_ONLY: "Flagged in the cockpit only",
+      LISTED_ONLY: "Listed only (flag missing)",
+    } as Record<string, string>,
+    ctppEmpty: "No CTPP exposure recorded.",
+    ctppListHint: (version: string) =>
+      version === "ungepflegt"
+        ? "Note: the official CTPP list has not been maintained yet (lib/content/ctpp-list.ts) — only providers flagged in the cockpit are shown."
+        : `CTPP list version: ${version}`,
+    yes: "Yes",
+    no: "No",
   },
   tprm: {
     criticalThirdParties: "Critical third parties",

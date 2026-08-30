@@ -25,6 +25,19 @@ import { ComplianceDisclaimer } from "@/features/governance/disclaimer";
 import { complianceStatusLabel, complianceStatusVariant } from "@/features/governance/status";
 import { getLocale } from "@/lib/i18n/server";
 import { REPORTS_MESSAGES, type ReportsMessages } from "@/lib/i18n/messages/reports";
+import { loadRoiInput } from "@/lib/register/roi-data";
+import {
+  crossChainConcentration,
+  ctppExposure,
+  geoConcentration,
+  providerExposure,
+} from "@/lib/domain/roi-concentration";
+import { CTPP_LIST, CTPP_LIST_VERSION } from "@/lib/content/ctpp-list";
+import {
+  GeoConcentrationChart,
+  ProviderExposureChart,
+} from "@/features/reports/roi-concentration-charts";
+import type { Locale } from "@/lib/i18n/config";
 
 export const metadata = { title: "Bericht" };
 export const dynamic = "force-dynamic";
@@ -39,7 +52,7 @@ export default async function ReportPage({ params }: { params: Promise<{ type: s
   const now = new Date();
   const title = t.defs[def.key].title;
 
-  const content = await renderContent(def.key, t);
+  const content = await renderContent(def.key, t, locale);
 
   return (
     <div>
@@ -91,7 +104,11 @@ export default async function ReportPage({ params }: { params: Promise<{ type: s
 // Inhalte je Berichtstyp
 // ------------------------------------------------------------------
 
-async function renderContent(key: ReportKey, t: ReportsMessages): Promise<ReactNode> {
+async function renderContent(
+  key: ReportKey,
+  t: ReportsMessages,
+  locale: Locale,
+): Promise<ReactNode> {
   switch (key) {
     case "EXECUTIVE_SUMMARY":
       return <ExecutiveSummary t={t} />;
@@ -105,6 +122,8 @@ async function renderContent(key: ReportKey, t: ReportsMessages): Promise<ReactN
       return <Acceptances t={t} />;
     case "TPRM_OVERVIEW":
       return <TprmOverview t={t} />;
+    case "ROI_CONCENTRATION":
+      return <RoiConcentration t={t} locale={locale} />;
     case "DORA_READINESS":
       return <DoraReadiness t={t} />;
     case "CONTROL_EFFECTIVENESS":
@@ -399,6 +418,206 @@ async function Acceptances({ t }: { t: ReportsMessages }) {
         )}
       </TBody>
     </Table>
+  );
+}
+
+/** IKT-Konzentrationsanalyse über den Registerbestand (Welle 5, ADR-0009). */
+async function RoiConcentration({ t, locale }: { t: ReportsMessages; locale: Locale }) {
+  const r = t.roiConc;
+  const { input } = await loadRoiInput();
+  const exposure = providerExposure(input);
+  const crossChain = crossChainConcentration(input);
+  const geo = geoConcentration(input);
+  const ctpp = ctppExposure(input, CTPP_LIST);
+  const cfLabel = new Map(input.functions.map((f) => [f.id, f.cfId]));
+  const fnNames = (ids: string[]) => ids.map((id) => cfLabel.get(id) ?? id).join(", ");
+  const totalCifServices = exposure.reduce((n, e) => n + e.cifServices, 0);
+  const thirdCountries = geo.filter((g) => g.isThirdCountry).length;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <Kpi label={r.kpiCifServices} value={totalCifServices} />
+        <Kpi label={r.kpiCrossChain} value={crossChain.length} />
+        <Kpi label={r.kpiThirdCountry} value={thirdCountries} />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{r.exposureTitle}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ProviderExposureChart
+            data={exposure.map((e) => ({ tpId: e.tpId, cifServices: e.cifServices }))}
+            locale={locale}
+          />
+          <Table>
+            <THead>
+              <TR>
+                <TH>{r.provider}</TH>
+                <TH>{r.cifContracts}</TH>
+                <TH>{r.cifServices}</TH>
+                <TH>{r.functions}</TH>
+                <TH>{r.share}</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {exposure.map((e) => (
+                <TR key={e.thirdPartyId}>
+                  <TD className="whitespace-nowrap font-medium">
+                    {e.tpId} – {e.name}
+                    {e.isCtpp ? (
+                      <span className="ml-2">
+                        <Badge variant="high">CTPP</Badge>
+                      </span>
+                    ) : null}
+                  </TD>
+                  <TD className="tabular-nums">{e.cifContracts}</TD>
+                  <TD className="tabular-nums">{e.cifServices}</TD>
+                  <TD className="text-xs">{fnNames(e.functionIds)}</TD>
+                  <TD>
+                    <Badge
+                      variant={
+                        e.sharePercent >= 50 ? "critical" : e.sharePercent >= 25 ? "high" : "low"
+                      }
+                    >
+                      {e.sharePercent} %
+                    </Badge>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{r.chainTitle}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {crossChain.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{r.chainEmpty}</p>
+          ) : (
+            <Table>
+              <THead>
+                <TR>
+                  <TH>{r.chainMember}</TH>
+                  <TH>{r.country}</TH>
+                  <TH>{r.directProviders}</TH>
+                  <TH>{r.providesCif}</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {crossChain.map((c) => (
+                  <TR key={c.key}>
+                    <TD className="font-medium">{c.name}</TD>
+                    <TD>{c.country}</TD>
+                    <TD className="text-xs">{c.directProviders.join(", ")}</TD>
+                    <TD>
+                      <Badge variant={c.providesCifService ? "critical" : "low"}>
+                        {c.providesCifService ? r.yes : r.no}
+                      </Badge>
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{r.geoTitle}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <GeoConcentrationChart
+            data={geo.map((g) => ({
+              country: g.country,
+              storageServices: g.storageServices,
+              isThirdCountry: g.isThirdCountry,
+            }))}
+            locale={locale}
+          />
+          <Table>
+            <THead>
+              <TR>
+                <TH>{r.country}</TH>
+                <TH>{r.storage}</TH>
+                <TH>{r.processing}</TH>
+                <TH>{r.cifCol}</TH>
+                <TH>{r.thirdCountry}</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {geo.map((g) => (
+                <TR key={g.country}>
+                  <TD className="font-medium">{g.country}</TD>
+                  <TD className="tabular-nums">{g.storageServices}</TD>
+                  <TD className="tabular-nums">{g.processingServices}</TD>
+                  <TD className="tabular-nums">{g.cifServices}</TD>
+                  <TD>
+                    <Badge variant={g.isThirdCountry ? "critical" : "low"}>
+                      {g.isThirdCountry ? r.yes : r.no}
+                    </Badge>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{r.ctppTitle}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p className="text-sm text-muted-foreground">{r.ctppListHint(CTPP_LIST_VERSION)}</p>
+          {ctpp.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{r.ctppEmpty}</p>
+          ) : (
+            <Table>
+              <THead>
+                <TR>
+                  <TH>{r.provider}</TH>
+                  <TH>LEI</TH>
+                  <TH>Status</TH>
+                  <TH>{r.cifServices}</TH>
+                  <TH>{r.functions}</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {ctpp.map((c) => (
+                  <TR key={c.tpId}>
+                    <TD className="whitespace-nowrap font-medium">
+                      {c.tpId} – {c.name}
+                    </TD>
+                    <TD className="font-mono text-xs">{c.lei ?? "–"}</TD>
+                    <TD>
+                      <Badge
+                        variant={
+                          c.match === "CONFIRMED"
+                            ? "low"
+                            : c.match === "LISTED_ONLY"
+                              ? "critical"
+                              : "medium"
+                        }
+                      >
+                        {r.ctppMatch[c.match] ?? c.match}
+                      </Badge>
+                    </TD>
+                    <TD className="tabular-nums">{c.cifServices}</TD>
+                    <TD className="text-xs">{fnNames(c.functionIds)}</TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
