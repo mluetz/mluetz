@@ -6,6 +6,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ### Added
 
+- **CTPP-Stammdaten eingepflegt:** amtliche Liste der 19 benannten
+  kritischen IKT-Drittdienstleister (EBA/EIOPA/ESMA, 18.11.2025, Art. 31
+  Abs. 9 DORA) in `lib/content/ctpp-list.ts`; Namen exakt nach dem
+  amtlichen PDF, LEIs aus dem GLEIF-Register (13 eindeutig belegt,
+  6 als `TODO(verify)` offen — das PDF selbst enthält keine LEIs)
+
 - **Meldeschicht Welle 6 — Vorfallklassifizierung vervollständigt
   (ADR-0010):** Die sieben Kriterien der DelVO (EU) 2024/1772 werden als
   **Messwerte** erfasst (Kunden absolut/relativ, Gegenparteien,
