@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { collectRegisterRecords, validateRegisterRecords } from "@/lib/register/data";
 import { concentrationOverChain } from "@/lib/domain/concentration";
+import { validateRoi, summarizeFindings } from "@/lib/domain/roi-validation";
+import { findingHref, loadRoiInput } from "@/lib/register/roi-data";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata = { title: "Informationsregister" };
@@ -29,18 +30,21 @@ const TEXT = {
     toVerify: "zu verifizieren",
     verified: "verifiziert",
     exportBtn: "Probeeinreichung (CSV)",
-    validationTitle: "Validierungslauf (Probeeinreichung)",
+    validationTitle: "Validierungslauf (Meldeschicht)",
     validationDesc:
-      "Pflichtfelder, LEI-Prüfziffern (ISO 17442), Codelisten und Referenzintegrität — Fehlerliste je Datensatz.",
+      "Prüfregeln der Meldeschicht (ADR-0006): Schlüssel und LEI-Prüfziffern (ISO 17442), Duplikate, Referenzintegrität, Pflichtfelder mit Prüftiefe B_02.02/B_07.01, Kettenränge, Wertelisten, Plausibilität. REJECT-Befunde blockieren den Export.",
     records: "Datensätze",
     errors: "Fehler",
     warnings: "Warnungen",
+    rejects: "Zurückweisungen",
+    colRule: "Regel",
+    colTemplate: "Meldebogen",
     colRef: "Datensatz",
-    colKind: "Art",
     colField: "Feld",
     colSeverity: "Schwere",
     colMessage: "Meldung",
-    allValid: "Keine Validierungsfehler — das Register ist formal probeeinreichungsfähig.",
+    openRecord: "Öffnen",
+    allValid: "Keine Befunde — das Register besteht alle Prüfregeln der Meldeschicht.",
     concTitle: "Konzentrationsrisiko über die Kette",
     concDesc:
       "Anzahl gestützter CIF je Anbieter — über die GESAMTE Subunternehmerkette gerechnet, nicht nur über Erstdienstleister. Gemeinsame Kettenglieder mehrerer Anbieter werden zusammengeführt (LEI, sonst Name).",
@@ -72,18 +76,21 @@ const TEXT = {
     toVerify: "to verify",
     verified: "verified",
     exportBtn: "Trial submission (CSV)",
-    validationTitle: "Validation run (trial submission)",
+    validationTitle: "Validation run (reporting layer)",
     validationDesc:
-      "Mandatory fields, LEI check digits (ISO 17442), code lists and referential integrity — error list per record.",
+      "Reporting-layer rules (ADR-0006): keys and LEI check digits (ISO 17442), duplicates, referential integrity, mandatory fields with depth on B_02.02/B_07.01, chain ranks, value lists, plausibility. REJECT findings block the export.",
     records: "Records",
     errors: "Errors",
     warnings: "Warnings",
+    rejects: "Rejections",
+    colRule: "Rule",
+    colTemplate: "Template",
     colRef: "Record",
-    colKind: "Kind",
     colField: "Field",
     colSeverity: "Severity",
     colMessage: "Message",
-    allValid: "No validation errors — the register is formally ready for a trial submission.",
+    openRecord: "Open",
+    allValid: "No findings — the register passes all reporting-layer rules.",
     concTitle: "Concentration risk across the chain",
     concDesc:
       "Number of supported CIFs per provider — computed across the FULL subcontracting chain, not just direct providers. Shared chain links are merged (LEI, else name).",
@@ -107,12 +114,12 @@ export default async function RegisterPage() {
   const locale = await getLocale();
   const t = TEXT[locale];
 
-  const [versions, records, exports, tpsForConc] = await Promise.all([
+  const [versions, roi, exports, tpsForConc] = await Promise.all([
     db.itsTemplateVersion.findMany({
       include: { _count: { select: { mappings: true } } },
       orderBy: { label: "asc" },
     }),
-    collectRegisterRecords(),
+    loadRoiInput(),
     db.registerExport.findMany({
       include: { createdBy: { select: { email: true } }, templateVersion: true },
       orderBy: { createdAt: "desc" },
@@ -124,9 +131,16 @@ export default async function RegisterPage() {
     }),
   ]);
 
-  const issues = validateRegisterRecords(records);
-  const errors = issues.filter((i) => i.severity === "ERROR");
-  const warnings = issues.filter((i) => i.severity === "WARNING");
+  const findings = validateRoi(roi.input);
+  const summary = summarizeFindings(findings);
+  const recordCount =
+    roi.input.entities.length +
+    roi.input.branches.length +
+    roi.input.thirdParties.length +
+    roi.input.contracts.length +
+    roi.input.contracts.reduce((n, c) => n + c.ictServices.length, 0) +
+    roi.input.subcontractors.length +
+    roi.input.functions.length;
 
   const concentration = concentrationOverChain(
     tpsForConc.map((tp) => ({
@@ -196,40 +210,61 @@ export default async function RegisterPage() {
           <CardTitle>
             {t.validationTitle}{" "}
             <span className="ml-2 align-middle text-sm font-normal text-muted-foreground tabular-nums">
-              {t.records}: {records.length} · {t.errors}: {errors.length} · {t.warnings}:{" "}
-              {warnings.length}
+              {t.records}: {recordCount} · {t.rejects}: {summary.reject} · {t.errors}:{" "}
+              {summary.error} · {t.warnings}: {summary.warning}
             </span>
           </CardTitle>
           <CardDescription>{t.validationDesc}</CardDescription>
         </CardHeader>
         <CardContent>
-          {issues.length === 0 ? (
+          {findings.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t.allValid}</p>
           ) : (
             <Table>
               <THead>
                 <TR>
+                  <TH>{t.colRule}</TH>
+                  <TH>{t.colTemplate}</TH>
                   <TH>{t.colRef}</TH>
-                  <TH>{t.colKind}</TH>
                   <TH>{t.colField}</TH>
                   <TH>{t.colSeverity}</TH>
                   <TH>{t.colMessage}</TH>
                 </TR>
               </THead>
               <TBody>
-                {issues.map((i, n) => (
-                  <TR key={n}>
-                    <TD className="whitespace-nowrap font-medium tabular-nums">{i.ref}</TD>
-                    <TD>{i.kind}</TD>
-                    <TD className="whitespace-nowrap">{i.field}</TD>
-                    <TD>
-                      <Badge variant={i.severity === "ERROR" ? "critical" : "medium"}>
-                        {i.severity}
-                      </Badge>
-                    </TD>
-                    <TD>{i.message}</TD>
-                  </TR>
-                ))}
+                {findings.map((f, n) => {
+                  const href = findingHref(f, roi.links);
+                  return (
+                    <TR key={n}>
+                      <TD className="whitespace-nowrap font-mono text-xs">{f.ruleId}</TD>
+                      <TD className="whitespace-nowrap tabular-nums">{f.template}</TD>
+                      <TD className="whitespace-nowrap font-medium">
+                        {href ? (
+                          <a className="underline underline-offset-2" href={href}>
+                            {f.recordRef}
+                          </a>
+                        ) : (
+                          f.recordRef
+                        )}
+                      </TD>
+                      <TD className="whitespace-nowrap">{f.field}</TD>
+                      <TD>
+                        <Badge
+                          variant={
+                            f.severity === "REJECT"
+                              ? "critical"
+                              : f.severity === "ERROR"
+                                ? "high"
+                                : "medium"
+                          }
+                        >
+                          {f.severity}
+                        </Badge>
+                      </TD>
+                      <TD>{locale === "de" ? f.messageDe : f.messageEn}</TD>
+                    </TR>
+                  );
+                })}
               </TBody>
             </Table>
           )}
@@ -258,7 +293,9 @@ export default async function RegisterPage() {
                   <TD className="font-medium">{p.name}</TD>
                   <TD>{p.country}</TD>
                   <TD>
-                    <Badge variant={p.cifCount >= 3 ? "critical" : p.cifCount === 2 ? "high" : "low"}>
+                    <Badge
+                      variant={p.cifCount >= 3 ? "critical" : p.cifCount === 2 ? "high" : "low"}
+                    >
                       {p.cifCount}
                     </Badge>
                   </TD>
@@ -295,7 +332,9 @@ export default async function RegisterPage() {
               <TBody>
                 {exports.map((e) => (
                   <TR key={e.id}>
-                    <TD className="whitespace-nowrap tabular-nums">{formatDateTime(e.createdAt)}</TD>
+                    <TD className="whitespace-nowrap tabular-nums">
+                      {formatDateTime(e.createdAt)}
+                    </TD>
                     <TD>{e.templateVersion.label}</TD>
                     <TD>{e.createdBy.email}</TD>
                     <TD className="tabular-nums">{e.recordCount}</TD>

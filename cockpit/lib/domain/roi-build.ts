@@ -321,7 +321,10 @@ export function buildRoiRegister(input: RoiInput): RoiRegister {
     return {
       "contract.ref": c?.contractRef ?? null,
       "service.ictServiceType": s.ictServiceType,
-      "chain.rank": s.rank,
+      // Rangkonvention (ADR-0006 Nr. 5): Subcontractor.rank behält die
+      // Review-v3-Semantik (1 = erste Weitervergabestufe); im Meldebogen
+      // ist Rang 1 der direkte Dienstleister, daher +1.
+      "chain.rank": s.rank + 1,
       "chain.name": s.name,
       "chain.lei": s.lei,
       "chain.country": s.country,
