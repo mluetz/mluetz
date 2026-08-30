@@ -11,6 +11,10 @@
 
 {
 	auto_https disable_redirects
+	# Beim Zugriff über eine IP sendet der Client keine SNI (die ist laut RFC
+	# Hostnamen vorbehalten). Ohne Fallback findet Caddy den Site-Block nicht
+	# und bricht den Handshake mit TLS-Alert 80 ab, obwohl das Zertifikat da ist.
+	default_sni {$CADDY_DEFAULT_SNI:localhost}
 }
 
 # Der Host muss ausgeschrieben sein: Aus einem hostlosen Block wie ":8443"

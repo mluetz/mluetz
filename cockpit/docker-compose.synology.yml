@@ -64,6 +64,7 @@ services:
       # der interne Issuer kein Zertifikat ausstellen. Der Installer trägt
       # hier die NAS-IP ein; der Default passt nur für lokale Tests.
       CADDY_SITE_ADDRESS: "${CADDY_SITE_ADDRESS:-https://localhost:8443}"
+      CADDY_DEFAULT_SNI: "${CADDY_DEFAULT_SNI:-localhost}"
     ports:
       - "${HTTPS_PORT:-8443}:8443"
       - "${HTTP_REDIRECT_PORT:-8080}:8080"

@@ -124,6 +124,12 @@ else
 fi
 echo "==> TLS-Adresse: ${CADDY_ADDR}"
 
+if grep -q '^CADDY_DEFAULT_SNI=' "$APP_DIR/.env" 2>/dev/null; then
+  sed -i.bak "s#^CADDY_DEFAULT_SNI=.*#CADDY_DEFAULT_SNI=${NAS_IP}#" "$APP_DIR/.env" && rm -f "$APP_DIR/.env.bak"
+else
+  printf 'CADDY_DEFAULT_SNI=%s\n' "$NAS_IP" >> "$APP_DIR/.env"
+fi
+
 cd "$APP_DIR"
 echo "==> Baue Image und starte Container – der erste Build dauert je nach Modell 10–25 Minuten …"
 $COMPOSE -f docker-compose.synology.yml up -d --build
