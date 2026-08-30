@@ -6,6 +6,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ### Added
 
+- **Meldeschicht Welle 2 — Validierungsengine (ADR-0006):**
+  `lib/domain/roi-validation.ts` als reine, vollständig unit-getestete
+  Engine über dem Registermodell: 17 Prüfregeln (`RV-…`) mit Regel-ID,
+  Schweregrad `REJECT | ERROR | WARNING`, Meldebogen, Datensatzbezug und
+  handlungsleitendem Klartext DE/EN — Schlüsselformate (LEI nach ISO 17442,
+  EUID), Primärschlüssel und Duplikate, referenzielle Integrität
+  (Entsprechung der aufsichtlichen Regeln 805/806/807), Pflichtfelder mit
+  Prüftiefe B_02.02/B_07.01, Rang- und Zyklenprüfung der
+  Subunternehmerkette, Wertelisten mit B_99.01-Ausnahme, Plausibilität
+  (Rahmenvertrag, Exit-Plan, CTPP-Auditrechte); GLEIF-Statusabgleich als
+  abschaltbare Schnittstelle ohne Laufzeitabhängigkeit; Registerseite
+  zeigt die Befunde mit Sprunglink zum betroffenen Datensatz
+  (Testabdeckung der Engine 100 % Statements / 96 % Branches,
+  neue devDependency `@vitest/coverage-v8` nur zur Messung)
+
 - **Meldeschicht Welle 1 — Registermodell (ADR-0005):** Datenmodell für das
   DORA-Informationsregister (DVO (EU) 2024/2956): `ReportingEntity` um
   B_01-Felder erweitert, neu `EntityBranch`, `ContractIctService`
