@@ -9,6 +9,7 @@ export const REPORT_KEYS = [
   "OVERDUE_ACTIONS",
   "ACCEPTANCES",
   "TPRM_OVERVIEW",
+  "ROI_CONCENTRATION",
   "DORA_READINESS",
   "CONTROL_EFFECTIVENESS",
   "QUALITY_REVIEW",
@@ -64,6 +65,13 @@ export const REPORT_DEFS: ReportDef[] = [
     key: "TPRM_OVERVIEW",
     titel: "Third-Party-Überblick",
     beschreibung: "Drittparteien mit Kritikalität, Residual-Score, Due-Diligence- und Exit-Status.",
+    permission: "report:read",
+  },
+  {
+    key: "ROI_CONCENTRATION",
+    titel: "IKT-Konzentrationsanalyse",
+    beschreibung:
+      "Mehrstufige Konzentrationsanalytik über den Registerbestand (Meldeschicht Welle 5): Exponierung je Dienstleister, Kettenkonzentration, geografische Verteilung, CTPP-Exponierung.",
     permission: "report:read",
   },
   {
