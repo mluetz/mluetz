@@ -86,6 +86,37 @@ Reifegrad über 2).
 | AuditLog                                                     | Append-only Audit Trail (auch nach Nutzerlöschung lesbar via `userEmail`) |
 | AppSetting, SavedFilter                                      | Konfiguration (Schwellwerte, Mitigation Cap), gespeicherte Filter         |
 
+### Meldeschicht – DORA-Informationsregister (ADR-0005)
+
+Mapping der Cockpit-Objekte auf die 15 Meldebögen der DVO (EU) 2024/2956
+(Anhang I). Die Zusammenstellung erfolgt in `lib/domain/roi-build.ts`
+(reine Funktionen); das Feld-Mapping auf die Spalten einer konkreten
+ITS-Fassung bleibt Datenpflege (`ItsFieldMapping`).
+
+| Meldebogen | Inhalt                                    | Cockpit-Objekt(e)                                                      |
+| ---------- | ----------------------------------------- | ---------------------------------------------------------------------- |
+| B_01.01    | Register führende Einheit                 | `ReportingEntity` (Maintainer)                                         |
+| B_01.02    | Einheiten im Erfassungskreis              | `ReportingEntity` (alle, mit Hierarchie)                               |
+| B_01.03    | Zweigniederlassungen                      | `EntityBranch`                                                         |
+| B_02.01    | Vereinbarungen – allgemeine Angaben       | `Contract` (Ref, Art, Rahmenbezug, Kosten)                             |
+| B_02.02    | Vereinbarungen – spezifische Angaben      | `ContractIctService` × `Contract` (Kernobjekt)                         |
+| B_02.03    | Gruppeninterne Vereinbarungen             | `Contract` (`isIntragroup`)                                            |
+| B_03.01    | Unterzeichnende Einheiten (Empfangsseite) | `Contract.signingEntity`                                               |
+| B_03.02    | Unterzeichnende IKT-Drittdienstleister    | `Contract` × `ThirdParty`                                              |
+| B_03.03    | Einheiten als gruppeninterne Erbringer    | `Contract` (`isIntragroup`) × `signingEntity`                          |
+| B_04.01    | Nutzende Einheiten                        | `Contract.usingEntities` (n:m `ReportingEntity`)                       |
+| B_05.01    | IKT-Drittdienstleister                    | `ThirdParty` (LEI/EUID, `providerType`, `ultimateParent`, `isCtpp`)    |
+| B_05.02    | IKT-Lieferketten                          | Rang 1: `Contract` × `ContractIctService`; Folgeränge: `Subcontractor` |
+| B_06.01    | Identifikation der Funktionen             | `CriticalFunction` (inkl. B_06-Felder)                                 |
+| B_07.01    | Bewertung der IKT-Dienstleistungen        | `CifServiceAssessment` (1:1 `ContractIctService`)                      |
+| B_99.01    | Entitätsspezifische Definitionen          | `AppSetting` `roi.definitions` (JSON)                                  |
+
+Ergänzende Objekte: `RoiSnapshot` (unveränderlicher Meldestand: JSON-Abzug,
+Prüfsumme, Taxonomieversion, Abgabevermerk; Vier-Augen über `Approval`),
+Taxonomien versioniert in `lib/content/roi-taxonomies.ts`. Eindeutigkeit von
+`Contract.contractRef` und `CriticalFunction.functionIdCode` wird serverseitig
+erzwungen (ADR-0005 Nr. 8).
+
 ## Wesentliche Integritätsregeln
 
 - Workflow-Übergänge sind serverseitig auf die Tabellen in `lib/domain/enums.ts` beschränkt.
