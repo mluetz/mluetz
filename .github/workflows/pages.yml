@@ -30,7 +30,7 @@ jobs:
           cp irm/index.html _site/irm/
           touch _site/.nojekyll
       - name: Upload site
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
       - id: deployment
