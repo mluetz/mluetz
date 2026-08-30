@@ -21,6 +21,18 @@ function parseLocalDateTime(value: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+/**
+ * Unternehmensart der Register führenden Einheit für die entitätstyp-
+ * abhängigen Fristenuhren (Meldeschicht Welle 6, ADR-0010 Nr. 5).
+ */
+async function maintainerEntityCategory(): Promise<string | null> {
+  const setting = await db.appSetting.findUnique({ where: { key: "roi.maintainerEntityId" } });
+  const entity = setting
+    ? await db.reportingEntity.findUnique({ where: { id: setting.value } })
+    : await db.reportingEntity.findFirst({ where: { parentId: null } });
+  return entity?.entityType ?? null;
+}
+
 /** Ist-Abgaben eines Vorfalls als Map für computeDeadlines. */
 function submittedMap(
   reports: Array<{ reportType: string; submittedAt: Date | null }>,
@@ -106,7 +118,14 @@ export async function createIncident(
 
     // Meldefristen deterministisch berechnen und als Reports anlegen (submittedAt = null)
     const deadlines = computeDeadlines(
-      { awarenessAt, classifiedAt, isMajor, gdprRelevant, nis2Relevant },
+      {
+        awarenessAt,
+        classifiedAt,
+        isMajor,
+        gdprRelevant,
+        nis2Relevant,
+        entityCategory: await maintainerEntityCategory(),
+      },
       now,
     );
     if (deadlines.length > 0) {
@@ -192,6 +211,7 @@ export async function markReportSubmitted(
         gdprRelevant: incident.gdprRelevant,
         nis2Relevant: incident.nis2Relevant,
         submitted: submittedMap(reports),
+        entityCategory: await maintainerEntityCategory(),
       },
       new Date(),
     );
@@ -339,6 +359,7 @@ export async function classifyIncident(
           gdprRelevant: incident.gdprRelevant,
           nis2Relevant: incident.nis2Relevant,
           submitted: submittedMap(incident.reports),
+          entityCategory: await maintainerEntityCategory(),
         },
         new Date(),
       );
@@ -416,17 +437,44 @@ export async function classifyIncidentStructured(
       };
     }
 
-    const { CLASSIFICATION_CRITERIA, deriveIsMajor } = await import(
-      "@/lib/domain/incident-classification"
+    // Meldeschicht Welle 6 (ADR-0010): Messwerte statt Häkchen — „erfüllt"
+    // wird serverseitig aus den Messwerten abgeleitet (evaluateCriteria).
+    const { CLASSIFICATION_CRITERIA, deriveIsMajor, evaluateCriteria } =
+      await import("@/lib/domain/incident-classification");
+    const num = (name: string): number | null => {
+      const raw = String(formData.get(name) ?? "").trim();
+      if (!raw) return null;
+      const v = Number(raw.replace(",", "."));
+      return Number.isFinite(v) && v >= 0 ? v : null;
+    };
+    const flag = (name: string): boolean => formData.get(name) === "on";
+    const measurements = {
+      clientsAffectedCount: num("m_clientsAffectedCount"),
+      clientsAffectedPercent: num("m_clientsAffectedPercent"),
+      counterpartsAffectedPercent: num("m_counterpartsAffectedPercent"),
+      transactionsCount: num("m_transactionsCount"),
+      transactionsValueEur: num("m_transactionsValueEur"),
+      transactionsPercentOfDaily: num("m_transactionsPercentOfDaily"),
+      reputationMediaCoverage: flag("m_reputationMediaCoverage"),
+      reputationComplaints: flag("m_reputationComplaints"),
+      reputationClientLoss: flag("m_reputationClientLoss"),
+      durationHours: num("m_durationHours"),
+      serviceDowntimeHours: num("m_serviceDowntimeHours"),
+      memberStatesAffected: num("m_memberStatesAffected"),
+      dataLossAvailability: flag("m_dataLossAvailability"),
+      dataLossIntegrity: flag("m_dataLossIntegrity"),
+      dataLossConfidentiality: flag("m_dataLossConfidentiality"),
+      dataLossAuthenticity: flag("m_dataLossAuthenticity"),
+      criticalServicesAffected: flag("m_criticalServicesAffected"),
+      economicImpactEur: num("m_economicImpactEur"),
+    };
+    const rationales = Object.fromEntries(
+      CLASSIFICATION_CRITERIA.map((c) => [
+        c.key,
+        String(formData.get(`crit_${c.key}_rationale`) ?? "").trim(),
+      ]),
     );
-    const results = CLASSIFICATION_CRITERIA.map((c) => ({
-      key: c.key,
-      criterion: c.de,
-      threshold: String(formData.get(`crit_${c.key}_threshold`) ?? c.defaultThreshold),
-      actualValue: String(formData.get(`crit_${c.key}_actual`) ?? "").trim(),
-      met: formData.get(`crit_${c.key}_met`) === "on",
-      rationale: String(formData.get(`crit_${c.key}_rationale`) ?? "").trim(),
-    }));
+    const results = evaluateCriteria(measurements, rationales);
     for (const r of results) {
       if (r.met && r.rationale.length < 3) {
         return { error: `Begründung fehlt für erfülltes Kriterium "${r.criterion}".` };
@@ -442,6 +490,7 @@ export async function classifyIncidentStructured(
       create: {
         incidentId: incident.id,
         criteria: JSON.stringify(results),
+        measurements: JSON.stringify(measurements),
         isMajor,
         aggregatedWith: d.aggregatedWith?.trim() || null,
         voluntaryThreatNotice,
@@ -450,6 +499,7 @@ export async function classifyIncidentStructured(
       },
       update: {
         criteria: JSON.stringify(results),
+        measurements: JSON.stringify(measurements),
         isMajor,
         aggregatedWith: d.aggregatedWith?.trim() || null,
         voluntaryThreatNotice,
@@ -474,6 +524,7 @@ export async function classifyIncidentStructured(
             gdprRelevant: incident.gdprRelevant,
             nis2Relevant: incident.nis2Relevant,
             submitted: {},
+            entityCategory: await maintainerEntityCategory(),
           },
           now,
         );

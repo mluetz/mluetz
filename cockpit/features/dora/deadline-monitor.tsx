@@ -58,10 +58,13 @@ export function DeadlineMonitor({
   incident,
   reports,
   locale = "de",
+  entityCategory = null,
 }: {
   incident: DeadlineMonitorIncident;
   reports: DeadlineMonitorReport[];
   locale?: Locale;
+  /** Unternehmensart der meldenden Einheit (Fristenuhren, ADR-0010 Nr. 5). */
+  entityCategory?: string | null;
 }) {
   const t = DORA_MESSAGES[locale];
   const now = new Date();
@@ -77,6 +80,7 @@ export function DeadlineMonitor({
       gdprRelevant: incident.gdprRelevant,
       nis2Relevant: incident.nis2Relevant,
       submitted,
+      entityCategory,
     },
     now,
   );

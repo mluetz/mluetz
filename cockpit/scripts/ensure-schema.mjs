@@ -161,6 +161,10 @@ const UPDATES = [
       !(await columnExists("ContractClause", "assessedById")) ||
       (await columnExists("Contract", "auditRights")),
   },
+  {
+    file: "0011-meldeschicht-welle6.sql",
+    needed: async () => !(await columnExists("IncidentClassification", "measurements")),
+  },
 ];
 
 try {

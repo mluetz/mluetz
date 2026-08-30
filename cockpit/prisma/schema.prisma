@@ -194,6 +194,10 @@ model IncidentClassification {
   incidentId            String    @unique
   incident              Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
   criteria              String // JSON: [{ key, criterion, threshold, actualValue, met, rationale }]
+  // Rohe Messwerte der sieben DelVO-Kriterien (Meldeschicht Welle 6,
+  // ADR-0010 Nr. 2): JSON gemäß IncidentMeasurements — Neubewertung bei
+  // Schwellwertänderung ohne Datenverlust.
+  measurements          String?
   isMajor               Boolean
   // Aggregationsregel für wiederkehrende Vorfälle (RTS Art. 8 Abs. 2)
   aggregatedWith        String?
