@@ -80,6 +80,7 @@ model User {
   cifServiceAssessments   CifServiceAssessment[] @relation("CifSvcAssessor")
   roiSnapshots            RoiSnapshot[]          @relation("RoiSnapshotCreator")
   roiSubmissions          RoiSnapshot[]          @relation("RoiSnapshotSubmitter")
+  clauseAssessments       ContractClause[]       @relation("ClauseAssessor")
 }
 
 // ------------------------------------------------------------------
@@ -712,9 +713,10 @@ model Action {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  comments     Comment[]
-  approvals    Approval[]
-  doraFindings DoraFinding[]
+  comments        Comment[]
+  approvals       Approval[]
+  doraFindings    DoraFinding[]
+  contractClauses ContractClause[]
 
   @@index([status])
 }
@@ -841,9 +843,9 @@ model Contract {
   // fristen ersetzt; Wert wurde per Update 0008 nach
   // terminationNoticeDaysEntity kopiert. Entfernung in einem Folgeschritt.
   noticePeriodDays      Int?
-  auditRights           Boolean   @default(false)
-  accessRights          Boolean   @default(false)
-  incidentReporting     Boolean   @default(false)
+  // ENTFERNT (Meldeschicht Welle 4, ADR-0008 Nr. 6): auditRights,
+  // accessRights, incidentReporting — abgeleitet aus der Klauselmatrix
+  // (lib/domain/art30.ts, deriveContractFlags), keine zweite Wahrheit.
   // Länder der Leistungserbringung / Datenspeicherung / -verarbeitung
   // (ISO 3166-1 alpha-2, kommagetrennt) — Registerpflichtfelder.
   // Vertragsweite Voreinstellung; maßgeblich je Dienstleistung ist
@@ -952,9 +954,24 @@ model RoiSnapshot {
   @@unique([referenceDate, reportingLevel, version])
 }
 
-// Klauselmatrix Art. 30 (Review v3, P1-03): je Vertrag einzeln quittierbare
-// Pflichtklauseln aus Abs. 2 lit. a-h (alle Verträge) und Abs. 3 lit. a-g
-// (CIF-Verträge). Katalog: lib/domain/art30.ts.
+// Klauselbibliothek Art. 30 (Meldeschicht Welle 4, ADR-0008): pflegbare
+// Pflichtklauseln mit Fundstelle und Pflichttext DE/EN. Geseedet aus
+// lib/domain/art30.ts; der Text ist eine Arbeitsfassung (TODO(verify)).
+model ClauseTemplate {
+  id            String  @id @default(cuid())
+  key           String  @unique // z. B. ART30_2_A .. ART30_3_G
+  ref           String // Fundstelle, z. B. "Art. 30 Abs. 2 lit. a"
+  applicability String  @default("ALL") // ALL | CIF_ONLY
+  textDe        String
+  textEn        String
+  sortOrder     Int     @default(0)
+  active        Boolean @default(true)
+}
+
+// Klauselmatrix Art. 30 (Review v3, P1-03; erweitert Welle 4, ADR-0008):
+// je Vertrag einzeln quittierbare Pflichtklauseln aus Abs. 2 lit. a-i
+// (alle Verträge) und Abs. 3 lit. a-g (CIF-Verträge).
+// Statuswert FULFILLED entspricht dem "PRESENT" des Auftrags (ADR-0008 Nr. 3).
 model ContractClause {
   id              String   @id @default(cuid())
   contractId      String
@@ -965,6 +982,13 @@ model ContractClause {
   evidenceId      String?
   comment         String?
   updatedAt       DateTime @updatedAt
+
+  // Welle 4 (ADR-0008 Nr. 4): Bewerter, Bewertungsdatum, Maßnahmenbezug
+  assessedAt   DateTime?
+  assessedById String?
+  assessedBy   User?     @relation("ClauseAssessor", fields: [assessedById], references: [id])
+  actionId     String?
+  action       Action?   @relation(fields: [actionId], references: [id])
 
   @@unique([contractId, clauseKey])
 }

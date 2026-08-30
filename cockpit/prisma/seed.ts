@@ -673,9 +673,8 @@ async function main() {
           startDate: daysFromNow(-700),
           endDate: t.contractEndInDays != null ? daysFromNow(t.contractEndInDays) : null,
           noticePeriodDays: t.critical ? 180 : 90,
-          auditRights: t.tpId !== "TP-012",
-          accessRights: t.critical,
-          incidentReporting: t.critical,
+          // Audit-/Zugangs-/Meldepflichten: seit Welle 4 (ADR-0008) nicht mehr
+          // als Booleans, sondern über die Klauselmatrix (siehe unten).
           notes: t.critical
             ? "DORA-Vertragsklauseln (Audit-, Zugangs-, Exit-Rechte) enthalten."
             : null,
@@ -864,6 +863,24 @@ async function main() {
       });
     }
   }
+
+  // ---------- Meldeschicht Welle 4 (ADR-0008): Klauselbibliothek ----------
+  // Pflegbare Klauselvorlagen (Arbeitsfassung, TODO(verify)) …
+  for (let i = 0; i < ART30_CLAUSES.length; i++) {
+    const clause = ART30_CLAUSES[i]!;
+    await db.clauseTemplate.create({
+      data: {
+        key: clause.key,
+        ref: clause.ref,
+        applicability: clause.cifOnly ? "CIF_ONLY" : "ALL",
+        textDe: clause.de,
+        textEn: clause.en,
+        sortOrder: i,
+      },
+    });
+  }
+  // Die Klauselstatus der übrigen Verträge werden am Ende des
+  // Meldeschicht-Blocks befüllt (nach Anlage des Intragroup-Vertrags).
 
   // Funktions-Identifikationscodes für das Register
   for (let i = 0; i < cfs.length; i++) {
@@ -1143,6 +1160,30 @@ async function main() {
           dataSensitivity: "MEDIUM",
         },
       });
+    }
+    // Welle 4 (ADR-0008): Klauselstatus für alle Verträge ohne Bewertung —
+    // die drei früheren Booleans sind abgelöst; abgeleitete Kennzeichen
+    // kommen aus der Matrix (deriveContractFlags).
+    const contractsWithoutClauses = await db.contract.findMany({
+      where: { clauses: { none: {} } },
+      include: { thirdParty: { include: { _count: { select: { criticalFunctions: true } } } } },
+    });
+    for (const c of contractsWithoutClauses) {
+      const isCif = c.thirdParty._count.criticalFunctions > 0;
+      for (const clause of ART30_CLAUSES.filter((cl) => isCif || !cl.cifOnly)) {
+        // TP-004/005: bewusst offene Lücken für den Lückenbericht
+        const gap =
+          (c.thirdParty.tpId === "TP-004" && clause.key === "ART30_2_H") ||
+          (c.thirdParty.tpId === "TP-005" && clause.key === "ART30_2_D");
+        await db.contractClause.create({
+          data: {
+            contractId: c.id,
+            clauseKey: clause.key,
+            status: gap ? "MISSING" : "FULFILLED",
+            contractSection: gap ? null : `§ ${ART30_CLAUSES.indexOf(clause) + 3}`,
+          },
+        });
+      }
     }
     console.log("  Meldeschicht Welle 1: Registerdaten angelegt (B_01–B_99 befüllbar).");
   }

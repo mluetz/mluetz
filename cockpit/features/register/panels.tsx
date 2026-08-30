@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import {
   decideRoiApproval,
   freezeRoiSnapshot,
+  linkClauseGapAction,
   markRoiSubmitted,
   requestRoiExportOverride,
   requestRoiSubmission,
@@ -118,6 +119,48 @@ export function RequestSubmissionForm({
       <input type="hidden" name="snapshotId" value={snapshotId} />
       <Button type="submit" variant="secondary" size="sm" disabled={pending}>
         {pending ? "…" : de ? "Abgabe beantragen" : "Request submission"}
+      </Button>
+      <ErrorLine state={state} />
+    </form>
+  );
+}
+
+export function LinkGapActionForm({
+  contractId,
+  clauseKey,
+  currentActionId,
+  actions,
+  locale,
+}: {
+  contractId: string;
+  clauseKey: string;
+  currentActionId: string | null;
+  actions: { id: string; actionId: string; title: string }[];
+  locale: Locale;
+}) {
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    linkClauseGapAction,
+    {},
+  );
+  const de = locale === "de";
+  return (
+    <form action={formAction} className="inline-flex items-center gap-2">
+      <input type="hidden" name="contractId" value={contractId} />
+      <input type="hidden" name="clauseKey" value={clauseKey} />
+      <select
+        name="actionId"
+        defaultValue={currentActionId ?? ""}
+        className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+      >
+        <option value="">{de ? "— keine Maßnahme —" : "— no action —"}</option>
+        {actions.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.actionId} · {a.title.slice(0, 40)}
+          </option>
+        ))}
+      </select>
+      <Button type="submit" variant="ghost" size="sm" disabled={pending}>
+        {pending ? "…" : de ? "Verknüpfen" : "Link"}
       </Button>
       <ErrorLine state={state} />
     </form>

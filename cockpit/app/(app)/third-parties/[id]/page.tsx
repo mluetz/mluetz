@@ -21,6 +21,7 @@ import {
 } from "@/features/third-parties/panels";
 import {
   contractComplianceRag,
+  deriveContractFlags,
   requiredClausesFor,
   type ClauseStatus,
 } from "@/lib/domain/art30";
@@ -67,6 +68,24 @@ export default async function ThirdPartyDetailPage({
     select: { id: true, cfId: true, name: true, isCritical: true },
     orderBy: { cfId: "asc" },
   });
+
+  // Klauselbibliothek (Welle 4, ADR-0008 Nr. 1): DB-Templates sind zur
+  // Laufzeit maßgeblich; Rückfall auf den Code-Katalog, solange keine
+  // Templates geladen sind.
+  const clauseTemplates = await db.clauseTemplate.findMany({
+    where: { active: true },
+    orderBy: { sortOrder: "asc" },
+  });
+  const clauseCatalog =
+    clauseTemplates.length > 0
+      ? clauseTemplates.map((tpl) => ({
+          key: tpl.key,
+          ref: tpl.ref,
+          cifOnly: tpl.applicability === "CIF_ONLY",
+          de: tpl.textDe,
+          en: tpl.textEn,
+        }))
+      : null;
 
   const status = tp.status as TpStatus;
   const allowedTargets = (TP_TRANSITIONS[status] ?? []) as string[];
@@ -281,6 +300,10 @@ export default async function ThirdPartyDetailPage({
                 <TBody>
                   {tp.contracts.map((c) => {
                     const expiring = c.endDate != null && c.endDate < contractWarnDate;
+                    // Abgeleitet aus der Klauselmatrix (Welle 4, ADR-0008 Nr. 6)
+                    const flags = deriveContractFlags(
+                      new Map(c.clauses.map((cl) => [cl.clauseKey, cl.status as ClauseStatus])),
+                    );
                     return (
                       <TR key={c.id}>
                         <TD className="max-w-[260px] truncate font-medium">{c.title}</TD>
@@ -297,10 +320,10 @@ export default async function ThirdPartyDetailPage({
                         </TD>
                         <TD className="text-xs">{c.noticePeriodDays ?? "–"}</TD>
                         <TD className="text-xs">
-                          {d.auditPrefix}: {yesNo(c.auditRights)} · {d.accessPrefix}:{" "}
-                          {yesNo(c.accessRights)}
+                          {d.auditPrefix}: {yesNo(flags.auditRights)} · {d.accessPrefix}:{" "}
+                          {yesNo(flags.accessRights)}
                         </TD>
-                        <TD className="text-xs">{yesNo(c.incidentReporting)}</TD>
+                        <TD className="text-xs">{yesNo(flags.incidentReporting)}</TD>
                         <TD className="max-w-[240px] text-xs">{c.notes || "–"}</TD>
                       </TR>
                     );
@@ -325,17 +348,20 @@ export default async function ThirdPartyDetailPage({
                 c.clauses.map((cl) => [cl.clauseKey, cl.status as ClauseStatus]),
               );
               const rag = contractComplianceRag(isCif, statuses);
-              const rows = requiredClausesFor(isCif).map((clause) => {
-                const existing = c.clauses.find((cl) => cl.clauseKey === clause.key);
-                return {
-                  key: clause.key,
-                  ref: clause.ref,
-                  label: locale === "de" ? clause.de : clause.en,
-                  status: existing?.status ?? "MISSING",
-                  section: existing?.contractSection ?? "",
-                  comment: existing?.comment ?? "",
-                };
-              });
+              const catalog = clauseCatalog ?? requiredClausesFor(true);
+              const rows = catalog
+                .filter((clause) => isCif || !clause.cifOnly)
+                .map((clause) => {
+                  const existing = c.clauses.find((cl) => cl.clauseKey === clause.key);
+                  return {
+                    key: clause.key,
+                    ref: clause.ref,
+                    label: locale === "de" ? clause.de : clause.en,
+                    status: existing?.status ?? "MISSING",
+                    section: existing?.contractSection ?? "",
+                    comment: existing?.comment ?? "",
+                  };
+                });
               return (
                 <div key={c.id} className="space-y-4">
                   <ContractClauseMatrix

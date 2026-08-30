@@ -17,9 +17,9 @@ describe("LEI-Validierung (ISO 17442, P1-01/1.3)", () => {
 });
 
 describe("Art.-30-Klauselmatrix (P1-03)", () => {
-  it("umfasst 8 Klauseln für alle Verträge und 15 für CIF-Verträge", () => {
-    expect(requiredClausesFor(false)).toHaveLength(8);
-    expect(requiredClausesFor(true)).toHaveLength(15);
+  it("umfasst 9 Klauseln für alle Verträge (Abs. 2 lit. a–i) und 16 für CIF-Verträge", () => {
+    expect(requiredClausesFor(false)).toHaveLength(9);
+    expect(requiredClausesFor(true)).toHaveLength(16);
   });
   it("RAG: fehlende Pflichtklausel => RED, teilweise => YELLOW, sonst GREEN", () => {
     const all = requiredClausesFor(true);
@@ -57,7 +57,13 @@ describe("Konzentration über die gesamte Kette (B-3/2.3)", () => {
         tpCountry: "DE",
         cifIds: ["cif1", "cif3"],
         chain: [
-          { name: "NORDIC DC (anders geschrieben)", lei: "lei-dc", country: "DK", rank: 1, providesCifService: false },
+          {
+            name: "NORDIC DC (anders geschrieben)",
+            lei: "lei-dc",
+            country: "DK",
+            rank: 1,
+            providesCifService: false,
+          },
         ],
       },
     ]);
@@ -76,14 +82,18 @@ describe("Konzentration über die gesamte Kette (B-3/2.3)", () => {
         tpLei: null,
         tpCountry: "DE",
         cifIds: ["c1"],
-        chain: [{ name: "  Shared   Sub ", lei: null, country: "PL", rank: 1, providesCifService: false }],
+        chain: [
+          { name: "  Shared   Sub ", lei: null, country: "PL", rank: 1, providesCifService: false },
+        ],
       },
       {
         tpName: "B",
         tpLei: null,
         tpCountry: "AT",
         cifIds: ["c2"],
-        chain: [{ name: "shared sub", lei: null, country: "PL", rank: 2, providesCifService: false }],
+        chain: [
+          { name: "shared sub", lei: null, country: "PL", rank: 2, providesCifService: false },
+        ],
       },
     ]);
     const shared = result.find((p) => p.key === "name:shared sub");
