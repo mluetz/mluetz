@@ -909,6 +909,22 @@ async function main() {
         lastUpdateAt: daysFromNow(-30),
       },
     });
+    const reAm = await db.reportingEntity.findFirst({
+      where: { name: "Nordlicht Asset Management GmbH" },
+    });
+    if (reAm) {
+      await db.reportingEntity.update({
+        where: { id: reAm.id },
+        data: {
+          country: "DE",
+          entityType: "MANAGEMENT_COMPANY",
+          hierarchyRole: "SUBSIDIARY",
+          competentAuthority: "BaFin",
+          totalAssetsEur: 95_000_000,
+          lastUpdateAt: daysFromNow(-30),
+        },
+      });
+    }
     // B_01.03: Zweigniederlassung der Bank
     await db.entityBranch.create({
       data: {
@@ -1094,6 +1110,40 @@ async function main() {
           "Entitätsspezifische Definitionen für Meldebogen B_99.01 (JSON-Array aus {field, definition})",
       },
     });
+    // ---------- Meldeschicht Welle 3 (ADR-0007 Nr. 7): Vollständigkeit ----------
+    // Abnahme Welle 3: Das Paket aus dem Seed besteht die eigene Validierung.
+    // Jeder Dienstleister braucht eine Kennung, jeder Vertrag mindestens eine
+    // IKT-Dienstleistung (ohne CIF-Bezug, daher ohne B_07.01-Pflicht).
+    const tpsWithoutId = await db.thirdParty.findMany({
+      where: { lei: null, nationalId: null },
+      orderBy: { tpId: "asc" },
+    });
+    for (let i = 0; i < tpsWithoutId.length; i++) {
+      await db.thirdParty.update({
+        where: { id: tpsWithoutId[i]!.id },
+        data: { nationalId: `HRB ${910000 + i}`, nationalIdType: "HRB" },
+      });
+    }
+    const contractsWithoutService = await db.contract.findMany({
+      where: { ictServices: { none: {} } },
+      include: { thirdParty: { select: { ictServiceCategory: true } } },
+    });
+    const serviceTypeFor = (category: string): string => {
+      const c = category.toLowerCase();
+      if (c.includes("cloud") || c.includes("saas")) return "S19";
+      if (c.includes("netz") || c.includes("network") || c.includes("wan")) return "S11";
+      if (c.includes("security") || c.includes("soc")) return "S04";
+      return "S14"; // IKT-Betriebsmanagement
+    };
+    for (const c of contractsWithoutService) {
+      await db.contractIctService.create({
+        data: {
+          contractId: c.id,
+          ictServiceType: serviceTypeFor(c.thirdParty.ictServiceCategory),
+          dataSensitivity: "MEDIUM",
+        },
+      });
+    }
     console.log("  Meldeschicht Welle 1: Registerdaten angelegt (B_01–B_99 befüllbar).");
   }
 

@@ -148,6 +148,10 @@ const UPDATES = [
       !(await tableExists("CifServiceAssessment")) ||
       !(await tableExists("RoiSnapshot")),
   },
+  {
+    file: "0009-meldeschicht-welle3.sql",
+    needed: async () => !(await columnExists("Approval", "roiSnapshotId")),
+  },
 ];
 
 try {
