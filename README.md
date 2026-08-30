@@ -1,11 +1,23 @@
-# REUTIB ISMS-Tools — Finding-Register & IRM-Prototyp
+# ISMS- & GRC-Tools
 
-Dieses Repository enthält zwei in sich geschlossene HTML-Anwendungen für die Reutter-Group (REUTIB):
+Dieses Repository enthält mehrere in sich geschlossene Anwendungen:
 
 | Anwendung | Pfad | Zweck |
 |---|---|---|
+| **ICT & TPRM Cockpit** | [`cockpit/`](cockpit/README.md) | Next.js-Webanwendung für ICT- & Third-Party-Risikomanagement (Risk Register, 5×5-Bewertung, Quality Review, Runbooks/Playbooks, DORA-Compliance-Mapping, Audit Trail) – ausschließlich synthetische Demo-Daten |
 | **TISAX AL3 Finding-Register** | `index.html` (geschützte Eingangsseite, DE/EN) | Stage-Review-Findings mit VDA-ISA-6.0.3-Control-Verknüpfung |
 | **IRM-Tool V1.60 (Incident Response Management)** | `irm/index.html` + `irm/server/` | Lauffähige Referenz der Umsetzungsempfehlung GDL_010.001 (Freshservice-IRM), mehrbenutzerfähig mit Serverdatenbank |
+
+## ICT & TPRM Cockpit (`cockpit/`)
+
+Eigenständiges Next.js-15-Projekt (TypeScript, Prisma, Tailwind) – Details, Installation
+und Demo-Zugänge: [`cockpit/README.md`](cockpit/README.md). Schnellstart:
+
+```bash
+cd cockpit && npm install && cp .env.example .env && npm run prepare-db && npm run dev
+```
+
+---
 
 ## IRM-Prototyp (`irm/`)
 

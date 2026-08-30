@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1556 2046" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6b82"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1556" height="2046" fill="#ffffff"/>
+
+  <!-- connectors: assessment object to dimensions (no heads) -->
+  <g fill="none" stroke="#5a6b82" stroke-width="2.5">
+    <path d="M 270 870 C 320 500, 380 210, 488 165"/>
+    <path d="M 300 900 C 360 700, 400 580, 488 545"/>
+    <path d="M 355 970 C 400 955, 440 940, 488 935"/>
+    <path d="M 300 1080 C 360 1250, 400 1320, 488 1345"/>
+    <path d="M 270 1105 C 330 1480, 380 1700, 488 1775"/>
+  </g>
+
+  <!-- connectors: dimensions to overall protection requirement (with heads) -->
+  <g fill="none" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)">
+    <path d="M 930 165 C 1100 200, 1230 480, 1256 762"/>
+    <path d="M 930 545 C 1080 570, 1160 650, 1198 762"/>
+    <path d="M 930 980 L 1032 980"/>
+    <path d="M 930 1345 C 1080 1320, 1180 1280, 1232 1198"/>
+    <path d="M 930 1775 C 1100 1740, 1240 1500, 1292 1198"/>
+  </g>
+
+  <!-- assessment object -->
+  <circle cx="185" cy="985" r="170" fill="#dbe4f0" stroke="#1f3c5e" stroke-width="8"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="28">
+    <text x="185" y="940" font-size="30" font-weight="bold">Assessment object</text>
+    <text x="185" y="988">e.g. API gateway</text>
+    <text x="185" y="1026">to the payment</text>
+    <text x="185" y="1064">service provider</text>
+  </g>
+
+  <!-- Confidentiality -->
+  <rect x="490" y="15" width="440" height="300" fill="#e9eef7" stroke="#44546a" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="710" y="72" font-size="30" font-weight="bold">Confidentiality</text>
+    <text x="710" y="137">Protection against</text>
+    <text x="710" y="175">unauthorized access</text>
+    <text x="710" y="213">and data leakage</text>
+    <text x="710" y="259" font-style="italic">Scale 1-5</text>
+  </g>
+
+  <!-- Integrity -->
+  <rect x="490" y="405" width="440" height="280" fill="#e9eef7" stroke="#44546a" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="710" y="462" font-size="30" font-weight="bold">Integrity</text>
+    <text x="710" y="530">Data remains correct</text>
+    <text x="710" y="568">and tamper-proof</text>
+    <text x="710" y="616" font-style="italic">Scale 1-5</text>
+  </g>
+
+  <!-- Availability -->
+  <rect x="490" y="795" width="440" height="280" fill="#e9eef7" stroke="#44546a" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="710" y="852" font-size="30" font-weight="bold">Availability</text>
+    <text x="710" y="920">Usability when needed,</text>
+    <text x="710" y="958">RTO / RPO per CIF</text>
+    <text x="710" y="1006" font-style="italic">Scale 1-5</text>
+  </g>
+
+  <!-- Authenticity -->
+  <rect x="490" y="1195" width="440" height="300" fill="#fdf2e2" stroke="#c0561a" stroke-width="6"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="710" y="1252" font-size="30" font-weight="bold">Authenticity</text>
+    <text x="710" y="1317">Cryptographic proof that</text>
+    <text x="710" y="1355">the caller is the legitimate</text>
+    <text x="710" y="1393">service provider</text>
+    <text x="710" y="1439" font-style="italic">Scale 1-5 - DORA extension</text>
+  </g>
+
+  <!-- Non-repudiation -->
+  <rect x="490" y="1625" width="440" height="300" fill="#fdf2e2" stroke="#c0561a" stroke-width="6"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="27">
+    <text x="710" y="1682" font-size="30" font-weight="bold">Non-repudiation</text>
+    <text x="710" y="1747">Immutable audit trails</text>
+    <text x="710" y="1785">for post-incident forensics</text>
+    <text x="710" y="1823">under Art. 17 and 13</text>
+    <text x="710" y="1869" font-style="italic">Scale 1-5 - DORA extension</text>
+  </g>
+
+  <!-- Overall protection requirement -->
+  <rect x="1040" y="770" width="480" height="420" fill="#e2e8f3" stroke="#1f3c5e" stroke-width="7"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="28">
+    <text x="1280" y="832" font-size="30" font-weight="bold">Overall protection</text>
+    <text x="1280" y="870" font-size="30" font-weight="bold">requirement</text>
+    <text x="1280" y="924">Maximum principle</text>
+    <text x="1280" y="962">across all 5 dimensions</text>
+    <text x="1280" y="1016">Knockout: if any dimension</text>
+    <text x="1280" y="1054">of a critical or important</text>
+    <text x="1280" y="1092">function scores &lt; 3,</text>
+    <text x="1280" y="1130">the asset is a NO-GO</text>
+  </g>
+</svg>

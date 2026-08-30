@@ -1,0 +1,1257 @@
+// =====================================================================
+// ICT & Third Party Risk Management Cockpit – Datenmodell
+// ---------------------------------------------------------------------
+// Provider: SQLite für die lokale Entwicklung. Für Produktion auf
+// "postgresql" umstellen (DATABASE_URL anpassen) – das Schema ist
+// bewusst Postgres-kompatibel gehalten.
+//
+// Hinweis zu Enums: SQLite unterstützt keine Prisma-Enums. Alle
+// Statuswerte sind daher Strings; die gültigen Wertemengen sind zentral
+// in lib/domain/enums.ts definiert und werden serverseitig per Zod
+// validiert (siehe ADR-0002).
+// =====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------
+// Identität, Rollen, Berechtigungen (RBAC)
+// ------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  active       Boolean   @default(true)
+  locale       String    @default("de")
+  // MFA (TOTP nach RFC 6238): Secret in Base32; mfaEnabledAt = null -> nicht eingerichtet
+  mfaSecret    String?
+  mfaEnabledAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  mfaRecoveryCodes   MfaRecoveryCode[]
+  roles              UserRole[]
+  ownedRisks         Risk[]              @relation("RiskOwner")
+  createdRisks       Risk[]              @relation("RiskCreator")
+  assessments        RiskAssessment[]
+  ownedControls      Control[]
+  controlTests       ControlAssessment[]
+  ownedActions       Action[]
+  tpBusinessOwner    ThirdParty[]        @relation("TpBusinessOwner")
+  tpContractOwner    ThirdParty[]        @relation("TpContractOwner")
+  ownedEvidence      Evidence[]          @relation("EvidenceOwner")
+  reviewedEvidence   Evidence[]          @relation("EvidenceReviewer")
+  complianceOwner    ComplianceMapping[] @relation("ComplianceOwner")
+  complianceReviewer ComplianceMapping[] @relation("ComplianceReviewer")
+  acceptanceRequests RiskAcceptance[]    @relation("AcceptanceRequester")
+  acceptanceApprover RiskAcceptance[]    @relation("AcceptanceApprover")
+  runbookExecutions  RunbookExecution[]
+  stepResults        RunbookStepResult[]
+  playbookExecutions PlaybookExecution[]
+  approvalsRequested Approval[]          @relation("ApprovalRequester")
+  approvalsDecided   Approval[]          @relation("ApprovalDecider")
+  comments           Comment[]
+  notifications      Notification[]
+  reports            Report[]
+  auditLogs          AuditLog[]
+  savedFilters       SavedFilter[]
+  ownedAssets        Asset[]
+  doraAssessments    DoraAssessment[]
+  doraFindings       DoraFinding[]
+  incidents          Incident[]
+  ownedCifs          CriticalFunction[] @relation("CifOwner")
+  cifAssessments     CifAssessment[]    @relation("CifAssessor")
+  cifApprovals       CifAssessment[]    @relation("CifApprover")
+  preCaAssessments   PreContractAssessment[] @relation("PreCaAssessor")
+  preCaApprovals     PreContractAssessment[] @relation("PreCaApprover")
+  registerExports    RegisterExport[]
+  mvRequested        MethodologyVersion[] @relation("MvRequester")
+  mvApproved         MethodologyVersion[] @relation("MvApprover")
+  periodSnapshots    PeriodSnapshot[]
+  incidentClassifications IncidentClassification[]
+}
+
+// ------------------------------------------------------------------
+// Methodikversionierung + Stichtags-Snapshots (Review v3, P1-06)
+// ------------------------------------------------------------------
+
+// Vier-Augen-Prinzip: Antragsteller != Freigebender (in den Actions
+// erzwungen). Die "Live"-Werte in AppSetting werden ausschließlich bei
+// Freigabe einer Version geschrieben.
+model MethodologyVersion {
+  id            String    @id @default(cuid())
+  version       Int       @unique
+  lowMax        Int
+  mediumMax     Int
+  highMax       Int
+  mitigationCap Float
+  rationale     String
+  status        String    @default("PENDING_APPROVAL") // PENDING_APPROVAL | ACTIVE | SUPERSEDED | REJECTED
+  requestedById String
+  requestedBy   User      @relation("MvRequester", fields: [requestedById], references: [id])
+  requestedAt   DateTime  @default(now())
+  approvedById  String?
+  approvedBy    User?     @relation("MvApprover", fields: [approvedById], references: [id])
+  approvedAt    DateTime?
+  validFrom     DateTime?
+  validTo       DateTime?
+
+  assessments RiskAssessment[]
+}
+
+// Monatsabschluss-Snapshot (RB-17): eingefrorene Kennzahlen, Risikoliste
+// und Register-Prüfsumme — Trends und Berichte speisen sich hieraus;
+// der Registerstand ist zum Stichtag reproduzierbar.
+model PeriodSnapshot {
+  id                  String   @id @default(cuid())
+  period              String   @unique // z. B. "2026-08"
+  createdAt           DateTime @default(now())
+  createdById         String
+  createdBy           User     @relation(fields: [createdById], references: [id])
+  doraIndexPercent    Float?
+  openKnockouts       Int
+  kpis                String // JSON: eingefrorene Kennzahlenliste
+  riskList            String // JSON: Risiko-Snapshot (id, riskId, Scores, Status)
+  registerRecordCount Int
+  registerChecksum    String
+}
+
+// ------------------------------------------------------------------
+// Testprogramm digitale Resilienz Art. 24–27 (Review v3, P2-05)
+// ------------------------------------------------------------------
+
+// Jahresplan + Durchführung; Testabdeckung je CIF über die Relation.
+// TLPT: testType THREAT_LED, Dreijahreszyklus inkl. Einbeziehung von
+// CIF-Dienstleistern nach Art. 26 Abs. 3 (includesProviders).
+model ResilienceTest {
+  id              String    @id @default(cuid())
+  testId          String    @unique // RT-2026-001
+  title           String
+  testType        String // VULNERABILITY_SCAN | SCENARIO | TABLETOP | PENTEST | THREAT_LED | RESTORE_TEST
+  plannedFor      DateTime
+  performedAt     DateTime?
+  status          String    @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | CANCELLED
+  result          String? // PASSED | PASSED_WITH_FINDINGS | FAILED
+  tester          String? // intern / externer Dienstleister (Art. 26/27-Anforderungen)
+  testerExternal  Boolean   @default(false)
+  includesProviders Boolean @default(false) // CIF-Dienstleister einbezogen (Art. 26 Abs. 3)
+  summary         String?
+  criticalFunctions CriticalFunction[]
+  createdAt       DateTime  @default(now())
+}
+
+// ------------------------------------------------------------------
+// Threat Intelligence Kap. VI / Art. 45 (Review v3, P2-07)
+// ------------------------------------------------------------------
+
+model ThreatIntelAlert {
+  id            String    @id @default(cuid())
+  source        String // Quelle/Community (BSI, FS-ISAC, CERT ...)
+  title         String
+  receivedAt    DateTime
+  assessedAt    DateTime? // "Time to Assess" = assessedAt - receivedAt
+  relevance     String? // NOT_RELEVANT | MONITOR | ACTION_REQUIRED
+  assessment    String?
+  linkedRiskId  String?
+  createdAt     DateTime  @default(now())
+}
+
+// ------------------------------------------------------------------
+// Berichtspflichten-Kalender ggü. Leitungsorgan (Review v3, P2-10;
+// Art. 5 Abs. 2, Art. 13 Abs. 5)
+// ------------------------------------------------------------------
+
+model GovernanceReportDuty {
+  id            String    @id @default(cuid())
+  title         String
+  legalBasis    String // z. B. "Art. 5 Abs. 2 DORA"
+  frequency     String // z. B. "quartalsweise", "jährlich", "anlassbezogen"
+  addressee     String // z. B. "Vorstand", "Aufsichtsrat"
+  nextDueAt     DateTime?
+  lastPresentedAt DateTime?
+  presentationEvidence String? // Protokoll-/Beschlussreferenz
+  status        String    @default("OPEN") // OPEN | PRESENTED | OVERDUE
+}
+
+// Strukturierte Vorfallsklassifizierung nach Art. 18 i. V. m.
+// RTS (EU) 2025/301 (Review v3, P1-04): je Kriterium Schwellwert,
+// Ist-Wert, erfüllt j/n, Begründung; Ergebnis nach Einfrieren
+// unveränderlich (frozenAt gesetzt -> keine Änderung mehr möglich).
+model IncidentClassification {
+  id                    String    @id @default(cuid())
+  incidentId            String    @unique
+  incident              Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  criteria              String // JSON: [{ key, criterion, threshold, actualValue, met, rationale }]
+  isMajor               Boolean
+  // Aggregationsregel für wiederkehrende Vorfälle (RTS Art. 8 Abs. 2)
+  aggregatedWith        String?
+  // Freiwillige Meldung erheblicher Cyberbedrohungen (Art. 19 Abs. 2)
+  voluntaryThreatNotice Boolean   @default(false)
+  classifiedById        String
+  classifiedBy          User      @relation(fields: [classifiedById], references: [id])
+  classifiedAt          DateTime  @default(now())
+  frozenAt              DateTime?
+}
+
+// ------------------------------------------------------------------
+// Informationsregister nach Art. 28 Abs. 3 / DVO (EU) 2024/2956
+// (Review v3, B-1/P1-01) — Mapping als DATEN, nie als Code.
+// ------------------------------------------------------------------
+
+// Eigene meldende Entitäten mit Hierarchie (Konsolidierungsebenen, 1.4).
+model ReportingEntity {
+  id                 String  @id @default(cuid())
+  name               String
+  lei                String?
+  nationalId         String?
+  nationalIdType     String?
+  // SOLO | PARTIAL_CONSOLIDATED | CONSOLIDATED
+  consolidationLevel String  @default("SOLO")
+  parentId           String?
+  parent             ReportingEntity?  @relation("EntityHierarchy", fields: [parentId], references: [id])
+  children           ReportingEntity[] @relation("EntityHierarchy")
+}
+
+// Fassungsstand der ITS-Meldebögen. Die Bezeichnungsschemata sind AM
+// VERBINDLICHEN TEXT der DVO (EU) 2024/2956 zu verifizieren; bis dahin
+// werden beide kursierenden Schemata als Datensätze mit Status
+// TO_VERIFY geführt — keines ist hartcodiert.
+model ItsTemplateVersion {
+  id        String    @id @default(cuid())
+  label     String    @unique // z. B. "B_01-Schema" / "RT-Schema"
+  source    String // Quelle/Fundstelle der Fassung
+  validFrom DateTime?
+  status    String    @default("TO_VERIFY") // VERIFIED | TO_VERIFY | DEPRECATED
+  notes     String?
+
+  mappings ItsFieldMapping[]
+  exports  RegisterExport[]
+}
+
+// Feld-Mapping Cockpit-Feld -> Meldebogen -> Feld-ID (Review v3, B-1).
+model ItsFieldMapping {
+  id             String             @id @default(cuid())
+  versionId      String
+  version        ItsTemplateVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  cockpitField   String // z. B. "ThirdParty.lei"
+  template       String // Meldebogen-Bezeichnung der Fassung
+  fieldId        String // Feld-ID im Meldebogen
+  dataType       String // STRING | DATE | ENUM | NUMBER | BOOLEAN | LEI | COUNTRY
+  codeList       String? // Name der Werteliste, falls ENUM/COUNTRY
+  required       Boolean @default(false)
+  transformation String? // Transformationsregel (beschrieben, nicht Code)
+
+  @@unique([versionId, template, fieldId])
+}
+
+// Erzeugungsprotokoll je Export (Review v3, 5.4): Stichtag, Ersteller,
+// Datensatzanzahl, Prüfsumme, Validierungsergebnis.
+model RegisterExport {
+  id               String             @id @default(cuid())
+  templateVersionId String
+  templateVersion  ItsTemplateVersion @relation(fields: [templateVersionId], references: [id])
+  asOfDate         DateTime
+  createdAt        DateTime           @default(now())
+  createdById      String
+  createdBy        User               @relation(fields: [createdById], references: [id])
+  recordCount      Int
+  errorCount       Int
+  checksum         String
+  format           String // CSV
+  validationReport String // JSON-Fehlerliste je Datensatz ("Probeeinreichung")
+}
+
+model Role {
+  id          String @id @default(cuid())
+  key         String @unique // z. B. "ICT_RISK_MANAGER"
+  name        String
+  description String
+
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String @id @default(cuid())
+  key         String @unique // z. B. "risk:write"
+  description String
+
+  roles RolePermission[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+// Einmal verwendbare MFA-Wiederherstellungscodes (nur als Hash gespeichert).
+model MfaRecoveryCode {
+  id       String    @id @default(cuid())
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash String
+  usedAt   DateTime?
+
+  @@index([userId])
+}
+
+// Persistente Login-Drossel (ersetzt die In-Memory-Map; übersteht Neustarts).
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+}
+
+// ------------------------------------------------------------------
+// Stammdaten / Organisation
+// ------------------------------------------------------------------
+
+model OrganizationalUnit {
+  id       String  @id @default(cuid())
+  name     String
+  kind     String // COMPANY | BUSINESS_UNIT
+  parentId String?
+  parent   OrganizationalUnit?  @relation("OuHierarchy", fields: [parentId], references: [id])
+  children OrganizationalUnit[] @relation("OuHierarchy")
+
+  risks             Risk[]
+  businessProcesses BusinessProcess[]
+}
+
+model Location {
+  id      String @id @default(cuid())
+  name    String
+  country String
+
+  risks  Risk[]
+  assets Asset[]
+}
+
+model BusinessProcess {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  criticality String // LOW | MEDIUM | HIGH | CRITICAL
+  ouId        String?
+  ou          OrganizationalUnit? @relation(fields: [ouId], references: [id])
+
+  risks    Risk[]
+  controls Control[]
+}
+
+// Kritische oder wichtige Funktion (CIF) i. S. v. Art. 3 Nr. 22 DORA.
+// Review v3, P1-02: EINE Wahrheit — die Einstufung einer Drittpartei wird
+// ausschließlich aus der Relation abgeleitet, nie aus einem Boolean.
+model CriticalFunction {
+  id           String  @id @default(cuid())
+  cfId         String  @unique // fachliche ID, z. B. CIF-01
+  name         String
+  description  String
+  isCritical   Boolean @default(true) // kritisch oder "wichtig" i. S. v. DORA
+  businessArea String?
+  ownerId      String?
+  owner        User?   @relation("CifOwner", fields: [ownerId], references: [id])
+
+  // Wiederanlaufkenngrößen (Art. 11 Abs. 2)
+  rtoHours                Float?
+  rpoHours                Float?
+  maxTolerableOutageHours Float?
+  impactTolerance         String? // Impact-Toleranzschwelle (Beschreibung/Kennzahl)
+  recoveryOrder           Int? // Wiederanlaufreihenfolge (1 = zuerst)
+
+  reassessmentMonths Int       @default(12)
+  nextAssessmentDate DateTime?
+  // Funktions-Identifikationscode für das Informationsregister (ITS)
+  functionIdCode     String?
+
+  assessments     CifAssessment[]
+  risks           Risk[]
+  ictServices     IctService[]
+  thirdParties    ThirdParty[]
+  incidents       Incident[]
+  resilienceTests ResilienceTest[]
+}
+
+// Versioniertes Bewertungsverfahren je CIF: Kriterien mit Schwellen- und
+// Ist-Werten, Begründung, Bewerter und Freigabe. Alte Bewertungen bleiben
+// als Versionen erhalten (isCurrent = false).
+model CifAssessment {
+  id                 String           @id @default(cuid())
+  criticalFunctionId String
+  criticalFunction   CriticalFunction @relation(fields: [criticalFunctionId], references: [id], onDelete: Cascade)
+  version            Int
+  isCritical         Boolean
+  // JSON-Array: [{ criterion, threshold, actualValue, met }]
+  criteria           String
+  rationale          String
+  assessedById       String?
+  assessedBy         User?            @relation("CifAssessor", fields: [assessedById], references: [id])
+  assessedAt         DateTime         @default(now())
+  approvedById       String?
+  approvedBy         User?            @relation("CifApprover", fields: [approvedById], references: [id])
+  approvedAt         DateTime?
+  isCurrent          Boolean          @default(true)
+
+  @@unique([criticalFunctionId, version])
+}
+
+model Asset {
+  id             String  @id @default(cuid())
+  name           String
+  assetType      String // APPLICATION | INFRASTRUCTURE | DATA | DEVICE | FACILITY
+  classification String // PUBLIC | INTERNAL | CONFIDENTIAL | STRICTLY_CONFIDENTIAL
+  ownerId        String?
+  owner          User?     @relation(fields: [ownerId], references: [id])
+  locationId     String?
+  location       Location? @relation(fields: [locationId], references: [id])
+
+  risks    Risk[]
+  controls Control[]
+}
+
+model IctService {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  category    String // z. B. CLOUD_HOSTING, NETWORK, SAAS, DATA_CENTER …
+  providerId  String?
+  provider    ThirdParty? @relation(fields: [providerId], references: [id])
+
+  criticalFunctions CriticalFunction[]
+  risks             Risk[]
+  thirdPartyLinks   ThirdPartyService[]
+}
+
+// ------------------------------------------------------------------
+// Risiko
+// ------------------------------------------------------------------
+
+model RiskCategory {
+  id                String @id @default(cuid())
+  key               String @unique
+  name              String
+  description       String
+  appetiteThreshold Int // Residual-Score, ab dem der Risikoappetit überschritten ist
+
+  risks Risk[]
+}
+
+model Risk {
+  id                String    @id @default(cuid())
+  riskId            String    @unique // fachliche ID, z. B. RISK-2026-0001
+  title             String
+  description       String
+  cause             String
+  riskEvent         String
+  impactDescription String
+  threat            String
+  vulnerability     String
+  existingControls  String // narrative Beschreibung; strukturierte Zuordnung über RiskControl
+  status            String    @default("DRAFT")
+  treatmentStrategy String? // AVOID | REDUCE | TRANSFER | ACCEPT
+  targetScore       Int? // Zielrisiko
+  appetiteOverride  Int? // überschreibt Kategorie-Appetit, falls gesetzt
+  dueDate           DateTime?
+  nextReviewDate    DateTime?
+  approvalStatus    String    @default("NOT_SUBMITTED")
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  categoryId  String
+  category    RiskCategory        @relation(fields: [categoryId], references: [id])
+  riskOwnerId String?
+  riskOwner   User?               @relation("RiskOwner", fields: [riskOwnerId], references: [id])
+  createdById String
+  createdBy   User                @relation("RiskCreator", fields: [createdById], references: [id])
+  ouId        String?
+  ou          OrganizationalUnit? @relation(fields: [ouId], references: [id])
+  locationId  String?
+  location    Location?           @relation(fields: [locationId], references: [id])
+
+  assets             Asset[]
+  processes          BusinessProcess[]
+  ictServices        IctService[]
+  criticalFunctions  CriticalFunction[]
+  thirdParties       ThirdParty[]
+  regulatoryRequirements RegulatoryRequirement[]
+  controls           RiskControl[]
+  assessments        RiskAssessment[]
+  acceptances        RiskAcceptance[]
+  actions            Action[]
+  evidence           Evidence[]
+  comments           Comment[]
+  approvals          Approval[]
+  qualityReviews     QualityReview[]
+  playbookExecutions PlaybookExecution[]
+
+  @@index([status])
+  @@index([categoryId])
+}
+
+model RiskAssessment {
+  id                   String   @id @default(cuid())
+  riskId               String
+  risk                 Risk     @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  assessorId           String
+  assessor             User     @relation(fields: [assessorId], references: [id])
+  assessedAt           DateTime @default(now())
+  likelihood           Int // 1–5
+  impact               Int // 1–5 (maßgebliche Auswirkung über alle Dimensionen)
+  controlEffectiveness Int // 0 | 25 | 50 | 75 | 100 (Prozent)
+  inherentScore        Int // berechnet: likelihood × impact
+  residualScore        Int // berechnet, siehe lib/domain/risk-calc.ts
+  justification        String
+  isCurrent            Boolean  @default(true)
+  // Methodikversionierung (Review v3, P1-06): jede Bewertung referenziert
+  // die Version, unter der sie entstanden ist — Schwellwerte und Mitigation
+  // Cap wirken nie rückwirkend.
+  methodologyVersionId String?
+  methodologyVersion   MethodologyVersion? @relation(fields: [methodologyVersionId], references: [id])
+
+  dimensionScores ImpactDimensionScore[]
+}
+
+model ImpactDimensionScore {
+  id           String         @id @default(cuid())
+  assessmentId String
+  assessment   RiskAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  dimension    String // CONFIDENTIALITY | INTEGRITY | AVAILABILITY | AUTHENTICITY | FINANCIAL | REGULATORY | CUSTOMER | REPUTATION | BUSINESS_INTERRUPTION | DATA_PROTECTION | CRITICAL_FUNCTION
+  score        Int // 1–5
+
+  @@unique([assessmentId, dimension])
+}
+
+model RiskAcceptance {
+  id                    String    @id @default(cuid())
+  riskId                String
+  risk                  Risk      @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  requestedById         String
+  requestedBy           User      @relation("AcceptanceRequester", fields: [requestedById], references: [id])
+  justification         String
+  compensatingControls  String
+  status                String    @default("REQUESTED") // REQUESTED | IN_REVIEW | APPROVED | REJECTED | EXPIRED | TERMINATED
+  approvedById          String?
+  approvedBy            User?     @relation("AcceptanceApprover", fields: [approvedById], references: [id])
+  approvedAt            DateTime?
+  validUntil            DateTime?
+  nextReviewDate        DateTime?
+  createdAt             DateTime  @default(now())
+}
+
+model QualityReview {
+  id             String    @id @default(cuid())
+  riskId         String
+  risk           Risk      @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  reviewerId     String
+  reviewerName   String
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  outcome        String    @default("IN_PROGRESS") // IN_PROGRESS | APPROVED | RETURNED | REJECTED
+  qualityScore   Int? // 0–100 %
+  comments       String?
+  rejectionReason String?
+
+  checklistItems QualityChecklistItem[]
+}
+
+model QualityChecklistItem {
+  id        String        @id @default(cuid())
+  reviewId  String
+  review    QualityReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  criterion String
+  fulfilled Boolean?
+  comment   String?
+  sortOrder Int
+}
+
+// ------------------------------------------------------------------
+// Kontrollen
+// ------------------------------------------------------------------
+
+model Control {
+  id                     String    @id @default(cuid())
+  controlId              String    @unique // z. B. CTL-001
+  name                   String
+  objective              String
+  description            String
+  controlType            String // PREVENTIVE | DETECTIVE | CORRECTIVE
+  automation             String // MANUAL | SEMI_AUTOMATED | AUTOMATED
+  frequency              String // CONTINUOUS | DAILY | WEEKLY | MONTHLY | QUARTERLY | ANNUALLY | EVENT_DRIVEN
+  ownerId                String?
+  owner                  User?     @relation(fields: [ownerId], references: [id])
+  designEffectiveness    String    @default("NOT_TESTED") // NOT_TESTED | INEFFECTIVE | PARTIALLY_EFFECTIVE | LARGELY_EFFECTIVE | EFFECTIVE
+  operatingEffectiveness String    @default("NOT_TESTED")
+  nextTestDate           DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  risks                  RiskControl[]
+  assessments            ControlAssessment[]
+  assets                 Asset[]
+  processes              BusinessProcess[]
+  regulatoryRequirements RegulatoryRequirement[]
+  evidence               Evidence[]
+  comments               Comment[]
+  playbookExecutions     PlaybookExecution[]
+}
+
+model RiskControl {
+  riskId    String
+  controlId String
+  risk      Risk    @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  control   Control @relation(fields: [controlId], references: [id], onDelete: Cascade)
+
+  @@id([riskId, controlId])
+}
+
+model ControlAssessment {
+  id                     String   @id @default(cuid())
+  controlId              String
+  control                Control  @relation(fields: [controlId], references: [id], onDelete: Cascade)
+  testedById             String
+  testedBy               User     @relation(fields: [testedById], references: [id])
+  testDate               DateTime @default(now())
+  testResult             String // PASSED | PASSED_WITH_FINDINGS | FAILED
+  designEffectiveness    String
+  operatingEffectiveness String
+  findings               String?
+  evidenceNote           String?
+}
+
+// ------------------------------------------------------------------
+// Maßnahmen
+// ------------------------------------------------------------------
+
+model Action {
+  id                    String    @id @default(cuid())
+  actionId              String    @unique // z. B. ACT-0001
+  riskId                String
+  risk                  Risk      @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String
+  ownerId               String?
+  owner                 User?     @relation(fields: [ownerId], references: [id])
+  priority              String // LOW | MEDIUM | HIGH | CRITICAL
+  startDate             DateTime?
+  dueDate               DateTime?
+  status                String    @default("PLANNED")
+  progress              Int       @default(0) // 0–100 %
+  expectedRiskReduction String?
+  budget                String?
+  dependencies          String?
+  evidenceNote          String?
+  validationStatus      String    @default("NOT_VALIDATED") // NOT_VALIDATED | VALIDATED | REJECTED
+  effectivenessCheck    String?
+  escalationLevel       Int       @default(0) // 0 = keine, 1 = Teamleitung, 2 = Bereich, 3 = Management
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  comments     Comment[]
+  approvals    Approval[]
+  doraFindings DoraFinding[]
+
+  @@index([status])
+}
+
+// ------------------------------------------------------------------
+// Third Party Risk Management
+// ------------------------------------------------------------------
+
+model ThirdParty {
+  id                       String    @id @default(cuid())
+  tpId                     String    @unique // z. B. TP-001
+  name                     String
+  providedService          String
+  businessOwnerId          String?
+  businessOwner            User?     @relation("TpBusinessOwner", fields: [businessOwnerId], references: [id])
+  contractOwnerId          String?
+  contractOwner            User?     @relation("TpContractOwner", fields: [contractOwnerId], references: [id])
+  registeredCountry        String
+  serviceLocations         String
+  dataLocations            String
+  informationTypes         String // Art der verarbeiteten Informationen
+  // ENTFERNT (Review v3, B-2): supportsCriticalFunction Boolean.
+  // Die CIF-Einstufung wird ausschließlich aus der Relation
+  // criticalFunctions abgeleitet — keine zweite Wahrheit.
+  // Registerpflichtfelder (Review v3, P1-01): LEI nach ISO 17442; bei
+  // fehlender LEI nationale Kennung mit Kennungstyp (EUID, HRB, ...).
+  lei                      String?
+  nationalId               String?
+  nationalIdType           String?
+  ictServiceCategory       String
+  criticality              String    @default("NOT_ASSESSED") // NOT_ASSESSED | LOW | MEDIUM | HIGH | CRITICAL
+  inherentRiskScore        Int?
+  residualRiskScore        Int?
+  dueDiligenceStatus       String    @default("NOT_STARTED") // NOT_STARTED | IN_PROGRESS | COMPLETED | OVERDUE
+  assessmentDate           DateTime?
+  nextReviewDate           DateTime?
+  status                   String    @default("SCREENING") // Workflow, siehe enums.ts
+  concentrationRisk        Boolean   @default(false)
+  substitutability         String    @default("NOT_ASSESSED") // EASY | DIFFICULT | HARDLY_SUBSTITUTABLE | NOT_ASSESSED
+  auditRights              Boolean   @default(false)
+  incidentReporting        Boolean   @default(false)
+  openFindings             String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  services               ThirdPartyService[]
+  subcontractors         Subcontractor[]
+  contracts              Contract[]
+  exitStrategy           ExitStrategy?
+  providedIctServices    IctService[]
+  risks                  Risk[]
+  criticalFunctions      CriticalFunction[]
+  regulatoryRequirements RegulatoryRequirement[]
+  evidence               Evidence[]
+  comments               Comment[]
+  approvals              Approval[]
+  playbookExecutions     PlaybookExecution[]
+  incidents              Incident[]
+
+  @@index([status])
+  @@index([criticality])
+}
+
+model ThirdPartyService {
+  id           String      @id @default(cuid())
+  thirdPartyId String
+  thirdParty   ThirdParty  @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  name         String
+  description  String
+  ictServiceId String?
+  ictService   IctService? @relation(fields: [ictServiceId], references: [id])
+}
+
+// Rekursive Subunternehmerkette (Review v3, B-3/P2-06): Rang 1..n über
+// parentId; Kennzeichen, welches Glied den CIF-Dienst tatsächlich erbringt;
+// Land und Leistungsanteil je Glied. Bestandsdaten = Rang 1 (Update 0005).
+model Subcontractor {
+  id           String     @id @default(cuid())
+  thirdPartyId String
+  thirdParty   ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  parentId     String?
+  parent       Subcontractor?  @relation("SubChain", fields: [parentId], references: [id])
+  children     Subcontractor[] @relation("SubChain")
+  rank         Int        @default(1)
+  name         String
+  lei          String?
+  country      String
+  service      String
+  sharePercent Float?
+  providesCifService Boolean @default(false)
+  critical     Boolean    @default(false)
+  // Weitervergabe-Workflow: NOTIFIED | CONSENT_REQUESTED | APPROVED | REJECTED
+  approvalStatus String?
+  approvalDate   DateTime?
+}
+
+model Contract {
+  id                    String    @id @default(cuid())
+  thirdPartyId          String
+  thirdParty            ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  title                 String
+  // Vertrags-Referenznummer für das Informationsregister (Review v3, P1-01)
+  contractRef           String?
+  startDate             DateTime
+  endDate               DateTime?
+  noticePeriodDays      Int?
+  auditRights           Boolean   @default(false)
+  accessRights          Boolean   @default(false)
+  incidentReporting     Boolean   @default(false)
+  // Länder der Leistungserbringung / Datenspeicherung / -verarbeitung
+  // (ISO 3166-1 alpha-2, kommagetrennt) — Registerpflichtfelder
+  countryOfProvision       String?
+  countryOfDataStorage     String?
+  countryOfDataProcessing  String?
+  notes                 String?
+
+  clauses        ContractClause[]
+  preAssessment  PreContractAssessment?
+}
+
+// Klauselmatrix Art. 30 (Review v3, P1-03): je Vertrag einzeln quittierbare
+// Pflichtklauseln aus Abs. 2 lit. a-h (alle Verträge) und Abs. 3 lit. a-g
+// (CIF-Verträge). Katalog: lib/domain/art30.ts.
+model ContractClause {
+  id              String   @id @default(cuid())
+  contractId      String
+  contract        Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  clauseKey       String // z. B. ART30_2_A .. ART30_3_G
+  status          String   @default("MISSING") // FULFILLED | PARTIAL | MISSING | NOT_APPLICABLE
+  contractSection String? // Vertragsziffer
+  evidenceId      String?
+  comment         String?
+  updatedAt       DateTime @updatedAt
+
+  @@unique([contractId, clauseKey])
+}
+
+// Vorabbewertung nach Art. 29 (Review v3, P1-02/2.2): Ergebnis und Freigabe
+// VOR Vertragsschluss; am Vertrag persistiert.
+model PreContractAssessment {
+  id                        String   @id @default(cuid())
+  contractId                String   @unique
+  contract                  Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  concentrationRisk         String
+  substitutability          String
+  thirdCountryTransfer      String
+  businessContinuityImpact  String
+  result                    String // APPROVED | APPROVED_WITH_CONDITIONS | REJECTED
+  assessedById              String?
+  assessedBy                User?    @relation("PreCaAssessor", fields: [assessedById], references: [id])
+  assessedAt                DateTime @default(now())
+  approvedById              String?
+  approvedBy                User?    @relation("PreCaApprover", fields: [approvedById], references: [id])
+  approvedAt                DateTime?
+}
+
+model ExitStrategy {
+  id               String     @id @default(cuid())
+  thirdPartyId     String     @unique
+  thirdParty       ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+  strategySummary  String
+  exitPlanExists   Boolean    @default(false)
+  lastTestDate     DateTime?
+  testResult       String? // PASSED | PASSED_WITH_FINDINGS | FAILED
+  substituteOptions String?
+  status           String     @default("MISSING") // MISSING | DRAFT | APPROVED | TESTED | OUTDATED
+}
+
+// ------------------------------------------------------------------
+// Evidence (Metadaten- und Linkregister, keine Dokumentenablage)
+// ------------------------------------------------------------------
+
+model Evidence {
+  id             String    @id @default(cuid())
+  evidenceId     String    @unique // z. B. EV-001
+  title          String
+  docType        String // POLICY | REPORT | CERTIFICATE | TEST_RESULT | CONTRACT | SCREENSHOT | OTHER
+  ownerId        String?
+  owner          User?     @relation("EvidenceOwner", fields: [ownerId], references: [id])
+  link           String // Speicherort / freigegebener Link (kein Upload)
+  riskId         String?
+  risk           Risk?     @relation(fields: [riskId], references: [id])
+  controlId      String?
+  control        Control?  @relation(fields: [controlId], references: [id])
+  thirdPartyId   String?
+  thirdParty     ThirdParty? @relation(fields: [thirdPartyId], references: [id])
+  validUntil     DateTime?
+  classification String    @default("INTERNAL")
+  reviewerId     String?
+  reviewer       User?     @relation("EvidenceReviewer", fields: [reviewerId], references: [id])
+  reviewStatus   String    @default("NOT_REVIEWED") // NOT_REVIEWED | REVIEWED | EXPIRED | REJECTED
+  version        String    @default("1.0")
+  contentHash    String? // optionales Integritätsmerkmal
+  createdAt      DateTime  @default(now())
+  doraRequirementId String?
+  doraRequirement   DoraRequirement? @relation(fields: [doraRequirementId], references: [id])
+
+  complianceMappings ComplianceMapping[]
+}
+
+// ------------------------------------------------------------------
+// Regulatorik
+// ------------------------------------------------------------------
+
+model RegulatoryRequirement {
+  id          String @id @default(cuid())
+  refId       String @unique // z. B. DORA-ICT-01
+  framework   String // DORA | DORA_RTS | EBA_ICT | EBA_OUTSOURCING | ISO27001 | ISO27005 | NIST_CSF | NIS2 | INTERNAL
+  reference   String // Kapitel-/Control-Referenz
+  title       String
+  description String
+
+  risks        Risk[]
+  controls     Control[]
+  thirdParties ThirdParty[]
+  mappings     ComplianceMapping[]
+}
+
+model ComplianceMapping {
+  id             String    @id @default(cuid())
+  requirementId  String
+  requirement    RegulatoryRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  status         String    @default("NOT_ASSESSED") // 9 Stufen, siehe enums.ts – KEIN automatisches Compliance-Urteil
+  justification  String
+  ownerId        String?
+  owner          User?     @relation("ComplianceOwner", fields: [ownerId], references: [id])
+  assessedAt     DateTime  @default(now())
+  evidenceId     String?
+  evidence       Evidence? @relation(fields: [evidenceId], references: [id])
+  reviewerId     String?
+  reviewer       User?     @relation("ComplianceReviewer", fields: [reviewerId], references: [id])
+  nextReviewDate DateTime?
+}
+
+// ------------------------------------------------------------------
+// Runbooks & Playbooks
+// ------------------------------------------------------------------
+
+model Runbook {
+  id              String @id @default(cuid())
+  code            String @unique // RB-01 …
+  title           String
+  purpose         String
+  scope           String
+  triggerText     String
+  prerequisites   String
+  input           String
+  rolesText       String
+  sla             String
+  escalationRules String
+  output          String
+  kpi             String
+  controlPoints   String
+  reviewCycle     String
+  version         String @default("1.0")
+  approvalStatus  String @default("APPROVED")
+  lessonsLearned  String @default("")
+
+  steps      RunbookStep[]
+  executions RunbookExecution[]
+}
+
+model RunbookStep {
+  id               String  @id @default(cuid())
+  runbookId        String
+  runbook          Runbook @relation(fields: [runbookId], references: [id], onDelete: Cascade)
+  sortOrder        Int
+  title            String
+  description      String
+  responsibleRole  String
+  isDecisionPoint  Boolean @default(false)
+  requiredEvidence String?
+
+  results RunbookStepResult[]
+}
+
+model RunbookExecution {
+  id          String    @id @default(cuid())
+  runbookId   String
+  runbook     Runbook   @relation(fields: [runbookId], references: [id], onDelete: Cascade)
+  startedById String
+  startedBy   User      @relation(fields: [startedById], references: [id])
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  status      String    @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | ABORTED
+  contextNote String?
+
+  stepResults RunbookStepResult[]
+}
+
+model RunbookStepResult {
+  id            String           @id @default(cuid())
+  executionId   String
+  execution     RunbookExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  stepId        String
+  step          RunbookStep      @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  status        String           @default("OPEN") // OPEN | DONE | SKIPPED | BLOCKED
+  comment       String?
+  completedById String?
+  completedBy   User?            @relation(fields: [completedById], references: [id])
+  completedAt   DateTime?
+
+  @@unique([executionId, stepId])
+}
+
+model Playbook {
+  id                 String @id @default(cuid())
+  code               String @unique // PB-01 …
+  scenario           String
+  objective          String
+  activationCriteria String
+  severityGuidance   String
+  rolesRaci          String
+  initialAssessment  String
+  immediateActions   String
+  riskAnalysis       String
+  decisionTree       String
+  communication      String
+  regulatoryCheck    String
+  measures           String
+  evidenceRequired   String
+  closureCriteria    String
+  lessonsLearned     String @default("")
+  postEventReview    String
+
+  executions PlaybookExecution[]
+}
+
+model PlaybookExecution {
+  id           String    @id @default(cuid())
+  playbookId   String
+  playbook     Playbook  @relation(fields: [playbookId], references: [id], onDelete: Cascade)
+  startedById  String
+  startedBy    User      @relation(fields: [startedById], references: [id])
+  startedAt    DateTime  @default(now())
+  closedAt     DateTime?
+  status       String    @default("ACTIVE") // ACTIVE | CLOSED | ABORTED
+  severity     String // LOW | MEDIUM | HIGH | CRITICAL
+  notes        String?
+  riskId       String?
+  risk         Risk?       @relation(fields: [riskId], references: [id])
+  controlId    String?
+  control      Control?    @relation(fields: [controlId], references: [id])
+  thirdPartyId String?
+  thirdParty   ThirdParty? @relation(fields: [thirdPartyId], references: [id])
+}
+
+// ------------------------------------------------------------------
+// Querschnitt: Freigaben, Kommentare, Benachrichtigungen, Reports
+// ------------------------------------------------------------------
+
+model Approval {
+  id            String    @id @default(cuid())
+  approvalType  String // RISK_ASSESSMENT | RISK_ACCEPTANCE | ACTION | THIRD_PARTY | CLOSURE
+  status        String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  requestedById String
+  requestedBy   User      @relation("ApprovalRequester", fields: [requestedById], references: [id])
+  decidedById   String?
+  decidedBy     User?     @relation("ApprovalDecider", fields: [decidedById], references: [id])
+  decidedAt     DateTime?
+  comment       String?
+  createdAt     DateTime  @default(now())
+
+  riskId       String?
+  risk         Risk?       @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  actionId     String?
+  action       Action?     @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  thirdPartyId String?
+  thirdParty   ThirdParty? @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id])
+  body         String
+  createdAt    DateTime @default(now())
+
+  riskId       String?
+  risk         Risk?       @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  actionId     String?
+  action       Action?     @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  controlId    String?
+  control      Control?    @relation(fields: [controlId], references: [id], onDelete: Cascade)
+  thirdPartyId String?
+  thirdParty   ThirdParty? @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Report {
+  id            String   @id @default(cuid())
+  reportType    String // EXECUTIVE_SUMMARY | TOP_RISKS | ABOVE_APPETITE | OVERDUE_ACTIONS | ACCEPTANCES | TPRM_OVERVIEW | DORA_READINESS | CONTROL_EFFECTIVENESS | QUALITY_REVIEW | TREND | DECISION_PAPER
+  title         String
+  createdById   String
+  createdBy     User     @relation(fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+  effectiveDate DateTime // Stichtag
+  filters       String // serialisierte Filterparameter (Snapshot, bewusst als Text)
+  format        String // HTML | CSV | XLSX | PDF
+}
+
+// ------------------------------------------------------------------
+// Audit Trail (append-only; keine Update-/Delete-Pfade in der App)
+// ------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  // Lückenlose Kettenposition (1..n) — Grundlage der Hash-Verkettung.
+  // Wird in lib/audit.ts transaktional als Vorgänger+1 vergeben
+  // (SQLite erlaubt autoincrement nur auf id-Feldern).
+  seq        Int      @unique
+  timestamp  DateTime @default(now())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  userEmail  String // redundant gespeichert, damit der Eintrag auch nach Nutzerlöschung lesbar bleibt
+  action     String // z. B. LOGIN, LOGIN_FAILED, CREATE, UPDATE, STATUS_CHANGE, APPROVE, REJECT, EXPORT …
+  entityType String
+  entityId   String
+  field      String?
+  oldValue   String?
+  newValue   String?
+  comment    String?
+  // Manipulationsschutz (Review v3, P1-05): SHA-256 über den Vorgänger-Hash
+  // plus die kanonischen Feldwerte dieses Eintrags. prevHash = null nur beim
+  // ersten Eintrag. Verifikation: lib/audit-integrity.ts / RB-Job.
+  prevHash   String?
+  hash       String?
+
+  @@index([entityType, entityId])
+  @@index([timestamp])
+}
+
+// ------------------------------------------------------------------
+// Einstellungen & gespeicherte Filter
+// ------------------------------------------------------------------
+
+model AppSetting {
+  key         String @id // z. B. "risk.threshold.low.max" = "4"
+  value       String
+  description String
+}
+
+model SavedFilter {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  page      String // z. B. "risks"
+  query     String // Query-String der gespeicherten Filteransicht
+  createdAt DateTime @default(now())
+}
+
+// ------------------------------------------------------------------
+// DORA-Anforderungskatalog (FRWK-DORA-001): Katalog, Reifegrad-
+// Bewertung, Findings/CAPA und Vorfälle mit Meldefristen
+// ------------------------------------------------------------------
+
+model DoraChapter {
+  id            String @id @default(cuid())
+  key           String @unique // K2 … K6
+  roman         String // II … VI
+  title         String
+  articleRange  String
+  weightPercent Int // Kapitelgewicht im DORA Resilience Index
+
+  requirements DoraRequirement[]
+}
+
+model DoraRequirement {
+  id              String  @id @default(cuid())
+  reqId           String  @unique // DORA-K2-001 …
+  chapterId       String
+  chapter         DoraChapter @relation(fields: [chapterId], references: [id])
+  article         String
+  title           String
+  requirementText String
+  evidenceSpec    String // geforderter Nachweis laut Katalog
+  bindingness     String // MUSS | SOLL | KANN
+  weight          Int // 3 | 2 | 1
+  knockout        Boolean @default(false)
+  ownerRole       String // Rolle laut Katalog (Leitungsorgan, CISO, TPRM …)
+  // Crosswalk (FRWK-DORA-001 Kap. 10) – 1:1 je Anforderung
+  cwIso27001      String?
+  cwIso22301      String?
+  cwNis2Bsig      String?
+  cwRtsIts        String?
+  // Verwebung ins Cockpit: Runbook-/Playbook-Codes, kommasepariert
+  linkedProcesses String?
+
+  assessments DoraAssessment[]
+  findings    DoraFinding[]
+  evidence    Evidence[]
+
+  @@index([chapterId])
+}
+
+model DoraAssessment {
+  id            String   @id @default(cuid())
+  requirementId String
+  requirement   DoraRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  maturity      Int // Roh-Reifegrad 0–5 (Selbsteinschätzung); wirksamer Wert ggf. durch Nachweissperre gedeckelt
+  justification String
+  assessorId    String
+  assessor      User     @relation(fields: [assessorId], references: [id])
+  assessedAt    DateTime @default(now())
+  isCurrent     Boolean  @default(true)
+
+  @@index([requirementId, isCurrent])
+}
+
+model DoraFinding {
+  id                    String    @id @default(cuid())
+  findingId             String    @unique // FND-2026-0001
+  requirementId         String?
+  requirement           DoraRequirement? @relation(fields: [requirementId], references: [id])
+  source                String // SELF_ASSESSMENT | TEST | INCIDENT | PROVIDER | AUDIT
+  severity              String // CRITICAL | HIGH | MEDIUM | LOW
+  title                 String
+  description           String
+  detectedAt            DateTime  @default(now())
+  responseDueAt         DateTime?
+  remediationDueAt      DateTime?
+  status                String    @default("OPEN") // OPEN | IN_PROGRESS | EFFECTIVENESS_CHECK | CLOSED
+  effectivenessCriterion String?
+  escalatedTo           String?
+  actionId              String? // CAPA im Maßnahmen-Modul
+  action                Action?   @relation(fields: [actionId], references: [id])
+  closedAt              DateTime?
+  createdById           String
+  createdBy             User      @relation(fields: [createdById], references: [id])
+
+  @@index([status])
+}
+
+model Incident {
+  id                 String    @id @default(cuid())
+  incidentId         String    @unique // INC-2026-0001
+  title              String
+  description        String
+  awarenessAt        DateTime // Kenntniserlangung – Startpunkt aller Fristen
+  classifiedAt       DateTime? // Zeitpunkt der Klassifizierung als schwerwiegend
+  isMajor            Boolean   @default(false) // schwerwiegend i. S. v. Art. 18
+  classificationNote String?
+  status             String    @default("OPEN") // OPEN | CONTAINED | RESTORED | CLOSED
+  gdprRelevant       Boolean   @default(false)
+  nis2Relevant       Boolean   @default(false)
+  criticalFunctionId String?
+  criticalFunction   CriticalFunction? @relation(fields: [criticalFunctionId], references: [id])
+  thirdPartyId       String?
+  thirdParty         ThirdParty? @relation(fields: [thirdPartyId], references: [id])
+  createdById        String
+  createdBy          User      @relation(fields: [createdById], references: [id])
+  createdAt          DateTime  @default(now())
+
+  reports        IncidentReport[]
+  classification IncidentClassification?
+
+  @@index([status])
+}
+
+model IncidentReport {
+  id          String    @id @default(cuid())
+  incidentId  String
+  incident    Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  reportType  String // DORA_INITIAL | DORA_INTERMEDIATE | DORA_FINAL | NIS2_EARLY_WARNING | NIS2_REPORT | NIS2_FINAL | GDPR_NOTIFICATION | CUSTOMER_INFO
+  dueAt       DateTime
+  submittedAt DateTime?
+  reference   String?
+
+  @@unique([incidentId, reportType])
+}

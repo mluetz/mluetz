@@ -1,0 +1,43 @@
+# ICT & TPRM Cockpit – lokaler Compose-Stack (App + PostgreSQL)
+#
+#   1. .env aus .env.example erzeugen und SESSION_SECRET setzen
+#   2. In prisma/schema.prisma den Provider auf "postgresql" stellen
+#   3. docker compose up --build
+#   4. Einmalig Schema + Demo-Daten:
+#      docker compose exec app npx prisma db push
+#      docker compose exec app npx tsx prisma/seed.ts
+#
+# Hinweis: keine Secrets in dieser Datei – alles über .env.
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://cockpit:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD in .env setzen}@db:5432/cockpit?schema=public"
+      SESSION_SECRET: "${SESSION_SECRET:?SESSION_SECRET in .env setzen}"
+      AUTH_DEMO_LOGIN: "${AUTH_DEMO_LOGIN:-true}"
+      APP_BASE_URL: "${APP_BASE_URL:-http://localhost:3000}"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cockpit
+      POSTGRES_USER: cockpit
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD in .env setzen}"
+    volumes:
+      - cockpit-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cockpit -d cockpit"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  cockpit-db:

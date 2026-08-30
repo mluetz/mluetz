@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPRM Cockpit — Redesign-Mockup</title>
+<style>
+  /* ============================================================
+     Designsystem — Ausbau der vorhandenen Token-Basis (globals.css)
+     8-pt-Raster · 4 Typografie-Grade · Farbe nur bei Zielwertverletzung
+     ============================================================ */
+  :root {
+    --background: hsl(210 20% 98%);
+    --surface: hsl(0 0% 100%);
+    --surface-2: hsl(214 18% 95%);
+    --foreground: hsl(215 28% 14%);
+    --muted-fg: hsl(215 12% 38%);
+    --border: hsl(214 16% 86%);
+    --primary: hsl(215 60% 25%);
+    --primary-fg: hsl(210 20% 98%);
+    --ring: hsl(215 60% 35%);
+
+    /* Statussemantik — Kacheln/Badges binden NUR hieran */
+    --status-overdue: hsl(0 65% 36%);
+    --status-overdue-bg: hsl(0 70% 96%);
+    --status-due-soon: hsl(35 90% 28%);
+    --status-due-soon-bg: hsl(40 90% 94%);
+    --status-ok: hsl(145 55% 26%);
+    --status-ok-bg: hsl(145 45% 95%);
+    --signal-muted: hsl(215 12% 42%);
+    --signal-muted-bg: hsl(214 18% 94%);
+
+    /* Risikoklassen — immer mit Kürzel L/M/H/C, nie Farbe allein */
+    --risk-low-bg: hsl(145 45% 92%);   --risk-low-fg: hsl(145 60% 20%);
+    --risk-med-bg: hsl(45 90% 90%);    --risk-med-fg: hsl(38 85% 24%);
+    --risk-high-bg: hsl(24 90% 91%);   --risk-high-fg: hsl(22 80% 27%);
+    --risk-crit-bg: hsl(0 75% 93%);    --risk-crit-fg: hsl(0 65% 30%);
+
+    --radius: 8px;
+    --shadow: 0 1px 2px hsl(215 28% 14% / .06), 0 1px 3px hsl(215 28% 14% / .08);
+  }
+  .dark {
+    --background: hsl(217 30% 10%);
+    --surface: hsl(217 28% 14%);
+    --surface-2: hsl(217 24% 18%);
+    --foreground: hsl(213 20% 92%);
+    --muted-fg: hsl(214 12% 68%);
+    --border: hsl(217 18% 26%);
+    --primary: hsl(213 55% 62%);
+    --primary-fg: hsl(217 30% 10%);
+    --status-overdue: hsl(0 80% 78%);
+    --status-overdue-bg: hsl(0 45% 20%);
+    --status-due-soon: hsl(42 90% 72%);
+    --status-due-soon-bg: hsl(38 45% 18%);
+    --status-ok: hsl(145 50% 70%);
+    --status-ok-bg: hsl(146 35% 16%);
+    --signal-muted: hsl(214 12% 68%);
+    --signal-muted-bg: hsl(217 22% 20%);
+    --risk-low-bg: hsl(146 35% 17%);  --risk-low-fg: hsl(145 50% 74%);
+    --risk-med-bg: hsl(40 45% 17%);   --risk-med-fg: hsl(45 85% 72%);
+    --risk-high-bg: hsl(24 50% 18%);  --risk-high-fg: hsl(26 90% 74%);
+    --risk-crit-bg: hsl(0 45% 19%);   --risk-crit-fg: hsl(0 85% 80%);
+    --shadow: 0 1px 2px hsl(0 0% 0% / .3);
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--background); color: var(--foreground);
+  }
+  /* Typografie: genau vier Grade */
+  .t-display { font-size: 28px; font-weight: 650; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .t-title   { font-size: 18px; font-weight: 600; }
+  .t-body    { font-size: 14px; }
+  .t-meta    { font-size: 12px; color: var(--muted-fg); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Mockup-Steuerung (nicht Teil der App) ---------- */
+  .mock-bar {
+    position: sticky; top: 0; z-index: 50; display: flex; gap: 8px; align-items: center;
+    padding: 8px 16px; background: var(--foreground); color: var(--background);
+  }
+  .mock-bar b { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; margin-right: 8px; }
+  .mock-bar button {
+    font: 600 13px/1 inherit; padding: 8px 14px; border-radius: 6px; border: 1px solid transparent;
+    background: transparent; color: inherit; cursor: pointer; opacity: .75;
+  }
+  .mock-bar button.active { background: var(--background); color: var(--foreground); opacity: 1; }
+  .mock-bar .right { margin-left: auto; }
+
+  /* ---------- App-Rahmen ---------- */
+  .env-band {
+    background: var(--status-due-soon-bg); color: var(--status-due-soon);
+    font-size: 12px; font-weight: 600; text-align: center; padding: 3px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar {
+    display: flex; align-items: center; gap: 24px; padding: 12px 24px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .topbar .brand { font-weight: 650; font-size: 15px; }
+  .topbar .ctx { display: flex; gap: 24px; }
+  .topbar .ctx div span { display: block; }
+  .topbar .ctx .t-meta { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+  .topbar .user { margin-left: auto; text-align: right; }
+
+  .layout { display: grid; grid-template-columns: 232px 1fr; min-height: calc(100vh - 110px); }
+  nav.side { background: var(--surface); border-right: 1px solid var(--border); padding: 16px 8px; }
+  nav.side h3 {
+    font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--muted-fg); padding: 16px 12px 6px;
+  }
+  nav.side h3:first-child { padding-top: 0; }
+  nav.side a {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 12px; border-radius: 6px; color: var(--foreground);
+    text-decoration: none; font-size: 13.5px;
+  }
+  nav.side a:hover { background: var(--surface-2); }
+  nav.side a.current { background: var(--primary); color: var(--primary-fg); font-weight: 600; }
+  .navbadge {
+    font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px;
+    background: var(--signal-muted-bg); color: var(--signal-muted);
+  }
+  .navbadge.alert { background: var(--status-overdue-bg); color: var(--status-overdue); }
+  a.current .navbadge.alert { background: var(--status-overdue-bg); }
+
+  main { padding: 24px 32px 64px; max-width: 1200px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .pagehead { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+  .pagehead .grow { flex: 1; }
+  .btn {
+    font: 600 13px/1 inherit; padding: 9px 14px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--surface); color: var(--foreground); cursor: pointer;
+  }
+  .btn.primary { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+
+  /* ---------- Ebene 1: Lage ---------- */
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi { padding: 16px 20px; }
+  .kpi .label { font-size: 13px; font-weight: 600; color: var(--muted-fg); }
+  .kpi .value-row { display: flex; align-items: baseline; gap: 10px; margin-top: 4px; }
+  .kpi .trend { font-size: 13px; font-weight: 600; }
+  .kpi .target { margin-top: 2px; }
+  .kpi.breach { border-left: 4px solid var(--status-overdue); }
+  .kpi.breach .value-row .t-display, .kpi.breach .trend { color: var(--status-overdue); }
+  .kpi.ok .trend { color: var(--status-ok); }
+  .spark { display: inline-block; margin-left: auto; opacity: .8; }
+
+  /* ---------- Ebene 2: Handlungsbedarf ---------- */
+  .section-title { display: flex; align-items: baseline; gap: 10px; margin: 24px 0 10px; }
+  .action-list { padding: 4px 0; }
+  .action-row {
+    display: grid; grid-template-columns: 88px 1fr auto auto; gap: 16px; align-items: center;
+    padding: 10px 20px; border-bottom: 1px solid var(--border);
+  }
+  .action-row:last-child { border-bottom: none; }
+  .action-row .id { font-size: 12.5px; font-weight: 600; color: var(--muted-fg); font-variant-numeric: tabular-nums; }
+  .action-row .go { font-size: 13px; font-weight: 600; color: var(--primary); text-decoration: none; white-space: nowrap; }
+  .pill {
+    font-size: 11.5px; font-weight: 700; padding: 2px 9px; border-radius: 99px; white-space: nowrap;
+  }
+  .pill.overdue { background: var(--status-overdue-bg); color: var(--status-overdue); }
+  .pill.due { background: var(--status-due-soon-bg); color: var(--status-due-soon); }
+  .pill.ok { background: var(--status-ok-bg); color: var(--status-ok); }
+  .pill.neutral { background: var(--signal-muted-bg); color: var(--signal-muted); }
+
+  /* ---------- Ebene 3: Datenqualität ---------- */
+  .dq-row { display: flex; flex-wrap: wrap; gap: 8px 24px; padding: 12px 20px; align-items: center; }
+  .dq-item { font-size: 12.5px; color: var(--muted-fg); }
+  .dq-item b { color: var(--foreground); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Risikomatrix ---------- */
+  .matrix-wrap { display: grid; grid-template-columns: 1fr 220px; gap: 24px; padding: 20px; }
+  .matrix-head { display: flex; align-items: center; gap: 12px; padding: 16px 20px 0; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .seg button { font: 600 12.5px/1 inherit; padding: 7px 12px; border: 0; background: var(--surface); color: var(--muted-fg); cursor: pointer; }
+  .seg button.active { background: var(--primary); color: var(--primary-fg); }
+  table.matrix { border-collapse: collapse; }
+  table.matrix th { font-size: 11px; font-weight: 600; color: var(--muted-fg); padding: 4px 6px; }
+  table.matrix td {
+    width: 64px; height: 48px; text-align: center; border: 2px solid var(--surface);
+    border-radius: 6px; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums;
+  }
+  td.m-empty { background: var(--surface-2); color: transparent; }
+  td.m-l { background: var(--risk-low-bg); color: var(--risk-low-fg); }
+  td.m-m { background: var(--risk-med-bg); color: var(--risk-med-fg); }
+  td.m-h { background: var(--risk-high-bg); color: var(--risk-high-fg); }
+  td.m-c { background: var(--risk-crit-bg); color: var(--risk-crit-fg); outline: 1.5px solid var(--status-overdue); outline-offset: -2px; }
+  .legend { font-size: 12.5px; }
+  .legend h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted-fg); margin-bottom: 8px; }
+  .legend .lrow { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .lswatch { width: 26px; height: 18px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; }
+
+  /* ---------- Detailseite ---------- */
+  .crumbs { font-size: 12.5px; color: var(--muted-fg); margin-bottom: 8px; }
+  .crumbs a { color: var(--muted-fg); }
+  .rel-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 20px; }
+  .rel-chip {
+    display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 600;
+    padding: 5px 11px; border: 1px solid var(--border); border-radius: 99px;
+    background: var(--surface); color: var(--foreground); text-decoration: none;
+  }
+  .rel-chip b { color: var(--primary); font-variant-numeric: tabular-nums; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tabs a {
+    font-size: 13.5px; font-weight: 600; padding: 9px 14px; color: var(--muted-fg);
+    text-decoration: none; border-bottom: 2px solid transparent;
+  }
+  .tabs a.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .field-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 24px; padding: 18px 20px; }
+  .field .t-meta { margin-bottom: 1px; }
+  .next-steps { position: sticky; top: 64px; }
+  .next-steps .head { padding: 14px 18px 8px; }
+  .ns-item { display: grid; gap: 2px; padding: 10px 18px; border-top: 1px solid var(--border); }
+  .ns-item .when { font-size: 11.5px; font-weight: 700; }
+  .ns-item .when.overdue { color: var(--status-overdue); }
+  .ns-item .when.due { color: var(--status-due-soon); }
+  .ns-item a { color: var(--foreground); font-weight: 600; font-size: 13px; text-decoration: none; }
+  .statusbox { padding: 14px 18px; border-top: 1px solid var(--border); }
+  .statusbox .blocked { font-size: 12px; color: var(--status-overdue); margin-top: 8px; }
+  .chain { padding: 8px 20px 18px; }
+  .chain .node { display: grid; grid-template-columns: 28px 1fr auto auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+  .chain .rank { font-size: 11px; font-weight: 800; width: 24px; height: 24px; border-radius: 6px; background: var(--signal-muted-bg); color: var(--signal-muted); display: inline-flex; align-items: center; justify-content: center; }
+  .chain .indent-1 { margin-left: 24px; }
+  .chain .indent-2 { margin-left: 48px; }
+
+  /* ---------- Katalog / Tabellen ---------- */
+  .chipbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .fchip {
+    display: inline-flex; gap: 7px; align-items: center; font-size: 12.5px; font-weight: 600;
+    padding: 5px 11px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); cursor: pointer;
+  }
+  .fchip.on { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+  .fchip .x { opacity: .7; font-weight: 400; }
+  .chipbar .count { font-size: 12.5px; color: var(--muted-fg); margin-left: 4px; }
+  .chipbar .views { margin-left: auto; }
+
+  .tbl-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+  table.data { border-collapse: separate; border-spacing: 0; min-width: 1080px; width: 100%; }
+  table.data th, table.data td { padding: 9px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; white-space: nowrap; }
+  table.data th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted-fg); background: var(--surface-2); position: sticky; top: 0; }
+  table.data .titlecell { max-width: 340px; overflow: hidden; text-overflow: ellipsis; }
+  table.data tr:last-child td { border-bottom: none; }
+  table.data td:first-child, table.data th:first-child {
+    position: sticky; left: 0; background: var(--surface); z-index: 2;
+    border-right: 1px solid var(--border); font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+  table.data th:first-child { background: var(--surface-2); z-index: 3; }
+  .risk-badge {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 800;
+    padding: 2px 8px; border-radius: 5px;
+  }
+  .rb-l { background: var(--risk-low-bg); color: var(--risk-low-fg); }
+  .rb-m { background: var(--risk-med-bg); color: var(--risk-med-fg); }
+  .rb-h { background: var(--risk-high-bg); color: var(--risk-high-fg); }
+  .rb-c { background: var(--risk-crit-bg); color: var(--risk-crit-fg); }
+  .ko-dot { font-weight: 800; color: var(--status-overdue); }
+
+  .footnote { margin-top: 20px; font-size: 12px; color: var(--muted-fg); border-top: 1px solid var(--border); padding-top: 12px; }
+  .annot {
+    margin: 24px 0 0; padding: 12px 16px; border-left: 3px solid var(--primary);
+    background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 12.5px; color: var(--muted-fg);
+  }
+</style>
+</head>
+<body>
+
+<!-- Mockup-Steuerung -->
+<div class="mock-bar">
+  <b>Mockup</b>
+  <button class="active" data-view="v1" onclick="show('v1',this)">1 · Executive Dashboard</button>
+  <button data-view="v2" onclick="show('v2',this)">2 · Third-Party-Detail</button>
+  <button data-view="v3" onclick="show('v3',this)">3 · Anforderungskatalog</button>
+  <button class="right" onclick="document.documentElement.classList.toggle('dark')">Hell / Dunkel</button>
+</div>
+
+<!-- Umgebungsband: schmal, aus Konfiguration -->
+<div class="env-band">DEMO-UMGEBUNG · Synthetikdaten</div>
+
+<!-- Kopfzeile: Mandant, Datenstand, Benutzer -->
+<div class="topbar">
+  <div class="brand">ICT &amp; TPRM Cockpit</div>
+  <div class="ctx">
+    <div><span class="t-meta">Mandant</span><span class="t-body" style="font-weight:600">Nordlicht Bank AG</span></div>
+    <div><span class="t-meta">Datenstand</span><span class="t-body num">29.08.2026 · 14:02</span></div>
+  </div>
+  <div class="user">
+    <span class="t-body" style="font-weight:600">M. Lütz</span>
+    <span class="t-meta" style="display:block">Information Security Officer</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Navigation: 4 Gruppen, Badges nur für Handlungsbedarf -->
+  <nav class="side">
+    <h3>Steuerung</h3>
+    <a href="#" class="current">Overview</a>
+    <a href="#">Risks <span class="navbadge alert">3</span></a>
+    <a href="#">Actions <span class="navbadge alert">5</span></a>
+    <a href="#">Controls <span class="navbadge">2</span></a>
+    <a href="#">Assessments</a>
+    <h3>Drittparteien</h3>
+    <a href="#">Third Parties <span class="navbadge alert">4</span></a>
+    <a href="#">Verträge <span class="navbadge">3</span></a>
+    <a href="#">Informationsregister <span class="navbadge alert">!</span></a>
+    <h3>DORA</h3>
+    <a href="#">Compliance</a>
+    <a href="#">Vorfälle <span class="navbadge alert">1</span></a>
+    <a href="#">Findings <span class="navbadge">6</span></a>
+    <a href="#">Wissensbasis</a>
+    <h3>Nachweis &amp; Betrieb</h3>
+    <a href="#">Evidence <span class="navbadge alert">2</span></a>
+    <a href="#">Reports</a>
+    <a href="#">Audit Trail</a>
+    <a href="#">Administration</a>
+  </nav>
+
+  <main>
+
+  <!-- ================= VIEW 1: EXECUTIVE DASHBOARD ================= -->
+  <section class="view active" id="v1">
+    <div class="pagehead">
+      <div class="grow">
+        <h1 class="t-title" style="font-size:22px">Executive Dashboard</h1>
+        <div class="t-meta">Lage · Handlungsbedarf · Datenqualität — Stichtag 29.08.2026</div>
+      </div>
+      <button class="btn">Als Nachweis exportieren (PDF)</button>
+    </div>
+
+    <!-- Ebene 1: Lage — drei Kennzahlen, Farbe NUR bei Zielwertverletzung -->
+    <div class="kpi-row">
+      <div class="card kpi ok">
+        <div class="label">DORA Resilience Index</div>
+        <div class="value-row">
+          <span class="t-display">78&nbsp;%</span>
+          <span class="trend">▲ +3 Pp.</span>
+          <svg class="spark" width="72" height="24" viewBox="0 0 72 24"><polyline points="0,20 12,18 24,19 36,14 48,12 60,9 72,6" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"/></svg>
+        </div>
+        <div class="t-meta target num">Ziel ≥ 85 % · Zielpfad Dez. 2026</div>
+      </div>
+      <div class="card kpi breach">
+        <div class="label">Offene Knockouts</div>
+        <div class="value-row">
+          <span class="t-display">2</span>
+          <span class="trend">▬ unverändert</span>
+        </div>
+        <div class="t-meta target num">Ziel 0 · Ist 2 — Kap. IV, Kap. V</div>
+      </div>
+      <div class="card kpi ok">
+        <div class="label">Überfällige Meldungen</div>
+        <div class="value-row">
+          <span class="t-display">0</span>
+          <span class="trend">✓ im Ziel</span>
+        </div>
+        <div class="t-meta target num">Ziel 0 · Ist 0 — Fristenmonitor aktiv</div>
+      </div>
+    </div>
+
+    <!-- Ebene 2: Handlungsbedarf — Zeilen mit Direktsprung, keine Kacheln -->
+    <div class="section-title">
+      <h2 class="t-title">Handlungsbedarf</h2>
+      <span class="t-meta">4 Posten · sortiert nach Fälligkeit</span>
+    </div>
+    <div class="card action-list">
+      <div class="action-row">
+        <span class="id">ACT-0024</span>
+        <span>Informationsregister: Validierungsfehler der Probeeinreichung beheben <span class="t-meta">(FND-2026-0003)</span></span>
+        <span class="pill overdue">überfällig · 12 T</span>
+        <a class="go" href="#">Öffnen →</a>
+      </div>
+      <div class="action-row">
+        <span class="id">RISK-0005</span>
+        <span>Risiko über Appetit ohne Behandlungsstrategie <span class="t-meta">(Kategorie Cloud)</span></span>
+        <span class="pill overdue">über Appetit</span>
+        <a class="go" href="#">Öffnen →</a>
+      </div>
+      <div class="action-row">
+        <span class="id">TP-001</span>
+        <span>CIF-Drittpartei ohne getesteten Exit-Plan <span class="t-meta">(CloudCore GmbH · 3 weitere)</span></span>
+        <span class="pill due">Test fällig 15.09.</span>
+        <a class="go" href="#">Öffnen →</a>
+      </div>
+      <div class="action-row">
+        <span class="id">CTL-0017</span>
+        <span>Kontrolle mit Schwäche: Wirksamkeitsnachweis EV-006 abgelaufen <span class="t-meta">(DORA-PROT-01)</span></span>
+        <span class="pill due">Nachweis erneuern</span>
+        <a class="go" href="#">Öffnen →</a>
+      </div>
+    </div>
+
+    <!-- Risikomatrix: nur Anzahl je Zelle, Score in Legende, Inherent/Residual -->
+    <div class="section-title"><h2 class="t-title">Risikoportfolio</h2></div>
+    <div class="card">
+      <div class="matrix-head">
+        <div class="seg">
+          <button>Inherent</button>
+          <button class="active">Residual</button>
+        </div>
+        <span class="t-meta">27 aktive Risiken · Anzahl je Zelle · Klassengrenzen s. Legende</span>
+      </div>
+      <div class="matrix-wrap">
+        <table class="matrix" aria-label="Risikomatrix 5x5, residual">
+          <tr><th></th><th>I1</th><th>I2</th><th>I3</th><th>I4</th><th>I5</th></tr>
+          <tr><th>L5</th><td class="m-m">2</td><td class="m-h">1</td><td class="m-h">3</td><td class="m-c">1</td><td class="m-c">1</td></tr>
+          <tr><th>L4</th><td class="m-l">1</td><td class="m-m">2</td><td class="m-h">2</td><td class="m-h">1</td><td class="m-c">1</td></tr>
+          <tr><th>L3</th><td class="m-empty">·</td><td class="m-m">3</td><td class="m-m">2</td><td class="m-h">1</td><td class="m-empty">·</td></tr>
+          <tr><th>L2</th><td class="m-l">2</td><td class="m-l">1</td><td class="m-empty">·</td><td class="m-m">1</td><td class="m-h">1</td></tr>
+          <tr><th>L1</th><td class="m-empty">·</td><td class="m-l">1</td><td class="m-empty">·</td><td class="m-empty">·</td><td class="m-empty">·</td></tr>
+        </table>
+        <div class="legend">
+          <h4>Klassen &amp; Zell-Scores</h4>
+          <div class="lrow"><span class="lswatch rb-l">L</span> Low · Score 1–4</div>
+          <div class="lrow"><span class="lswatch rb-m">M</span> Medium · Score 5–9</div>
+          <div class="lrow"><span class="lswatch rb-h">H</span> High · Score 10–15</div>
+          <div class="lrow"><span class="lswatch rb-c">C</span> Critical · Score 16–25</div>
+          <p class="t-meta" style="margin-top:10px">Impact-Dominanz: I5 ⇒ min. High; I5 mit CIF-Bezug ⇒ Critical. Klassengrenzen aus Methodikversion 2.1 (12.07.2026).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ebene 3: Datenqualität — eine kompakte, neutrale Zeile -->
+    <div class="section-title"><h2 class="t-title" style="font-size:15px">Datenqualität</h2></div>
+    <div class="card dq-row">
+      <span class="dq-item"><b>3</b> Risiken ohne Owner</span>
+      <span class="dq-item"><b>1</b> ohne aktuelle Bewertung</span>
+      <span class="dq-item"><b>7</b> überfällige Reviews gesamt</span>
+      <span class="dq-item"><b>2</b> Verträge laufen in &lt; 90 T aus</span>
+      <span class="dq-item"><b>2</b> Nachweise abgelaufen</span>
+      <span class="dq-item" style="margin-left:auto"><a class="go" href="#" style="font-size:12.5px;font-weight:600;color:var(--primary)">Aufriss öffnen →</a></span>
+    </div>
+
+    <p class="annot">Umgesetzte Redesign-Regeln: drei Lesetiefen statt zwölf Kacheln (D-01) · Farbe ausschließlich bei Zielwertverletzung, jede Kennzahl mit „Ziel · Ist" (D-02) · Matrix mit einer Zahl je Zelle, Score in der Legende, Inherent/Residual-Umschalter (D-03) · gruppierte Navigation mit Badges (D-04) · Kopfzeile mit Mandant/Datenstand/Rolle statt Demo-Banner (D-14).</p>
+  </section>
+
+  <!-- ================= VIEW 2: THIRD-PARTY-DETAIL ================= -->
+  <section class="view" id="v2">
+    <div class="crumbs"><a href="#">Drittparteien</a> / TP-001</div>
+    <div class="pagehead">
+      <div class="grow">
+        <h1 class="t-title" style="font-size:22px">CloudCore GmbH <span class="t-meta num" style="font-size:13px">TP-001 · LEI 5299001ERSTFTIQ8Z784</span></h1>
+        <div style="margin-top:6px; display:flex; gap:8px; align-items:center">
+          <span class="pill ok">Laufende Überwachung</span>
+          <span class="risk-badge rb-c">C · Kritisch</span>
+          <span class="t-meta">stützt 3 kritische Funktionen (aus Relation abgeleitet)</span>
+        </div>
+      </div>
+      <button class="btn">Als Nachweis exportieren</button>
+      <button class="btn primary">Status ändern…</button>
+    </div>
+
+    <!-- Beziehungsleiste -->
+    <div class="rel-bar">
+      <a class="rel-chip" href="#">Kritische Funktionen <b>3</b></a>
+      <a class="rel-chip" href="#">Verträge <b>2</b></a>
+      <a class="rel-chip" href="#">Risiken <b>4</b></a>
+      <a class="rel-chip" href="#">Kontrollen <b>6</b></a>
+      <a class="rel-chip" href="#">Nachweise <b>5</b></a>
+      <a class="rel-chip" href="#">Vorfälle <b>1</b></a>
+      <a class="rel-chip" href="#">Findings <b>2</b></a>
+    </div>
+
+    <div class="detail-grid">
+      <div>
+        <!-- Tabs: Zustand in der URL (?tab=cif) -->
+        <div class="tabs">
+          <a href="?tab=overview">Übersicht</a>
+          <a href="?tab=cif" class="active">CIF-Bewertung</a>
+          <a href="?tab=contracts">Verträge (2)</a>
+          <a href="?tab=chain">Lieferkette (4)</a>
+          <a href="?tab=exit">Exit-Plan</a>
+          <a href="?tab=evidence">Nachweise (5)</a>
+        </div>
+
+        <div class="card">
+          <div class="field-grid">
+            <div class="field"><div class="t-meta">Einstufung</div><div><b>Kritisch</b> — abgeleitet aus 3 verknüpften CIF (keine manuelle Übersteuerung)</div></div>
+            <div class="field"><div class="t-meta">Bewertungsverfahren</div><div>FRWK-DORA-001 · Kriterienkatalog K-CIF-01, Methodikversion 2.1</div></div>
+            <div class="field"><div class="t-meta">Bewertet von / am</div><div>M. Lütz (ISO) · <span class="num">14.07.2026</span> · Freigabe: F. Berger (CRO), <span class="num">18.07.2026</span></div></div>
+            <div class="field"><div class="t-meta">Nächste Neubewertung</div><div class="num">14.07.2027 <span class="pill neutral" style="margin-left:6px">Turnus 12 M</span></div></div>
+            <div class="field" style="grid-column:1/-1"><div class="t-meta">Begründung</div><div>Ausfall der Hosting-Plattform unterbricht Zahlungsverkehr und Kundenportal unmittelbar (RTO 4 h überschritten); Substituierbarkeit „schwierig", kein alternativer Anbieter unter 6 Monaten Migrationsdauer.</div></div>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top:20px"><h2 class="t-title" style="font-size:15px">Gestützte kritische Funktionen</h2></div>
+        <div class="card action-list">
+          <div class="action-row"><span class="id">CIF-01</span><span>Zahlungsverkehr <span class="t-meta">RTO 4 h · RPO 15 min</span></span><span class="risk-badge rb-c">C</span><a class="go" href="#">Graph →</a></div>
+          <div class="action-row"><span class="id">CIF-03</span><span>Kundenportal &amp; Online Banking <span class="t-meta">RTO 8 h · RPO 1 h</span></span><span class="risk-badge rb-c">C</span><a class="go" href="#">Graph →</a></div>
+          <div class="action-row"><span class="id">CIF-04</span><span>Regulatorisches Meldewesen <span class="t-meta">RTO 24 h · RPO 4 h</span></span><span class="risk-badge rb-h">H</span><a class="go" href="#">Graph →</a></div>
+        </div>
+
+        <div class="section-title" style="margin-top:20px"><h2 class="t-title" style="font-size:15px">Subunternehmerkette <span class="t-meta" style="font-weight:400">rekursiv · Rang 1–3</span></h2></div>
+        <div class="card chain">
+          <div class="node"><span class="rank">1</span><span><b>CloudCore GmbH</b> <span class="t-meta">DE · Hosting-Plattform · Anteil 100 %</span></span><span class="pill neutral">Vertragspartner</span><span></span></div>
+          <div class="node indent-1"><span class="rank">2</span><span><b>Nordic DC ApS</b> <span class="t-meta">DK · Rechenzentrumsbetrieb · Anteil 60 %</span></span><span class="pill overdue">erbringt CIF-Dienst</span><span class="t-meta num">Zustimmung 02/2026</span></div>
+          <div class="node indent-1"><span class="rank">2</span><span><b>SecOps Sp. z o.o.</b> <span class="t-meta">PL · Security Monitoring · Anteil 25 %</span></span><span class="pill neutral">unterstützend</span><span class="t-meta num">Anzeige 03/2026</span></div>
+          <div class="node indent-2" style="border-bottom:none"><span class="rank">3</span><span><b>BalticFiber OÜ</b> <span class="t-meta">EE · Netzanbindung RZ · Anteil 10 %</span></span><span class="pill neutral">unterstützend</span><span class="t-meta">Konzentration: geteilt mit TP-007</span></div>
+        </div>
+      </div>
+
+      <!-- Rechte Spalte: Nächste Schritte, ohne Scrollen sichtbar -->
+      <aside class="card next-steps">
+        <div class="head"><h2 class="t-title" style="font-size:15px">Nächste Schritte</h2></div>
+        <div class="ns-item"><span class="when overdue">Überfällig · 12 T</span><a href="#">ACT-0024 · Registervalidierung beheben</a></div>
+        <div class="ns-item"><span class="when due">Fällig 15.09.2026</span><a href="#">Exit-Plan-Test durchführen (Art. 28 Abs. 8)</a></div>
+        <div class="ns-item"><span class="when due">Fällig 30.09.2026</span><a href="#">Art.-30-Klauselmatrix: 2 Klauseln offen</a></div>
+        <div class="ns-item"><span class="when" style="color:var(--muted-fg)">Offen</span><a href="#">FND-2026-0003 · Probeeinreichung</a></div>
+        <div class="statusbox">
+          <button class="btn primary" style="width:100%">Status ändern…</button>
+          <div class="blocked">⚠ „Beendigung" gesperrt: aktiver CIF-Bezug, Exit-Test ausstehend</div>
+          <div class="t-meta" style="margin-top:8px">Erlaubte Übergänge: Neubewertung · Eskalation. Pflichtbegründung im Dialog, Eintrag im Audit Trail.</div>
+        </div>
+      </aside>
+    </div>
+
+    <p class="annot">Umgesetzte Redesign-Regeln: CIF-Einstufung aus der Relation abgeleitet, mit Verfahren, Bewerter, Freigabe und Turnus (B-2/P1-02) · rekursive Kette mit Rang, Land, Anteil und CIF-Kennzeichen (B-3/P2-06) · Tab-Zustand in der URL (P3-04) · Spalte „Nächste Schritte" ohne Scrollen (D-07) · Statuswechsel als Primäraktion mit Sperrgrund (D-08) · Beziehungsleiste (D-09) · sprechende ID + LEI im Kopf (P3-03, P2-11).</p>
+  </section>
+
+  <!-- ================= VIEW 3: ANFORDERUNGSKATALOG ================= -->
+  <section class="view" id="v3">
+    <div class="pagehead">
+      <div class="grow">
+        <h1 class="t-title" style="font-size:22px">DORA-Anforderungskatalog</h1>
+        <div class="t-meta">133 Anforderungen · Bewertungsstand je Kapitel · Methodikversion 2.1</div>
+      </div>
+      <button class="btn">Als Nachweis exportieren</button>
+    </div>
+
+    <!-- Filter als Chip-Leiste, gespeicherte Sichten -->
+    <div class="chipbar">
+      <button class="fchip on">Kap. V — Drittparteien <span class="x">✕</span></button>
+      <button class="fchip on">Nur Knockouts <span class="x">✕</span></button>
+      <button class="fchip">+ Filter</button>
+      <span class="count num">12 von 133 Anforderungen</span>
+      <div class="views">
+        <button class="fchip">★ Meine Sicht: „KO offen"</button>
+      </div>
+    </div>
+
+    <!-- Tabelle: horizontaler Scroll, fixierte erste Spalte, tabular-nums -->
+    <div class="tbl-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Req-ID</th><th>Titel</th><th>Artikel</th><th>KO</th><th>Reifegrad</th><th>Ziel</th><th>Risiko</th><th>Nachweis</th><th>Fällig</th><th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>REQ-V-101</td>
+            <td class="titlecell" title="Informationsregister über alle vertraglichen Vereinbarungen mit IKT-Drittdienstleistern führen und jährlich einreichen">Informationsregister führen und jährlich einreichen…</td>
+            <td class="num">Art. 28 Abs. 3</td>
+            <td><span class="ko-dot">● KO</span></td>
+            <td class="num">1 / 5</td>
+            <td class="num">4</td>
+            <td><span class="risk-badge rb-c">C</span></td>
+            <td><span class="pill overdue">fehlt</span></td>
+            <td class="num">30.09.2026</td>
+            <td>M. Lütz</td>
+          </tr>
+          <tr>
+            <td>REQ-V-104</td>
+            <td class="titlecell" title="Vorabbewertung vor Vertragsschluss mit IKT-Drittdienstleistern für kritische oder wichtige Funktionen">Vorabbewertung vor Vertragsschluss (CIF)…</td>
+            <td class="num">Art. 29</td>
+            <td><span class="ko-dot">● KO</span></td>
+            <td class="num">2 / 5</td>
+            <td class="num">4</td>
+            <td><span class="risk-badge rb-h">H</span></td>
+            <td><span class="pill due">Review offen</span></td>
+            <td class="num">31.10.2026</td>
+            <td>F. Berger</td>
+          </tr>
+          <tr>
+            <td>REQ-V-108</td>
+            <td class="titlecell" title="Vertragliche Mindestinhalte nach Art. 30 Abs. 2 und Abs. 3 in allen Vereinbarungen sicherstellen">Vertragliche Mindestinhalte Art. 30…</td>
+            <td class="num">Art. 30</td>
+            <td></td>
+            <td class="num">2 / 5</td>
+            <td class="num">4</td>
+            <td><span class="risk-badge rb-h">H</span></td>
+            <td><span class="pill ok">gültig</span></td>
+            <td class="num">31.10.2026</td>
+            <td>Recht</td>
+          </tr>
+          <tr>
+            <td>REQ-V-112</td>
+            <td class="titlecell" title="Ausstiegsstrategien für kritische oder wichtige Funktionen festlegen und testen">Exit-Strategien festlegen und testen…</td>
+            <td class="num">Art. 28 Abs. 8</td>
+            <td></td>
+            <td class="num">3 / 5</td>
+            <td class="num">4</td>
+            <td><span class="risk-badge rb-m">M</span></td>
+            <td><span class="pill due">Test fällig</span></td>
+            <td class="num">15.09.2026</td>
+            <td>M. Lütz</td>
+          </tr>
+          <tr>
+            <td>REQ-V-115</td>
+            <td class="titlecell" title="Konzentrationsrisiken aus Weitervergabe über die gesamte Subunternehmerkette bewerten">Konzentrationsrisiken über die Kette…</td>
+            <td class="num">Art. 29 Abs. 2</td>
+            <td></td>
+            <td class="num">2 / 5</td>
+            <td class="num">3</td>
+            <td><span class="risk-badge rb-h">H</span></td>
+            <td><span class="pill ok">gültig</span></td>
+            <td class="num">30.11.2026</td>
+            <td>M. Lütz</td>
+          </tr>
+          <tr>
+            <td>REQ-V-121</td>
+            <td class="titlecell" title="Laufende Überwachung der Leistung und Sicherheitsstandards der IKT-Drittdienstleister">Laufende Überwachung der Dienstleister…</td>
+            <td class="num">Art. 28 Abs. 1</td>
+            <td></td>
+            <td class="num">3 / 5</td>
+            <td class="num">4</td>
+            <td><span class="risk-badge rb-m">M</span></td>
+            <td><span class="pill overdue">abgelaufen</span></td>
+            <td class="num">30.09.2026</td>
+            <td>SCM</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footnote num">Reifegrad-Kappung aktiv: abgelaufener oder nicht reviewter Nachweis begrenzt den wirksamen Reifegrad auf 2 (P2-04). Druckansicht enthält Stichtag, Datenstand, Benutzer und aktive Filter.</div>
+
+    <p class="annot">Umgesetzte Redesign-Regeln: Filter als Chip-Leiste mit gespeicherten Sichten (D-13) · horizontaler Scroll mit fixierter Req-ID-Spalte statt Clipping, KO-Spalte immer sichtbar (D-05, verifizierter Befund 7) · Titel per Ellipse mit Volltext-Tooltip · tabular-nums in allen Zahlenspalten · Risikoklassen mit Kürzel L/M/H/C zusätzlich zur Farbe (D-11) · fachliche Labels statt technischer Enums (D-06).</p>
+  </section>
+
+  </main>
+</div>
+
+<script>
+  function show(id, btn) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.mock-bar button[data-view]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>

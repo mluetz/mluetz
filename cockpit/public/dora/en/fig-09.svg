@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1292 2046" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6b85"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1292" height="2046" fill="#ffffff"/>
+
+  <!-- step group backgrounds -->
+  <rect x="775" y="8" width="360" height="395" fill="#f7f9fb" stroke="#c9d2dc" stroke-width="1.5"/>
+  <rect x="755" y="465" width="490" height="905" fill="#f7f9fb" stroke="#c9d2dc" stroke-width="1.5"/>
+  <rect x="60" y="1155" width="680" height="430" fill="#f7f9fb" stroke="#c9d2dc" stroke-width="1.5"/>
+  <rect x="10" y="1610" width="860" height="425" fill="#f7f9fb" stroke="#c9d2dc" stroke-width="1.5"/>
+
+  <!-- arrows -->
+  <g fill="none" stroke="#5a6b85" stroke-width="1.5" marker-end="url(#arr)">
+    <path d="M955,180 L955,230"/>
+    <path d="M955,375 L955,500"/>
+    <path d="M1055,725 C1050,790 1045,840 1042,890"/>
+    <path d="M898,740 C858,900 868,1080 720,1180 C640,1232 510,1246 418,1250"/>
+    <path d="M980,1020 C930,1110 700,1180 418,1228"/>
+    <path d="M1090,1018 C1100,1080 1085,1135 1068,1185"/>
+    <path d="M1058,1315 C1040,1390 800,1420 596,1465"/>
+    <path d="M255,1315 C260,1370 300,1398 376,1420"/>
+    <path d="M400,1535 C300,1570 220,1605 178,1650"/>
+    <path d="M448,1535 L448,1650"/>
+    <path d="M512,1535 C600,1570 670,1605 710,1650"/>
+    <path d="M170,1760 C180,1810 205,1845 250,1865"/>
+    <path d="M445,1760 C445,1795 440,1812 432,1826"/>
+    <path d="M715,1760 C700,1815 620,1852 540,1872"/>
+  </g>
+
+  <!-- edge labels -->
+  <g font-size="15" fill="#33404f" text-anchor="middle">
+    <text x="1065" y="845">yes</text>
+    <text x="843" y="965" text-anchor="end">no</text>
+    <text x="950" y="1105">yes</text>
+    <text x="1055" y="1105" text-anchor="end">no</text>
+  </g>
+
+  <!-- group labels -->
+  <g font-size="17" fill="#444444" text-anchor="middle">
+    <text x="955" y="30">Step 1 - Assessment per requirement</text>
+    <text x="1000" y="487">Step 2 - Knockout check</text>
+    <text x="400" y="1177">Step 3 - Weighting and aggregation</text>
+    <text x="440" y="1632">Step 4 - Traffic light logic and overall index</text>
+  </g>
+
+  <!-- Step 1 boxes -->
+  <rect x="820" y="45" width="270" height="135" fill="#e8eef6" stroke="#2c4a6e" stroke-width="2.5"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="955" y="76" font-weight="bold">Assign maturity level 0-5</text>
+    <text x="955" y="102">0 not present, 1 initial,</text>
+    <text x="955" y="124">2 repeatable, 3 defined,</text>
+    <text x="955" y="146">4 managed, 5 optimized</text>
+  </g>
+
+  <rect x="810" y="235" width="290" height="140" fill="#e8eef6" stroke="#2c4a6e" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="955" y="266" font-weight="bold">Check evidence</text>
+    <text x="955" y="292">Evidence linked, current</text>
+    <text x="955" y="314">and auditable? Without evidence</text>
+    <text x="955" y="336">maturity level is capped at 2</text>
+  </g>
+
+  <!-- Step 2: knockout check -->
+  <polygon points="985,505 1150,650 985,795 820,650" fill="#faeedb" stroke="#b45f17" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="985" y="634" font-weight="bold">MUST requirement?</text>
+    <text x="985" y="660">Core compliance obligation</text>
+    <text x="985" y="682">with supervisory relevance</text>
+  </g>
+
+  <polygon points="1040,895 1145,975 1040,1055 935,975" fill="#faeedb" stroke="#b45f17" stroke-width="3"/>
+  <text x="1040" y="981" font-size="16" font-weight="bold" fill="#1f2d3d" text-anchor="middle">Maturity level &gt;= 3?</text>
+
+  <rect x="890" y="1190" width="340" height="125" fill="#fdedec" stroke="#c0392b" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="1060" y="1220" font-weight="bold">KNOCKOUT - NO GO</text>
+    <text x="1060" y="1246">Chapter status is set to RED,</text>
+    <text x="1060" y="1268">regardless of the average.</text>
+    <text x="1060" y="1290">Finding and CAPA are mandatory</text>
+  </g>
+
+  <!-- Step 3 boxes -->
+  <rect x="100" y="1200" width="310" height="115" fill="#eaf3ee" stroke="#3a7d54" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="255" y="1231" font-weight="bold">Weighted inclusion</text>
+    <text x="255" y="1257">Score = maturity level x weight</text>
+    <text x="255" y="1279">MUST = 3, SHOULD = 2, MAY = 1</text>
+  </g>
+
+  <rect x="320" y="1420" width="270" height="115" fill="#e8eef6" stroke="#2c4a6e" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="455" y="1451" font-weight="bold">Chapter score in percent</text>
+    <text x="455" y="1477">Sum of scores divided by</text>
+    <text x="455" y="1499">sum of maximum scores</text>
+  </g>
+
+  <!-- Step 4 boxes -->
+  <rect x="55" y="1655" width="225" height="105" fill="#eaf3ee" stroke="#3a7d54" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="167" y="1686" font-weight="bold">GREEN</text>
+    <text x="167" y="1712">&gt;= 85 percent and</text>
+    <text x="167" y="1734">no open knockout</text>
+  </g>
+
+  <rect x="330" y="1655" width="230" height="105" fill="#e8eef6" stroke="#2c4a6e" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="445" y="1686" font-weight="bold">YELLOW</text>
+    <text x="445" y="1712">60 to 84 percent or</text>
+    <text x="445" y="1734">CAPA in progress</text>
+  </g>
+
+  <rect x="610" y="1655" width="210" height="105" fill="#fdedec" stroke="#c0392b" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="715" y="1686" font-weight="bold">RED</text>
+    <text x="715" y="1712">&lt; 60 percent or</text>
+    <text x="715" y="1734">open knockout</text>
+  </g>
+
+  <rect x="255" y="1830" width="280" height="145" fill="#eaf3ee" stroke="#3a7d54" stroke-width="3"/>
+  <g font-size="16" fill="#1f2d3d" text-anchor="middle">
+    <text x="395" y="1863" font-weight="bold">DORA Resilience Index</text>
+    <text x="395" y="1889">Weighted average of</text>
+    <text x="395" y="1911">Chapters II to VI with</text>
+    <text x="395" y="1933">knockout override</text>
+  </g>
+</svg>

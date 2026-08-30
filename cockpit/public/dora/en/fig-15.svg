@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1958 1854" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="14" markerHeight="12" refX="11" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L12,5 L0,10 Z" fill="#45586e"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1958" height="1854" fill="#ffffff"/>
+
+  <!-- Root box -->
+  <rect x="15" y="845" width="360" height="140" fill="#16405e" stroke="#0d2b41" stroke-width="2"/>
+  <text x="195" y="907" font-size="30" font-weight="bold" fill="#ffffff" text-anchor="middle">DORA Dashboard</text>
+  <text x="195" y="945" font-size="28" font-style="italic" fill="#dce7ef" text-anchor="middle">Application frame</text>
+
+  <!-- Connectors root -> views -->
+  <g fill="none" stroke="#45586e" stroke-width="2">
+    <path d="M 220 841 C 240 500, 330 200, 496 110" marker-end="url(#arr)"/>
+    <path d="M 245 841 C 280 600, 360 440, 496 380" marker-end="url(#arr)"/>
+    <path d="M 290 841 C 340 730, 400 680, 496 650" marker-end="url(#arr)"/>
+    <path d="M 379 915 L 496 915" marker-end="url(#arr)"/>
+    <path d="M 290 989 C 340 1100, 400 1150, 496 1185" marker-end="url(#arr)"/>
+    <path d="M 245 989 C 280 1230, 360 1400, 496 1455" marker-end="url(#arr)"/>
+    <path d="M 220 989 C 240 1330, 330 1630, 496 1720" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- Lines views -> feature boxes -->
+  <g stroke="#45586e" stroke-width="2">
+    <line x1="885" y1="105" x2="1155" y2="105"/>
+    <line x1="885" y1="375" x2="1130" y2="375"/>
+    <line x1="885" y1="645" x2="1105" y2="645"/>
+    <line x1="885" y1="915" x2="1060" y2="915"/>
+    <line x1="885" y1="1185" x2="1015" y2="1185"/>
+    <line x1="885" y1="1455" x2="1090" y2="1455"/>
+    <line x1="885" y1="1725" x2="1125" y2="1725"/>
+  </g>
+
+  <!-- View 1 -->
+  <rect x="505" y="10" width="380" height="190" fill="#fdf0dc" stroke="#c0651c" stroke-width="4"/>
+  <text x="695" y="65" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="middle">View 1</text>
+  <text x="695" y="110" font-size="28" fill="#1f2937" text-anchor="middle">Executive Overview</text>
+  <text x="695" y="155" font-size="28" font-style="italic" fill="#1f2937" text-anchor="middle">Management body</text>
+  <rect x="1155" y="33" width="640" height="145" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="1475" y="90" font-size="26" fill="#1f2937" text-anchor="middle">KPI tiles, chapter traffic light, trend chart,</text>
+  <text x="1475" y="130" font-size="26" fill="#1f2937" text-anchor="middle">CIF heatmap, reporting-deadline monitor</text>
+
+  <!-- View 2 -->
+  <rect x="505" y="280" width="380" height="190" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="695" y="335" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="middle">View 2</text>
+  <text x="695" y="380" font-size="28" fill="#1f2937" text-anchor="middle">Requirements Catalog</text>
+  <text x="695" y="425" font-size="28" font-style="italic" fill="#1f2937" text-anchor="middle">Business units</text>
+  <rect x="1130" y="303" width="700" height="145" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="1480" y="360" font-size="26" fill="#1f2937" text-anchor="middle">Filters, maturity input, evidence upload,</text>
+  <text x="1480" y="400" font-size="26" fill="#1f2937" text-anchor="middle">crosswalk display, change history</text>
+
+  <!-- View 3 -->
+  <rect x="505" y="550" width="380" height="190" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="695" y="605" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="middle">View 3</text>
+  <text x="695" y="650" font-size="28" fill="#1f2937" text-anchor="middle">Findings &amp; CAPA</text>
+  <text x="695" y="695" font-size="28" font-style="italic" fill="#1f2937" text-anchor="middle">Action management</text>
+  <rect x="1105" y="573" width="740" height="145" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="1475" y="630" font-size="26" fill="#1f2937" text-anchor="middle">Kanban by status, due-date and aging list,</text>
+  <text x="1475" y="670" font-size="26" fill="#1f2937" text-anchor="middle">escalation markers, effectiveness review</text>
+
+  <!-- View 4 -->
+  <rect x="505" y="820" width="380" height="190" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="695" y="875" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="middle">View 4</text>
+  <text x="695" y="920" font-size="27" fill="#1f2937" text-anchor="middle">Third Party &amp; Register</text>
+  <text x="695" y="965" font-size="28" font-style="italic" fill="#1f2937" text-anchor="middle">TPRM &amp; procurement</text>
+  <rect x="1060" y="843" width="840" height="145" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="1480" y="900" font-size="26" fill="#1f2937" text-anchor="middle">Provider list with CIF link, clause checklist Art. 30,</text>
+  <text x="1480" y="940" font-size="26" fill="#1f2937" text-anchor="middle">xBRL export, concentration risk, 4th-party chain</text>
+
+  <!-- View 5 -->
+  <rect x="505" y="1090" width="380" height="190" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="695" y="1140" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="middle">View 5</text>
+  <text x="695" y="1180" font-size="25" fill="#1f2937" text-anchor="middle">Incidents &amp; Reporting</text>
+  <text x="695" y="1212" font-size="25" fill="#1f2937" text-anchor="middle">Deadlines</text>
+  <text x="695" y="1252" font-size="28" font-style="italic" fill="#1f2937" text-anchor="middle">SOC &amp; CISO</text>
+  <rect x="1015" y="1113" width="915" height="145" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="1472" y="1170" font-size="26" fill="#1f2937" text-anchor="middle">Classification assistant RTS 2024/1772, deadline countdown,</text>
+  <text x="1472" y="1210" font-size="26" fill="#1f2937" text-anchor="middle">parallel reporting logic DORA / NIS-2 / GDPR, audit trail</text>
+
+  <!-- View 6 -->
+  <rect x="505" y="1360" width="380" height="190" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="695" y="1415" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="middle">View 6</text>
+  <text x="695" y="1460" font-size="28" fill="#1f2937" text-anchor="middle">Testing &amp; TLPT</text>
+  <text x="695" y="1505" font-size="28" font-style="italic" fill="#1f2937" text-anchor="middle">Test coordination</text>
+  <rect x="1090" y="1383" width="790" height="145" fill="#e9edf6" stroke="#16405e" stroke-width="3"/>
+  <text x="1485" y="1440" font-size="26" fill="#1f2937" text-anchor="middle">Test calendar, transfer of results into findings,</text>
+  <text x="1485" y="1480" font-size="26" fill="#1f2937" text-anchor="middle">TLPT cycle monitoring, attestation filing</text>
+
+  <!-- View 7 -->
+  <rect x="505" y="1630" width="380" height="190" fill="#e8f1ea" stroke="#2f6b4f" stroke-width="3"/>
+  <text x="695" y="1685" font-size="28" font-weight="bold" fill="#1f2937" text-anchor="middle">View 7</text>
+  <text x="695" y="1730" font-size="28" fill="#1f2937" text-anchor="middle">Reporting &amp; Export</text>
+  <text x="695" y="1775" font-size="27" font-style="italic" fill="#1f2937" text-anchor="middle">Supervisors &amp; internal audit</text>
+  <rect x="1125" y="1653" width="720" height="145" fill="#e8f1ea" stroke="#2f6b4f" stroke-width="3"/>
+  <text x="1485" y="1710" font-size="26" fill="#1f2937" text-anchor="middle">Evidence package as PDF, management report,</text>
+  <text x="1485" y="1750" font-size="26" fill="#1f2937" text-anchor="middle">audit-trail export for internal audit and supervisors</text>
+</svg>

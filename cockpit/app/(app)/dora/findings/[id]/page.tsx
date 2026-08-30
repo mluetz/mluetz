@@ -1,0 +1,247 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { hasPermission, requirePermission } from "@/lib/authz";
+import { formatDate, formatDateTime, isOverdue } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n/server";
+import { DORA_MESSAGES } from "@/lib/i18n/messages/dora";
+import { PageHeader } from "@/components/page-header";
+import { Badge, riskClassVariant } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FindingStatusForm } from "@/features/dora/findings-panels";
+
+export const dynamic = "force-dynamic";
+
+/** Erlaubte Statusübergänge (Anzeige; Durchsetzung serverseitig in findings-actions.ts). */
+const FINDING_TRANSITIONS: Record<string, string[]> = {
+  OPEN: ["IN_PROGRESS"],
+  IN_PROGRESS: ["EFFECTIVENESS_CHECK"],
+  EFFECTIVENESS_CHECK: ["CLOSED"],
+  CLOSED: [],
+};
+
+export default async function DoraFindingDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const user = await requirePermission("compliance:read");
+  const locale = await getLocale();
+  const t = DORA_MESSAGES[locale];
+  const { id } = await params;
+  const finding = await db.doraFinding.findFirst({
+    where: { OR: [{ id }, { findingId: id }] },
+    include: {
+      requirement: { select: { id: true, reqId: true, title: true } },
+      action: { select: { id: true, actionId: true, title: true, status: true, dueDate: true } },
+      createdBy: true,
+    },
+  });
+  if (!finding) notFound();
+
+  const severityLabel = t.enums.severity[finding.severity] ?? finding.severity;
+  const responseOverdue = finding.status === "OPEN" && isOverdue(finding.responseDueAt);
+  const remediationOverdue = finding.status !== "CLOSED" && isOverdue(finding.remediationDueAt);
+  const allowedTargets = FINDING_TRANSITIONS[finding.status] ?? [];
+  const canWrite = hasPermission(user, "compliance:write");
+
+  const auditEntries = await db.auditLog.findMany({
+    where: { entityType: "DoraFinding", entityId: finding.id },
+    orderBy: { timestamp: "desc" },
+    take: 50,
+    include: { user: true },
+  });
+
+  return (
+    <div>
+      <PageHeader
+        title={`${finding.findingId} – ${finding.title}`}
+        description={finding.description}
+        crumbs={[
+          { label: "Overview", href: "/overview" },
+          { label: "DORA", href: "/dora" },
+          { label: "Findings", href: "/dora/findings" },
+          { label: finding.findingId },
+        ]}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">
+              {t.enums.findingStatus[finding.status as keyof typeof t.enums.findingStatus] ??
+                finding.status}
+            </Badge>
+            <Badge variant={riskClassVariant(finding.severity)}>{severityLabel}</Badge>
+            {remediationOverdue ? (
+              <Badge variant="critical">{t.findingDetail.remediationOverdueBadge}</Badge>
+            ) : null}
+          </div>
+        }
+      />
+
+      {/* KPI-Zeile: Fristen */}
+      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Kpi label={t.findingDetail.kpiDetected} value={formatDate(finding.detectedAt)} />
+        <Kpi
+          label={t.findingDetail.kpiResponseDue}
+          value={`${formatDate(finding.responseDueAt)}${responseOverdue ? t.common.overdueSuffix : ""}`}
+          warn={responseOverdue}
+        />
+        <Kpi
+          label={t.findingDetail.kpiRemediationDue}
+          value={`${formatDate(finding.remediationDueAt)}${remediationOverdue ? t.common.overdueSuffix : ""}`}
+          warn={remediationOverdue}
+        />
+        <Kpi
+          label={t.findingDetail.kpiClosed}
+          value={finding.closedAt ? formatDate(finding.closedAt) : "–"}
+        />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.findingDetail.detailsTitle}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-3">
+              <Info
+                label={t.findingDetail.source}
+                value={
+                  t.enums.findingSource[finding.source as keyof typeof t.enums.findingSource] ??
+                  finding.source
+                }
+              />
+              <Info label={t.findingDetail.severity} value={severityLabel} />
+              <Info
+                label={t.findingDetail.escalatedTo}
+                value={
+                  finding.escalatedTo
+                    ? (t.enums.escalation[finding.escalatedTo] ?? finding.escalatedTo)
+                    : "–"
+                }
+              />
+              <Info label={t.findingDetail.createdBy} value={finding.createdBy.name} />
+            </div>
+            <Info label={t.findingDetail.descriptionLabel} value={finding.description} />
+            <Info
+              label={t.findingDetail.effectivenessCriterion}
+              value={finding.effectivenessCriterion ?? t.findingDetail.effectivenessMissing}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.common.linksTitle}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                {t.findingDetail.requirementLabel}
+              </p>
+              {finding.requirement ? (
+                <Link
+                  href={`/dora/requirements/${finding.requirement.id}`}
+                  className="text-primary hover:underline"
+                >
+                  <span className="font-mono text-xs">{finding.requirement.reqId}</span> –{" "}
+                  {finding.requirement.title}
+                </Link>
+              ) : (
+                <p className="text-xs text-muted-foreground">{t.findings.noRequirement}</p>
+              )}
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-muted-foreground">
+                {t.findingDetail.capaLabel}
+              </p>
+              {finding.action ? (
+                <div>
+                  <Link
+                    href={`/actions/${finding.action.id}`}
+                    className="text-primary hover:underline"
+                  >
+                    <span className="font-mono text-xs">{finding.action.actionId}</span> –{" "}
+                    {finding.action.title}
+                  </Link>
+                  <p className="text-xs text-muted-foreground">
+                    {t.findingDetail.capaStatus(
+                      finding.action.status,
+                      formatDate(finding.action.dueDate),
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">{t.findingDetail.noAction}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>{t.findingDetail.statusChangeTitle}</CardTitle>
+          <CardDescription>{t.findingDetail.statusChangeDesc}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {canWrite ? (
+            <FindingStatusForm
+              findingId={finding.id}
+              currentStatus={finding.status}
+              allowedTargets={allowedTargets}
+              hasEffectivenessCriterion={Boolean(finding.effectivenessCriterion)}
+              locale={locale}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">{t.common.noWritePermission}</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>{t.common.auditTrail}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-xs">
+            {auditEntries.map((e) => (
+              <li key={e.id} className="rounded-md border p-2">
+                <span className="font-medium">{e.action}</span>{" "}
+                {e.field ? (
+                  <span>
+                    {e.field}: {e.oldValue ?? "–"} → {e.newValue ?? "–"}
+                  </span>
+                ) : null}
+                <div className="text-muted-foreground">
+                  {e.user?.name ?? e.userEmail} · {formatDateTime(e.timestamp)}
+                  {e.comment ? ` · ${e.comment}` : ""}
+                </div>
+              </li>
+            ))}
+            {auditEntries.length === 0 ? (
+              <li className="text-muted-foreground">{t.common.noEntries}</li>
+            ) : null}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function Kpi({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+  return (
+    <div className="rounded-lg border bg-card p-3">
+      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className={`text-sm font-semibold ${warn ? "text-risk-critical" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="whitespace-pre-wrap">{value}</p>
+    </div>
+  );
+}

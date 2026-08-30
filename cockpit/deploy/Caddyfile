@@ -1,0 +1,29 @@
+# ============================================================
+# TLS-Terminierung für das ICT & TPRM Cockpit (Review v3, S-01)
+# ------------------------------------------------------------
+# - HTTPS auf :8443 mit Caddy-internem Zertifikat (eigene CA;
+#   Root-Zertifikat liegt im Volume caddy-data unter
+#   /data/caddy/pki/authorities/local/root.crt und wird einmalig
+#   auf den Clients als vertrauenswürdig hinterlegt)
+# - HTTP auf :8080 leitet ausschließlich auf HTTPS um
+# - HSTS aktiv; keine Inhalte über Klartext
+# ============================================================
+
+{
+	auto_https disable_redirects
+}
+
+:8443 {
+	tls internal
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+	reverse_proxy cockpit:3000
+}
+
+:8080 {
+	redir https://{host}:8443{uri} permanent
+}

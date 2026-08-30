@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design-Tokens (shadcn-kompatibles Schema, ADR-0004).
+ * Zurückhaltendes Banking-/GRC-Farbschema; Risikofarben werden nie als
+ * einziges Unterscheidungsmerkmal verwendet (immer Text-Label daneben).
+ */
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 28% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 14%;
+    --primary: 215 60% 25%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 214 20% 92%;
+    --secondary-foreground: 215 28% 20%;
+    --muted: 214 18% 94%;
+    --muted-foreground: 215 12% 42%;
+    --accent: 213 45% 90%;
+    --accent-foreground: 215 40% 22%;
+    --destructive: 0 65% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 16% 86%;
+    --input: 214 16% 82%;
+    --ring: 215 60% 35%;
+    --radius: 0.5rem;
+    --risk-low: 145 55% 34%;
+    --risk-medium: 40 85% 40%;
+    --risk-high: 24 85% 44%;
+    --risk-critical: 0 65% 42%;
+    /* Statussemantik (Redesign Welle 4): Farbe ausschließlich bei
+       Zielwertverletzung — Kacheln/Pills binden NUR an diese Tokens.
+       Werte WCAG-2.1-AA-geprüft (alle Paare >= 4,5:1). */
+    --status-overdue: 0 65% 36%;
+    --status-overdue-bg: 0 70% 96%;
+    --status-due-soon: 35 90% 28%;
+    --status-due-soon-bg: 40 90% 94%;
+    --status-ok: 145 55% 26%;
+    --status-ok-bg: 145 45% 95%;
+    --signal-muted: 215 12% 42%;
+    --signal-muted-bg: 214 18% 94%;
+  }
+
+  .dark {
+    --background: 217 30% 10%;
+    --foreground: 213 20% 92%;
+    --card: 217 28% 14%;
+    --card-foreground: 213 20% 92%;
+    --primary: 213 55% 62%;
+    --primary-foreground: 217 30% 10%;
+    --secondary: 217 22% 20%;
+    --secondary-foreground: 213 20% 88%;
+    --muted: 217 22% 18%;
+    --muted-foreground: 214 12% 62%;
+    --accent: 216 30% 24%;
+    --accent-foreground: 213 25% 90%;
+    --destructive: 0 60% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 18% 24%;
+    --input: 217 18% 28%;
+    --ring: 213 55% 55%;
+    --risk-low: 145 45% 42%;
+    --risk-medium: 40 75% 50%;
+    --risk-high: 24 80% 54%;
+    --risk-critical: 0 65% 55%;
+    --status-overdue: 0 80% 78%;
+    --status-overdue-bg: 0 45% 20%;
+    --status-due-soon: 42 90% 72%;
+    --status-due-soon-bg: 38 45% 18%;
+    --status-ok: 145 50% 70%;
+    --status-ok-bg: 146 35% 16%;
+    --signal-muted: 214 12% 68%;
+    --signal-muted-bg: 217 22% 20%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  body {
+    background: white;
+  }
+}
+
+/* Druck-/Nachweiskopf (D-12): nur im Druck sichtbar. */
+.print-only {
+  display: none;
+}
+
+/* Tabellen mit fixierter erster Spalte (D-05): horizontaler Scroll im
+   Container statt Clipping; Zahlen fluchten (tabular-nums). */
+.tbl-sticky-first td:first-child,
+.tbl-sticky-first th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: hsl(var(--card));
+  border-right: 1px solid hsl(var(--border));
+}
+.tbl-sticky-first th:first-child {
+  z-index: 3;
+  background: hsl(var(--muted));
+}

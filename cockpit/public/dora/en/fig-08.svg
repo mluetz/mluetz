@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2047 1383" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6b82"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="2047" height="1383" fill="#ffffff"/>
+
+  <!-- inter-phase connectors -->
+  <g fill="none" stroke="#5a6b82" stroke-width="2.5">
+    <path d="M 930 345 C 895 368, 878 385, 872 406" marker-end="url(#arr)"/>
+    <path d="M 870 540 L 870 583" stroke-dasharray="6 6" marker-end="url(#arr)"/>
+    <path d="M 870 935 C 875 965, 898 990, 940 996" marker-end="url(#arr)"/>
+    <path d="M 1965 1000 C 2015 800, 2015 500, 1800 350" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- Phase 3 -->
+  <rect x="650" y="10" width="1385" height="335" fill="#f4f6fa" stroke="#b9c2d0" stroke-width="2"/>
+  <text x="1342" y="46" text-anchor="middle" fill="#1a1a1a" font-size="27">Phase 3 - Closure, remediation and attestation</text>
+
+  <rect x="695" y="60" width="370" height="255" fill="#e9f3ee" stroke="#1e7145" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="880" y="106" font-size="27" font-weight="bold">8. Closure phase</text>
+    <text x="880" y="140" font-style="italic">Purple teaming</text>
+    <text x="880" y="188">Joint evaluation by red</text>
+    <text x="880" y="222">and blue team, assessment</text>
+    <text x="880" y="256">of detection and response</text>
+  </g>
+
+  <rect x="1165" y="55" width="350" height="265" fill="#e9f3ee" stroke="#1e7145" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="1340" y="101" font-size="27" font-weight="bold">9. Remediation</text>
+    <text x="1340" y="135" font-style="italic">Art. 26(6)</text>
+    <text x="1340" y="183">Transfer results into</text>
+    <text x="1340" y="217">findings and CAPA,</text>
+    <text x="1340" y="251">follow-up, retest and</text>
+    <text x="1340" y="285">proof of effectiveness</text>
+  </g>
+
+  <rect x="1620" y="55" width="360" height="265" fill="#eef1f7" stroke="#44546a" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="1800" y="101" font-size="27" font-weight="bold">10. Attestation</text>
+    <text x="1800" y="135" font-style="italic">Art. 26(7)</text>
+    <text x="1800" y="183">Confirmation of proper</text>
+    <text x="1800" y="217">execution, mutual</text>
+    <text x="1800" y="251">recognition across</text>
+    <text x="1800" y="285">the entire EU</text>
+  </g>
+
+  <line x1="1065" y1="188" x2="1157" y2="188" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+  <line x1="1515" y1="188" x2="1612" y2="188" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- Cycle box -->
+  <rect x="470" y="410" width="800" height="130" fill="#fdecea" stroke="#c00000" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="26">
+    <text x="870" y="450"><tspan font-weight="bold">Cycle</tspan> - at least every three years; the competent</text>
+    <text x="870" y="486">authority may adjust the frequency based on risk.</text>
+    <text x="870" y="522">The scope must be redefined for each cycle.</text>
+  </g>
+
+  <!-- Phase 1 -->
+  <rect x="10" y="590" width="1715" height="345" fill="#f4f6fa" stroke="#b9c2d0" stroke-width="2"/>
+  <text x="867" y="626" text-anchor="middle" fill="#1a1a1a" font-size="27">Phase 1 - Designation, scoping and preparation</text>
+
+  <rect x="50" y="645" width="360" height="275" fill="#eef1f7" stroke="#44546a" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="230" y="692" font-size="27" font-weight="bold">1. Designation</text>
+    <text x="230" y="726" font-style="italic">Art. 26(8)</text>
+    <text x="230" y="770">Selection by the authority</text>
+    <text x="230" y="804">based on importance for</text>
+    <text x="230" y="838">the financial sector,</text>
+    <text x="230" y="872">financial stability and</text>
+    <text x="230" y="906">ICT risk profile</text>
+  </g>
+
+  <rect x="505" y="645" width="340" height="275" fill="#e5eaf3" stroke="#1f3c5e" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="675" y="692" font-size="27" font-weight="bold">2. Scoping</text>
+    <text x="675" y="726" font-style="italic">Art. 26(2)</text>
+    <text x="675" y="770">All ICT systems that</text>
+    <text x="675" y="804">support critical or</text>
+    <text x="675" y="838">important functions,</text>
+    <text x="675" y="872">incl. outsourced</text>
+    <text x="675" y="906">services</text>
+  </g>
+
+  <rect x="910" y="660" width="350" height="245" fill="#eef1f7" stroke="#44546a" stroke-width="4"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="1085" y="707" font-size="27" font-weight="bold">3. Scope validation</text>
+    <text x="1085" y="741" font-style="italic">Art. 26(2)</text>
+    <text x="1085" y="787">Confirmation of the test</text>
+    <text x="1085" y="821">scope by the competent</text>
+    <text x="1085" y="855">authority before</text>
+    <text x="1085" y="889">testing begins</text>
+  </g>
+
+  <rect x="1330" y="645" width="350" height="275" fill="#e5eaf3" stroke="#1f3c5e" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="1505" y="692" font-size="27" font-weight="bold">4. Tester selection</text>
+    <text x="1505" y="726" font-style="italic">Art. 27</text>
+    <text x="1505" y="770">External testers mandatory</text>
+    <text x="1505" y="804">for significant credit</text>
+    <text x="1505" y="838">institutions, otherwise</text>
+    <text x="1505" y="872">every third test</text>
+    <text x="1505" y="906">external</text>
+  </g>
+
+  <line x1="410" y1="782" x2="497" y2="782" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+  <line x1="845" y1="782" x2="902" y2="782" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+  <line x1="1260" y1="782" x2="1322" y2="782" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+
+  <!-- Phase 2 -->
+  <rect x="665" y="1000" width="1300" height="370" fill="#f4f6fa" stroke="#b9c2d0" stroke-width="2"/>
+  <text x="1315" y="1036" text-anchor="middle" fill="#1a1a1a" font-size="27">Phase 2 - Execution</text>
+
+  <rect x="720" y="1055" width="350" height="280" fill="#e5eaf3" stroke="#1f3c5e" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="895" y="1102" font-size="27" font-weight="bold">5. Threat intelligence</text>
+    <text x="895" y="1136" font-style="italic">RTS (EU) 2025/1190</text>
+    <text x="895" y="1180">Targeted threat</text>
+    <text x="895" y="1214">intelligence report,</text>
+    <text x="895" y="1248">derivation of realistic</text>
+    <text x="895" y="1282">attack scenarios from the</text>
+    <text x="895" y="1316">current threat landscape</text>
+  </g>
+
+  <rect x="1165" y="1055" width="340" height="280" fill="#fdf2e2" stroke="#c0561a" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="1335" y="1102" font-size="27" font-weight="bold">6. Red team testing</text>
+    <text x="1335" y="1136" font-style="italic">Art. 26(2)</text>
+    <text x="1335" y="1180">Active attack simulation</text>
+    <text x="1335" y="1214">against production</text>
+    <text x="1335" y="1248">systems, blue team</text>
+    <text x="1335" y="1282">without prior knowledge</text>
+    <text x="1335" y="1316">of the test</text>
+  </g>
+
+  <rect x="1600" y="1055" width="350" height="280" fill="#fdf2e2" stroke="#c0561a" stroke-width="5"/>
+  <g text-anchor="middle" fill="#1a1a1a" font-size="24">
+    <text x="1775" y="1102" font-size="27" font-weight="bold">7. Providers in scope</text>
+    <text x="1775" y="1136" font-style="italic">Art. 26(3) and (4)</text>
+    <text x="1775" y="1180">Involvement of ICT third-</text>
+    <text x="1775" y="1214">party service providers,</text>
+    <text x="1775" y="1248">alternatively a pooled</text>
+    <text x="1775" y="1282">TLPT of several</text>
+    <text x="1775" y="1316">financial entities</text>
+  </g>
+
+  <line x1="1070" y1="1195" x2="1157" y2="1195" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+  <line x1="1505" y1="1195" x2="1592" y2="1195" stroke="#5a6b82" stroke-width="2.5" marker-end="url(#arr)"/>
+</svg>

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2046 482" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L9,4 L0,8 z" fill="#44546a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="2046" height="482" fill="#ffffff"/>
+
+  <!-- flow arrows -->
+  <path d="M 342 230 C 372 205, 378 190, 402 172" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 772 168 C 795 168, 810 168, 830 168" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 1187 168 C 1210 168, 1225 168, 1245 168" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <path d="M 1617 175 C 1650 185, 1660 205, 1683 225" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <!-- feedback loop -->
+  <path d="M 1688 400 C 1400 452, 640 452, 348 398" fill="none" stroke="#44546a" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Box 1 -->
+  <rect x="10" y="142" width="332" height="290" fill="#e8edf5" stroke="#1f3a5f" stroke-width="3.5"/>
+  <text x="176" y="180" font-size="22" font-weight="bold" fill="#333333" text-anchor="middle">1. Threat intelligence alert</text>
+  <text x="176" y="208" font-size="20" font-style="italic" fill="#333333" text-anchor="middle">Chapter VI, Art. 45</text>
+  <text x="176" y="252" font-size="20" fill="#333333" text-anchor="middle">External warning about a</text>
+  <text x="176" y="280" font-size="20" fill="#333333" text-anchor="middle">4th-party vulnerability,</text>
+  <text x="176" y="308" font-size="20" fill="#333333" text-anchor="middle">e.g. a critical API flaw</text>
+  <text x="176" y="352" font-size="20" fill="#333333" text-anchor="middle">Sources: FS-ISAC, CERT-Bund,</text>
+  <text x="176" y="380" font-size="20" fill="#333333" text-anchor="middle">BSI, provider advisories</text>
+
+  <!-- Box 2 -->
+  <rect x="405" y="12" width="368" height="315" fill="#fdf4e3" stroke="#c05a11" stroke-width="3.5"/>
+  <text x="589" y="50" font-size="21" font-weight="bold" fill="#333333" text-anchor="middle">2. Register of information check</text>
+  <text x="589" y="78" font-size="20" font-style="italic" fill="#333333" text-anchor="middle">Chapter V, Art. 28(3)</text>
+  <text x="589" y="122" font-size="20" fill="#333333" text-anchor="middle">Which of our third-party</text>
+  <text x="589" y="150" font-size="20" fill="#333333" text-anchor="middle">providers uses the affected</text>
+  <text x="589" y="178" font-size="20" fill="#333333" text-anchor="middle">component, and which</text>
+  <text x="589" y="206" font-size="20" fill="#333333" text-anchor="middle">contracts are affected?</text>
+  <text x="589" y="256" font-size="20" fill="#333333" text-anchor="middle">Result: contract, asset</text>
+  <text x="589" y="284" font-size="20" fill="#333333" text-anchor="middle">and CIF mapping</text>
+
+  <!-- Box 3 -->
+  <rect x="835" y="22" width="350" height="290" fill="#eaf3ed" stroke="#2e7d5b" stroke-width="3.5"/>
+  <text x="1010" y="60" font-size="22" font-weight="bold" fill="#333333" text-anchor="middle">3. Risk reassessment</text>
+  <text x="1010" y="88" font-size="20" font-style="italic" fill="#333333" text-anchor="middle">Chapter II, Art. 6 and 8</text>
+  <text x="1010" y="132" font-size="20" fill="#333333" text-anchor="middle">Business impact of the affected</text>
+  <text x="1010" y="160" font-size="20" fill="#333333" text-anchor="middle">critical functions is raised,</text>
+  <text x="1010" y="188" font-size="20" fill="#333333" text-anchor="middle">risk appetite threshold</text>
+  <text x="1010" y="216" font-size="20" fill="#333333" text-anchor="middle">is reviewed</text>
+  <text x="1010" y="266" font-size="20" fill="#333333" text-anchor="middle">Result: risk entry with owner</text>
+
+  <!-- Box 4 -->
+  <rect x="1250" y="22" width="368" height="290" fill="#eaf3ed" stroke="#2e7d5b" stroke-width="3.5"/>
+  <text x="1434" y="60" font-size="21" font-weight="bold" fill="#333333" text-anchor="middle">4. Targeted resilience testing</text>
+  <text x="1434" y="88" font-size="20" font-style="italic" fill="#333333" text-anchor="middle">Chapter IV, Art. 25 and 26</text>
+  <text x="1434" y="132" font-size="20" fill="#333333" text-anchor="middle">Ad hoc scan or red teaming</text>
+  <text x="1434" y="160" font-size="20" fill="#333333" text-anchor="middle">to simulate exactly this</text>
+  <text x="1434" y="188" font-size="20" fill="#333333" text-anchor="middle">supply chain attack vector</text>
+  <text x="1434" y="238" font-size="20" fill="#333333" text-anchor="middle">Result: verified finding</text>
+  <text x="1434" y="266" font-size="20" fill="#333333" text-anchor="middle">or all-clear</text>
+
+  <!-- Box 5 -->
+  <rect x="1688" y="142" width="348" height="290" fill="#fdf4e3" stroke="#c05a11" stroke-width="3.5"/>
+  <text x="1862" y="180" font-size="21" font-weight="bold" fill="#333333" text-anchor="middle">5. Remediation and contract</text>
+  <text x="1862" y="208" font-size="19" font-style="italic" fill="#333333" text-anchor="middle">Chapter V, Art. 30 / Ch. II, Art. 9</text>
+  <text x="1862" y="252" font-size="20" fill="#333333" text-anchor="middle">Tighten SLAs, force provider</text>
+  <text x="1862" y="280" font-size="20" fill="#333333" text-anchor="middle">patching, network isolation,</text>
+  <text x="1862" y="308" font-size="20" fill="#333333" text-anchor="middle">exit strategy if needed</text>
+  <text x="1862" y="352" font-size="20" fill="#333333" text-anchor="middle">Result: CAPA with deadline</text>
+  <text x="1862" y="380" font-size="20" fill="#333333" text-anchor="middle">and effectiveness criterion</text>
+
+  <!-- feedback label -->
+  <rect x="840" y="342" width="340" height="122" fill="#ffffff"/>
+  <text x="1010" y="368" font-size="20" fill="#333333" text-anchor="middle">Continuous monitoring</text>
+  <text x="1010" y="396" font-size="20" fill="#333333" text-anchor="middle">&#8211; effectiveness review and</text>
+  <text x="1010" y="424" font-size="20" fill="#333333" text-anchor="middle">feedback into the</text>
+  <text x="1010" y="452" font-size="20" fill="#333333" text-anchor="middle">risk register</text>
+</svg>

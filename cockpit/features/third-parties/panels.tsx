@@ -1,0 +1,543 @@
+"use client";
+
+import { useActionState } from "react";
+import {
+  changeTpStatus,
+  createThirdParty,
+  saveContractClauses,
+  setTpCriticalFunctions,
+  updateTpAssessment,
+  upsertExitStrategy,
+  type ActionResult,
+} from "./actions";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Field, Input, Select, Textarea, Label } from "@/components/ui/input";
+import type { Locale } from "@/lib/i18n/config";
+import { TPRM_MESSAGES } from "@/lib/i18n/messages/tprm";
+
+function ErrorLine({ state, locale }: { state: ActionResult; locale: Locale }) {
+  if (state.error)
+    return (
+      <p role="alert" className="text-sm text-destructive">
+        {state.error}
+      </p>
+    );
+  if (state.ok)
+    return <p className="text-sm text-risk-low">{TPRM_MESSAGES[locale].common.saved}</p>;
+  return null;
+}
+
+// ---------------- Workflow / Statuswechsel ----------------
+
+export function TpWorkflowPanel({
+  thirdPartyId,
+  currentStatus,
+  allowedTargets,
+  locale,
+}: {
+  thirdPartyId: string;
+  currentStatus: string;
+  allowedTargets: string[];
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(changeTpStatus, {});
+  if (allowedTargets.length === 0)
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t.tp.workflow.noTransitions(t.labels.tpStatus[currentStatus] ?? currentStatus)}
+      </p>
+    );
+  return (
+    <form action={formAction} className="flex flex-wrap items-end gap-3">
+      <input type="hidden" name="thirdPartyId" value={thirdPartyId} />
+      <div className="min-w-56">
+        <Label htmlFor="tp-newStatus">{t.tp.workflow.newStatus}</Label>
+        <Select id="tp-newStatus" name="newStatus" required defaultValue="">
+          <option value="" disabled>
+            {t.common.pleaseSelect}
+          </option>
+          {allowedTargets.map((tgt) => (
+            <option key={tgt} value={tgt}>
+              {t.labels.tpStatus[tgt] ?? tgt}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <div className="min-w-72 flex-1">
+        <Label htmlFor="tp-wf-comment">{t.tp.workflow.commentRequired}</Label>
+        <Input id="tp-wf-comment" name="comment" required minLength={3} />
+      </div>
+      <Button type="submit" variant="secondary" disabled={pending}>
+        {pending ? t.tp.workflow.executing : t.tp.workflow.changeStatus}
+      </Button>
+      <div className="w-full">
+        <ErrorLine state={state} locale={locale} />
+      </div>
+    </form>
+  );
+}
+
+// ---------------- Assessment ----------------
+
+export interface TpAssessmentDefaults {
+  criticality: string;
+  inherentRiskScore: number | null;
+  residualRiskScore: number | null;
+  dueDiligenceStatus: string;
+  substitutability: string;
+  concentrationRisk: boolean;
+  /** yyyy-mm-dd oder "" */
+  nextReviewDate: string;
+}
+
+export function TpAssessmentForm({
+  thirdPartyId,
+  defaults,
+  locale,
+}: {
+  thirdPartyId: string;
+  defaults: TpAssessmentDefaults;
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    updateTpAssessment,
+    {},
+  );
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t.tp.assessment.title}</CardTitle>
+        <CardDescription>{t.tp.assessment.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={formAction} className="space-y-4">
+          <input type="hidden" name="thirdPartyId" value={thirdPartyId} />
+          <div className="grid gap-4 md:grid-cols-3">
+            <Field label={t.tp.assessment.criticality} htmlFor="tp-criticality" required>
+              <Select
+                id="tp-criticality"
+                name="criticality"
+                required
+                defaultValue={defaults.criticality === "NOT_ASSESSED" ? "" : defaults.criticality}
+              >
+                <option value="" disabled>
+                  {t.common.pleaseSelect}
+                </option>
+                {(["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const).map((k) => (
+                  <option key={k} value={k}>
+                    {t.labels.tpCriticality[k]}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t.tp.assessment.inherentScore} htmlFor="tp-inherent" required>
+              <Input
+                id="tp-inherent"
+                name="inherentRiskScore"
+                type="number"
+                min={1}
+                max={25}
+                required
+                defaultValue={defaults.inherentRiskScore ?? ""}
+              />
+            </Field>
+            <Field label={t.tp.assessment.residualScore} htmlFor="tp-residual" required>
+              <Input
+                id="tp-residual"
+                name="residualRiskScore"
+                type="number"
+                min={1}
+                max={25}
+                required
+                defaultValue={defaults.residualRiskScore ?? ""}
+              />
+            </Field>
+            <Field label={t.tp.assessment.dueDiligenceStatus} htmlFor="tp-dd" required>
+              <Select
+                id="tp-dd"
+                name="dueDiligenceStatus"
+                required
+                defaultValue={defaults.dueDiligenceStatus}
+              >
+                {Object.entries(t.labels.dueDiligence).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t.tp.assessment.substitutability} htmlFor="tp-subst" required>
+              <Select
+                id="tp-subst"
+                name="substitutability"
+                required
+                defaultValue={defaults.substitutability}
+              >
+                {Object.entries(t.labels.substitutability).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t.tp.assessment.nextReview} htmlFor="tp-nextReview" required>
+              <Input
+                id="tp-nextReview"
+                name="nextReviewDate"
+                type="date"
+                required
+                defaultValue={defaults.nextReviewDate}
+              />
+            </Field>
+          </div>
+          <div className="flex flex-wrap gap-6">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="concentrationRisk"
+                defaultChecked={defaults.concentrationRisk}
+                className="h-4 w-4"
+              />
+              {t.tp.assessment.concentrationRisk}
+            </label>
+          </div>
+          <ErrorLine state={state} locale={locale} />
+          <Button type="submit" disabled={pending}>
+            {pending ? t.common.saving : t.tp.assessment.submit}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------- Art.-30-Klauselmatrix (Review v3, P1-03) ----------------
+
+export interface ClauseRow {
+  key: string;
+  ref: string;
+  label: string;
+  status: string;
+  section: string;
+  comment: string;
+}
+
+export function ContractClauseMatrix({
+  contractId,
+  contractLabel,
+  rag,
+  clauses,
+  canWrite,
+  locale,
+}: {
+  contractId: string;
+  contractLabel: string;
+  rag: "GREEN" | "YELLOW" | "RED";
+  clauses: ClauseRow[];
+  canWrite: boolean;
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    saveContractClauses,
+    {},
+  );
+  const de = locale === "de";
+  const statusLabels: Record<string, string> = de
+    ? { FULFILLED: "erfüllt", PARTIAL: "teilweise", MISSING: "fehlt", NOT_APPLICABLE: "n. a." }
+    : { FULFILLED: "fulfilled", PARTIAL: "partial", MISSING: "missing", NOT_APPLICABLE: "n/a" };
+  const ragClass =
+    rag === "GREEN"
+      ? "bg-risk-low/15 text-risk-low"
+      : rag === "YELLOW"
+        ? "bg-risk-medium/15 text-risk-medium"
+        : "bg-risk-critical/15 text-risk-critical";
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          {de ? "Art.-30-Konformität" : "Art. 30 conformity"} — {contractLabel}
+          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${ragClass}`}>{rag}</span>
+        </CardTitle>
+        <CardDescription>
+          {de
+            ? "Pflichtklauseln nach Art. 30 Abs. 2 (alle Verträge) und Abs. 3 (CIF-Verträge), einzeln quittiert mit Vertragsziffer. Eine fehlende Pflichtklausel in einem CIF-Vertrag erzeugt automatisch ein Finding."
+            : "Mandatory clauses per Art. 30(2) (all contracts) and (3) (CIF contracts), individually acknowledged with the contract section. A missing mandatory clause in a CIF contract automatically raises a finding."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={formAction} className="space-y-3">
+          <input type="hidden" name="contractId" value={contractId} />
+          <div className="space-y-2">
+            {clauses.map((c) => (
+              <div
+                key={c.key}
+                className="grid items-center gap-2 rounded-md border p-2 text-sm md:grid-cols-[minmax(0,1fr)_130px_110px_minmax(0,220px)]"
+              >
+                <div>
+                  <span className="font-medium tabular-nums">{c.ref}</span>{" "}
+                  <span className="text-muted-foreground">{c.label}</span>
+                </div>
+                <Select
+                  name={`clause_${c.key}_status`}
+                  defaultValue={c.status}
+                  disabled={!canWrite}
+                  aria-label={c.ref}
+                >
+                  {Object.entries(statusLabels).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  name={`clause_${c.key}_section`}
+                  defaultValue={c.section}
+                  placeholder={de ? "Ziffer" : "Section"}
+                  disabled={!canWrite}
+                />
+                <Input
+                  name={`clause_${c.key}_comment`}
+                  defaultValue={c.comment}
+                  placeholder={de ? "Kommentar" : "Comment"}
+                  disabled={!canWrite}
+                />
+              </div>
+            ))}
+          </div>
+          <ErrorLine state={state} locale={locale} />
+          {canWrite ? (
+            <Button type="submit" disabled={pending}>
+              {pending ? t.common.saving : de ? "Klauselmatrix speichern" : "Save clause matrix"}
+            </Button>
+          ) : null}
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------- CIF-Verknüpfung (eine Wahrheit, Review v3 P1-02) ----------------
+
+export function TpCifLinkForm({
+  thirdPartyId,
+  allCfs,
+  linkedCfIds,
+  locale,
+}: {
+  thirdPartyId: string;
+  allCfs: { id: string; cfId: string; name: string; isCritical: boolean }[];
+  linkedCfIds: string[];
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    setTpCriticalFunctions,
+    {},
+  );
+  const de = locale === "de";
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{de ? "Kritische / wichtige Funktionen" : "Critical / important functions"}</CardTitle>
+        <CardDescription>
+          {de
+            ? "Die CIF-Einstufung dieser Drittpartei wird ausschließlich aus dieser Verknüpfung abgeleitet."
+            : "This third party's CIF classification is derived exclusively from this linkage."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={formAction} className="space-y-4">
+          <input type="hidden" name="thirdPartyId" value={thirdPartyId} />
+          <div className="grid gap-2 md:grid-cols-2">
+            {allCfs.map((cf) => (
+              <label key={cf.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="cfIds"
+                  value={cf.id}
+                  defaultChecked={linkedCfIds.includes(cf.id)}
+                  className="h-4 w-4"
+                />
+                <span className="font-medium tabular-nums">{cf.cfId}</span> {cf.name}
+                <span className="text-xs text-muted-foreground">
+                  {cf.isCritical ? (de ? "kritisch" : "critical") : de ? "wichtig" : "important"}
+                </span>
+              </label>
+            ))}
+          </div>
+          <ErrorLine state={state} locale={locale} />
+          <Button type="submit" disabled={pending}>
+            {pending ? t.common.saving : de ? "Verknüpfung speichern" : "Save linkage"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------- Exit-Strategie ----------------
+
+export interface ExitStrategyDefaults {
+  strategySummary: string;
+  exitPlanExists: boolean;
+  /** yyyy-mm-dd oder "" */
+  lastTestDate: string;
+  testResult: string;
+  substituteOptions: string;
+  status: string;
+}
+
+export function ExitStrategyForm({
+  thirdPartyId,
+  defaults,
+  locale,
+}: {
+  thirdPartyId: string;
+  defaults: ExitStrategyDefaults | null;
+  locale: Locale;
+}) {
+  const t = TPRM_MESSAGES[locale];
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(
+    upsertExitStrategy,
+    {},
+  );
+  return (
+    <form action={formAction} className="space-y-4">
+      <input type="hidden" name="thirdPartyId" value={thirdPartyId} />
+      <Field label={t.tp.exitForm.summary} htmlFor="exit-summary" required>
+        <Textarea
+          id="exit-summary"
+          name="strategySummary"
+          required
+          minLength={5}
+          rows={3}
+          defaultValue={defaults?.strategySummary ?? ""}
+        />
+      </Field>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Field label={t.tp.exitForm.status} htmlFor="exit-status" required>
+          <Select
+            id="exit-status"
+            name="status"
+            required
+            defaultValue={defaults?.status ?? "MISSING"}
+          >
+            {Object.entries(t.labels.exitStatus).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label={t.tp.exitForm.lastTest} htmlFor="exit-lastTest">
+          <Input
+            id="exit-lastTest"
+            name="lastTestDate"
+            type="date"
+            defaultValue={defaults?.lastTestDate ?? ""}
+          />
+        </Field>
+        <Field label={t.tp.exitForm.testResult} htmlFor="exit-testResult">
+          <Select id="exit-testResult" name="testResult" defaultValue={defaults?.testResult ?? ""}>
+            <option value="">–</option>
+            {Object.entries(t.labels.exitTestResult).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      </div>
+      <Field label={t.tp.exitForm.substituteOptions} htmlFor="exit-subst">
+        <Textarea
+          id="exit-subst"
+          name="substituteOptions"
+          rows={2}
+          defaultValue={defaults?.substituteOptions ?? ""}
+        />
+      </Field>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          name="exitPlanExists"
+          defaultChecked={defaults?.exitPlanExists ?? false}
+          className="h-4 w-4"
+        />
+        {t.tp.exitForm.exitPlanExists}
+      </label>
+      <ErrorLine state={state} locale={locale} />
+      <Button type="submit" disabled={pending}>
+        {pending ? t.common.saving : t.tp.exitForm.submit}
+      </Button>
+    </form>
+  );
+}
+
+// ---------------- Neuanlage ----------------
+
+export function NewThirdPartyForm({ locale }: { locale: Locale }) {
+  const t = TPRM_MESSAGES[locale];
+  const [state, formAction, pending] = useActionState<ActionResult, FormData>(createThirdParty, {});
+  return (
+    <form action={formAction} className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t.tp.form.masterData}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t.tp.form.name} htmlFor="tp-name" required>
+              <Input id="tp-name" name="name" required minLength={2} maxLength={200} />
+            </Field>
+            <Field label={t.tp.form.country} htmlFor="tp-country" required>
+              <Input id="tp-country" name="registeredCountry" required minLength={2} />
+            </Field>
+          </div>
+          <Field label={t.tp.form.providedService} htmlFor="tp-service" required>
+            <Textarea id="tp-service" name="providedService" required minLength={2} rows={2} />
+          </Field>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t.tp.form.serviceLocations} htmlFor="tp-serviceLoc" required>
+              <Input id="tp-serviceLoc" name="serviceLocations" required minLength={2} />
+            </Field>
+            <Field label={t.tp.form.dataLocations} htmlFor="tp-dataLoc" required>
+              <Input id="tp-dataLoc" name="dataLocations" required minLength={2} />
+            </Field>
+            <Field
+              label={t.tp.form.informationTypes}
+              htmlFor="tp-infoTypes"
+              required
+              hint={t.tp.form.informationTypesHint}
+            >
+              <Input id="tp-infoTypes" name="informationTypes" required minLength={2} />
+            </Field>
+            <Field
+              label={t.tp.form.ictServiceCategory}
+              htmlFor="tp-ictCat"
+              required
+              hint={t.tp.form.ictServiceCategoryHint}
+            >
+              <Input id="tp-ictCat" name="ictServiceCategory" required minLength={2} />
+            </Field>
+          </div>
+        </CardContent>
+      </Card>
+
+      {state.error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {state.error}
+        </p>
+      ) : null}
+      <div className="flex gap-2">
+        <Button type="submit" disabled={pending}>
+          {pending ? t.tp.form.creating : t.tp.form.submit}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">{t.tp.form.afterCreateNote}</p>
+    </form>
+  );
+}

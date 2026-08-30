@@ -1,0 +1,66 @@
+# ============================================================
+# ICT & TPRM Cockpit – Synology NAS (Container Manager, DSM 7)
+# ------------------------------------------------------------
+# Ein-Container-Betrieb mit SQLite in einem Docker-Volume.
+# Die Demo-Datenbank wird beim ersten Start automatisch angelegt.
+#
+# Vorbereitung (einmalig): im selben Ordner eine Datei ".env" mit
+#   SESSION_SECRET=<zufälliger Wert, mind. 32 Zeichen>
+# anlegen. Anleitung: docs/operations/synology.md
+#
+# Aufruf danach: http://<NAS-IP>:3000  (z. B. http://192.168.178.97:3000)
+# ============================================================
+
+services:
+  cockpit:
+    build: .
+    image: ict-tprm-cockpit:latest
+    container_name: ict-tprm-cockpit
+    ports:
+      # Host-Port über HOST_PORT in der .env änderbar (Standard 3000),
+      # falls 3000 auf dem NAS bereits belegt ist.
+      - "${HOST_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: "file:/data/cockpit.db"
+      SESSION_SECRET: "${SESSION_SECRET:?SESSION_SECRET in .env setzen (mind. 32 Zeichen)}"
+      AUTH_DEMO_LOGIN: "${AUTH_DEMO_LOGIN:-true}"
+      # Vom Installer mit der echten NAS-IP und dem gewählten Port gefüllt.
+      # Das Protokoll steuert das Secure-Flag des Session-Cookies (siehe
+      # lib/auth/cookie-policy.ts): über http:// darf es nicht gesetzt werden.
+      APP_BASE_URL: "${APP_BASE_URL:-http://localhost:${HOST_PORT:-3000}}"
+      # Optionaler Override, falls das Flag manuell erzwungen werden soll:
+      SESSION_COOKIE_SECURE: "${SESSION_COOKIE_SECURE:-}"
+    volumes:
+      - cockpit-data:/data
+    restart: unless-stopped
+
+  # ----------------------------------------------------------
+  # TLS-Terminierung (Review v3, S-01): Caddy mit internem
+  # Zertifikat, HTTP -> HTTPS-Redirect, HSTS.
+  # Aufruf danach: https://<NAS-IP>:8443  — beim ersten Zugriff das
+  # Caddy-Root-Zertifikat im Browser/OS als vertrauenswürdig
+  # hinterlegen (docs/operations/synology.md, Abschnitt TLS).
+  # Alternativ kann statt Caddy der DSM-eigene Reverse Proxy mit
+  # einem Synology-Zertifikat verwendet werden.
+  #
+  # Wichtig: APP_BASE_URL in der .env auf "https://<NAS-IP>:8443"
+  # stellen, damit das Session-Cookie das Secure-Flag erhält.
+  # ----------------------------------------------------------
+  proxy:
+    image: caddy:2-alpine
+    container_name: ict-tprm-proxy
+    ports:
+      - "${HTTPS_PORT:-8443}:8443"
+      - "${HTTP_REDIRECT_PORT:-8080}:8080"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - cockpit
+    restart: unless-stopped
+
+volumes:
+  cockpit-data:
+  caddy-data:
+  caddy-config:
