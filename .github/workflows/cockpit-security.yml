@@ -81,7 +81,7 @@ jobs:
       - name: Build Image
         run: docker build -t cockpit:ci cockpit/
       - name: Trivy Scan
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: cockpit:ci
           format: table
