@@ -152,6 +152,15 @@ const UPDATES = [
     file: "0009-meldeschicht-welle3.sql",
     needed: async () => !(await columnExists("Approval", "roiSnapshotId")),
   },
+  {
+    file: "0010-meldeschicht-welle4.sql",
+    // Umgekehrter Fall wie 0004: Solange die Boolean-Spalten existieren,
+    // steht die Materialisierung + der Spaltenabbau aus.
+    needed: async () =>
+      !(await tableExists("ClauseTemplate")) ||
+      !(await columnExists("ContractClause", "assessedById")) ||
+      (await columnExists("Contract", "auditRights")),
+  },
 ];
 
 try {

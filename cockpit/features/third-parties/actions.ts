@@ -47,11 +47,15 @@ export async function createThirdParty(
 
     // Dublettenprüfung (Review v3, P2-11): primär über LEI, sekundär über
     // normalisierten Namen + Land — nie über bloße Namensgleichheit.
-    const lei = String(formData.get("lei") ?? "").toUpperCase().trim() || null;
+    const lei =
+      String(formData.get("lei") ?? "")
+        .toUpperCase()
+        .trim() || null;
     if (lei) {
       if (!isValidLei(lei)) return { error: "LEI ungültig (ISO-17442-Prüfziffer)." };
       const dupLei = await db.thirdParty.findFirst({ where: { lei } });
-      if (dupLei) return { error: `Dublette: LEI bereits erfasst als ${dupLei.tpId} (${dupLei.name}).` };
+      if (dupLei)
+        return { error: `Dublette: LEI bereits erfasst als ${dupLei.tpId} (${dupLei.name}).` };
     }
     const normalized = d.name.trim().toLowerCase().replace(/\s+/g, " ");
     const sameCountry = await db.thirdParty.findMany({
@@ -316,6 +320,7 @@ export async function saveContractClauses(
         existing.contractSection !== section ||
         existing.comment !== comment
       ) {
+        // Bewerter und Bewertungsdatum je Statusänderung (Welle 4, ADR-0008 Nr. 4)
         await db.contractClause.upsert({
           where: { contractId_clauseKey: { contractId: contract.id, clauseKey: clause.key } },
           create: {
@@ -324,8 +329,16 @@ export async function saveContractClauses(
             status,
             contractSection: section,
             comment,
+            assessedAt: new Date(),
+            assessedById: user.id,
           },
-          update: { status, contractSection: section, comment },
+          update: {
+            status,
+            contractSection: section,
+            comment,
+            assessedAt: new Date(),
+            assessedById: user.id,
+          },
         });
         changes.push(`${clause.key}: ${existing?.status ?? "–"} -> ${status}`);
       }

@@ -164,6 +164,56 @@ export async function requestRoiSubmission(
   }
 }
 
+/**
+ * Verknüpft eine offene Klausel-Lücke mit einer bestehenden Maßnahme
+ * (Meldeschicht Welle 4, ADR-0008 Nr. 4/5). Leere Auswahl löst die
+ * Verknüpfung.
+ */
+export async function linkClauseGapAction(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const user = await assertPermission("thirdparty:write");
+    const contractId = idSchema.parse(formData.get("contractId"));
+    const clauseKey = z
+      .string()
+      .regex(/^ART30_[23]_[A-Z]$/)
+      .parse(formData.get("clauseKey"));
+    const actionIdRaw = String(formData.get("actionId") ?? "").trim();
+    const actionId = actionIdRaw ? idSchema.parse(actionIdRaw) : null;
+
+    const clause = await db.contractClause.findUnique({
+      where: { contractId_clauseKey: { contractId, clauseKey } },
+      include: { contract: { select: { contractRef: true, title: true } } },
+    });
+    if (!clause) return { error: "Klauselstatus nicht gefunden." };
+    if (actionId) {
+      const action = await db.action.findUnique({ where: { id: actionId } });
+      if (!action) return { error: "Maßnahme nicht gefunden." };
+    }
+    await db.contractClause.update({
+      where: { id: clause.id },
+      data: { actionId },
+    });
+    await audit({
+      userId: user.id,
+      userEmail: user.email,
+      action: "UPDATE",
+      entityType: "ContractClause",
+      entityId: clause.id,
+      field: "actionId",
+      oldValue: clause.actionId,
+      newValue: actionId,
+      comment: `Klausel-Lücke ${clauseKey} (${clause.contract.contractRef ?? clause.contract.title}) ${actionId ? "mit Maßnahme verknüpft" : "von Maßnahme gelöst"}`,
+    });
+    revalidatePath("/register");
+    return { ok: true };
+  } catch {
+    return { error: "Aktion fehlgeschlagen." };
+  }
+}
+
 export async function markRoiSubmitted(
   _prev: ActionResult,
   formData: FormData,

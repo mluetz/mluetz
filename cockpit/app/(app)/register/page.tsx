@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { concentrationOverChain } from "@/lib/domain/concentration";
+import { art30GapReport, type ClauseStatus, type GapContractInput } from "@/lib/domain/art30";
 import { validateRoi, summarizeFindings } from "@/lib/domain/roi-validation";
 import { diffRegisters, parseRegisterPayload } from "@/lib/domain/roi-diff";
 import { findingHref, loadRoiInput } from "@/lib/register/roi-data";
 import {
   DecideApprovalForm,
   FreezeForm,
+  LinkGapActionForm,
   MarkSubmittedForm,
   OverrideRequestForm,
   RequestSubmissionForm,
@@ -77,6 +79,17 @@ const TEXT = {
     diffAdded: "neu",
     diffChanged: "geändert",
     diffRemoved: "entfallen",
+    gapTitle: "Art.-30-Lückenbericht (Klauselbibliothek)",
+    gapDesc:
+      "Fehlende oder teilweise erfüllte Pflichtklauseln nach Art. 30 Abs. 2 lit. a–i und Abs. 3 lit. a–g (ADR-0008) — je Vertrag und aggregiert über alle CIF-gestützten Verträge. Offene Lücken lassen sich mit einer bestehenden Maßnahme verknüpfen; die Klauselmatrix je Vertrag liegt auf der Drittparteiseite.",
+    gapAggTitle: "Aggregiert über CIF-gestützte Verträge",
+    gapColClause: "Klausel",
+    gapColMissing: "Fehlend",
+    gapColPartial: "Teilweise",
+    gapColContracts: "Verträge",
+    gapPerContract: "Verträge mit Lücken",
+    gapNone: "Keine Klausel-Lücken — alle Pflichtklauseln sind erfüllt oder nicht anwendbar.",
+    gapLinkedAction: "Maßnahme",
     concTitle: "Konzentrationsrisiko über die Kette",
     concDesc:
       "Anzahl gestützter CIF je Anbieter — über die GESAMTE Subunternehmerkette gerechnet, nicht nur über Erstdienstleister. Gemeinsame Kettenglieder mehrerer Anbieter werden zusammengeführt (LEI, sonst Name).",
@@ -147,6 +160,17 @@ const TEXT = {
     diffAdded: "added",
     diffChanged: "changed",
     diffRemoved: "removed",
+    gapTitle: "Art. 30 gap report (clause library)",
+    gapDesc:
+      "Missing or partially fulfilled mandatory clauses under Art. 30(2)(a–i) and (3)(a–g) (ADR-0008) — per arrangement and aggregated across all CIF-supporting arrangements. Open gaps can be linked to an existing action; the per-contract clause matrix lives on the third-party page.",
+    gapAggTitle: "Aggregated across CIF-supporting arrangements",
+    gapColClause: "Clause",
+    gapColMissing: "Missing",
+    gapColPartial: "Partial",
+    gapColContracts: "Arrangements",
+    gapPerContract: "Arrangements with gaps",
+    gapNone: "No clause gaps — all mandatory clauses are fulfilled or not applicable.",
+    gapLinkedAction: "Action",
     concTitle: "Concentration risk across the chain",
     concDesc:
       "Number of supported CIFs per provider — computed across the FULL subcontracting chain, not just direct providers. Shared chain links are merged (LEI, else name).",
@@ -170,36 +194,59 @@ export default async function RegisterPage() {
   const locale = await getLocale();
   const t = TEXT[locale];
 
-  const [versions, roi, exports, tpsForConc, snapshots, openApprovals, readyOverride] =
-    await Promise.all([
-      db.itsTemplateVersion.findMany({
-        include: { _count: { select: { mappings: true } } },
-        orderBy: { label: "asc" },
-      }),
-      loadRoiInput(),
-      db.registerExport.findMany({
-        include: { createdBy: { select: { email: true } }, templateVersion: true },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
-      db.thirdParty.findMany({
-        where: { criticalFunctions: { some: {} } },
-        include: { criticalFunctions: { select: { id: true } }, subcontractors: true },
-      }),
-      db.roiSnapshot.findMany({
-        include: { approvals: true, createdBy: { select: { email: true } } },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
-      db.approval.findMany({
-        where: { approvalType: { startsWith: "ROI_" }, status: "PENDING" },
-        include: { requestedBy: { select: { email: true } } },
-        orderBy: { createdAt: "asc" },
-      }),
-      db.approval.findFirst({
-        where: { approvalType: "ROI_EXPORT_OVERRIDE", status: "APPROVED", roiSnapshotId: null },
-      }),
-    ]);
+  const [
+    versions,
+    roi,
+    exports,
+    tpsForConc,
+    snapshots,
+    openApprovals,
+    readyOverride,
+    clauseContracts,
+    openActions,
+  ] = await Promise.all([
+    db.itsTemplateVersion.findMany({
+      include: { _count: { select: { mappings: true } } },
+      orderBy: { label: "asc" },
+    }),
+    loadRoiInput(),
+    db.registerExport.findMany({
+      include: { createdBy: { select: { email: true } }, templateVersion: true },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    db.thirdParty.findMany({
+      where: { criticalFunctions: { some: {} } },
+      include: { criticalFunctions: { select: { id: true } }, subcontractors: true },
+    }),
+    db.roiSnapshot.findMany({
+      include: { approvals: true, createdBy: { select: { email: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    db.approval.findMany({
+      where: { approvalType: { startsWith: "ROI_" }, status: "PENDING" },
+      include: { requestedBy: { select: { email: true } } },
+      orderBy: { createdAt: "asc" },
+    }),
+    db.approval.findFirst({
+      where: { approvalType: "ROI_EXPORT_OVERRIDE", status: "APPROVED", roiSnapshotId: null },
+    }),
+    db.contract.findMany({
+      include: {
+        clauses: { select: { clauseKey: true, status: true, actionId: true } },
+        thirdParty: {
+          select: { id: true, tpId: true, _count: { select: { criticalFunctions: true } } },
+        },
+      },
+    }),
+    db.action.findMany({
+      where: { status: { notIn: ["COMPLETED", "CLOSED"] } },
+      select: { id: true, actionId: true, title: true },
+      orderBy: { actionId: "asc" },
+      take: 100,
+    }),
+  ]);
 
   const findings = validateRoi(roi.input);
   const summary = summarizeFindings(findings);
@@ -211,6 +258,23 @@ export default async function RegisterPage() {
     roi.input.contracts.reduce((n, c) => n + c.ictServices.length, 0) +
     roi.input.subcontractors.length +
     roi.input.functions.length;
+
+  // Art.-30-Lückenbericht (Welle 4, ADR-0008 Nr. 5)
+  const gapInput: GapContractInput[] = clauseContracts.map((c) => ({
+    contractId: c.id,
+    contractRef: c.contractRef,
+    title: c.title,
+    thirdPartyId: c.thirdParty.id,
+    tpId: c.thirdParty.tpId,
+    isCif: c.thirdParty._count.criticalFunctions > 0,
+    statuses: new Map(c.clauses.map((cl) => [cl.clauseKey, cl.status as ClauseStatus])),
+    linkedActions: new Map(
+      c.clauses.filter((cl) => cl.actionId).map((cl) => [cl.clauseKey, cl.actionId!]),
+    ),
+  }));
+  const gapReport = art30GapReport(gapInput);
+  const contractsWithGaps = gapReport.perContract.filter((r) => r.gaps.length > 0);
+  const actionLabel = new Map(openActions.map((a) => [a.id, a.actionId]));
 
   // Differenzbericht: letzte zwei Meldestände (ADR-0007 Nr. 6)
   const diff =
@@ -484,6 +548,110 @@ export default async function RegisterPage() {
               </ul>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>{t.gapTitle}</CardTitle>
+          <CardDescription>{t.gapDesc}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {contractsWithGaps.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t.gapNone}</p>
+          ) : (
+            <>
+              {gapReport.aggregatedCif.length > 0 ? (
+                <div>
+                  <p className="mb-1 text-sm font-medium">{t.gapAggTitle}</p>
+                  <Table>
+                    <THead>
+                      <TR>
+                        <TH>{t.gapColClause}</TH>
+                        <TH>{t.gapColMissing}</TH>
+                        <TH>{t.gapColPartial}</TH>
+                        <TH>{t.gapColContracts}</TH>
+                      </TR>
+                    </THead>
+                    <TBody>
+                      {gapReport.aggregatedCif.map((g) => (
+                        <TR key={g.clauseKey}>
+                          <TD className="whitespace-nowrap text-sm">{g.ref}</TD>
+                          <TD>
+                            {g.missing > 0 ? (
+                              <Badge variant="critical">{g.missing}</Badge>
+                            ) : (
+                              <span className="text-sm tabular-nums">0</span>
+                            )}
+                          </TD>
+                          <TD>
+                            {g.partial > 0 ? (
+                              <Badge variant="medium">{g.partial}</Badge>
+                            ) : (
+                              <span className="text-sm tabular-nums">0</span>
+                            )}
+                          </TD>
+                          <TD className="text-xs text-muted-foreground">
+                            {g.contractRefs.join(", ")}
+                          </TD>
+                        </TR>
+                      ))}
+                    </TBody>
+                  </Table>
+                </div>
+              ) : null}
+              <div>
+                <p className="mb-1 text-sm font-medium">{t.gapPerContract}</p>
+                <div className="space-y-3">
+                  {contractsWithGaps.map((r) => (
+                    <div key={r.contractId} className="rounded-md border border-border p-3">
+                      <p className="mb-2 text-sm font-medium">
+                        <a
+                          className="underline underline-offset-2"
+                          href={`/third-parties/${r.thirdPartyId}`}
+                        >
+                          {r.contractRef ?? r.title}
+                        </a>{" "}
+                        <span className="text-muted-foreground">({r.tpId})</span>{" "}
+                        <Badge
+                          variant={
+                            r.rag === "RED" ? "critical" : r.rag === "YELLOW" ? "medium" : "low"
+                          }
+                        >
+                          {r.rag}
+                        </Badge>
+                      </p>
+                      <ul className="space-y-2">
+                        {r.gaps.map((g) => (
+                          <li
+                            key={g.clauseKey}
+                            className="flex flex-wrap items-center gap-3 text-sm"
+                          >
+                            <span className="whitespace-nowrap">{g.ref}</span>
+                            <Badge variant={g.status === "MISSING" ? "critical" : "medium"}>
+                              {g.status}
+                            </Badge>
+                            {g.linkedActionId && actionLabel.has(g.linkedActionId) ? (
+                              <span className="text-xs text-muted-foreground">
+                                {t.gapLinkedAction}: {actionLabel.get(g.linkedActionId)}
+                              </span>
+                            ) : null}
+                            <LinkGapActionForm
+                              contractId={r.contractId}
+                              clauseKey={g.clauseKey}
+                              currentActionId={g.linkedActionId}
+                              actions={openActions}
+                              locale={locale}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

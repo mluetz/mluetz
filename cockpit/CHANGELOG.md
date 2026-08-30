@@ -6,6 +6,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ### Added
 
+- **Meldeschicht Welle 4 — Klauselbibliothek Art. 30 (ADR-0008):**
+  pflegbares `ClauseTemplate`-Modell (Klausel-ID, Fundstelle,
+  Anwendbarkeit ALL/CIF_ONLY, Pflichttext DE/EN als Arbeitsfassung),
+  Katalog um Abs. 2 lit. i ergänzt; `ContractClause` um Bewerter,
+  Bewertungsdatum und Maßnahmenverknüpfung erweitert; Lückenbericht je
+  Vertrag und aggregiert über alle CIF-gestützten Verträge auf der
+  Registerseite, offene Lücken mit bestehenden Maßnahmen verknüpfbar
+
+### Changed
+
+- Die drei Vertrags-Booleans `auditRights`/`accessRights`/
+  `incidentReporting` sind entfernt und werden aus der Klauselmatrix
+  abgeleitet (`deriveContractFlags`; Zuordnung Abs. 3 lit. e / Abs. 2
+  lit. d / Abs. 2 lit. f). Update 0010 überführt Bestandswerte vor dem
+  Spaltenabbau in Klauselstatus — keine Informationsverluste auf
+  Bestandsinstallationen
+
 - **Meldeschicht Welle 3 — Export und Meldestand (ADR-0007):** Meldepaket
   als ZIP (`/api/roi-export`) mit einer CSV je Meldebogen, Filing
   Indicators, Metadaten (`META-INF/report.json`, Taxonomieversion) und
