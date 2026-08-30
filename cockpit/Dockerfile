@@ -29,6 +29,14 @@ FROM base AS runner
 ENV NODE_ENV=production
 RUN addgroup -S app && adduser -S app -G app
 
+# npm und corepack aus dem Laufzeit-Image entfernen: Gestartet wird
+# ausschließlich "node" (docker-entrypoint.sh), npm wird nie aufgerufen. Ihre
+# mitgelieferten Abhängigkeiten schlagen sonst im Container-Scan auf – etwa
+# CVE-2026-59873 (CRITICAL) in node-tar –, obwohl der Code nicht erreichbar
+# ist. Die Build-Stufen sind nicht betroffen, die bauen weiter auf "base" auf.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
