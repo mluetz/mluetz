@@ -77,6 +77,9 @@ model User {
   mvApproved         MethodologyVersion[] @relation("MvApprover")
   periodSnapshots    PeriodSnapshot[]
   incidentClassifications IncidentClassification[]
+  cifServiceAssessments   CifServiceAssessment[] @relation("CifSvcAssessor")
+  roiSnapshots            RoiSnapshot[]          @relation("RoiSnapshotCreator")
+  roiSubmissions          RoiSnapshot[]          @relation("RoiSnapshotSubmitter")
 }
 
 // ------------------------------------------------------------------
@@ -212,12 +215,42 @@ model ReportingEntity {
   name               String
   lei                String?
   nationalId         String?
-  nationalIdType     String?
+  nationalIdType     String? // EUID | HRB | ... (EUID als Kennungstyp, ADR-0005)
   // SOLO | PARTIAL_CONSOLIDATED | CONSOLIDATED
+  // Mapping auf die Meldeebene der DVO (EU) 2024/2956 (ADR-0005):
+  // SOLO -> ENTITY, PARTIAL_CONSOLIDATED -> SUB_CONSOLIDATED.
   consolidationLevel String  @default("SOLO")
   parentId           String?
   parent             ReportingEntity?  @relation("EntityHierarchy", fields: [parentId], references: [id])
   children           ReportingEntity[] @relation("EntityHierarchy")
+
+  // B_01.01/B_01.02 (Meldeschicht Welle 1, ADR-0005)
+  country            String? // ISO 3166-1 alpha-2
+  // Unternehmensart gemäß geschlossener Werteliste (lib/content/roi-taxonomies.ts)
+  entityType         String?
+  // Rolle im Konsolidierungskreis: PARENT | SUBSIDIARY | STANDALONE
+  hierarchyRole      String?
+  competentAuthority String?
+  totalAssetsEur     Float?
+  lastUpdateAt       DateTime?
+
+  branches           EntityBranch[]
+  signedContracts    Contract[]     @relation("ContractSigningEntity")
+  usedContracts      Contract[]     @relation("ContractUsingEntities")
+}
+
+// Zweigniederlassungen der meldenden Einheit (B_01.03, ADR-0005).
+model EntityBranch {
+  id                String          @id @default(cuid())
+  reportingEntityId String
+  reportingEntity   ReportingEntity @relation(fields: [reportingEntityId], references: [id], onDelete: Cascade)
+  // Identifikationscode der Niederlassung (LEI der Hauptniederlassung oder
+  // anderer eindeutiger Code; Vergaberegel je ITS-Fassung -> ItsFieldMapping)
+  branchCode        String
+  name              String?
+  country           String // ISO 3166-1 alpha-2
+
+  @@unique([reportingEntityId, branchCode])
 }
 
 // Fassungsstand der ITS-Meldebögen. Die Bezeichnungsschemata sind AM
@@ -385,15 +418,23 @@ model CriticalFunction {
 
   reassessmentMonths Int       @default(12)
   nextAssessmentDate DateTime?
-  // Funktions-Identifikationscode für das Informationsregister (ITS)
+  // Funktions-Identifikationscode für das Informationsregister (ITS).
+  // Eindeutigkeit wird serverseitig erzwungen (ADR-0005 Nr. 8), kein DB-Unique.
   functionIdCode     String?
 
-  assessments     CifAssessment[]
-  risks           Risk[]
-  ictServices     IctService[]
-  thirdParties    ThirdParty[]
-  incidents       Incident[]
-  resilienceTests ResilienceTest[]
+  // B_06.01 (Meldeschicht Welle 1, ADR-0005): zulassungspflichtige Tätigkeit,
+  // Folgen einer Einstellung, Registerbegründung der Kritikalität.
+  licensedActivity      String?
+  discontinuationImpact String?
+  criticalityRationale  String?
+
+  assessments         CifAssessment[]
+  risks               Risk[]
+  ictServices         IctService[]
+  thirdParties        ThirdParty[]
+  incidents           Incident[]
+  resilienceTests     ResilienceTest[]
+  contractIctServices ContractIctService[]
 }
 
 // Versioniertes Bewertungsverfahren je CIF: Kriterien mit Schwellen- und
@@ -702,7 +743,17 @@ model ThirdParty {
   // fehlender LEI nationale Kennung mit Kennungstyp (EUID, HRB, ...).
   lei                      String?
   nationalId               String?
-  nationalIdType           String?
+  nationalIdType           String? // EUID | HRB | ... (EUID als Kennungstyp, ADR-0005)
+  // B_05.01 (Meldeschicht Welle 1, ADR-0005). registeredCountry dient
+  // zugleich als Sitzland (headquartersCountry) — kein Duplikatfeld.
+  // DIRECT | INTRAGROUP | SUBCONTRACTOR | ULTIMATE_PARENT
+  providerType             String    @default("DIRECT")
+  ultimateParentId         String?
+  ultimateParent           ThirdParty?  @relation("TpUltimateParent", fields: [ultimateParentId], references: [id])
+  ultimateParentOf         ThirdParty[] @relation("TpUltimateParent")
+  // Benannter kritischer IKT-Drittdienstleister (Art. 31); Abgleich gegen die
+  // amtliche Liste ist Stammdatenpflege (Welle 5), kein Automatismus.
+  isCtpp                   Boolean   @default(false)
   ictServiceCategory       String
   criticality              String    @default("NOT_ASSESSED") // NOT_ASSESSED | LOW | MEDIUM | HIGH | CRITICAL
   inherentRiskScore        Int?
@@ -768,6 +819,12 @@ model Subcontractor {
   // Weitervergabe-Workflow: NOTIFIED | CONSENT_REQUESTED | APPROVED | REJECTED
   approvalStatus String?
   approvalDate   DateTime?
+  // B_05.02 (Meldeschicht Welle 1, ADR-0005): Vertragsbezug und Art der
+  // weitervergebenen IKT-Dienstleistung. Optional, weil Bestandsketten am
+  // Dienstleister hängen; Rang-/Kettenprüfung ist Welle-2-Regelwerk.
+  contractId     String?
+  contract       Contract? @relation(fields: [contractId], references: [id])
+  ictServiceType String? // geschlossene Taxonomie, lib/content/roi-taxonomies.ts
 }
 
 model Contract {
@@ -775,23 +832,122 @@ model Contract {
   thirdPartyId          String
   thirdParty            ThirdParty @relation(fields: [thirdPartyId], references: [id], onDelete: Cascade)
   title                 String
-  // Vertrags-Referenznummer für das Informationsregister (Review v3, P1-01)
+  // Vertrags-Referenznummer für das Informationsregister (Review v3, P1-01).
+  // Eindeutigkeit wird serverseitig erzwungen (ADR-0005 Nr. 8), kein DB-Unique.
   contractRef           String?
   startDate             DateTime
   endDate               DateTime?
+  // DEPRECATED (Meldeschicht Welle 1): durch die beidseitigen Kündigungs-
+  // fristen ersetzt; Wert wurde per Update 0008 nach
+  // terminationNoticeDaysEntity kopiert. Entfernung in einem Folgeschritt.
   noticePeriodDays      Int?
   auditRights           Boolean   @default(false)
   accessRights          Boolean   @default(false)
   incidentReporting     Boolean   @default(false)
   // Länder der Leistungserbringung / Datenspeicherung / -verarbeitung
-  // (ISO 3166-1 alpha-2, kommagetrennt) — Registerpflichtfelder
+  // (ISO 3166-1 alpha-2, kommagetrennt) — Registerpflichtfelder.
+  // Vertragsweite Voreinstellung; maßgeblich je Dienstleistung ist
+  // ContractIctService (ADR-0005 Nr. 4).
   countryOfProvision       String?
   countryOfDataStorage     String?
   countryOfDataProcessing  String?
   notes                 String?
 
+  // B_02.01/B_02.02/B_02.03 (Meldeschicht Welle 1, ADR-0005)
+  // STANDALONE | MASTER | SUBSEQUENT_OR_ASSOCIATED (lib/content/roi-taxonomies.ts)
+  contractType                    String?
+  governingLaw                    String? // Land des anwendbaren Rechts, ISO 3166-1 alpha-2
+  annualCostEur                   Float?
+  // Referenz auf den Rahmenvertrag (contractRef des MASTER-Vertrags);
+  // referenzielle Integrität ist Welle-2-Regelwerk (Entsprechung Regel 807).
+  parentContractRef               String?
+  isIntragroup                    Boolean @default(false)
+  terminationNoticeDaysEntity     Int?
+  terminationNoticeDaysProvider   Int?
+  // MaRisk-Vorbereitung (Auftrag Abschn. 7): angelegt, nicht ausgewertet.
+  isIctService                    Boolean @default(true)
+  // B_03.01/B_03.03: unterzeichnende Einheit; B_04.01: nutzende Einheiten.
+  signingEntityId                 String?
+  signingEntity                   ReportingEntity?  @relation("ContractSigningEntity", fields: [signingEntityId], references: [id])
+  usingEntities                   ReportingEntity[] @relation("ContractUsingEntities")
+
   clauses        ContractClause[]
   preAssessment  PreContractAssessment?
+  ictServices    ContractIctService[]
+  subcontractors Subcontractor[]
+}
+
+// Kernobjekt des Informationsregisters (B_02.02, ADR-0005 Nr. 4):
+// eine IKT-Dienstleistung eines Vertrags mit Art, Datenorten und den
+// dadurch gestützten kritischen/wichtigen Funktionen.
+model ContractIctService {
+  id             String   @id @default(cuid())
+  contractId     String
+  contract       Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  // Geschlossene Taxonomie der IKT-Dienstleistungsarten (S01…S19),
+  // lib/content/roi-taxonomies.ts
+  ictServiceType String
+  // ISO 3166-1 alpha-2, kommagetrennt (Muster Contract.countryOfDataStorage)
+  dataStorageCountries    String?
+  dataProcessingCountries String?
+  // LOW | MEDIUM | HIGH (Sensibilität der gespeicherten Daten)
+  dataSensitivity         String  @default("MEDIUM")
+  notes                   String?
+
+  supportedFunctions CriticalFunction[]
+  cifAssessment      CifServiceAssessment?
+
+  @@unique([contractId, ictServiceType])
+  @@index([contractId])
+}
+
+// Registerbewertung je CIF-gestützter Dienstleistung (B_07.01, ADR-0005 Nr. 5).
+// Nicht zu verwechseln mit CifAssessment (Kritikalitätsbewertung der Funktion).
+model CifServiceAssessment {
+  id                   String             @id @default(cuid())
+  contractIctServiceId String             @unique
+  contractIctService   ContractIctService @relation(fields: [contractIctServiceId], references: [id], onDelete: Cascade)
+  // NOT_SUBSTITUTABLE | HIGHLY_COMPLEX | MEDIUM_COMPLEXITY | EASILY_SUBSTITUTABLE
+  substitutability     String             @default("MEDIUM_COMPLEXITY")
+  rationale            String?
+  reintegrationTimeDays Int?
+  exitPlanExists       Boolean            @default(false)
+  alternativeProviders String?
+  lastAuditDate        DateTime?
+  auditRightsInContract Boolean           @default(false)
+  assessedById         String?
+  assessedBy           User?              @relation("CifSvcAssessor", fields: [assessedById], references: [id])
+  assessedAt           DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+// Unveränderlicher Meldestand des Informationsregisters (ADR-0005 Nr. 6):
+// versionierter JSON-Datenabzug mit Prüfsumme; ergänzt RegisterExport
+// (Erzeugungsprotokoll einzelner Exporte). Einfrieren/Differenzbericht
+// sind Welle 3; Vier-Augen-Abgabe läuft über das Approval-Modell.
+model RoiSnapshot {
+  id                  String    @id @default(cuid())
+  referenceDate       DateTime
+  version             Int
+  // ENTITY | SUB_CONSOLIDATED | CONSOLIDATED
+  reportingLevel      String    @default("ENTITY")
+  // Version der verwendeten Taxonomie (lib/content/roi-taxonomies.ts)
+  taxonomyVersion     String
+  // JSON: Zusammenfassung der Validierung (Regel-IDs, Zählstände je Schweregrad)
+  validationSummary   String?
+  // Vollständiger Datenabzug der Meldebogen-Datensätze als JSON
+  payload             String
+  checksum            String // SHA-256 über payload
+  status              String    @default("DRAFT") // DRAFT | FROZEN | SUBMITTED
+  createdById         String
+  createdBy           User      @relation("RoiSnapshotCreator", fields: [createdById], references: [id])
+  createdAt           DateTime  @default(now())
+  submittedAt         DateTime?
+  submittedById       String?
+  submittedBy         User?     @relation("RoiSnapshotSubmitter", fields: [submittedById], references: [id])
+  submissionReference String?
+
+  @@unique([referenceDate, reportingLevel, version])
 }
 
 // Klauselmatrix Art. 30 (Review v3, P1-03): je Vertrag einzeln quittierbare

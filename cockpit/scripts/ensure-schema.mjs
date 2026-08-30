@@ -133,6 +133,21 @@ const UPDATES = [
       !(await tableExists("ThreatIntelAlert")) ||
       !(await tableExists("GovernanceReportDuty")),
   },
+  {
+    file: "0008-meldeschicht-welle1.sql",
+    needed: async () =>
+      !(await columnExists("ReportingEntity", "country")) ||
+      !(await tableExists("EntityBranch")) ||
+      !(await columnExists("CriticalFunction", "licensedActivity")) ||
+      !(await columnExists("ThirdParty", "providerType")) ||
+      !(await columnExists("Contract", "contractType")) ||
+      !(await columnExists("Subcontractor", "ictServiceType")) ||
+      !(await tableExists("_ContractUsingEntities")) ||
+      !(await tableExists("ContractIctService")) ||
+      !(await tableExists("_ContractIctServiceToCriticalFunction")) ||
+      !(await tableExists("CifServiceAssessment")) ||
+      !(await tableExists("RoiSnapshot")),
+  },
 ];
 
 try {

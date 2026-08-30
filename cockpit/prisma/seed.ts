@@ -166,12 +166,72 @@ async function main() {
     maxOutage: number;
     recoveryOrder: number;
   }> = [
-    { cfId: "CIF-01", name: "Zahlungsverkehr", description: "Abwicklung des nationalen und internationalen Zahlungsverkehrs", isCritical: true, businessArea: "Payments", rtoHours: 4, rpoHours: 0.25, maxOutage: 8, recoveryOrder: 1 },
-    { cfId: "CIF-02", name: "Wertpapierabwicklung", description: "Settlement und Verwahrung von Wertpapiergeschäften", isCritical: true, businessArea: "Securities Ops", rtoHours: 8, rpoHours: 1, maxOutage: 24, recoveryOrder: 2 },
-    { cfId: "CIF-03", name: "Kundenportal & Online Banking", description: "Digitaler Zugangskanal für Kunden", isCritical: true, businessArea: "Digital Banking", rtoHours: 8, rpoHours: 1, maxOutage: 24, recoveryOrder: 3 },
-    { cfId: "CIF-04", name: "Regulatorisches Meldewesen", description: "Aufsichtsrechtliche Meldungen und Berichte", isCritical: true, businessArea: "Finance/Regulatory", rtoHours: 24, rpoHours: 4, maxOutage: 48, recoveryOrder: 4 },
-    { cfId: "CIF-05", name: "Handelsplattform", description: "Orderannahme und -ausführung", isCritical: true, businessArea: "Trading", rtoHours: 2, rpoHours: 0.25, maxOutage: 4, recoveryOrder: 1 },
-    { cfId: "CIF-06", name: "Personalabrechnung", description: "Gehalts- und Personalprozesse", isCritical: false, businessArea: "HR", rtoHours: 72, rpoHours: 24, maxOutage: 120, recoveryOrder: 9 },
+    {
+      cfId: "CIF-01",
+      name: "Zahlungsverkehr",
+      description: "Abwicklung des nationalen und internationalen Zahlungsverkehrs",
+      isCritical: true,
+      businessArea: "Payments",
+      rtoHours: 4,
+      rpoHours: 0.25,
+      maxOutage: 8,
+      recoveryOrder: 1,
+    },
+    {
+      cfId: "CIF-02",
+      name: "Wertpapierabwicklung",
+      description: "Settlement und Verwahrung von Wertpapiergeschäften",
+      isCritical: true,
+      businessArea: "Securities Ops",
+      rtoHours: 8,
+      rpoHours: 1,
+      maxOutage: 24,
+      recoveryOrder: 2,
+    },
+    {
+      cfId: "CIF-03",
+      name: "Kundenportal & Online Banking",
+      description: "Digitaler Zugangskanal für Kunden",
+      isCritical: true,
+      businessArea: "Digital Banking",
+      rtoHours: 8,
+      rpoHours: 1,
+      maxOutage: 24,
+      recoveryOrder: 3,
+    },
+    {
+      cfId: "CIF-04",
+      name: "Regulatorisches Meldewesen",
+      description: "Aufsichtsrechtliche Meldungen und Berichte",
+      isCritical: true,
+      businessArea: "Finance/Regulatory",
+      rtoHours: 24,
+      rpoHours: 4,
+      maxOutage: 48,
+      recoveryOrder: 4,
+    },
+    {
+      cfId: "CIF-05",
+      name: "Handelsplattform",
+      description: "Orderannahme und -ausführung",
+      isCritical: true,
+      businessArea: "Trading",
+      rtoHours: 2,
+      rpoHours: 0.25,
+      maxOutage: 4,
+      recoveryOrder: 1,
+    },
+    {
+      cfId: "CIF-06",
+      name: "Personalabrechnung",
+      description: "Gehalts- und Personalprozesse",
+      isCritical: false,
+      businessArea: "HR",
+      rtoHours: 72,
+      rpoHours: 24,
+      maxOutage: 120,
+      recoveryOrder: 9,
+    },
   ];
   const cfs: string[] = [];
   for (const d of cfDefs) {
@@ -197,9 +257,24 @@ async function main() {
             version: 1,
             isCritical: d.isCritical,
             criteria: JSON.stringify([
-              { criterion: "Auswirkung auf Finanzdienstleistung bei Ausfall (Art. 3 Nr. 22)", threshold: "wesentlich", actualValue: d.isCritical ? "wesentlich" : "gering", met: d.isCritical },
-              { criterion: "Regulatorische Pflicht betroffen", threshold: "ja", actualValue: d.cfId === "CIF-04" ? "ja" : d.isCritical ? "mittelbar" : "nein", met: d.isCritical },
-              { criterion: "Maximal tolerierbare Ausfallzeit", threshold: "<= 48 h", actualValue: `${d.maxOutage} h`, met: d.maxOutage <= 48 },
+              {
+                criterion: "Auswirkung auf Finanzdienstleistung bei Ausfall (Art. 3 Nr. 22)",
+                threshold: "wesentlich",
+                actualValue: d.isCritical ? "wesentlich" : "gering",
+                met: d.isCritical,
+              },
+              {
+                criterion: "Regulatorische Pflicht betroffen",
+                threshold: "ja",
+                actualValue: d.cfId === "CIF-04" ? "ja" : d.isCritical ? "mittelbar" : "nein",
+                met: d.isCritical,
+              },
+              {
+                criterion: "Maximal tolerierbare Ausfallzeit",
+                threshold: "<= 48 h",
+                actualValue: `${d.maxOutage} h`,
+                met: d.maxOutage <= 48,
+              },
             ]),
             rationale: d.isCritical
               ? `Ausfall unterbricht ${d.name} unmittelbar; RTO ${d.rtoHours} h, maximal tolerierbare Ausfallzeit ${d.maxOutage} h.`
@@ -733,7 +808,12 @@ async function main() {
   if (tp1Subs[1]) {
     await db.subcontractor.update({
       where: { id: tp1Subs[1].id },
-      data: { rank: 1, sharePercent: 25, approvalStatus: "APPROVED", approvalDate: daysFromNow(-150) },
+      data: {
+        rank: 1,
+        sharePercent: 25,
+        approvalStatus: "APPROVED",
+        approvalDate: daysFromNow(-150),
+      },
     });
   }
 
@@ -759,7 +839,8 @@ async function main() {
         contractId: tp1Contract.id,
         concentrationRisk:
           "Hoch — drei kritische Funktionen auf einem Anbieter; gemeinsames RZ mit TP-007 (Nordic DC).",
-        substitutability: "Schwierig — Migration > 6 Monate, kein gleichwertiger Anbieter unter Vertrag.",
+        substitutability:
+          "Schwierig — Migration > 6 Monate, kein gleichwertiger Anbieter unter Vertrag.",
         thirdCountryTransfer: "Keine Drittlandsverlagerung; Datenhaltung DE/DK (EU).",
         businessContinuityImpact:
           "Ausfall unterbricht Zahlungsverkehr und Kundenportal unmittelbar (RTO 4 h).",
@@ -795,6 +876,226 @@ async function main() {
   // ITS-Fassungen (beide Schemata, TO_VERIFY) + meldende Entitäten
   const { seedRegisterMapping } = await import("./register-seed.mjs");
   await seedRegisterMapping(db, { log: (m: string) => console.log(`  ${m}`) });
+
+  // ---------- Meldeschicht Welle 1 (ADR-0005): Registermodell ----------
+  // Ziel: jeder der 15 Meldebögen ist aus dem Seed-Bestand befüllbar.
+  const reHolding = await db.reportingEntity.findFirst({
+    where: { name: "Nordlicht Holding SE" },
+  });
+  const reBank = await db.reportingEntity.findFirst({
+    where: { name: "Nordlicht Bank AG" },
+  });
+  if (reHolding && reBank) {
+    // B_01.01/B_01.02: Registerfelder der meldenden Einheiten
+    await db.reportingEntity.update({
+      where: { id: reHolding.id },
+      data: {
+        country: "DE",
+        entityType: "OTHER",
+        hierarchyRole: "PARENT",
+        competentAuthority: "BaFin",
+        totalAssetsEur: 1_250_000_000,
+        lastUpdateAt: daysFromNow(-30),
+      },
+    });
+    await db.reportingEntity.update({
+      where: { id: reBank.id },
+      data: {
+        country: "DE",
+        entityType: "CREDIT_INSTITUTION",
+        hierarchyRole: "SUBSIDIARY",
+        competentAuthority: "BaFin",
+        totalAssetsEur: 800_000_000,
+        lastUpdateAt: daysFromNow(-30),
+      },
+    });
+    // B_01.03: Zweigniederlassung der Bank
+    await db.entityBranch.create({
+      data: {
+        reportingEntityId: reBank.id,
+        branchCode: "5299009D9BIL4D4UHT93-AT01",
+        name: "Zweigniederlassung Wien",
+        country: "AT",
+      },
+    });
+
+    // B_05.01: oberste Muttergesellschaft von TP-001; TP-001 als CTPP
+    const tpUltimate = await db.thirdParty.create({
+      data: {
+        tpId: "TP-090",
+        name: "CloudCore International plc",
+        providedService: "Konzernobergesellschaft von CloudCore (kein direkter Vertrag)",
+        registeredCountry: "GB",
+        serviceLocations: "GB",
+        dataLocations: "—",
+        informationTypes: "—",
+        ictServiceCategory: "Cloud Computing",
+        providerType: "ULTIMATE_PARENT",
+        nationalId: "12345678",
+        nationalIdType: "OTHER",
+        status: "ACTIVE",
+      },
+    });
+    await db.thirdParty.update({
+      where: { id: tps[0]! },
+      data: { ultimateParentId: tpUltimate.id, isCtpp: true },
+    });
+
+    // B_02.01/B_02.02/B_03/B_04: Registerfelder aller Verträge
+    for (const c of allContracts) {
+      await db.contract.update({
+        where: { id: c.id },
+        data: {
+          contractType: "STANDALONE",
+          governingLaw: "DE",
+          annualCostEur: 30_000 + (c.thirdParty.tpId.charCodeAt(4) % 8) * 25_000,
+          terminationNoticeDaysEntity: c.noticePeriodDays,
+          terminationNoticeDaysProvider: c.noticePeriodDays != null ? c.noticePeriodDays * 2 : null,
+          signingEntityId: reBank.id,
+          usingEntities: { connect: [{ id: reBank.id }] },
+        },
+      });
+    }
+
+    // B_02.02/B_07.01: IKT-Dienstleistungen des CIF-Vertrags TP-001
+    if (tp1Contract) {
+      const iaas = await db.contractIctService.create({
+        data: {
+          contractId: tp1Contract.id,
+          ictServiceType: "S17", // Cloud: IaaS
+          dataStorageCountries: "DE,DK",
+          dataProcessingCountries: "DE",
+          dataSensitivity: "HIGH",
+          supportedFunctions: {
+            connect: [{ id: cfs[0]! }, { id: cfs[2]! }, { id: cfs[3]! }],
+          },
+        },
+      });
+      await db.contractIctService.create({
+        data: {
+          contractId: tp1Contract.id,
+          ictServiceType: "S19", // Cloud: SaaS (Monitoring-Portal)
+          dataSensitivity: "MEDIUM",
+        },
+      });
+      await db.cifServiceAssessment.create({
+        data: {
+          contractIctServiceId: iaas.id,
+          substitutability: "HIGHLY_COMPLEX",
+          rationale:
+            "Hosting dreier kritischer Funktionen; Migration erfordert Parallelbetrieb > 6 Monate.",
+          reintegrationTimeDays: 180,
+          exitPlanExists: true,
+          alternativeProviders: "Zwei europäische IaaS-Anbieter (nicht unter Vertrag)",
+          lastAuditDate: daysFromNow(-160),
+          auditRightsInContract: true,
+          assessedById: uTprm,
+        },
+      });
+      // B_05.02: Kette an den Vertrag und die Dienstleistungsart binden
+      await db.subcontractor.updateMany({
+        where: { thirdPartyId: tps[0]!, rank: 1 },
+        data: { contractId: tp1Contract.id, ictServiceType: "S07" },
+      });
+      await db.subcontractor.updateMany({
+        where: { thirdPartyId: tps[0]!, rank: 2 },
+        data: { contractId: tp1Contract.id, ictServiceType: "S11" },
+      });
+    }
+
+    // B_02.03/B_03.03: gruppeninterner Folgevertrag (Nordlicht IT Services)
+    const tpIntragroup = await db.thirdParty.create({
+      data: {
+        tpId: "TP-091",
+        name: "Nordlicht IT Services GmbH",
+        providedService: "Gruppeninterner IT-Betrieb (Arbeitsplatz- und Basisdienste)",
+        registeredCountry: "DE",
+        serviceLocations: "DE",
+        dataLocations: "DE",
+        informationTypes: "Interne Betriebsdaten",
+        ictServiceCategory: "Managed Services",
+        providerType: "INTRAGROUP",
+        nationalId: "HRB 222333",
+        nationalIdType: "HRB",
+        status: "ACTIVE",
+      },
+    });
+    const intragroupContract = await db.contract.create({
+      data: {
+        thirdPartyId: tpIntragroup.id,
+        title: "Konzern-Servicevertrag IT-Basisdienste",
+        contractRef: "CTR-TP-091-001",
+        contractType: "SUBSEQUENT_OR_ASSOCIATED",
+        parentContractRef: tp1Contract ? `CTR-${tpSeeds[0]!.tpId}-001` : null,
+        startDate: daysFromNow(-400),
+        isIntragroup: true,
+        governingLaw: "DE",
+        annualCostEur: 55_000,
+        terminationNoticeDaysEntity: 90,
+        terminationNoticeDaysProvider: 90,
+        countryOfProvision: "DE",
+        countryOfDataStorage: "DE",
+        countryOfDataProcessing: "DE",
+        signingEntityId: reHolding.id,
+        usingEntities: { connect: [{ id: reBank.id }] },
+      },
+    });
+    await db.contractIctService.create({
+      data: {
+        contractId: intragroupContract.id,
+        ictServiceType: "S14", // IKT-Betriebsmanagement
+        dataSensitivity: "LOW",
+      },
+    });
+
+    // B_06.01: Registerfelder der kritischen Funktionen
+    const cfRegisterData: Array<[number, string | null, string]> = [
+      [
+        0,
+        "Zahlungsdienste (ZAG)",
+        "Ausfall unterbricht den Zahlungsverkehr aller Kunden unmittelbar.",
+      ],
+      [1, "Wertpapiergeschäft (KWG)", "Settlement-Verzug mit Gegenpartei- und Meldefolgen ab T+1."],
+      [2, null, "Kunden verlieren den digitalen Zugang; Umsatz- und Reputationsschaden."],
+      [
+        3,
+        "Aufsichtliches Meldewesen",
+        "Meldefristen der Aufsicht werden verfehlt; Sanktionsrisiko.",
+      ],
+      [
+        4,
+        "Finanzkommissionsgeschäft (KWG)",
+        "Orderannahme und -ausführung stehen still; unmittelbarer Marktschaden.",
+      ],
+    ];
+    for (const [i, licensed, impact] of cfRegisterData) {
+      await db.criticalFunction.update({
+        where: { id: cfs[i]! },
+        data: {
+          licensedActivity: licensed,
+          discontinuationImpact: impact,
+          criticalityRationale:
+            "Einstufung gemäß aktueller CIF-Bewertung (siehe CifAssessment-Historie).",
+        },
+      });
+    }
+
+    // B_99.01: entitätsspezifische Definitionen (AppSetting, JSON)
+    await db.appSetting.create({
+      data: {
+        key: "roi.definitions",
+        value: JSON.stringify([
+          {
+            field: "tp.nationalIdType=OTHER",
+            definition: "UK Companies House Registration Number",
+          },
+        ]),
+        description:
+          "Entitätsspezifische Definitionen für Meldebogen B_99.01 (JSON-Array aus {field, definition})",
+      },
+    });
+    console.log("  Meldeschicht Welle 1: Registerdaten angelegt (B_01–B_99 befüllbar).");
+  }
 
   // ---------- ICT-Services (8) ----------
   const ictDefs: Array<[string, string, string, string | null, number[]]> = [
@@ -2845,11 +3146,71 @@ async function main() {
     includesProviders: boolean;
     cfIdx: number[];
   }> = [
-    { testId: "RT-2026-001", title: "Schwachstellenscan Kernbanken-Umgebung", testType: "VULNERABILITY_SCAN", plannedInDays: -120, performedDaysAgo: 115, status: "COMPLETED", result: "PASSED_WITH_FINDINGS", tester: "SOC (TP-007)", external: true, includesProviders: false, cfIdx: [0, 1] },
-    { testId: "RT-2026-002", title: "Restore-Test Zahlungsverkehr (RB-05)", testType: "RESTORE_TEST", plannedInDays: -60, performedDaysAgo: 55, status: "COMPLETED", result: "PASSED", tester: "IT Operations", external: false, includesProviders: true, cfIdx: [0] },
-    { testId: "RT-2026-003", title: "Tabletop Cyber-Krisenstab (Szenario Ransomware)", testType: "TABLETOP", plannedInDays: 20, performedDaysAgo: null, status: "PLANNED", result: null, tester: "ISO / Krisenstab", external: false, includesProviders: false, cfIdx: [0, 2, 4] },
-    { testId: "RT-2026-004", title: "Penetrationstest Kundenportal", testType: "PENTEST", plannedInDays: 45, performedDaysAgo: null, status: "PLANNED", result: null, tester: "extern (beauftragt)", external: true, includesProviders: true, cfIdx: [2] },
-    { testId: "TLPT-2024-001", title: "Threat-Led Penetration Test (Art. 26/27)", testType: "THREAT_LED", plannedInDays: -700, performedDaysAgo: 690, status: "COMPLETED", result: "PASSED_WITH_FINDINGS", tester: "externer TLPT-Anbieter", external: true, includesProviders: true, cfIdx: [0, 2, 4] },
+    {
+      testId: "RT-2026-001",
+      title: "Schwachstellenscan Kernbanken-Umgebung",
+      testType: "VULNERABILITY_SCAN",
+      plannedInDays: -120,
+      performedDaysAgo: 115,
+      status: "COMPLETED",
+      result: "PASSED_WITH_FINDINGS",
+      tester: "SOC (TP-007)",
+      external: true,
+      includesProviders: false,
+      cfIdx: [0, 1],
+    },
+    {
+      testId: "RT-2026-002",
+      title: "Restore-Test Zahlungsverkehr (RB-05)",
+      testType: "RESTORE_TEST",
+      plannedInDays: -60,
+      performedDaysAgo: 55,
+      status: "COMPLETED",
+      result: "PASSED",
+      tester: "IT Operations",
+      external: false,
+      includesProviders: true,
+      cfIdx: [0],
+    },
+    {
+      testId: "RT-2026-003",
+      title: "Tabletop Cyber-Krisenstab (Szenario Ransomware)",
+      testType: "TABLETOP",
+      plannedInDays: 20,
+      performedDaysAgo: null,
+      status: "PLANNED",
+      result: null,
+      tester: "ISO / Krisenstab",
+      external: false,
+      includesProviders: false,
+      cfIdx: [0, 2, 4],
+    },
+    {
+      testId: "RT-2026-004",
+      title: "Penetrationstest Kundenportal",
+      testType: "PENTEST",
+      plannedInDays: 45,
+      performedDaysAgo: null,
+      status: "PLANNED",
+      result: null,
+      tester: "extern (beauftragt)",
+      external: true,
+      includesProviders: true,
+      cfIdx: [2],
+    },
+    {
+      testId: "TLPT-2024-001",
+      title: "Threat-Led Penetration Test (Art. 26/27)",
+      testType: "THREAT_LED",
+      plannedInDays: -700,
+      performedDaysAgo: 690,
+      status: "COMPLETED",
+      result: "PASSED_WITH_FINDINGS",
+      tester: "externer TLPT-Anbieter",
+      external: true,
+      includesProviders: true,
+      cfIdx: [0, 2, 4],
+    },
   ];
   for (const rt of rtDefs) {
     await db.resilienceTest.create({
@@ -2870,9 +3231,30 @@ async function main() {
   }
 
   const tiDefs: Array<[string, string, number, number | null, string | null, string | null]> = [
-    ["BSI CERT-Bund", "Aktive Ausnutzung CVE in Web-Framework", 6, 5.8, "ACTION_REQUIRED", "Kundenportal betroffen; Patch eingeplant, WAF-Regel aktiv (RISK-Verknüpfung)."],
-    ["FS-ISAC", "Phishing-Kampagne gegen EU-Banken", 12, 11.5, "MONITOR", "Keine eigenen Indikatoren; Awareness-Hinweis versendet."],
-    ["Herstelleradvisory", "Sicherheitsupdate Hypervisor", 30, 29, "NOT_RELEVANT", "Version nicht im Einsatz."],
+    [
+      "BSI CERT-Bund",
+      "Aktive Ausnutzung CVE in Web-Framework",
+      6,
+      5.8,
+      "ACTION_REQUIRED",
+      "Kundenportal betroffen; Patch eingeplant, WAF-Regel aktiv (RISK-Verknüpfung).",
+    ],
+    [
+      "FS-ISAC",
+      "Phishing-Kampagne gegen EU-Banken",
+      12,
+      11.5,
+      "MONITOR",
+      "Keine eigenen Indikatoren; Awareness-Hinweis versendet.",
+    ],
+    [
+      "Herstelleradvisory",
+      "Sicherheitsupdate Hypervisor",
+      30,
+      29,
+      "NOT_RELEVANT",
+      "Version nicht im Einsatz.",
+    ],
     ["BSI Lagebild", "DDoS-Welle gegen Finanzsektor", 1, null, null, null],
   ];
   for (const [source, title, daysAgo, assessedAfterH, relevance, assessment] of tiDefs) {
@@ -2883,20 +3265,69 @@ async function main() {
         title,
         receivedAt,
         assessedAt:
-          assessedAfterH != null ? new Date(receivedAt.getTime() + assessedAfterH * 3_600_000) : null,
+          assessedAfterH != null
+            ? new Date(receivedAt.getTime() + assessedAfterH * 3_600_000)
+            : null,
         relevance,
         assessment,
       },
     });
   }
 
-  const dutyDefs: Array<[string, string, string, string, number | null, number | null, string | null, string]> = [
-    ["IKT-Risikobericht an den Vorstand", "Art. 5 Abs. 2 DORA", "quartalsweise", "Vorstand", 25, -66, "Vorstandsprotokoll 2026-06-24, TOP 4", "PRESENTED"],
-    ["Bericht über IKT-Drittparteirisiken", "Art. 13 Abs. 5 / Art. 28 DORA", "jährlich", "Vorstand", 95, -270, "Vorstandsprotokoll 2025-12-03, TOP 7", "PRESENTED"],
-    ["Bericht über schwerwiegende IKT-Vorfälle", "Art. 17/19 DORA", "anlassbezogen", "Vorstand / Aufsichtsrat", -3, null, null, "OPEN"],
-    ["Ergebnisbericht Resilienz-Testprogramm", "Art. 24 DORA", "jährlich", "Vorstand", 140, -225, "Umlaufbeschluss 2026-01-16", "PRESENTED"],
+  const dutyDefs: Array<
+    [string, string, string, string, number | null, number | null, string | null, string]
+  > = [
+    [
+      "IKT-Risikobericht an den Vorstand",
+      "Art. 5 Abs. 2 DORA",
+      "quartalsweise",
+      "Vorstand",
+      25,
+      -66,
+      "Vorstandsprotokoll 2026-06-24, TOP 4",
+      "PRESENTED",
+    ],
+    [
+      "Bericht über IKT-Drittparteirisiken",
+      "Art. 13 Abs. 5 / Art. 28 DORA",
+      "jährlich",
+      "Vorstand",
+      95,
+      -270,
+      "Vorstandsprotokoll 2025-12-03, TOP 7",
+      "PRESENTED",
+    ],
+    [
+      "Bericht über schwerwiegende IKT-Vorfälle",
+      "Art. 17/19 DORA",
+      "anlassbezogen",
+      "Vorstand / Aufsichtsrat",
+      -3,
+      null,
+      null,
+      "OPEN",
+    ],
+    [
+      "Ergebnisbericht Resilienz-Testprogramm",
+      "Art. 24 DORA",
+      "jährlich",
+      "Vorstand",
+      140,
+      -225,
+      "Umlaufbeschluss 2026-01-16",
+      "PRESENTED",
+    ],
   ];
-  for (const [title, legalBasis, frequency, addressee, dueIn, lastAgo, evidence, status] of dutyDefs) {
+  for (const [
+    title,
+    legalBasis,
+    frequency,
+    addressee,
+    dueIn,
+    lastAgo,
+    evidence,
+    status,
+  ] of dutyDefs) {
     await db.governanceReportDuty.create({
       data: {
         title,
@@ -2989,12 +3420,73 @@ async function main() {
     auditPrevHash = hash;
   }
 
-  await seedAudit({ userId: uRm, userEmail: "riskmanager@demo.example", action: "CREATE", entityType: "Risk", entityId: riskIds[0]!, comment: "Ersterfassung", daysAgo: 120 });
-  await seedAudit({ userId: uIso, userEmail: "iso@demo.example", action: "STATUS_CHANGE", entityType: "Risk", entityId: riskIds[0]!, field: "status", oldValue: "SECOND_LINE_REVIEW", newValue: "TREATMENT", comment: "Freigabe nach Second-Line-Review", daysAgo: 90 });
-  await seedAudit({ userId: uMgmt, userEmail: "management@demo.example", action: "ACCEPTANCE_DECISION", entityType: "RiskAcceptance", entityId: riskIds[21]!, newValue: "APPROVED", comment: "Befristete Akzeptanz bis Q1/2027 mit Auflagen", daysAgo: 60 });
-  await seedAudit({ userId: uTprm, userEmail: "tprm@demo.example", action: "ASSESS", entityType: "ThirdParty", entityId: tps[0]!, field: "assessment", oldValue: "criticality=HIGH, residual=14", newValue: "criticality=CRITICAL, residual=12", comment: "Jahres-Review: Hochstufung wegen CIF-Abdeckung", daysAgo: 75 });
-  await seedAudit({ userId: uTprm, userEmail: "tprm@demo.example", action: "UPDATE", entityType: "ThirdParty", entityId: tps[0]!, field: "criticalFunctions", oldValue: "CIF-01, CIF-03", newValue: "CIF-01, CIF-03, CIF-04", comment: "CIF-Verknüpfung um Meldewesen ergänzt", daysAgo: 74 });
-  await seedAudit({ userId: uTprm, userEmail: "tprm@demo.example", action: "UPDATE", entityType: "Contract", entityId: tps[0]!, field: "noticePeriodDays", oldValue: "90", newValue: "180", comment: "Kündigungsfrist an DORA-Exit-Anforderungen angepasst", daysAgo: 70 });
+  await seedAudit({
+    userId: uRm,
+    userEmail: "riskmanager@demo.example",
+    action: "CREATE",
+    entityType: "Risk",
+    entityId: riskIds[0]!,
+    comment: "Ersterfassung",
+    daysAgo: 120,
+  });
+  await seedAudit({
+    userId: uIso,
+    userEmail: "iso@demo.example",
+    action: "STATUS_CHANGE",
+    entityType: "Risk",
+    entityId: riskIds[0]!,
+    field: "status",
+    oldValue: "SECOND_LINE_REVIEW",
+    newValue: "TREATMENT",
+    comment: "Freigabe nach Second-Line-Review",
+    daysAgo: 90,
+  });
+  await seedAudit({
+    userId: uMgmt,
+    userEmail: "management@demo.example",
+    action: "ACCEPTANCE_DECISION",
+    entityType: "RiskAcceptance",
+    entityId: riskIds[21]!,
+    newValue: "APPROVED",
+    comment: "Befristete Akzeptanz bis Q1/2027 mit Auflagen",
+    daysAgo: 60,
+  });
+  await seedAudit({
+    userId: uTprm,
+    userEmail: "tprm@demo.example",
+    action: "ASSESS",
+    entityType: "ThirdParty",
+    entityId: tps[0]!,
+    field: "assessment",
+    oldValue: "criticality=HIGH, residual=14",
+    newValue: "criticality=CRITICAL, residual=12",
+    comment: "Jahres-Review: Hochstufung wegen CIF-Abdeckung",
+    daysAgo: 75,
+  });
+  await seedAudit({
+    userId: uTprm,
+    userEmail: "tprm@demo.example",
+    action: "UPDATE",
+    entityType: "ThirdParty",
+    entityId: tps[0]!,
+    field: "criticalFunctions",
+    oldValue: "CIF-01, CIF-03",
+    newValue: "CIF-01, CIF-03, CIF-04",
+    comment: "CIF-Verknüpfung um Meldewesen ergänzt",
+    daysAgo: 74,
+  });
+  await seedAudit({
+    userId: uTprm,
+    userEmail: "tprm@demo.example",
+    action: "UPDATE",
+    entityType: "Contract",
+    entityId: tps[0]!,
+    field: "noticePeriodDays",
+    oldValue: "90",
+    newValue: "180",
+    comment: "Kündigungsfrist an DORA-Exit-Anforderungen angepasst",
+    daysAgo: 70,
+  });
   // Incident-/Finding-/Action-Historie folgt NACH seedDora (die Objekte
   // entstehen dort) — siehe unten.
 
@@ -3005,16 +3497,64 @@ async function main() {
   // ---------- Feldgenaue Historie für DORA-Objekte (nach seedDora) ----------
   const inc1 = await db.incident.findUnique({ where: { incidentId: "INC-2026-0001" } });
   if (inc1) {
-    await seedAudit({ userId: uIso, userEmail: "iso@demo.example", action: "STATUS_CHANGE", entityType: "Incident", entityId: inc1.id, field: "status", oldValue: "DETECTED", newValue: "CLASSIFIED", comment: "Klassifizierung abgeschlossen; Meldefristen laufen", daysAgo: 4 });
-    await seedAudit({ userId: uIso, userEmail: "iso@demo.example", action: "UPDATE", entityType: "Incident", entityId: inc1.id, field: "isMajor", oldValue: "false", newValue: "true", comment: "Einstufung als schwerwiegend nach Art. 18", daysAgo: 4 });
+    await seedAudit({
+      userId: uIso,
+      userEmail: "iso@demo.example",
+      action: "STATUS_CHANGE",
+      entityType: "Incident",
+      entityId: inc1.id,
+      field: "status",
+      oldValue: "DETECTED",
+      newValue: "CLASSIFIED",
+      comment: "Klassifizierung abgeschlossen; Meldefristen laufen",
+      daysAgo: 4,
+    });
+    await seedAudit({
+      userId: uIso,
+      userEmail: "iso@demo.example",
+      action: "UPDATE",
+      entityType: "Incident",
+      entityId: inc1.id,
+      field: "isMajor",
+      oldValue: "false",
+      newValue: "true",
+      comment: "Einstufung als schwerwiegend nach Art. 18",
+      daysAgo: 4,
+    });
   }
-  const act24 = await db.action.findUnique({ where: { actionId: "ACT-2026-0024" } }).catch(() => null);
+  const act24 = await db.action
+    .findUnique({ where: { actionId: "ACT-2026-0024" } })
+    .catch(() => null);
   if (act24) {
-    await seedAudit({ userId: uAo, userEmail: "actionowner@demo.example", action: "UPDATE", entityType: "Action", entityId: act24.id, field: "dueDate", oldValue: "2026-08-15", newValue: "2026-09-30", comment: "Terminverschiebung nach Abstimmung mit Fachbereich", daysAgo: 20 });
+    await seedAudit({
+      userId: uAo,
+      userEmail: "actionowner@demo.example",
+      action: "UPDATE",
+      entityType: "Action",
+      entityId: act24.id,
+      field: "dueDate",
+      oldValue: "2026-08-15",
+      newValue: "2026-09-30",
+      comment: "Terminverschiebung nach Abstimmung mit Fachbereich",
+      daysAgo: 20,
+    });
   }
-  const fnd2 = await db.doraFinding.findUnique({ where: { findingId: "FND-2026-0002" } }).catch(() => null);
+  const fnd2 = await db.doraFinding
+    .findUnique({ where: { findingId: "FND-2026-0002" } })
+    .catch(() => null);
   if (fnd2) {
-    await seedAudit({ userId: uSl, userEmail: "secondline@demo.example", action: "APPROVE", entityType: "DoraFinding", entityId: fnd2.id, field: "status", oldValue: "IN_PROGRESS", newValue: fnd2.status, comment: "Wirksamkeitsnachweis geprüft", daysAgo: 12 });
+    await seedAudit({
+      userId: uSl,
+      userEmail: "secondline@demo.example",
+      action: "APPROVE",
+      entityType: "DoraFinding",
+      entityId: fnd2.id,
+      field: "status",
+      oldValue: "IN_PROGRESS",
+      newValue: fnd2.status,
+      comment: "Wirksamkeitsnachweis geprüft",
+      daysAgo: 12,
+    });
   }
 
   console.log("Seed abgeschlossen.");

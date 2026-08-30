@@ -6,6 +6,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ### Added
 
+- **Meldeschicht Welle 1 — Registermodell (ADR-0005):** Datenmodell für das
+  DORA-Informationsregister (DVO (EU) 2024/2956): `ReportingEntity` um
+  B_01-Felder erweitert, neu `EntityBranch`, `ContractIctService`
+  (Kernobjekt B_02.02), `CifServiceAssessment` (B_07.01) und `RoiSnapshot`
+  (unveränderlicher Meldestand); Registerfelder an `Contract`
+  (Vertragsart, anwendbares Recht, Kosten, Rahmenbezug, beidseitige
+  Kündigungsfristen, Entitätsbezug für B_03/B_04, MaRisk-Kennzeichen
+  `isIctService`), `ThirdParty` (Lieferkettenrolle, oberste
+  Muttergesellschaft, CTPP) und `Subcontractor` (Vertragsbezug,
+  IKT-Dienstleistungsart); versionierte Taxonomien
+  (`lib/content/roi-taxonomies.ts`, TO_VERIFY-Kennzeichnung) und
+  Registeraufbau als reine Funktionen (`lib/domain/roi-build.ts`, alle
+  15 Meldebögen aus dem Seed befüllbar, Vitest-Abdeckung);
+  Schema-Update 0008 für Bestandsinstallationen
+
 - **Zweisprachigkeit Deutsch/Englisch:** Cookie-basierter Sprachumschalter im
   Kopfbereich und auf der Anmeldeseite (Standard Deutsch); Oberfläche der
   Module, Executive Dashboard, Reports-Chrome sowie die komplette DORA-
