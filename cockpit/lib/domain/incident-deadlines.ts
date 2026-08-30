@@ -23,8 +23,43 @@ export interface DeadlineInput {
   isMajor: boolean;
   gdprRelevant: boolean;
   nis2Relevant: boolean;
+  /**
+   * Unternehmensart der meldenden Einheit (Meldeschicht Welle 6,
+   * ADR-0010 Nr. 5; Wertemenge wie ReportingEntity.entityType). Steuert die
+   * Arbeitstagsverschiebung; ohne Angabe keine Verschiebung (Altverhalten).
+   */
+  entityCategory?: string | null;
   /** Tatsächliche Abgabezeitpunkte, falls bereits gemeldet. */
   submitted?: Partial<Record<ReportType, Date>>;
+}
+
+/**
+ * Arbeitstagsverschiebung (ADR-0010 Nr. 5): Fällt die Frist der DORA-Erst-
+ * oder Zwischenmeldung auf ein Wochenende, verschiebt sie sich auf den
+ * nächsten Arbeitstag 12:00 UTC — NICHT für Kreditinstitute, zentrale
+ * Gegenparteien, Handelsplatzbetreiber und NIS-2-relevante Einheiten.
+ * Feiertage bewusst nicht abgebildet (TODO(verify), dokumentierte
+ * Vereinfachung).
+ */
+const NO_SHIFT_ENTITY_TYPES = new Set(["CREDIT_INSTITUTION", "CCP", "TRADING_VENUE"]);
+
+export function workingDayShiftApplies(
+  entityCategory: string | null | undefined,
+  nis2Relevant: boolean,
+): boolean {
+  if (!entityCategory) return false; // Altverhalten ohne Entitätsangabe
+  if (nis2Relevant) return false;
+  return !NO_SHIFT_ENTITY_TYPES.has(entityCategory);
+}
+
+/** Wochenendfrist auf den nächsten Arbeitstag 12:00 UTC verschieben. */
+export function shiftToNextWorkingDay(dueAt: Date): Date {
+  const day = dueAt.getUTCDay(); // 0 = So, 6 = Sa
+  if (day !== 0 && day !== 6) return dueAt;
+  const shifted = new Date(dueAt);
+  shifted.setUTCDate(shifted.getUTCDate() + (day === 6 ? 2 : 1));
+  shifted.setUTCHours(12, 0, 0, 0);
+  return shifted;
 }
 
 export type ReportType =
@@ -65,19 +100,24 @@ export function computeDeadlines(input: DeadlineInput, now: Date): Deadline[] {
     out.push({ reportType, label, dueAt, submittedAt, status: status(dueAt, submittedAt, now) });
   };
 
+  const shift = workingDayShiftApplies(input.entityCategory, input.nis2Relevant)
+    ? shiftToNextWorkingDay
+    : (d: Date) => d;
+
   if (input.isMajor) {
     const absolute = new Date(input.awarenessAt.getTime() + 24 * HOUR);
     const fromClassification = input.classifiedAt
       ? new Date(input.classifiedAt.getTime() + 4 * HOUR)
       : null;
-    const initialDue =
+    const initialDue = shift(
       fromClassification && fromClassification.getTime() < absolute.getTime()
         ? fromClassification
-        : absolute;
+        : absolute,
+    );
     push("DORA_INITIAL", "DORA-Erstmeldung (4 h / max. 24 h)", initialDue);
 
     const initialAnchor = sub.DORA_INITIAL ?? initialDue;
-    const intermediateDue = new Date(initialAnchor.getTime() + 72 * HOUR);
+    const intermediateDue = shift(new Date(initialAnchor.getTime() + 72 * HOUR));
     push("DORA_INTERMEDIATE", "DORA-Zwischenmeldung (72 h)", intermediateDue);
 
     const intermediateAnchor = sub.DORA_INTERMEDIATE ?? intermediateDue;

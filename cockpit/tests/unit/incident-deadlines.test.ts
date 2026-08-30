@@ -147,3 +147,69 @@ describe("Status und Restlaufzeit", () => {
     expect(remainingLabel(due, new Date("2026-08-23T08:00:00Z"))).toBe("überfällig seit 3 T 0 h");
   });
 });
+
+describe("Entitätstypabhängige Fristenuhren (Meldeschicht Welle 6, ADR-0010 Nr. 5)", () => {
+  // 2026-08-22 ist ein Samstag: Kenntnis Freitag 10:00 -> 24-h-Frist Samstag 10:00
+  const FRIDAY = new Date("2026-08-21T10:00:00Z");
+  const base = {
+    awarenessAt: FRIDAY,
+    classifiedAt: null,
+    isMajor: true,
+    gdprRelevant: false,
+    nis2Relevant: false,
+  };
+
+  it("Wochenendfrist verschiebt sich auf Montag 12:00 UTC (allgemeiner Entitätstyp)", () => {
+    const d = computeDeadlines({ ...base, entityCategory: "INSURANCE_UNDERTAKING" }, FRIDAY);
+    const initial = d.find((x) => x.reportType === "DORA_INITIAL")!;
+    expect(initial.dueAt.toISOString()).toBe("2026-08-24T12:00:00.000Z"); // Montag 12:00
+  });
+
+  it("keine Verschiebung für Kreditinstitute, CCPs und Handelsplatzbetreiber", () => {
+    for (const entityCategory of ["CREDIT_INSTITUTION", "CCP", "TRADING_VENUE"]) {
+      const d = computeDeadlines({ ...base, entityCategory }, FRIDAY);
+      const initial = d.find((x) => x.reportType === "DORA_INITIAL")!;
+      expect(initial.dueAt.toISOString(), entityCategory).toBe("2026-08-22T10:00:00.000Z");
+    }
+  });
+
+  it("keine Verschiebung für NIS-2-relevante Einheiten", () => {
+    const d = computeDeadlines(
+      { ...base, nis2Relevant: true, entityCategory: "INSURANCE_UNDERTAKING" },
+      FRIDAY,
+    );
+    const initial = d.find((x) => x.reportType === "DORA_INITIAL")!;
+    expect(initial.dueAt.toISOString()).toBe("2026-08-22T10:00:00.000Z");
+  });
+
+  it("ohne Entitätsangabe bleibt das Altverhalten (keine Verschiebung)", () => {
+    const d = computeDeadlines(base, FRIDAY);
+    const initial = d.find((x) => x.reportType === "DORA_INITIAL")!;
+    expect(initial.dueAt.toISOString()).toBe("2026-08-22T10:00:00.000Z");
+  });
+
+  it("Werktagsfristen bleiben unverschoben; Zwischenmeldung wird ebenfalls verschoben", () => {
+    // Kenntnis Montag 10:00 -> Frist Dienstag 10:00 (Werktag, keine Verschiebung)
+    const MONDAY = new Date("2026-08-17T10:00:00Z");
+    const d1 = computeDeadlines(
+      { ...base, awarenessAt: MONDAY, entityCategory: "INSURANCE_UNDERTAKING" },
+      MONDAY,
+    );
+    expect(d1.find((x) => x.reportType === "DORA_INITIAL")!.dueAt.toISOString()).toBe(
+      "2026-08-18T10:00:00.000Z",
+    );
+    // Erstmeldung Mittwoch 10:00 abgegeben -> 72 h wäre Samstag -> Montag 12:00
+    const d2 = computeDeadlines(
+      {
+        ...base,
+        awarenessAt: MONDAY,
+        entityCategory: "INSURANCE_UNDERTAKING",
+        submitted: { DORA_INITIAL: new Date("2026-08-19T10:00:00Z") },
+      },
+      MONDAY,
+    );
+    expect(d2.find((x) => x.reportType === "DORA_INTERMEDIATE")!.dueAt.toISOString()).toBe(
+      "2026-08-24T12:00:00.000Z",
+    );
+  });
+});

@@ -6,6 +6,24 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ### Added
 
+- **Meldeschicht Welle 6 — Vorfallklassifizierung vervollständigt
+  (ADR-0010):** Die sieben Kriterien der DelVO (EU) 2024/1772 werden als
+  **Messwerte** erfasst (Kunden absolut/relativ, Gegenparteien,
+  Transaktionen nach Anzahl/Wert/Anteil, Reputationsindikatoren, Dauer und
+  Dienstausfall, betroffene Mitgliedstaaten, Datenverlust je Schutzziel,
+  CIF-Betroffenheit, wirtschaftliche Auswirkung); „erfüllt" wird gegen
+  zentrale Schwellwerte abgeleitet (Arbeitswerte, `TODO(verify)`), die
+  Rohwerte werden persistiert (`IncidentClassification.measurements`,
+  Update 0011). Major-Regel als reine Funktion exakt nach Auftrag
+  (Kritikalität UND (Datenverlust ODER ≥ 2 weitere Kriterien), Altschlüssel
+  normalisiert); Aggregation wiederkehrender Vorfälle gleicher Ursache über
+  sechs Monate (`aggregateRecurring`). Fristenuhren entitätstypabhängig:
+  Wochenendfristen der DORA-Erst-/Zwischenmeldung verschieben sich auf den
+  nächsten Arbeitstag 12:00 UTC — nicht für Kreditinstitute, zentrale
+  Gegenparteien, Handelsplatzbetreiber und NIS-2-relevante Einheiten;
+  Entitätstyp aus der Register führenden Einheit. Klassifizierungsassistent
+  mit Live-Ableitung aus denselben reinen Funktionen
+
 - **Meldeschicht Welle 5 — Konzentrationsanalytik (ADR-0009):**
   Auswertungsmodul über den Registerbestand (`lib/domain/roi-concentration.ts`,
   reine Funktionen auf demselben Datenabzug wie Validierung/Export):

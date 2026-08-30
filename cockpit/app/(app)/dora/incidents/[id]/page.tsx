@@ -15,7 +15,7 @@ import {
 } from "@/features/dora/deadline-monitor";
 import { ClassifyForm, ReportSubmitForm, StatusForm } from "@/features/dora/incident-panels";
 import { ClassificationAssistant } from "@/features/dora/classification-assistant";
-import type { CriterionResult } from "@/lib/domain/incident-classification";
+import { parseMeasurements, type CriterionResult } from "@/lib/domain/incident-classification";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +24,15 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
   const locale = await getLocale();
   const t = DORA_MESSAGES[locale];
   const { id } = await params;
+  // Unternehmensart der Register führenden Einheit für die
+  // entitätstypabhängigen Fristenuhren (Meldeschicht Welle 6, ADR-0010 Nr. 5)
+  const maintainerSetting = await db.appSetting.findUnique({
+    where: { key: "roi.maintainerEntityId" },
+  });
+  const maintainer = maintainerSetting
+    ? await db.reportingEntity.findUnique({ where: { id: maintainerSetting.value } })
+    : await db.reportingEntity.findFirst({ where: { parentId: null } });
+  const entityCategory = maintainer?.entityType ?? null;
   const incident = await db.incident.findFirst({
     where: { OR: [{ id }, { incidentId: id }] },
     include: {
@@ -102,7 +111,12 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
           <CardDescription>{t.incidentDetail.monitorDesc}</CardDescription>
         </CardHeader>
         <CardContent>
-          <DeadlineMonitor incident={incident} reports={incident.reports} locale={locale} />
+          <DeadlineMonitor
+            incident={incident}
+            reports={incident.reports}
+            locale={locale}
+            entityCategory={entityCategory}
+          />
         </CardContent>
       </Card>
 
@@ -209,6 +223,7 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
               ? (JSON.parse(incident.classification.criteria) as CriterionResult[])
               : null
           }
+          initialMeasurements={parseMeasurements(incident.classification?.measurements ?? null)}
           frozenAt={incident.classification?.frozenAt?.toISOString().slice(0, 16) ?? null}
           aggregatedWith={incident.classification?.aggregatedWith ?? null}
           voluntaryThreatNotice={incident.classification?.voluntaryThreatNotice ?? false}
