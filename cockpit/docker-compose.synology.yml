@@ -30,6 +30,16 @@ services:
       APP_BASE_URL: "${APP_BASE_URL:-http://localhost:${HOST_PORT:-3000}}"
       # Optionaler Override, falls das Flag manuell erzwungen werden soll:
       SESSION_COOKIE_SECURE: "${SESSION_COOKIE_SECURE:-}"
+      # Von der Anwendung direkt aus process.env gelesen (app/(app)/layout.tsx,
+      # app/api/cron/deadlines/route.ts, lib/auth/mfa.ts, lib/audit-integrity.ts).
+      # Ohne Weitergabe hier bleiben Einträge in der .env wirkungslos, weil
+      # Compose sie nur im YAML substituiert.
+      CRON_SECRET: "${CRON_SECRET:-}"
+      APP_ENVIRONMENT: "${APP_ENVIRONMENT:-demo}"
+      APP_TENANT_NAME: "${APP_TENANT_NAME:-Nordlicht Bank AG}"
+      MFA_REQUIRED_ROLES: "${MFA_REQUIRED_ROLES:-}"
+      NOTIFY_WEBHOOK_URL: "${NOTIFY_WEBHOOK_URL:-}"
+      AUDIT_RETENTION_DAYS: "${AUDIT_RETENTION_DAYS:-3650}"
     volumes:
       - cockpit-data:/data
     restart: unless-stopped
@@ -49,6 +59,11 @@ services:
   proxy:
     image: caddy:2-alpine
     container_name: ict-tprm-proxy
+    environment:
+      # Site-Adresse des HTTPS-Blocks. Muss einen Host enthalten, sonst kann
+      # der interne Issuer kein Zertifikat ausstellen. Der Installer trägt
+      # hier die NAS-IP ein; der Default passt nur für lokale Tests.
+      CADDY_SITE_ADDRESS: "${CADDY_SITE_ADDRESS:-https://localhost:8443}"
     ports:
       - "${HTTPS_PORT:-8443}:8443"
       - "${HTTP_REDIRECT_PORT:-8080}:8080"

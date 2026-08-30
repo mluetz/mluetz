@@ -113,6 +113,17 @@ else
 fi
 echo "==> Basis-URL: ${BASE_URL}"
 
+# --- CADDY_SITE_ADDRESS setzen -------------------------------
+# Caddy braucht im HTTPS-Block einen ausgeschriebenen Host; ein hostloses
+# ":8443" liefert kein Zertifikat (TLS-Alert 80).
+CADDY_ADDR="https://${NAS_IP}:${HTTPS_PORT:-8443}"
+if grep -q '^CADDY_SITE_ADDRESS=' "$APP_DIR/.env" 2>/dev/null; then
+  sed -i.bak "s#^CADDY_SITE_ADDRESS=.*#CADDY_SITE_ADDRESS=${CADDY_ADDR}#" "$APP_DIR/.env" && rm -f "$APP_DIR/.env.bak"
+else
+  printf 'CADDY_SITE_ADDRESS=%s\n' "$CADDY_ADDR" >> "$APP_DIR/.env"
+fi
+echo "==> TLS-Adresse: ${CADDY_ADDR}"
+
 cd "$APP_DIR"
 echo "==> Baue Image und starte Container – der erste Build dauert je nach Modell 10–25 Minuten …"
 $COMPOSE -f docker-compose.synology.yml up -d --build

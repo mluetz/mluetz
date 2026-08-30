@@ -13,7 +13,10 @@
 	auto_https disable_redirects
 }
 
-:8443 {
+# Der Host muss ausgeschrieben sein: Aus einem hostlosen Block wie ":8443"
+# kann der interne Issuer kein Zertifikat ableiten (TLS-Alert 80, "no peer
+# certificate"). CADDY_SITE_ADDRESS setzt der Installer auf die NAS-IP.
+{$CADDY_SITE_ADDRESS:https://localhost:8443} {
 	tls internal
 	encode gzip
 	header {
@@ -24,6 +27,10 @@
 	reverse_proxy cockpit:3000
 }
 
-:8080 {
+# Schema ausgeschrieben: Ohne "http://" behandelt Caddy auch diesen Block als
+# TLS-fähig. Beide hostlosen Blöcke landen dann in derselben Catch-all-
+# Automation-Policy und widersprechen sich ("automation policy ... in
+# conflict") – Caddy bricht schon beim Parsen ab.
+http://:8080 {
 	redir https://{host}:8443{uri} permanent
 }
