@@ -1,6 +1,6 @@
- Hi 👋
+ Hi all
 
-Information security professional with 25+ years, most of it inside global
+Information security professional with various years, most of it inside global
 financial services — a long career with major Swiss and US banking groups, and
 many years living and working in Switzerland. Roles from Senior Security
 Consultant through to global CISO and Director of Business Cyber Security &
