@@ -105,8 +105,12 @@ test("DORA Handbuch: Kapitelübersicht, Detailseite mit Abbildung und Navigation
   await expect(page.getByText("Das vollständige Handbuch (FRWK-DORA-001)")).toBeVisible();
   await expect(page.getByText("Anforderungskatalog – als interaktives Modul")).toBeVisible();
 
-  // Detailseite Kap. 11 öffnen: Abbildung 9 und Reifegradskala sichtbar
-  await page.getByRole("link", { name: /Reifegrad- und Scoring-Modell/ }).click();
+  // Detailseite Kap. 11 öffnen: Abbildung 9 und Reifegradskala sichtbar.
+  // Klick mit Retry, bis die React-Hydration die Navigation angebunden hat.
+  await expect(async () => {
+    await page.getByRole("link", { name: /Reifegrad- und Scoring-Modell/ }).click();
+    await page.waitForURL("**/dora-knowledge/reifegrad-scoring", { timeout: 2000 });
+  }).toPass({ timeout: 15000 });
   await expect(page.getByRole("heading", { name: /Kap\. 11/ })).toBeVisible();
   await expect(page.getByAltText(/Abbildung 9:/)).toBeVisible();
   await expect(page.getByText("Tabelle 21: Reifegradskala mit Nachweisanforderung")).toBeVisible();
@@ -182,6 +186,24 @@ test("DORA Compliance: Dashboard, Katalog mit Knockouts und Meldefristen-Monitor
   // Vorfall mit laufenden Fristen
   await page.goto("/dora/incidents");
   await expect(page.getByText("INC-2026-0001").first()).toBeVisible();
-  await page.getByRole("link", { name: "INC-2026-0001" }).first().click();
+  // Klick mit Retry, bis die React-Hydration die Navigation angebunden hat.
+  await expect(async () => {
+    await page.getByRole("link", { name: "INC-2026-0001" }).first().click();
+    await page.waitForURL("**/dora/incidents/*", { timeout: 2000 });
+  }).toPass({ timeout: 15000 });
   await expect(page.getByText("DORA-Zwischenmeldung", { exact: false }).first()).toBeVisible();
+});
+
+test("Marktvergleich: Menüpunkt und Analyse-Seite mit Quellen-Hinweis", async ({ page }) => {
+  await login(page, "riskmanager@demo.example");
+  await page.getByLabel("Hauptnavigation").getByRole("link", { name: "Marktvergleich" }).click();
+  await expect(
+    page.getByRole("heading", { name: "ODDO BHF im Privatbanken-Vergleich" }),
+  ).toBeVisible();
+  // Kennzeichnung als öffentliche Marktinformation (keine Demo-Daten)
+  await expect(page.getByText(/keine synthetischen Demo-Daten/)).toBeVisible();
+  // Kernelemente der Analyse
+  await expect(page.getByText("Management Summary")).toBeVisible();
+  await expect(page.getByText("Kennzahlenvergleich Geschäftsjahr 2025")).toBeVisible();
+  await expect(page.getByText("Quellen und Methodik")).toBeVisible();
 });

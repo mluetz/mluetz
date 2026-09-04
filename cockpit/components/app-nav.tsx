@@ -12,6 +12,7 @@ import {
   BookOpenCheck,
   Gauge,
   GraduationCap,
+  Landmark,
   Swords,
   FileArchive,
   BarChart3,
@@ -41,6 +42,7 @@ const icons = {
   governance: Scale,
   doraCompliance: Gauge,
   dora: GraduationCap,
+  market: Landmark,
   admin: Settings,
   audit: ScrollText,
 } as const;

@@ -6,6 +6,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ### Added
 
+- **Marktvergleich als eigener Menüpunkt** (`/market-comparison`): redaktionelle
+  Analyse „ODDO BHF im Privatbanken-Vergleich" auf Basis öffentlich
+  zugänglicher Quellen (Betrachtungsjahr 2025, Ereignisse bis 08/2026) mit
+  Kennzahlenkacheln, Vermögens- und Margenvergleich (13 Häuser),
+  Kennzahlentabelle, Positionierungsmatrix, Geschäftsfeld- und Länderprofilen,
+  SWOT und vollständigem Quellenverzeichnis. Deutlich als öffentliche
+  Marktinformation gekennzeichnet – kein Bestandteil der synthetischen
+  Demo-Daten; Inhalt auf Deutsch, Seiten-Chrome zweisprachig
+
 - **Zweisprachigkeit Deutsch/Englisch:** Cookie-basierter Sprachumschalter im
   Kopfbereich und auf der Anmeldeseite (Standard Deutsch); Oberfläche der
   Module, Executive Dashboard, Reports-Chrome sowie die komplette DORA-

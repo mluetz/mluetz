@@ -30,6 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: "/governance", label: t.nav.governance, icon: "governance" },
     { href: "/dora", label: t.nav.doraCompliance, icon: "doraCompliance" },
     { href: "/dora-knowledge", label: t.nav.doraKnowledge, icon: "dora" },
+    { href: "/market-comparison", label: t.nav.marketComparison, icon: "market" },
   ];
   if (hasPermission(user, "audit:read")) {
     items.push({ href: "/audit-log", label: t.nav.auditTrail, icon: "audit" });

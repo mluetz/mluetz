@@ -47,6 +47,10 @@ Finanzdienstleistungsumfeld (DORA-Kontext).
   **Vorfallsmodul mit Meldefristen-Monitor** (Erstmeldung 4 h/24 h, Zwischenmeldung
   72 h, Abschluss 1 Monat – parallele Prüfung NIS-2 und DSGVO Art. 33);
   KPI-/KRI-Kacheln und Heatmap Kapitel × kritische Funktionen
+- **Marktvergleich:** redaktionelle Analyse „ODDO BHF im Privatbanken-Vergleich"
+  (13 europäische Häuser; öffentliche Quellen, Stand 09/2026) als eigener
+  Menüpunkt – klar gekennzeichnete öffentliche Marktinformation, ausdrücklich
+  KEIN Teil der synthetischen Demo-Daten der fiktiven Nordlicht Bank AG
 - **Zweisprachigkeit (DE/EN):** Umschalter im Kopfbereich (Cookie-basiert,
   Standard Deutsch). Oberfläche, Wissensbasis inkl. Handbuch und Glossar sowie
   die 16 Abbildungen (für EN als originalgetreue SVG-Rekonstruktionen mit
