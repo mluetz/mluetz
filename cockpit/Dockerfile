@@ -17,9 +17,30 @@ COPY . .
 # Dummy-Werte nur für den Build (werden zur Laufzeit überschrieben)
 ENV DATABASE_URL="file:/app/prisma/seed-template.db" \
     SESSION_SECRET="build-time-secret-not-used-at-runtime-0123456789"
+# Prisma-CLI-Netzwerkzugriffe im Build eindämmen: CHECKPOINT_DISABLE
+# unterbindet den Telemetrie-/Versions-Check (kann in NAS-Netzen minutenlang
+# hängen und mit ECONNRESET abbrechen), die übrigen Variablen unterdrücken
+# Update-Hinweise von Prisma und npm.
+ENV CHECKPOINT_DISABLE=1 \
+    PRISMA_HIDE_UPDATE_MESSAGE=1 \
+    NPM_CONFIG_UPDATE_NOTIFIER=false
 # public/ absichern: Git speichert keine leeren Verzeichnisse – ohne diese
 # Zeile bricht der spätere COPY-Schritt bei einem Quellstand ohne public/ ab.
-RUN mkdir -p public && npx prisma generate && npm run build
+# prisma generate mit hartem Timeout und 3 Versuchen: Falls die Query-Engine
+# doch aus dem Netz geladen werden muss, scheitert ein gestörter Download
+# nach spätestens 3×5 Minuten mit klarer Meldung statt endlos zu hängen.
+RUN mkdir -p public \
+    && i=1; while :; do \
+         if timeout 300 npx prisma generate; then break; fi; \
+         echo "prisma generate: Versuch $i fehlgeschlagen."; \
+         if [ "$i" -ge 3 ]; then \
+           echo "FEHLER: Engine-Download wiederholt gescheitert."; \
+           echo "Bitte DNS/Internetzugang des NAS pruefen (binaries.prisma.sh) und erneut ausfuehren."; \
+           exit 1; \
+         fi; \
+         i=$((i+1)); echo "Neuer Versuch in 15 s ..."; sleep 15; \
+       done \
+    && npm run build
 # Demo-Datenbank-Vorlage erzeugen (wird beim ersten Start in das
 # Datenvolume kopiert, siehe docker-entrypoint.sh)
 RUN npx prisma db push --skip-generate && npx tsx prisma/seed.ts

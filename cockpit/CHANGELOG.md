@@ -4,6 +4,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
 
 ## [Unreleased]
 
+### Fixed
+
+- Docker-Build (Synology): `prisma generate` konnte bei gestörtem
+  Netzwerkzugriff (Engine-/Checkpoint-Download) minutenlang hängen und mit
+  unbehandeltem ECONNRESET abbrechen. Der Build-Schritt läuft jetzt mit
+  CHECKPOINT_DISABLE=1, hartem 5-Minuten-Timeout und 3 Versuchen; bei
+  dauerhaftem Fehlschlag bricht er schnell mit klarer Handlungsanweisung ab
+
 ### Added
 
 - **Marktvergleich als eigener Menüpunkt** (`/market-comparison`): redaktionelle
