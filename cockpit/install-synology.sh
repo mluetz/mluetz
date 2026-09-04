@@ -47,8 +47,25 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 curl -fsSL "$TARBALL" -o "$TMP/src.tar.gz"
 tar -xzf "$TMP/src.tar.gz" -C "$TMP"
+
+# Saubere Arbeitskopie: Der bisherige Projektordner wird komplett ersetzt
+# (nur .env wird übernommen). Ein bloßes Drüberkopieren ließe verwaiste
+# Dateien früherer Stände liegen, die den Build brechen können. Der alte
+# Ordner bleibt als einfache Sicherung unter ${APP_DIR}.prev erhalten
+# (wird beim nächsten Lauf ersetzt).
 mkdir -p "$APP_DIR"
+if [ -n "$(ls -A "$APP_DIR" 2>/dev/null)" ]; then
+  BACKUP_DIR="${APP_DIR}.prev"
+  echo "==> Ersetze vorhandene Arbeitskopie (Sicherung: ${BACKUP_DIR})."
+  [ -f "$APP_DIR/.env" ] && cp -a "$APP_DIR/.env" "$TMP/env.keep"
+  rm -rf "$BACKUP_DIR"
+  mv "$APP_DIR" "$BACKUP_DIR"
+  mkdir -p "$APP_DIR"
+fi
 cp -a "$TMP"/*/cockpit/. "$APP_DIR"/
+if [ -f "$TMP/env.keep" ]; then
+  cp -a "$TMP/env.keep" "$APP_DIR/.env"
+fi
 
 if [ ! -f "$APP_DIR/.env" ]; then
   SECRET="$(head -c 64 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | cut -c1-48)"
