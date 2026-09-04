@@ -10,7 +10,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/de/1.1.0/) · Versionierun
   Netzwerkzugriff (Engine-/Checkpoint-Download) minutenlang hängen und mit
   unbehandeltem ECONNRESET abbrechen. Der Build-Schritt läuft jetzt mit
   CHECKPOINT_DISABLE=1, hartem 5-Minuten-Timeout und 3 Versuchen; bei
-  dauerhaftem Fehlschlag bricht er schnell mit klarer Handlungsanweisung ab
+  dauerhaftem Fehlschlag bricht er schnell mit klarer Handlungsanweisung ab.
+  Zusätzlich läuft der Image-Build jetzt im Host-Netzwerk
+  (docker-compose.synology.yml, `build.network: host`) – auf DSM haben
+  Build-Container im Bridge-Netz häufig keinen Internetzugang, während der
+  Host online ist; Node löst DNS zudem IPv4-bevorzugt auf
 
 ### Added
 

@@ -23,7 +23,8 @@ ENV DATABASE_URL="file:/app/prisma/seed-template.db" \
 # Update-Hinweise von Prisma und npm.
 ENV CHECKPOINT_DISABLE=1 \
     PRISMA_HIDE_UPDATE_MESSAGE=1 \
-    NPM_CONFIG_UPDATE_NOTIFIER=false
+    NPM_CONFIG_UPDATE_NOTIFIER=false \
+    NODE_OPTIONS="--dns-result-order=ipv4first"
 # public/ absichern: Git speichert keine leeren Verzeichnisse – ohne diese
 # Zeile bricht der spätere COPY-Schritt bei einem Quellstand ohne public/ ab.
 # prisma generate mit hartem Timeout und 3 Versuchen: Falls die Query-Engine
